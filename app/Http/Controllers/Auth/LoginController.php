@@ -27,8 +27,8 @@ class LoginController extends Controller
         if (Auth::guard('web')->attempt(['emple_doc' => $number, 'password' => $password])) {
             $empleado = Auth::guard('web')->user();
             
-            if ($empleado->emple_rol == 1) return redirect()->route('superadmin.dashboard');
-            if ($empleado->emple_rol == 2) return redirect()->route('admin.dashboard');
+            if ($empleado->emple_rol == 1) return redirect()->route('sadmin.index');
+            if ($empleado->emple_rol == 2) return redirect()->route('admin.index');
             return redirect()->route('empleado.index');
         }
 
