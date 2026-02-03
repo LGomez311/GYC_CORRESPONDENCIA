@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 02, 2026 at 10:44 PM
+-- Generation Time: Feb 03, 2026 at 10:42 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `correspondencia`
+-- Database: `cor`
 --
 
 -- --------------------------------------------------------
@@ -31,30 +31,6 @@ CREATE TABLE `area` (
   `id_area` int(20) NOT NULL,
   `area_nom` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `cache`
---
-
-CREATE TABLE `cache` (
-  `key` varchar(255) NOT NULL,
-  `value` mediumtext NOT NULL,
-  `expiration` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `cache_locks`
---
-
-CREATE TABLE `cache_locks` (
-  `key` varchar(255) NOT NULL,
-  `owner` varchar(255) NOT NULL,
-  `expiration` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -102,7 +78,8 @@ CREATE TABLE `detalle_envio` (
 
 CREATE TABLE `empleado` (
   `emple_doc` int(20) NOT NULL,
-  `contrasena` varchar(50) DEFAULT NULL,
+  `nit_empresa` varchar(25) DEFAULT NULL,
+  `password` varchar(255) DEFAULT NULL,
   `emple_nombres` varchar(25) DEFAULT NULL,
   `emple_apellidos` varchar(25) DEFAULT NULL,
   `emple_tel` varchar(25) DEFAULT NULL,
@@ -111,6 +88,18 @@ CREATE TABLE `empleado` (
   `emple_estado` int(20) DEFAULT NULL,
   `emple_rol` int(20) DEFAULT NULL,
   `emple_area` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `empresa`
+--
+
+CREATE TABLE `empresa` (
+  `nit_empresa` varchar(25) NOT NULL,
+  `nomb_empresa` varchar(50) NOT NULL,
+  `direccion` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -147,86 +136,51 @@ CREATE TABLE `estado` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `failed_jobs`
+-- Table structure for table `licencia`
 --
 
-CREATE TABLE `failed_jobs` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `uuid` varchar(255) NOT NULL,
-  `connection` text NOT NULL,
-  `queue` text NOT NULL,
-  `payload` longtext NOT NULL,
-  `exception` longtext NOT NULL,
-  `failed_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `licencia` (
+  `id_licencia` int(10) NOT NULL,
+  `id_plan` int(10) NOT NULL,
+  `nit_empresa` varchar(25) NOT NULL,
+  `id_estado` int(20) NOT NULL,
+  `fecha_inicio` datetime NOT NULL,
+  `fecha_fin` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `jobs`
+-- Table structure for table `pagos`
 --
 
-CREATE TABLE `jobs` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `queue` varchar(255) NOT NULL,
-  `payload` longtext NOT NULL,
-  `attempts` tinyint(3) UNSIGNED NOT NULL,
-  `reserved_at` int(10) UNSIGNED DEFAULT NULL,
-  `available_at` int(10) UNSIGNED NOT NULL,
-  `created_at` int(10) UNSIGNED NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `pagos` (
+  `id_pago` varchar(10) NOT NULL,
+  `nit_empresa` varchar(25) NOT NULL,
+  `id_plan` int(10) NOT NULL,
+  `paypal_order_id` varchar(100) NOT NULL,
+  `paypal_payer_id` varchar(100) NOT NULL,
+  `monto` decimal(10,2) NOT NULL,
+  `moneda` varchar(10) NOT NULL,
+  `id_est_pago` enum('CREATED','APPROVED','COMPLETE','FAILED','CANCELLED') NOT NULL,
+  `entorno` enum('SANDBOX','PRODUCTION','','') NOT NULL,
+  `payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`payload`)),
+  `fecha_pago` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `job_batches`
+-- Table structure for table `plan`
 --
 
-CREATE TABLE `job_batches` (
-  `id` varchar(255) NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `total_jobs` int(11) NOT NULL,
-  `pending_jobs` int(11) NOT NULL,
-  `failed_jobs` int(11) NOT NULL,
-  `failed_job_ids` longtext NOT NULL,
-  `options` mediumtext DEFAULT NULL,
-  `cancelled_at` int(11) DEFAULT NULL,
-  `created_at` int(11) NOT NULL,
-  `finished_at` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `migrations`
---
-
-CREATE TABLE `migrations` (
-  `id` int(10) UNSIGNED NOT NULL,
-  `migration` varchar(255) NOT NULL,
-  `batch` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `migrations`
---
-
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
-(1, '0001_01_01_000000_create_users_table', 1),
-(2, '0001_01_01_000001_create_cache_table', 1),
-(3, '0001_01_01_000002_create_jobs_table', 1);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `password_reset_tokens`
---
-
-CREATE TABLE `password_reset_tokens` (
-  `email` varchar(255) NOT NULL,
-  `token` varchar(255) NOT NULL,
-  `created_at` timestamp NULL DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE `plan` (
+  `id_plan` int(10) NOT NULL,
+  `nomb_plan` varchar(50) NOT NULL,
+  `valor` int(12) NOT NULL,
+  `descripcion` varchar(255) NOT NULL,
+  `duracion` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -283,11 +237,14 @@ CREATE TABLE `recibido` (
 
 CREATE TABLE `remitente` (
   `rem_doc` int(20) NOT NULL,
-  `rem_nombres` varchar(50) DEFAULT NULL,
-  `rem_apellidos` varchar(50) DEFAULT NULL,
-  `rem_correo` varchar(255) DEFAULT NULL,
-  `rem_tel` varchar(20) DEFAULT NULL,
-  `rem_ciudad` int(10) DEFAULT NULL
+  `nit_empresa` varchar(25) NOT NULL,
+  `rem_nombres` varchar(50) NOT NULL,
+  `rem_apellidos` varchar(50) NOT NULL,
+  `rem_correo` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `rem_tel` varchar(20) NOT NULL,
+  `rem_ciudad` int(10) NOT NULL,
+  `rem_estado` int(10) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -301,20 +258,14 @@ CREATE TABLE `rol` (
   `rol_nom` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `sessions`
+-- Dumping data for table `rol`
 --
 
-CREATE TABLE `sessions` (
-  `id` varchar(255) NOT NULL,
-  `user_id` bigint(20) UNSIGNED DEFAULT NULL,
-  `ip_address` varchar(45) DEFAULT NULL,
-  `user_agent` text DEFAULT NULL,
-  `payload` longtext NOT NULL,
-  `last_activity` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+INSERT INTO `rol` (`id_rol`, `rol_nom`) VALUES
+(1, 'SuperAdmin'),
+(2, 'AdminEmpresa'),
+(3, 'Empleado');
 
 -- --------------------------------------------------------
 
@@ -328,23 +279,6 @@ CREATE TABLE `tipo` (
   `id_prioridad` int(10) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
-
---
--- Table structure for table `users`
---
-
-CREATE TABLE `users` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `email_verified_at` timestamp NULL DEFAULT NULL,
-  `password` varchar(255) NOT NULL,
-  `remember_token` varchar(100) DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 --
 -- Indexes for dumped tables
 --
@@ -354,20 +288,6 @@ CREATE TABLE `users` (
 --
 ALTER TABLE `area`
   ADD PRIMARY KEY (`id_area`);
-
---
--- Indexes for table `cache`
---
-ALTER TABLE `cache`
-  ADD PRIMARY KEY (`key`),
-  ADD KEY `cache_expiration_index` (`expiration`);
-
---
--- Indexes for table `cache_locks`
---
-ALTER TABLE `cache_locks`
-  ADD PRIMARY KEY (`key`),
-  ADD KEY `cache_locks_expiration_index` (`expiration`);
 
 --
 -- Indexes for table `ciudad`
@@ -398,7 +318,14 @@ ALTER TABLE `empleado`
   ADD PRIMARY KEY (`emple_doc`),
   ADD KEY `emple_estado` (`emple_estado`),
   ADD KEY `emple_rol` (`emple_rol`),
-  ADD KEY `emple_area` (`emple_area`);
+  ADD KEY `emple_area` (`emple_area`),
+  ADD KEY `nit_empresa` (`nit_empresa`);
+
+--
+-- Indexes for table `empresa`
+--
+ALTER TABLE `empresa`
+  ADD PRIMARY KEY (`nit_empresa`);
 
 --
 -- Indexes for table `envio`
@@ -418,36 +345,27 @@ ALTER TABLE `estado`
   ADD PRIMARY KEY (`id_estado`);
 
 --
--- Indexes for table `failed_jobs`
+-- Indexes for table `licencia`
 --
-ALTER TABLE `failed_jobs`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `failed_jobs_uuid_unique` (`uuid`);
+ALTER TABLE `licencia`
+  ADD PRIMARY KEY (`id_licencia`),
+  ADD KEY `id_plan` (`id_plan`),
+  ADD KEY `nit_empresa` (`nit_empresa`),
+  ADD KEY `id_estado` (`id_estado`);
 
 --
--- Indexes for table `jobs`
+-- Indexes for table `pagos`
 --
-ALTER TABLE `jobs`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `jobs_queue_index` (`queue`);
+ALTER TABLE `pagos`
+  ADD PRIMARY KEY (`id_pago`),
+  ADD KEY `nit_empresa` (`nit_empresa`),
+  ADD KEY `id_plan` (`id_plan`);
 
 --
--- Indexes for table `job_batches`
+-- Indexes for table `plan`
 --
-ALTER TABLE `job_batches`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `migrations`
---
-ALTER TABLE `migrations`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `password_reset_tokens`
---
-ALTER TABLE `password_reset_tokens`
-  ADD PRIMARY KEY (`email`);
+ALTER TABLE `plan`
+  ADD PRIMARY KEY (`id_plan`);
 
 --
 -- Indexes for table `prioridad`
@@ -479,7 +397,9 @@ ALTER TABLE `recibido`
 --
 ALTER TABLE `remitente`
   ADD PRIMARY KEY (`rem_doc`),
-  ADD KEY `rem_ciudad` (`rem_ciudad`);
+  ADD KEY `rem_ciudad` (`rem_ciudad`),
+  ADD KEY `rem_estado` (`rem_estado`),
+  ADD KEY `nit_empresa` (`nit_empresa`);
 
 --
 -- Indexes for table `rol`
@@ -488,26 +408,11 @@ ALTER TABLE `rol`
   ADD PRIMARY KEY (`id_rol`);
 
 --
--- Indexes for table `sessions`
---
-ALTER TABLE `sessions`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `sessions_user_id_index` (`user_id`),
-  ADD KEY `sessions_last_activity_index` (`last_activity`);
-
---
 -- Indexes for table `tipo`
 --
 ALTER TABLE `tipo`
   ADD PRIMARY KEY (`id_tipo`),
   ADD KEY `id_prioridad` (`id_prioridad`);
-
---
--- Indexes for table `users`
---
-ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `users_email_unique` (`email`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -520,34 +425,10 @@ ALTER TABLE `detalle_envio`
   MODIFY `id_detalle` int(10) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `failed_jobs`
---
-ALTER TABLE `failed_jobs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `jobs`
---
-ALTER TABLE `jobs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `migrations`
---
-ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
 -- AUTO_INCREMENT for table `radicados`
 --
 ALTER TABLE `radicados`
   MODIFY `id_radicado` int(10) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `users`
---
-ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- Constraints for dumped tables
@@ -573,7 +454,8 @@ ALTER TABLE `detalle_envio`
 ALTER TABLE `empleado`
   ADD CONSTRAINT `empleado_ibfk_1` FOREIGN KEY (`emple_estado`) REFERENCES `estado` (`id_estado`),
   ADD CONSTRAINT `empleado_ibfk_2` FOREIGN KEY (`emple_rol`) REFERENCES `rol` (`id_rol`),
-  ADD CONSTRAINT `empleado_ibfk_3` FOREIGN KEY (`emple_area`) REFERENCES `area` (`id_area`);
+  ADD CONSTRAINT `empleado_ibfk_3` FOREIGN KEY (`emple_area`) REFERENCES `area` (`id_area`),
+  ADD CONSTRAINT `empleado_ibfk_4` FOREIGN KEY (`nit_empresa`) REFERENCES `empresa` (`nit_empresa`);
 
 --
 -- Constraints for table `envio`
@@ -584,6 +466,21 @@ ALTER TABLE `envio`
   ADD CONSTRAINT `envio_ibfk_4` FOREIGN KEY (`id_tipo_envio`) REFERENCES `tipo` (`id_tipo`),
   ADD CONSTRAINT `envio_ibfk_5` FOREIGN KEY (`id_estado_envio`) REFERENCES `estado` (`id_estado`),
   ADD CONSTRAINT `envio_ibfk_6` FOREIGN KEY (`num_radicado_int`) REFERENCES `radicados` (`id_radicado`);
+
+--
+-- Constraints for table `licencia`
+--
+ALTER TABLE `licencia`
+  ADD CONSTRAINT `licencia_ibfk_1` FOREIGN KEY (`id_plan`) REFERENCES `plan` (`id_plan`),
+  ADD CONSTRAINT `licencia_ibfk_2` FOREIGN KEY (`nit_empresa`) REFERENCES `empresa` (`nit_empresa`),
+  ADD CONSTRAINT `licencia_ibfk_3` FOREIGN KEY (`id_estado`) REFERENCES `estado` (`id_estado`);
+
+--
+-- Constraints for table `pagos`
+--
+ALTER TABLE `pagos`
+  ADD CONSTRAINT `pagos_ibfk_1` FOREIGN KEY (`nit_empresa`) REFERENCES `empresa` (`nit_empresa`),
+  ADD CONSTRAINT `pagos_ibfk_2` FOREIGN KEY (`id_plan`) REFERENCES `plan` (`id_plan`);
 
 --
 -- Constraints for table `radicados`
@@ -606,7 +503,9 @@ ALTER TABLE `recibido`
 -- Constraints for table `remitente`
 --
 ALTER TABLE `remitente`
-  ADD CONSTRAINT `remitente_ibfk_1` FOREIGN KEY (`rem_ciudad`) REFERENCES `ciudad` (`id_ciudad`);
+  ADD CONSTRAINT `remitente_ibfk_1` FOREIGN KEY (`rem_ciudad`) REFERENCES `ciudad` (`id_ciudad`),
+  ADD CONSTRAINT `remitente_ibfk_2` FOREIGN KEY (`rem_estado`) REFERENCES `estado` (`id_estado`),
+  ADD CONSTRAINT `remitente_ibfk_3` FOREIGN KEY (`nit_empresa`) REFERENCES `empresa` (`nit_empresa`);
 
 --
 -- Constraints for table `tipo`
