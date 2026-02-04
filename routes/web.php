@@ -1,5 +1,6 @@
 <?php
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Sadmin\UsuarioController;
 
 // Ruta para redirigir directamente al login una vez abra el proyecto
 Route::get('/', function () {
@@ -20,6 +21,9 @@ Route::get('/sadmin/licencias', function () {
 Route::get('/sadmin/usuarios', function () {
     return view('sadmin.cusers');
 })->name('cusers');
+//esta vista envia datos para mostrar en tabla
+Route::get('/sadmin/usuarios', [UsuarioController::class, 'index'])
+    ->name('cusers');
 // Vista historial
 Route::get('/sadmin/historial', function () {
     return view('sadmin.historial');
