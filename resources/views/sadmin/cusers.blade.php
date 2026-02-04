@@ -81,7 +81,7 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     <span
-                                        class="text-sm text-[#4c669a] dark:text-gray-400 underline decoration-primary/30"></span>
+                                        class="text-sm text-[#4c669a] dark:text-gray-400 underline decoration-primary/30">{{ $user->emple_correo }}<span>
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="flex flex-col">

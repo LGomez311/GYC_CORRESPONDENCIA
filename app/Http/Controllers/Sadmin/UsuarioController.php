@@ -9,7 +9,11 @@ class UsuarioController extends Controller
 {
     public function index()
     {
-        $users = Empleado::with(['rol'])->get();
+        $users = Empleado::with(['rol', 'estado'])->get();
+
+        return view('sadmin.cusers', compact('users'));
+
+        $users = Empleado::with(['rol', 'estado'])->get();
 
         return view('sadmin.cusers', compact('users'));
     }
