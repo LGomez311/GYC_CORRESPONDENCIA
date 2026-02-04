@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 04, 2026 at 10:05 PM
+-- Generation Time: Feb 04, 2026 at 10:19 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -132,7 +132,9 @@ INSERT INTO `empleado` (`emple_doc`, `nit_empresa`, `password`, `emple_nombres`,
 CREATE TABLE `empresa` (
   `nit_empresa` varchar(25) NOT NULL,
   `nomb_empresa` varchar(50) NOT NULL,
-  `direccion` varchar(50) NOT NULL
+  `direccion` varchar(50) NOT NULL,
+  `contacto` varchar(100) NOT NULL,
+  `empresa_correo` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -411,7 +413,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('kXlpzQL25QFhJa8Wpkx8x9NUwZZUQRqeD0i07XJ6', 1001, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiUTFiU1lNYmY4RXhaN0oxeVQxU21wbFhJZENlTmcyOVJGa3YyVm1idiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zYWRtaW4vdXN1YXJpb3MiO3M6NToicm91dGUiO3M6NjoiY3VzZXJzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MTAwMTt9', 1770237461);
+('kXlpzQL25QFhJa8Wpkx8x9NUwZZUQRqeD0i07XJ6', 1001, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiUTFiU1lNYmY4RXhaN0oxeVQxU21wbFhJZENlTmcyOVJGa3YyVm1idiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zYWRtaW4vdXN1YXJpb3MiO3M6NToicm91dGUiO3M6NjoiY3VzZXJzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MTAwMTt9', 1770239457);
 
 -- --------------------------------------------------------
 
