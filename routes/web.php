@@ -6,11 +6,16 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-// Vistas del super admin, index
 
+// Vistas del super admin, index
+// Vista index
 Route::get('/sadmin', function () {
     return view('sadmin.index');
 });
+// Vista empresas
+Route::get('/sadmin', function () {
+    return view('sadmin.empresas');
+})->name('empresas');
 
 // Mostrar formulario de login
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');

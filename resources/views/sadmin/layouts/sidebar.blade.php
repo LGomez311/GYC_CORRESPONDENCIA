@@ -1,0 +1,86 @@
+<!-- Sidebar -->
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "primary": "#135bec",
+                    "background-light": "#f6f6f8",
+                    "background-dark": "#101622",
+                },
+                fontFamily: {
+                    "display": ["Public Sans"]
+                },
+                borderRadius: {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+                },
+            },
+        },
+    }
+</script>
+<aside
+    class="w-64 flex-shrink-0 border-r border-[#cfd7e7] dark:border-gray-800 bg-white dark:bg-[#161d2b] flex flex-col">
+    <div class="p-6 flex items-center gap-3">
+        <div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
+            <span class="material-symbols-outlined">shield_person</span>
+        </div>
+        <h2 class="text-[#0d121b] dark:text-white text-lg font-bold leading-tight tracking-tight">Nombre de la empresa</h2>
+    </div>
+    <nav class="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
+        <div class="flex flex-col gap-1">
+            <h1 class="text-[#4c669a] dark:text-gray-400 text-[10px] uppercase font-bold px-3 py-2">Gestión Central</h1>
+            <a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary"
+                href="{{ route('sadmin.index') }}">
+                <span class="material-symbols-outlined">dashboard</span>
+                <p class="text-sm font-medium">Resumen</p>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2 text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                href="#">
+                <span class="material-symbols-outlined">vpn_key</span>
+                <p class="text-sm font-medium">Activaciones</p>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2 text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                href="#">
+                <span class="material-symbols-outlined">autorenew</span>
+                <p class="text-sm font-medium">Renovaciones</p>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2 text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                href="#">
+                <span class="material-symbols-outlined">bar_chart</span>
+                <p class="text-sm font-medium">Reportes</p>
+            </a>
+            <h1 class="text-[#4c669a] dark:text-gray-400 text-[10px] uppercase font-bold px-3 py-2 mt-4">Sistema</h1>
+            <a class="flex items-center gap-3 px-3 py-2 text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                href="{{ route('empresas') }}">
+                <span class="material-symbols-outlined">corporate_fare</span>
+                <p class="text-sm font-medium">Licencia</p>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2 text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                href="#">
+                <span class="material-symbols-outlined">group</span>
+                <p class="text-sm font-medium">Usuarios</p>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2 text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                href="#">
+                <span class="material-symbols-outlined">settings</span>
+                <p class="text-sm font-medium">Configuración</p>
+            </a>
+        </div>
+    </nav>
+    <div class="p-4 border-t border-[#cfd7e7] dark:border-gray-800">
+        <div class="flex items-center gap-3 px-2">
+            <div class="size-10 rounded-full bg-cover bg-center border-2 border-primary/20"
+                data-alt="Avatar de usuario super administrador"
+                style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDJcGRY-BUZTWEM5ibdEl0CAPx6S68HRHNI75XLKXGYO_z1Yd7z2gBTZpw0ZjxccQMZRPFckRBrh-k7UE4xhSIaLL0haUdYWhwJV-R6N0qYwl3sPmvAFlE9FWn1Q5cnjIBQhPIHL_W1uUjO8qxMuQot0PIQwxRKisYbuWi7hiavy--o7Mj7AxnATmf44PtXGyJwvy_d7zhcMujMnynV0amQBSz0Zd2oZuguH4G1yeeA5wQUDqNieSzOs_pwq9oJk6WCOwYWzncf6FA");'>
+            </div>
+            <div class="overflow-hidden">
+                <p class="text-sm font-bold truncate dark:text-white">{{ auth()->user()->rol->rol_nom }}</p>
+                <p class="text-xs text-[#4c669a] truncate dark:text-gray-400">{{ auth()->user()->emple_nombres }} {{ auth()->user()->emple_apellidos }}</p>
+            </div>
+        </div>
+    </div>
+</aside>
