@@ -12,10 +12,18 @@ Route::get('/', function () {
 Route::get('/sadmin', function () {
     return view('sadmin.index');
 });
-// Vista empresas
-Route::get('/sadmin', function () {
-    return view('sadmin.empresas');
-})->name('empresas');
+// Vista crear  licencias
+Route::get('/sadmin/licencias', function () {
+    return view('sadmin.clicencias');
+})->name('clicencias');
+// vista cusers
+Route::get('/sadmin/usuarios', function () {
+    return view('sadmin.cusers');
+})->name('cusers');
+// Vista historial
+Route::get('/sadmin/historial', function () {
+    return view('sadmin.historial');
+})->name('historial');
 
 // Mostrar formulario de login
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
