@@ -42,18 +42,18 @@
             <a class="flex items-center gap-3 px-3 py-2 text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                 href="{{ route('historial') }}">
                 <span class="material-symbols-outlined">bar_chart</span>
-                <p class="text-sm font-medium">Historial licencias</p>
+                <p class="text-sm font-medium">Empresas</p>
             </a>
             
             <a class="flex items-center gap-3 px-3 py-2 text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-                href="{{ route('clicencias') }}">
+                href="{{ route('cplanes') }}">
                 <span class="material-symbols-outlined">corporate_fare</span>
-                <p class="text-sm font-medium">Crear Licencias</p>
+                <p class="text-sm font-medium">Planes</p>
             </a>
             <a class="flex items-center gap-3 px-3 py-2 text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                 href="{{ route('cusers') }}">
                 <span class="material-symbols-outlined">group</span>
-                <p class="text-sm font-medium">Crear Usuarios</p>
+                <p class="text-sm font-medium">Administradores</p>
             </a>
             <a class="flex items-center gap-3 px-3 py-2 text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                 href="#">

@@ -14,9 +14,9 @@ Route::get('/sadmin', function () {
     return view('sadmin.index');
 });
 // Vista crear  licencias
-Route::get('/sadmin/licencias', function () {
-    return view('sadmin.clicencias');
-})->name('clicencias');
+Route::get('/sadmin/planes', function () {
+    return view('sadmin.cplanes');
+})->name('cplanes');
 // vista cusers
 Route::get('/sadmin/usuarios', function () {
     return view('sadmin.cusers');
