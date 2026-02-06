@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 04, 2026 at 10:19 PM
+-- Generation Time: Feb 06, 2026 at 07:13 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -234,9 +234,10 @@ CREATE TABLE `job_batches` (
 --
 
 CREATE TABLE `licencia` (
-  `id_licencia` int(10) NOT NULL,
+  `nit_empresa` varchar(25) NOT NULL,
   `id_plan` int(10) NOT NULL,
   `id_estado` int(20) NOT NULL,
+  `id_pago` varchar(10) NOT NULL,
   `fecha_inicio` datetime NOT NULL,
   `fecha_fin` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -305,7 +306,7 @@ CREATE TABLE `plan` (
   `nomb_plan` varchar(50) NOT NULL,
   `valor` int(12) NOT NULL,
   `descripcion` varchar(255) NOT NULL,
-  `duracion` varchar(255) NOT NULL
+  `duracion` int(10) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -413,7 +414,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('kXlpzQL25QFhJa8Wpkx8x9NUwZZUQRqeD0i07XJ6', 1001, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiUTFiU1lNYmY4RXhaN0oxeVQxU21wbFhJZENlTmcyOVJGa3YyVm1idiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zYWRtaW4vdXN1YXJpb3MiO3M6NToicm91dGUiO3M6NjoiY3VzZXJzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MTAwMTt9', 1770239457);
+('kXlpzQL25QFhJa8Wpkx8x9NUwZZUQRqeD0i07XJ6', 1001, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiUTFiU1lNYmY4RXhaN0oxeVQxU21wbFhJZENlTmcyOVJGa3YyVm1idiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzg6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zYWRtaW4vaGlzdG9yaWFsIjtzOjU6InJvdXRlIjtzOjk6Imhpc3RvcmlhbCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjEwMDE7fQ==', 1770241672);
 
 -- --------------------------------------------------------
 
@@ -554,9 +555,10 @@ ALTER TABLE `job_batches`
 -- Indexes for table `licencia`
 --
 ALTER TABLE `licencia`
-  ADD PRIMARY KEY (`id_licencia`),
+  ADD PRIMARY KEY (`nit_empresa`),
   ADD KEY `id_plan` (`id_plan`),
-  ADD KEY `id_estado` (`id_estado`);
+  ADD KEY `id_estado` (`id_estado`),
+  ADD KEY `id_pago` (`id_pago`);
 
 --
 -- Indexes for table `migrations`
@@ -714,6 +716,12 @@ ALTER TABLE `empleado`
   ADD CONSTRAINT `empleado_ibfk_4` FOREIGN KEY (`nit_empresa`) REFERENCES `empresa` (`nit_empresa`);
 
 --
+-- Constraints for table `empresa`
+--
+ALTER TABLE `empresa`
+  ADD CONSTRAINT `empresa_ibfk_1` FOREIGN KEY (`nit_empresa`) REFERENCES `licencia` (`nit_empresa`);
+
+--
 -- Constraints for table `envio`
 --
 ALTER TABLE `envio`
@@ -728,14 +736,8 @@ ALTER TABLE `envio`
 --
 ALTER TABLE `licencia`
   ADD CONSTRAINT `licencia_ibfk_1` FOREIGN KEY (`id_plan`) REFERENCES `plan` (`id_plan`),
-  ADD CONSTRAINT `licencia_ibfk_3` FOREIGN KEY (`id_estado`) REFERENCES `estado` (`id_estado`);
-
---
--- Constraints for table `pagos`
---
-ALTER TABLE `pagos`
-  ADD CONSTRAINT `pagos_ibfk_1` FOREIGN KEY (`nit_empresa`) REFERENCES `empresa` (`nit_empresa`),
-  ADD CONSTRAINT `pagos_ibfk_2` FOREIGN KEY (`id_plan`) REFERENCES `plan` (`id_plan`);
+  ADD CONSTRAINT `licencia_ibfk_3` FOREIGN KEY (`id_estado`) REFERENCES `estado` (`id_estado`),
+  ADD CONSTRAINT `licencia_ibfk_4` FOREIGN KEY (`id_pago`) REFERENCES `pagos` (`id_pago`);
 
 --
 -- Constraints for table `radicados`
