@@ -24,10 +24,10 @@ Route::get('/sadmin/usuarios', function () {
 //esta vista envia datos para mostrar en tabla
 Route::get('/sadmin/usuarios', [UsuarioController::class, 'index'])
     ->name('cusers');
-// Vista historial
-Route::get('/sadmin/historial', function () {
-    return view('sadmin.historial');
-})->name('historial');
+// Vista empresas crud
+Route::get('/sadmin/empresas', function () {
+    return view('sadmin.empresas');
+})->name('empresas');
 
 // Mostrar formulario de login
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
