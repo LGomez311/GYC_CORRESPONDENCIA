@@ -22,55 +22,101 @@
         },
     }
 </script>
+
 <aside
     class="w-64 flex-shrink-0 border-r border-[#cfd7e7] dark:border-gray-800 bg-white dark:bg-[#161d2b] flex flex-col">
+    
     <div class="p-6 flex items-center gap-3">
         <div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
             <span class="material-symbols-outlined">shield_person</span>
         </div>
-        <h2 class="text-[#0d121b] dark:text-white text-lg font-bold leading-tight tracking-tight">Nombre de la empresa</h2>
+        <h2 class="text-[#0d121b] dark:text-white text-lg font-bold leading-tight tracking-tight">
+            Nombre de la empresa
+        </h2>
     </div>
+
     <nav class="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
         <div class="flex flex-col gap-1">
-            <h1 class="text-[#4c669a] dark:text-gray-400 text-[10px] uppercase font-bold px-3 py-2">Gestión Central</h1>
-            <a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary"
-                href="{{ route('sadmin.index') }}">
+            <h1 class="text-[#4c669a] dark:text-gray-400 text-[10px] uppercase font-bold px-3 py-2">
+                Gestión Central
+            </h1>
+
+            <!-- Resumen -->
+            <a
+                href="{{ route('sadmin.index') }}"
+                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
+                {{ request()->routeIs('sadmin.index')
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                }}">
                 <span class="material-symbols-outlined">dashboard</span>
                 <p class="text-sm font-medium">Resumen</p>
             </a>
-            
-            <a class="flex items-center gap-3 px-3 py-2 text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-                href="{{ route('historial') }}">
+
+            <!-- Empresas -->
+            <a
+                href="{{ route('empresas') }}"
+                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
+                {{ request()->routeIs('empresas*')
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                }}">
                 <span class="material-symbols-outlined">bar_chart</span>
-                <p class="text-sm font-medium">Historial licencias</p>
+                <p class="text-sm font-medium">Empresas</p>
             </a>
-            
-            <a class="flex items-center gap-3 px-3 py-2 text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-                href="{{ route('clicencias') }}">
+
+            <!-- Planes -->
+            <a
+                href="{{ route('cplanes') }}"
+                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
+                {{ request()->routeIs('cplanes*')
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                }}">
                 <span class="material-symbols-outlined">corporate_fare</span>
-                <p class="text-sm font-medium">Crear Licencias</p>
+                <p class="text-sm font-medium">Planes</p>
             </a>
-            <a class="flex items-center gap-3 px-3 py-2 text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-                href="{{ route('cusers') }}">
+
+            <!-- Administradores -->
+            <a
+                href="{{ route('admins') }}"
+                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
+                {{ request()->routeIs('admins*')
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                }}">
                 <span class="material-symbols-outlined">group</span>
-                <p class="text-sm font-medium">Crear Usuarios</p>
+                <p class="text-sm font-medium">Administradores</p>
             </a>
-            <a class="flex items-center gap-3 px-3 py-2 text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-                href="#">
+
+            <!-- Configuración -->
+            <a
+                href="#"
+                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
+                {{ request()->routeIs('configuracion*')
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                }}">
                 <span class="material-symbols-outlined">settings</span>
                 <p class="text-sm font-medium">Configuración</p>
             </a>
+
         </div>
     </nav>
+
     <div class="p-4 border-t border-[#cfd7e7] dark:border-gray-800">
         <div class="flex items-center gap-3 px-2">
-            <div class="size-10 rounded-full bg-cover bg-center border-2 border-primary/20"
-                data-alt="Avatar de usuario super administrador"
+            <div
+                class="size-10 rounded-full bg-cover bg-center border-2 border-primary/20"
                 style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDJcGRY-BUZTWEM5ibdEl0CAPx6S68HRHNI75XLKXGYO_z1Yd7z2gBTZpw0ZjxccQMZRPFckRBrh-k7UE4xhSIaLL0haUdYWhwJV-R6N0qYwl3sPmvAFlE9FWn1Q5cnjIBQhPIHL_W1uUjO8qxMuQot0PIQwxRKisYbuWi7hiavy--o7Mj7AxnATmf44PtXGyJwvy_d7zhcMujMnynV0amQBSz0Zd2oZuguH4G1yeeA5wQUDqNieSzOs_pwq9oJk6WCOwYWzncf6FA");'>
             </div>
             <div class="overflow-hidden">
-                <p class="text-sm font-bold truncate dark:text-white">{{ auth()->user()->rol->rol_nom }}</p>
-                <p class="text-xs text-[#4c669a] truncate dark:text-gray-400">{{ auth()->user()->emple_nombres }} {{ auth()->user()->emple_apellidos }}</p>
+                <p class="text-sm font-bold truncate dark:text-white">
+                    {{ auth()->user()->rol->rol_nom }}
+                </p>
+                <p class="text-xs text-[#4c669a] truncate dark:text-gray-400">
+                    {{ auth()->user()->emple_nombres }} {{ auth()->user()->emple_apellidos }}
+                </p>
             </div>
         </div>
     </div>

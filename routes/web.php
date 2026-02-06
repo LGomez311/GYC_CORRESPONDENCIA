@@ -1,5 +1,7 @@
 <?php
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Sadmin\UsuarioController;
+use App\Http\Controllers\Sadmin\PlanController;
 
 // Ruta para redirigir directamente al login una vez abra el proyecto
 Route::get('/', function () {
@@ -13,17 +15,20 @@ Route::get('/sadmin', function () {
     return view('sadmin.index');
 });
 // Vista crear  licencias
-Route::get('/sadmin/licencias', function () {
-    return view('sadmin.clicencias');
-})->name('clicencias');
-// vista cusers
-Route::get('/sadmin/usuarios', function () {
-    return view('sadmin.cusers');
-})->name('cusers');
-// Vista historial
-Route::get('/sadmin/historial', function () {
-    return view('sadmin.historial');
-})->name('historial');
+Route::get('/sadmin/planes', function () {
+    return view('sadmin.cplanes');
+})->name('cplanes');
+// vista admins
+Route::get('/sadmin/admins', function () {
+    return view('sadmin.admins');
+})->name('admins');
+//esta vista envia datos para mostrar en tabla
+Route::get('/sadmin/admins', [UsuarioController::class, 'index'])
+    ->name('admins');
+// Vista empresas crud
+Route::get('/sadmin/empresas', function () {
+    return view('sadmin.empresas');
+})->name('empresas');
 
 // Mostrar formulario de login
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -45,3 +50,26 @@ Route::middleware('auth:remitente')->group(function () {
     Route::get('/remitente', fn() => view('remitente.index'))->name('remitente.index');
 });
 
+
+
+// Rutas del admin
+
+Route::get('/correspondencia', function () {
+    return view('admin.correspondencia');
+})->name('correspondencia');
+
+Route::get('/resumen', function () {
+    return view('admin.index');
+})->name('resumen');
+
+Route::get('/usuarios', function () {
+    return view('admin.usuarios');
+})->name('usuarios');
+
+// rutas del plan 
+    Route::prefix('sadmin')->group(function () {
+    Route::get('/planes', [PlanController::class, 'index'])->name('cplanes');
+    Route::post('/planes', [PlanController::class, 'store'])->name('planes.store');
+    Route::put('sadmin/planes/{id}', [PlanController::class, 'update'])->name('planes.update');
+    Route::delete('sadmin/planes/{id}', [PlanController::class, 'destroy'])->name('planes.destroy');
+});
