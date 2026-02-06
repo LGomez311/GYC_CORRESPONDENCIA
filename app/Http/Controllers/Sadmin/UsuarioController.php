@@ -11,10 +11,10 @@ class UsuarioController extends Controller
     {
         $users = Empleado::with(['rol', 'estado'])->get();
 
-        return view('sadmin.cusers', compact('users'));
+        return view('sadmin.admins', compact('users'));
 
         $users = Empleado::with(['rol', 'estado'])->get();
 
-        return view('sadmin.cusers', compact('users'));
+        return view('sadmin.admins', compact('users'));
     }
 }

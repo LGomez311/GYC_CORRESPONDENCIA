@@ -17,13 +17,13 @@ Route::get('/sadmin', function () {
 Route::get('/sadmin/planes', function () {
     return view('sadmin.cplanes');
 })->name('cplanes');
-// vista cusers
-Route::get('/sadmin/usuarios', function () {
-    return view('sadmin.cusers');
-})->name('cusers');
+// vista admins
+Route::get('/sadmin/admins', function () {
+    return view('sadmin.admins');
+})->name('admins');
 //esta vista envia datos para mostrar en tabla
-Route::get('/sadmin/usuarios', [UsuarioController::class, 'index'])
-    ->name('cusers');
+Route::get('/sadmin/admins', [UsuarioController::class, 'index'])
+    ->name('admins');
 // Vista empresas crud
 Route::get('/sadmin/empresas', function () {
     return view('sadmin.empresas');
