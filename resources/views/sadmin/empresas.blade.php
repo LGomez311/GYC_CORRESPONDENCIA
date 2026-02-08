@@ -1,10 +1,6 @@
 @extends('sadmin.layouts.app')
 
-<<<<<<< Updated upstream
 @section('title', 'Panel de Licencias')
-=======
-@section('title', 'Gestión de Empresas')
->>>>>>> Stashed changes
 
 @section('content')
     <div class="p-8 max-w-7xl mx-auto w-full">

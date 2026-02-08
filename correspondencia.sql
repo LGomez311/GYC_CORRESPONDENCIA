@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 04, 2026 at 06:52 PM
+-- Generation Time: Feb 06, 2026 at 07:13 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -119,9 +119,9 @@ CREATE TABLE `empleado` (
 --
 
 INSERT INTO `empleado` (`emple_doc`, `nit_empresa`, `password`, `emple_nombres`, `emple_apellidos`, `emple_tel`, `emple_correo`, `emple_img`, `emple_estado`, `emple_rol`, `emple_area`) VALUES
-(1001, NULL, '$2y$12$vqIZluDYX17pd8pwBmw3/.PK3F740UOHqZuYfTO/qkh0Ygn64.a9e', 'Kevin', 'Villafrade', NULL, 'kevin@gmail.com', NULL, NULL, 1, NULL),
-(1002, NULL, '$2y$12$eKhYvv4ZHUP7nGpcSjC2G.5wJ.7VOBh1osAu.6fMDhbxvf/S92y6m', 'Luis', 'Gomez', NULL, 'luis@gmail.com', NULL, NULL, 2, NULL),
-(1003, NULL, '$2y$12$SogsRefeihhrp.m4ZM.4qe4jdJgxdszAw6zrpzQnRgul93B3cID4y', 'Yuber', 'Paez', NULL, 'yuber@gmail.com', NULL, NULL, 3, NULL);
+(1001, NULL, '$2y$12$ipkGIRI86WapHF7i9cT6meu.6aVgg.qox1Y7t1Ek5hCE8ISDIb/c2', 'Kevin', 'Villafrade', NULL, 'kevin@gmail.com', NULL, 1, 1, NULL),
+(1002, NULL, '$2y$12$LWO14So.uSotCedN4ZOsbedPxbXwu1Fer2DwScs0Rz1gybCkV2xBO', 'Luis', 'Gomez', NULL, 'luis@gmail.com', NULL, 1, 2, NULL),
+(1003, NULL, '$2y$12$D/IFN/RIgdO.pfvfZql2WulD8j8abFaYrOdKC/JqJHTDheJ.avaOO', 'Yuber', 'Paez', NULL, 'yuber@gmail.com', NULL, 1, 3, NULL);
 
 -- --------------------------------------------------------
 
@@ -132,7 +132,9 @@ INSERT INTO `empleado` (`emple_doc`, `nit_empresa`, `password`, `emple_nombres`,
 CREATE TABLE `empresa` (
   `nit_empresa` varchar(25) NOT NULL,
   `nomb_empresa` varchar(50) NOT NULL,
-  `direccion` varchar(50) NOT NULL
+  `direccion` varchar(50) NOT NULL,
+  `contacto` varchar(100) NOT NULL,
+  `empresa_correo` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -165,6 +167,14 @@ CREATE TABLE `estado` (
   `id_estado` int(20) NOT NULL,
   `estado_nomb` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `estado`
+--
+
+INSERT INTO `estado` (`id_estado`, `estado_nomb`) VALUES
+(1, 'Activo'),
+(2, 'Inactivo');
 
 -- --------------------------------------------------------
 
@@ -224,10 +234,10 @@ CREATE TABLE `job_batches` (
 --
 
 CREATE TABLE `licencia` (
-  `id_licencia` int(10) NOT NULL,
-  `id_plan` int(10) NOT NULL,
   `nit_empresa` varchar(25) NOT NULL,
+  `id_plan` int(10) NOT NULL,
   `id_estado` int(20) NOT NULL,
+  `id_pago` varchar(10) NOT NULL,
   `fecha_inicio` datetime NOT NULL,
   `fecha_fin` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -296,7 +306,7 @@ CREATE TABLE `plan` (
   `nomb_plan` varchar(50) NOT NULL,
   `valor` int(12) NOT NULL,
   `descripcion` varchar(255) NOT NULL,
-  `duracion` varchar(255) NOT NULL
+  `duracion` int(10) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -404,7 +414,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('1eJwxOH2oHBQkaJ94rJGgoZ3P2a3ysNLVISHchCI', 1001, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiQVd2QlR1WE1TV0tvMUpSR0NVVkQ0OUs4NGZTeXVVNTN6d2dKV0x1WCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjg6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zYWRtaW4iO3M6NToicm91dGUiO3M6ODoiZW1wcmVzYXMiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToxMDAxO30=', 1770227439);
+('kXlpzQL25QFhJa8Wpkx8x9NUwZZUQRqeD0i07XJ6', 1001, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiUTFiU1lNYmY4RXhaN0oxeVQxU21wbFhJZENlTmcyOVJGa3YyVm1idiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzg6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zYWRtaW4vaGlzdG9yaWFsIjtzOjU6InJvdXRlIjtzOjk6Imhpc3RvcmlhbCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjEwMDE7fQ==', 1770241672);
 
 -- --------------------------------------------------------
 
@@ -545,10 +555,10 @@ ALTER TABLE `job_batches`
 -- Indexes for table `licencia`
 --
 ALTER TABLE `licencia`
-  ADD PRIMARY KEY (`id_licencia`),
+  ADD PRIMARY KEY (`nit_empresa`),
   ADD KEY `id_plan` (`id_plan`),
-  ADD KEY `nit_empresa` (`nit_empresa`),
-  ADD KEY `id_estado` (`id_estado`);
+  ADD KEY `id_estado` (`id_estado`),
+  ADD KEY `id_pago` (`id_pago`);
 
 --
 -- Indexes for table `migrations`
@@ -706,6 +716,12 @@ ALTER TABLE `empleado`
   ADD CONSTRAINT `empleado_ibfk_4` FOREIGN KEY (`nit_empresa`) REFERENCES `empresa` (`nit_empresa`);
 
 --
+-- Constraints for table `empresa`
+--
+ALTER TABLE `empresa`
+  ADD CONSTRAINT `empresa_ibfk_1` FOREIGN KEY (`nit_empresa`) REFERENCES `licencia` (`nit_empresa`);
+
+--
 -- Constraints for table `envio`
 --
 ALTER TABLE `envio`
@@ -720,15 +736,8 @@ ALTER TABLE `envio`
 --
 ALTER TABLE `licencia`
   ADD CONSTRAINT `licencia_ibfk_1` FOREIGN KEY (`id_plan`) REFERENCES `plan` (`id_plan`),
-  ADD CONSTRAINT `licencia_ibfk_2` FOREIGN KEY (`nit_empresa`) REFERENCES `empresa` (`nit_empresa`),
-  ADD CONSTRAINT `licencia_ibfk_3` FOREIGN KEY (`id_estado`) REFERENCES `estado` (`id_estado`);
-
---
--- Constraints for table `pagos`
---
-ALTER TABLE `pagos`
-  ADD CONSTRAINT `pagos_ibfk_1` FOREIGN KEY (`nit_empresa`) REFERENCES `empresa` (`nit_empresa`),
-  ADD CONSTRAINT `pagos_ibfk_2` FOREIGN KEY (`id_plan`) REFERENCES `plan` (`id_plan`);
+  ADD CONSTRAINT `licencia_ibfk_3` FOREIGN KEY (`id_estado`) REFERENCES `estado` (`id_estado`),
+  ADD CONSTRAINT `licencia_ibfk_4` FOREIGN KEY (`id_pago`) REFERENCES `pagos` (`id_pago`);
 
 --
 -- Constraints for table `radicados`

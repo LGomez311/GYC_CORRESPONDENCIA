@@ -38,31 +38,22 @@
                 <span class="material-symbols-outlined">dashboard</span>
                 <p class="text-sm font-medium">Resumen</p>
             </a>
-            <a class="flex items-center gap-3 px-3 py-2 text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-                href="#">
-                <span class="material-symbols-outlined">vpn_key</span>
-                <p class="text-sm font-medium">Activaciones</p>
-            </a>
-            <a class="flex items-center gap-3 px-3 py-2 text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-                href="#">
-                <span class="material-symbols-outlined">autorenew</span>
-                <p class="text-sm font-medium">Renovaciones</p>
-            </a>
-            <a class="flex items-center gap-3 px-3 py-2 text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-                href="#">
-                <span class="material-symbols-outlined">bar_chart</span>
-                <p class="text-sm font-medium">Reportes</p>
-            </a>
-            <h1 class="text-[#4c669a] dark:text-gray-400 text-[10px] uppercase font-bold px-3 py-2 mt-4">Sistema</h1>
+            
             <a class="flex items-center gap-3 px-3 py-2 text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                 href="{{ route('empresas') }}">
+                <span class="material-symbols-outlined">bar_chart</span>
+                <p class="text-sm font-medium">Empresas</p>
+            </a>
+            
+            <a class="flex items-center gap-3 px-3 py-2 text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                href="{{ route('cplanes') }}">
                 <span class="material-symbols-outlined">corporate_fare</span>
-                <p class="text-sm font-medium">Licencia</p>
+                <p class="text-sm font-medium">Planes</p>
             </a>
             <a class="flex items-center gap-3 px-3 py-2 text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-                href="#">
+                href="{{ route('admins') }}">
                 <span class="material-symbols-outlined">group</span>
-                <p class="text-sm font-medium">Usuarios</p>
+                <p class="text-sm font-medium">Administradores</p>
             </a>
             <a class="flex items-center gap-3 px-3 py-2 text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                 href="#">
