@@ -8,11 +8,19 @@ use Illuminate\Http\Request;
 
 class PlanController extends Controller
 {
-    public function index()
-    {
-        $planes = Plan::orderBy('id_plan', 'desc')->get();
-        return view('sadmin.cplanes', compact('planes'));
-    }
+public function index(Request $request)
+{
+    $planes = Plan::query()
+        ->when($request->search, function ($query, $search) {
+            $query->where('nomb_plan', 'LIKE', "%{$search}%");
+        })
+        ->orderBy('id_plan', 'asc')
+        ->paginate(4)
+        ->withQueryString();
+
+    return view('sadmin.cplanes', compact('planes'));
+}
+
 
     public function store(Request $request)
     {

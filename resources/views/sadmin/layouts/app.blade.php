@@ -55,7 +55,7 @@
     <main class="flex-1 flex flex-col overflow-y-auto">
 
         {{-- Header --}}
-        @include('sadmin.layouts.header')
+        @yield('header', View::make('sadmin.layouts.header'))
 
         {{-- Page content --}}
         @yield('content')
