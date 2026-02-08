@@ -1,5 +1,10 @@
 <?php
 use App\Http\Controllers\Auth\LoginController;
+<<<<<<< Updated upstream
+=======
+use App\Http\Controllers\Sadmin\UsuarioController;
+use App\Http\Controllers\EmpresaController;
+>>>>>>> Stashed changes
 
 // Ruta para redirigir directamente al login una vez abra el proyecto
 Route::get('/', function () {
@@ -52,3 +57,21 @@ Route::get('/resumen', function () {
 Route::get('/usuarios', function () {
     return view('admin.usuarios');
 })->name('usuarios');
+
+
+// Rutas para gestionar empresas
+
+Route::prefix('sadmin')->group(function () {
+
+    Route::get('/empresas', [EmpresaController::class, 'index'])
+        ->name('empresas');
+
+    Route::post('/empresas', [EmpresaController::class, 'store'])
+        ->name('empresas.store');
+
+    Route::put('/empresas/{nit}', [EmpresaController::class, 'update'])
+        ->name('empresas.update');
+
+    Route::delete('/empresas/{nit}', [EmpresaController::class, 'destroy'])
+        ->name('empresas.destroy');
+});
