@@ -11,6 +11,9 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
         rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -34,6 +37,7 @@
             },
         }
     </script>
+
     <style>
         body {
             font-family: 'Public Sans', sans-serif;
@@ -48,21 +52,23 @@
 <body class="bg-background-light dark:bg-background-dark text-[#0d121b] dark:text-white antialiased">
     <div class="flex h-screen overflow-hidden">
 
-    {{-- Sidebar --}}
-    @include('sadmin.layouts.sidebar')
+        {{-- Sidebar --}}
+        @include('sadmin.layouts.sidebar')
 
-    {{-- Content --}}
-    <main class="flex-1 flex flex-col overflow-y-auto">
+        {{-- Content --}}
+        <main class="flex-1 flex flex-col overflow-y-auto">
 
-        {{-- Header --}}
-        @yield('header', View::make('sadmin.layouts.header'))
+            {{-- Header --}}
+            @include('sadmin.layouts.header')
 
-        {{-- Page content --}}
-        @yield('content')
+            {{-- Page content --}}
+            @yield('content')
 
-    </main>
+        </main>
 
-</div>
+        @yield('modals')
+
+    </div>
 </body>
 
 </html>

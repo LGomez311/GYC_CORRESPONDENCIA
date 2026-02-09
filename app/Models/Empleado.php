@@ -15,19 +15,23 @@ class Empleado extends Authenticatable
     protected $table = 'empleado';
     protected $primaryKey = 'emple_doc';
     public $incrementing = false;
-    protected $keyType = 'int';
+    protected $keyType = 'string';
+
 
     protected $fillable = [
         'emple_doc',
+        'nit_empresa',
+        'password',
         'emple_nombres',
         'emple_apellidos',
-        'emple_correo',
-        'emple_estado',
         'emple_tel',
-        'emple_area',
+        'emple_correo',
+        'emple_img',
+        'emple_estado',
         'emple_rol',
-        'password' // Debe coincidir con la columna de la DB
+        'emple_area'
     ];
+
 
     protected $hidden = [
         'password', // Evita mostrar la contraseña en JSON

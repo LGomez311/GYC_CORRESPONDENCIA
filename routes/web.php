@@ -1,12 +1,24 @@
 <?php
+
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Sadmin\UsuarioController;
-use App\Http\Controllers\Sadmin\PlanController;
+use App\Http\Controllers\sadmin\UsuarioController;
 
 // Ruta para redirigir directamente al login una vez abra el proyecto
 Route::get('/', function () {
     return redirect()->route('login');
 });
+
+Route::post('/sadmin/usuarios', [UsuarioController::class, 'store'])
+    ->name('sadmin.store');
+
+Route::put('sadmin/admins/{documento}', [UsuarioController::class, 'update'])
+    ->name('admins.update');
+
+Route::delete('/usuarios/{emple_doc}', [UsuarioController::class, 'destroy'])
+    ->name('usuarios.destroy');
+
+
+
 
 
 // Vistas del super admin, index
@@ -19,9 +31,7 @@ Route::get('/sadmin/planes', function () {
     return view('sadmin.cplanes');
 })->name('cplanes');
 // vista admins
-Route::get('/sadmin/admins', function () {
-    return view('sadmin.admins');
-})->name('admins');
+
 //esta vista envia datos para mostrar en tabla
 Route::get('/sadmin/admins', [UsuarioController::class, 'index'])
     ->name('admins');
