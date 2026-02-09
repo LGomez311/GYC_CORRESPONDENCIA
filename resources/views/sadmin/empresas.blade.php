@@ -12,7 +12,7 @@
                     Gestión de Empresas
                 </h1>
                 <p class="text-[#4c669a] dark:text-gray-400">
-                    Administre el directorio de empresas clientes y sus planes activos.
+                    Administre el directorio de empresas y clientes.
                 </p>
             </div>
 
@@ -22,10 +22,15 @@
                 Añadir Empresa
             </button>
         </div>
+        <div
+            class="bg-white dark:bg-[#161d2b] rounded-xl border border-[#cfd7e7] dark:border-gray-800 overflow-hidden shadow-sm">
+        <div class="p-6 border-b border-[#cfd7e7] dark:border-gray-800">
+            <h2 class="text-lg font-bold dark:text-white">Empresas Registradas</h2>
+        </div>
 
         <!-- Tabla -->
         <div
-            class="bg-white dark:bg-[#161d2b] rounded-xl border border-[#cfd7e7] dark:border-gray-800 overflow-hidden shadow-sm">
+            class="bg-white dark:bg-[#161d2b] border border-[#cfd7e7] dark:border-gray-800 overflow-hidden shadow-sm">
             <table class="w-full text-left border-collapse">
                 <thead class="bg-background-light dark:bg-background-dark/50">
                     <tr>
@@ -34,7 +39,7 @@
                         <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Dirección</th>
                         <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Teléfono</th>
                         <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Correo</th>
-                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Estado</th>
+
                         <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase text-right">Acciones</th>
                     </tr>
                 </thead>
@@ -43,20 +48,20 @@
 
                     @foreach ($empresas as $empresa)
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                            <td class="px-6 py-4"
-                            >
-                            <div class="flex items-center gap-3">
-                                <div>
-                                    
-                                </div>
-                            {{ $empresa->nomb_empresa }}</td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div>
+
+                                    </div>
+                                    {{ $empresa->nomb_empresa }}
+                            </td>
                             <td>{{ $empresa->nit_empresa }}</td>
                             <td>{{ $empresa->direccion }}</td>
                             <td>{{ $empresa->contacto }}</td>
                             <td>{{ $empresa->empresa_correo }}</td>
 
                             <td class="text-right">
-                                <div class="flex justify-end gap-2">
+                                <div class="flex justify-center gap-1">
 
                                     <!-- EDITAR -->
                                     <button

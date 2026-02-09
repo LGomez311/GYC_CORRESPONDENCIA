@@ -52,7 +52,7 @@
                     Gestión de Planes
                 </h1>
                 <p class="text-[#4c669a] dark:text-gray-400 text-base font-normal">
-                    Administre los planes y licencias del sistema.
+                    Administre los planes del sistema.
                 </p>
             </div>
 
