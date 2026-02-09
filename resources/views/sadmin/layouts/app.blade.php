@@ -14,6 +14,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
+
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -68,9 +69,9 @@
 
         @yield('modals')
 
-    @yield('modals')
+        @yield('modals')
 
-</div>
+    </div>
 </body>
 
 </html>

@@ -42,8 +42,14 @@
                 <tbody class="divide-y divide-[#cfd7e7] dark:divide-gray-800">
 
                     @foreach ($empresas as $empresa)
-                        <tr>
-                            <td>{{ $empresa->nomb_empresa }}</td>
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                            <td class="px-6 py-4"
+                            >
+                            <div class="flex items-center gap-3">
+                                <div>
+                                    
+                                </div>
+                            {{ $empresa->nomb_empresa }}</td>
                             <td>{{ $empresa->nit_empresa }}</td>
                             <td>{{ $empresa->direccion }}</td>
                             <td>{{ $empresa->contacto }}</td>
@@ -65,8 +71,8 @@
                                     </button>
 
                                     <!-- ELIMINAR -->
-                                    <form action="{{ route('empresas.destroy', $empresa->nit_empresa) }}" method="POST"
-                                        onsubmit="return confirm('¿Eliminar esta empresa?')">
+                                    <form class="delete-form"
+                                        action="{{ route('empresas.destroy', $empresa->nit_empresa) }}" method="POST">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit">
@@ -74,16 +80,44 @@
                                         </button>
                                     </form>
 
+
                                 </div>
                             </td>
                         </tr>
                     @endforeach
 
-
                 </tbody>
             </table>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const deleteForms = document.querySelectorAll('.delete-form');
+
+            deleteForms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault(); // Detiene el submit por defecto
+
+                    Swal.fire({
+                        title: '¿Estás seguro?',
+                        text: "¡No podrás revertir esto!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Sí, eliminar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit(); // Si confirma, se envía el formulario
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+
 @endsection
 
 {{-- ===================== MODALES ===================== --}}

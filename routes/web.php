@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Sadmin\UsuarioController;
 use App\Http\Controllers\EmpresaController;
+use App\Http\Controllers\Sadmin\PlanController;
 
 // Ruta para redirigir directamente al login
 Route::get('/', function () {
@@ -82,3 +83,14 @@ Route::get('/usuarios', function () {
     Route::put('sadmin/planes/{id}', [PlanController::class, 'update'])->name('planes.update');
     Route::delete('sadmin/planes/{id}', [PlanController::class, 'destroy'])->name('planes.destroy');
 });
+
+
+// Rutas administrador de empresas en vista sadmin
+Route::post('/sadmin/usuarios', [UsuarioController::class, 'store'])
+    ->name('sadmin.store');
+
+Route::put('sadmin/admins/{documento}', [UsuarioController::class, 'update'])
+    ->name('admins.update');
+
+Route::delete('/usuarios/{emple_doc}', [UsuarioController::class, 'destroy'])
+    ->name('usuarios.destroy');
