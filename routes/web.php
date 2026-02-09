@@ -1,55 +1,54 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\sadmin\UsuarioController;
+use App\Http\Controllers\Sadmin\UsuarioController;
+use App\Http\Controllers\EmpresaController;
 
-// Ruta para redirigir directamente al login una vez abra el proyecto
+// Ruta para redirigir directamente al login
 Route::get('/', function () {
     return redirect()->route('login');
 });
 
-Route::post('/sadmin/usuarios', [UsuarioController::class, 'store'])
-    ->name('sadmin.store');
+// ================= SUPER ADMIN =================
 
-Route::put('sadmin/admins/{documento}', [UsuarioController::class, 'update'])
-    ->name('admins.update');
-
-Route::delete('/usuarios/{emple_doc}', [UsuarioController::class, 'destroy'])
-    ->name('usuarios.destroy');
-
-
-
-
-
-// Vistas del super admin, index
 // Vista index
 Route::get('/sadmin', function () {
     return view('sadmin.index');
 });
-// Vista crear  licencias
+
+// Vista crear licencias
 Route::get('/sadmin/planes', function () {
     return view('sadmin.cplanes');
 })->name('cplanes');
-// vista admins
 
-//esta vista envia datos para mostrar en tabla
+// Vista admins
 Route::get('/sadmin/admins', [UsuarioController::class, 'index'])
     ->name('admins');
-// Vista empresas crud
-Route::get('/sadmin/empresas', function () {
-    return view('sadmin.empresas');
-})->name('empresas');
 
-// Mostrar formulario de login
+// ================= EMPRESAS CRUD =================
+Route::prefix('sadmin')->group(function () {
+
+    Route::get('/empresas', [EmpresaController::class, 'index'])
+        ->name('empresas');
+
+    Route::post('/empresas', [EmpresaController::class, 'store'])
+        ->name('empresas.store');
+
+    Route::put('/empresas/{nit}', [EmpresaController::class, 'update'])
+        ->name('empresas.update');
+
+    Route::delete('/empresas/{nit}', [EmpresaController::class, 'destroy'])
+        ->name('empresas.destroy');
+});
+
+// ================= AUTH =================
+
+// Login
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-
-// Procesar login
 Route::post('/login', [LoginController::class, 'login']);
-
-// Cerrar sesión
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-// Dashboards protegidos por middleware
+// ================= DASHBOARDS =================
 Route::middleware('auth:web')->group(function () {
     Route::get('/superadmin', fn() => view('sadmin.index'))->name('sadmin.index');
     Route::get('/admin', fn() => view('admin.index'))->name('admin.index');
