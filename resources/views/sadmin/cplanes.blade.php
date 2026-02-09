@@ -2,258 +2,367 @@
 
 @section('title', 'Panel de Licencias')
 
+{{-- ================= HEADER PERSONALIZADO ================= --}}
+@section('header')
+<header
+    class="h-16 bg-white dark:bg-[#161d2b] border-b border-[#cfd7e7] dark:border-gray-800 px-8 flex items-center justify-between sticky top-0 z-10">
+
+    {{-- BUSCADOR --}}
+    <form method="GET" class="w-1/2 max-w-2xl">
+        <input
+            id="searchPlan"
+            name="search"
+            value="{{ request('search') }}"
+            type="text"
+            placeholder="Buscar planes por nombre..."
+            class="w-full h-10 pl-10 pr-4 bg-background-light dark:bg-background-dark rounded-lg">
+    </form>
+
+    <div class="flex items-center gap-4"></div>
+</header>
+@endsection
+
+
+{{-- ================= CONTENIDO ================= --}}
 @section('content')
+
 <div class="p-8 max-w-7xl mx-auto w-full">
+
+    {{-- HEADER INTERNO --}}
     <div class="flex flex-wrap justify-between items-end gap-3 mb-8">
         <div class="flex flex-col gap-1">
             <h1 class="text-[#0d121b] dark:text-white text-3xl font-black leading-tight tracking-tight">
-                Gestión de Tipos de Licencias</h1>
-            <p class="text-[#4c669a] dark:text-gray-400 text-base font-normal">Configure y administre los
-                planes de suscripción disponibles para los clientes.</p>
+                Gestión de Planes
+            </h1>
+            <p class="text-[#4c669a] dark:text-gray-400 text-base font-normal">
+                Administre los planes y licencias del sistema.
+            </p>
         </div>
-        <div class="flex gap-3">
-            <button
-                class="px-4 py-2 bg-primary text-white rounded-lg font-bold text-sm flex items-center gap-2 shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all">
-                <span class="material-symbols-outlined text-sm">add</span>
-                Crear Nueva Licencia
-            </button>
-        </div>
+
+        <button
+            onclick="openCreateModal()"
+            class="px-4 py-2 bg-primary text-white rounded-lg font-bold text-sm flex items-center gap-2 shadow-lg hover:bg-primary/90">
+            <span class="material-symbols-outlined text-sm">add</span>
+            Crear Nuevo Plan
+        </button>
     </div>
-    <div
-        class="bg-white dark:bg-[#161d2b] rounded-xl border border-[#cfd7e7] dark:border-gray-800 overflow-hidden shadow-sm">
-        <div
-            class="p-6 border-b border-[#cfd7e7] dark:border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <h2 class="text-[#0d121b] dark:text-white text-lg font-bold leading-tight">Licencias Disponibles
-            </h2>
-            <div class="flex gap-2">
-                <button
-                    class="px-3 py-1.5 text-xs font-bold border border-[#cfd7e7] dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-1 dark:text-white">
-                    <span class="material-symbols-outlined text-sm">filter_list</span> Filtrar
-                </button>
-            </div>
+
+    {{-- CARD --}}
+    <div class="bg-white dark:bg-[#161d2b] rounded-xl border border-[#cfd7e7] dark:border-gray-800 overflow-hidden shadow-sm">
+
+        <div class="p-6 border-b border-[#cfd7e7] dark:border-gray-800">
+            <h2 class="text-lg font-bold dark:text-white">Planes Disponibles</h2>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-                <thead class="bg-background-light dark:bg-background-dark/50">
-                    <tr>
-                        <th
-                            class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">
-                            Nombre del Plan</th>
-                        <th
-                            class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">
-                            Precio</th>
-                        <th
-                            class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">
-                            Duración</th>
-                        <th
-                            class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">
-                            Límite de Usuarios</th>
-                        <th
-                            class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">
-                            Estado</th>
-                        <th
-                            class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider text-right">
-                            Acciones</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-[#cfd7e7] dark:divide-gray-800">
-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-3">
-                                <div
-                                    class="size-10 rounded bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-primary">
-                                    <span class="material-symbols-outlined">workspace_premium</span>
+
+        <div id="plansWrapper">
+            {{-- TABLA --}}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+
+                    <thead class="bg-background-light dark:bg-background-dark/50">
+                        <tr>
+                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Plan</th>
+                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Descripción</th>
+                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Precio</th>
+                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Duración</th>
+                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase text-right">Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody class="divide-y divide-[#cfd7e7] dark:divide-gray-800">
+
+                        @forelse ($planes as $plan)
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+
+                            <td class="px-6 py-4">
+                                <span class="text-sm font-bold dark:text-white">
+                                    {{ $plan->nomb_plan }}
+                                </span>
+                            </td>
+
+                            <td class="px-6 py-4 text-sm text-[#4c669a] dark:text-gray-400">
+                                {{ $plan->descripcion }}
+                            </td>
+
+                            <td class="px-6 py-4 font-bold dark:text-gray-300">
+                                ${{ number_format($plan->valor, 0) }}
+                            </td>
+
+                            <td class="px-6 py-4 text-sm dark:text-gray-300">
+                                {{ $plan->duracion }} mes/es
+                            </td>
+
+                            <td class="px-6 py-4 text-right">
+                                <div class="flex justify-end gap-1">
+                                    <button
+                                        onclick="openEditModal(
+                                            {{ $plan->id_plan }},
+                                            @js($plan->nomb_plan),
+                                            {{ $plan->valor }},
+                                            {{ $plan->duracion }},
+                                            @js($plan->descripcion)
+                                        )"
+                                        class="p-2 text-[#4c669a] hover:text-primary">
+                                        <span class="material-symbols-outlined text-[20px]">edit</span>
+                                    </button>
+
+                                    <button
+                                        onclick="openDeleteModal({{ $plan->id_plan }}, @js($plan->nomb_plan))"
+                                        class="p-2 text-[#4c669a] hover:text-red-500">
+                                        <span class="material-symbols-outlined text-[20px]">delete</span>
+                                    </button>
                                 </div>
-                                <div class="flex flex-col">
-                                    <span class="text-sm font-bold text-[#0d121b] dark:text-white">Enterprise
-                                        Pro</span>
-                                    <span class="text-xs text-[#4c669a] dark:text-gray-400">Ideal para
-                                        grandes empresas</span>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="5" class="px-6 py-10 text-center">
+                                <div class="flex flex-col items-center gap-2 text-sm text-[#4c669a] dark:text-gray-400">
+                                    <span class="material-symbols-outlined text-4xl">search_off</span>
+                                    No se encontraron planes con ese nombre.
                                 </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="text-sm font-bold text-[#0d121b] dark:text-gray-300">$299.00</span>
-                            <span class="text-xs text-[#4c669a]">/mes</span>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-[#0d121b] dark:text-gray-300">Anual / Mensual</td>
-                        <td class="px-6 py-4 text-sm text-[#0d121b] dark:text-gray-300">Ilimitado</td>
-                        <td class="px-6 py-4">
-                            <span
-                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                                Activo
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 text-right">
-                            <div class="flex justify-end gap-1">
-                                <button class="p-2 text-[#4c669a] hover:text-primary transition-colors"
-                                    title="Ver detalles">
-                                    <span class="material-symbols-outlined text-[20px]">visibility</span>
-                                </button>
-                                <button class="p-2 text-[#4c669a] hover:text-primary transition-colors" title="Editar">
-                                    <span class="material-symbols-outlined text-[20px]">edit</span>
-                                </button>
-                                <button class="p-2 text-[#4c669a] hover:text-red-500 transition-colors"
-                                    title="Eliminar">
-                                    <span class="material-symbols-outlined text-[20px]">delete</span>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-3">
-                                <div
-                                    class="size-10 rounded bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[#4c669a]">
-                                    <span class="material-symbols-outlined">token</span>
-                                </div>
-                                <div class="flex flex-col">
-                                    <span class="text-sm font-bold text-[#0d121b] dark:text-white">Standard
-                                        Plan</span>
-                                    <span class="text-xs text-[#4c669a] dark:text-gray-400">Para equipos en
-                                        crecimiento</span>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="text-sm font-bold text-[#0d121b] dark:text-gray-300">$99.00</span>
-                            <span class="text-xs text-[#4c669a]">/mes</span>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-[#0d121b] dark:text-gray-300">Mensual</td>
-                        <td class="px-6 py-4 text-sm text-[#0d121b] dark:text-gray-300">Hasta 50 usuarios
-                        </td>
-                        <td class="px-6 py-4">
-                            <span
-                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                                Activo
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 text-right">
-                            <div class="flex justify-end gap-1">
-                                <button class="p-2 text-[#4c669a] hover:text-primary transition-colors"
-                                    title="Ver detalles">
-                                    <span class="material-symbols-outlined text-[20px]">visibility</span>
-                                </button>
-                                <button class="p-2 text-[#4c669a] hover:text-primary transition-colors" title="Editar">
-                                    <span class="material-symbols-outlined text-[20px]">edit</span>
-                                </button>
-                                <button class="p-2 text-[#4c669a] hover:text-red-500 transition-colors"
-                                    title="Eliminar">
-                                    <span class="material-symbols-outlined text-[20px]">delete</span>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-3">
-                                <div
-                                    class="size-10 rounded bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[#4c669a]">
-                                    <span class="material-symbols-outlined">person</span>
-                                </div>
-                                <div class="flex flex-col">
-                                    <span class="text-sm font-bold text-[#0d121b] dark:text-white">Basic
-                                        Monthly</span>
-                                    <span class="text-xs text-[#4c669a] dark:text-gray-400">Escencial para
-                                        pymes</span>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="text-sm font-bold text-[#0d121b] dark:text-gray-300">$49.00</span>
-                            <span class="text-xs text-[#4c669a]">/mes</span>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-[#0d121b] dark:text-gray-300">Mensual</td>
-                        <td class="px-6 py-4 text-sm text-[#0d121b] dark:text-gray-300">Hasta 10 usuarios
-                        </td>
-                        <td class="px-6 py-4">
-                            <span
-                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
-                                Descontinuado
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 text-right">
-                            <div class="flex justify-end gap-1">
-                                <button class="p-2 text-[#4c669a] hover:text-primary transition-colors"
-                                    title="Ver detalles">
-                                    <span class="material-symbols-outlined text-[20px]">visibility</span>
-                                </button>
-                                <button class="p-2 text-[#4c669a] hover:text-primary transition-colors" title="Editar">
-                                    <span class="material-symbols-outlined text-[20px]">edit</span>
-                                </button>
-                                <button class="p-2 text-[#4c669a] hover:text-red-500 transition-colors"
-                                    title="Eliminar">
-                                    <span class="material-symbols-outlined text-[20px]">delete</span>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-3">
-                                <div
-                                    class="size-10 rounded bg-yellow-50 dark:bg-yellow-900/20 flex items-center justify-center text-yellow-600">
-                                    <span class="material-symbols-outlined">rocket_launch</span>
-                                </div>
-                                <div class="flex flex-col">
-                                    <span class="text-sm font-bold text-[#0d121b] dark:text-white">Startup
-                                        Yearly</span>
-                                    <span class="text-xs text-[#4c669a] dark:text-gray-400">Pago único
-                                        anual con descuento</span>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="text-sm font-bold text-[#0d121b] dark:text-gray-300">$890.00</span>
-                            <span class="text-xs text-[#4c669a]">/año</span>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-[#0d121b] dark:text-gray-300">Anual</td>
-                        <td class="px-6 py-4 text-sm text-[#0d121b] dark:text-gray-300">Hasta 25 usuarios
-                        </td>
-                        <td class="px-6 py-4">
-                            <span
-                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                                Activo
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 text-right">
-                            <div class="flex justify-end gap-1">
-                                <button class="p-2 text-[#4c669a] hover:text-primary transition-colors"
-                                    title="Ver detalles">
-                                    <span class="material-symbols-outlined text-[20px]">visibility</span>
-                                </button>
-                                <button class="p-2 text-[#4c669a] hover:text-primary transition-colors"
-                                    title="Editar">
-                                    <span class="material-symbols-outlined text-[20px]">edit</span>
-                                </button>
-                                <button class="p-2 text-[#4c669a] hover:text-red-500 transition-colors"
-                                    title="Eliminar">
-                                    <span class="material-symbols-outlined text-[20px]">delete</span>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="px-6 py-4 border-t border-[#cfd7e7] dark:border-gray-800 flex items-center justify-between">
-            <p class="text-xs text-[#4c669a] dark:text-gray-400">Mostrando 4 de 12 tipos de licencias
-                configuradas</p>
-            <div class="flex gap-1">
-                <button
-                    class="size-8 flex items-center justify-center rounded border border-[#cfd7e7] dark:border-gray-700 text-[#4c669a] dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">
-                    <span class="material-symbols-outlined text-sm">chevron_left</span>
-                </button>
-                <button
-                    class="size-8 flex items-center justify-center rounded bg-primary text-white font-bold text-xs">1</button>
-                <button
-                    class="size-8 flex items-center justify-center rounded border border-[#cfd7e7] dark:border-gray-700 text-[#4c669a] dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 text-xs">2</button>
-                <button
-                    class="size-8 flex items-center justify-center rounded border border-[#cfd7e7] dark:border-gray-700 text-[#4c669a] dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">
-                    <span class="material-symbols-outlined text-sm">chevron_right</span>
-                </button>
+                            </td>
+                        </tr>
+                        @endforelse
+
+                    </tbody>
+                </table>
             </div>
+
+            {{-- MODAL CREAR --}}
+            <div id="createModal" class="fixed inset-0 hidden z-50 bg-black/50 items-center justify-center">
+                <div class="bg-white dark:bg-[#161d2b] rounded-xl w-full max-w-md p-6">
+                    <h3 class="text-lg font-bold mb-4 dark:text-white">Crear Plan</h3>
+
+                    <form action="{{ route('planes.store') }}" method="POST" class="space-y-4">
+                        @csrf
+
+                        <input name="nomb_plan" required placeholder="Nombre del plan"
+                            class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white">
+
+                        <input name="valor" type="number" required placeholder="Valor"
+                            class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white">
+
+                        <input name="duracion" type="number" required placeholder="Duración (meses)"
+                            class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white">
+
+                        <textarea name="descripcion" placeholder="Descripción"
+                            class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white"></textarea>
+
+                        <div class="flex justify-end gap-2">
+                            <button type="button" onclick="closeCreateModal()" class="border px-4 py-2 rounded">
+                                Cancelar
+                            </button>
+                            <button class="bg-primary text-white px-4 py-2 rounded font-bold">
+                                Guardar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {{-- MODAL EDITAR --}}
+            <div id="editModal" class="fixed inset-0 hidden z-50 bg-black/50 items-center justify-center">
+                <div class="bg-white dark:bg-[#161d2b] rounded-xl w-full max-w-md p-6">
+                    <h3 class="text-lg font-bold mb-4 dark:text-white">Editar Plan</h3>
+
+                    <form id="editForm" method="POST" class="space-y-4">
+                        @csrf
+                        @method('PUT')
+
+                        <input id="edit_nomb_plan" name="nomb_plan" required
+                            class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white">
+
+                        <input id="edit_valor" name="valor" type="number" required
+                            class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white">
+
+                        <input id="edit_duracion" name="duracion" type="number" required
+                            class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white">
+
+                        <textarea id="edit_descripcion" name="descripcion"
+                            class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white"></textarea>
+
+                        <div class="flex justify-end gap-2">
+                            <button type="button" onclick="closeEditModal()" class="border px-4 py-2 rounded">
+                                Cancelar
+                            </button>
+                            <button class="bg-primary text-white px-4 py-2 rounded font-bold">
+                                Actualizar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {{-- MODAL ELIMINAR --}}
+            <div id="deleteModal"
+                class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50">
+
+                <div class="bg-white dark:bg-[#161d2b] rounded-xl shadow-xl w-full max-w-md p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="material-symbols-outlined text-red-500 text-3xl">
+                            warning
+                        </span>
+                        <h3 class="text-lg font-bold text-[#0d121b] dark:text-white">
+                            Confirmar eliminación
+                        </h3>
+                    </div>
+
+                    <p class="text-sm text-[#4c669a] dark:text-gray-400 mb-6">
+                        ¿Seguro que deseas eliminar el plan
+                        <span id="deletePlanName" class="font-bold text-[#0d121b] dark:text-white"></span>?
+                        <br>
+                        <span class="text-red-500 font-medium">Esta acción no se puede deshacer.</span>
+                    </p>
+
+                    <div class="flex justify-end gap-2">
+                        <button
+                            onclick="closeDeleteModal()"
+                            class="px-4 py-2 text-sm font-bold rounded-lg border border-gray-300 dark:border-gray-700 text-[#4c669a] hover:bg-gray-100 dark:hover:bg-gray-800">
+                            Cancelar
+                        </button>
+
+                        <form id="deleteForm" method="POST">
+                            @csrf
+                            @method('DELETE')
+                            <button
+                                type="submit"
+                                class="px-4 py-2 text-sm font-bold rounded-lg bg-red-500 text-white hover:bg-red-600">
+                                Sí, eliminar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+
+            {{-- PAGINACIÓN --}}
+            @if ($planes->hasPages())
+            <div id="paginationInfo"
+                class="px-6 py-4 border-t border-[#cfd7e7] dark:border-gray-800 flex flex-wrap gap-3 items-center justify-between">
+
+                <p class="text-xs text-[#4c669a] dark:text-gray-400">
+                    Mostrando {{ $planes->firstItem() }} - {{ $planes->lastItem() }} de {{ $planes->total() }} planes registrados
+                </p>
+
+                <div class="flex gap-1">
+                    <a href="{{ $planes->previousPageUrl() }}"
+                        class="size-8 flex items-center justify-center rounded border {{ $planes->onFirstPage() ? 'pointer-events-none opacity-50' : '' }}">
+                        <span class="material-symbols-outlined text-sm">chevron_left</span>
+                    </a>
+
+                    @foreach ($planes->getUrlRange(1, $planes->lastPage()) as $page => $url)
+                    <a href="{{ $url }}"
+                        class="size-8 flex items-center justify-center rounded text-xs font-bold
+                        {{ $planes->currentPage() == $page ? 'bg-primary text-white' : 'border' }}">
+                        {{ $page }}
+                    </a>
+                    @endforeach
+
+                    <a href="{{ $planes->nextPageUrl() }}"
+                        class="size-8 flex items-center justify-center rounded border {{ !$planes->hasMorePages() ? 'pointer-events-none opacity-50' : '' }}">
+                        <span class="material-symbols-outlined text-sm">chevron_right</span>
+                    </a>
+                </div>
+            </div>
+            @endif
+
         </div>
     </div>
 </div>
+
+{{-- SCRIPT --}}
+<script>
+    function openCreateModal() {
+        createModal.classList.remove('hidden')
+        createModal.classList.add('flex')
+    }
+
+    function closeCreateModal() {
+        createModal.classList.add('hidden')
+        createModal.classList.remove('flex')
+    }
+
+    function openEditModal(id, nombre, valor, duracion, descripcion) {
+        editForm.action = `sadmin/planes/${id}`
+        edit_nomb_plan.value = nombre
+        edit_valor.value = valor
+        edit_duracion.value = duracion
+        edit_descripcion.value = descripcion ?? ''
+        editModal.classList.remove('hidden')
+        editModal.classList.add('flex')
+    }
+
+    function closeEditModal() {
+        editModal.classList.add('hidden')
+        editModal.classList.remove('flex')
+    }
+
+    function openDeleteModal(id, name) {
+        deletePlanName.textContent = name
+        deleteForm.action = `sadmin/planes/${id}`
+        deleteModal.classList.remove('hidden')
+        deleteModal.classList.add('flex')
+    }
+
+    function closeDeleteModal() {
+        deleteModal.classList.add('hidden')
+        deleteModal.classList.remove('flex')
+    }
+
+let debounce = null
+    let currentSearch = ''
+
+    const searchInput = document.getElementById('searchPlan')
+    const wrapper = document.getElementById('plansWrapper')
+
+    function loadPlans(url) {
+        fetch(url, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(res => res.text())
+        .then(html => {
+            const doc = new DOMParser().parseFromString(html, 'text/html')
+            const newWrapper = doc.getElementById('plansWrapper')
+
+            if (newWrapper) {
+                wrapper.innerHTML = newWrapper.innerHTML
+                bindPaginationLinks()
+            }
+        })
+    }
+
+    function bindPaginationLinks() {
+        document.querySelectorAll('#plansWrapper a').forEach(link => {
+            if (link.href) {
+                link.addEventListener('click', e => {
+                    e.preventDefault()
+
+                    const url = new URL(link.href)
+                    url.searchParams.set('search', currentSearch)
+
+                    loadPlans(url.toString())
+                })
+            }
+        })
+    }
+
+    searchInput.addEventListener('input', function () {
+        clearTimeout(debounce)
+        currentSearch = this.value.trim()
+
+        debounce = setTimeout(() => {
+            const url = new URL(`{{ route('cplanes') }}`)
+            if (currentSearch) {
+                url.searchParams.set('search', currentSearch)
+            }
+
+            loadPlans(url.toString())
+        }, 300)
+    })
+
+    // inicial
+    bindPaginationLinks()
+</script>
+
 @endsection
