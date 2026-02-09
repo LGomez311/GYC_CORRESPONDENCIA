@@ -59,7 +59,26 @@ Route::middleware('auth:remitente')->group(function () {
     Route::get('/remitente', fn() => view('remitente.index'))->name('remitente.index');
 });
 
-// ================= ADMIN =================
-Route::get('/correspondencia', fn() => view('admin.correspondencia'))->name('correspondencia');
-Route::get('/resumen', fn() => view('admin.index'))->name('resumen');
-Route::get('/usuarios', fn() => view('admin.usuarios'))->name('usuarios');
+
+
+// Rutas del admin
+
+Route::get('/correspondencia', function () {
+    return view('admin.correspondencia');
+})->name('correspondencia');
+
+Route::get('/resumen', function () {
+    return view('admin.index');
+})->name('resumen');
+
+Route::get('/usuarios', function () {
+    return view('admin.usuarios');
+})->name('usuarios');
+
+// rutas del plan 
+    Route::prefix('sadmin')->group(function () {
+    Route::get('/planes', [PlanController::class, 'index'])->name('cplanes');
+    Route::post('/planes', [PlanController::class, 'store'])->name('planes.store');
+    Route::put('sadmin/planes/{id}', [PlanController::class, 'update'])->name('planes.update');
+    Route::delete('sadmin/planes/{id}', [PlanController::class, 'destroy'])->name('planes.destroy');
+});
