@@ -76,14 +76,13 @@ Route::get('/usuarios', function () {
     return view('admin.usuarios');
 })->name('usuarios');
 
-// rutas del plan 
-    Route::prefix('sadmin')->group(function () {
+// Rutas del plan
+Route::prefix('sadmin')->group(function () {
     Route::get('/planes', [PlanController::class, 'index'])->name('cplanes');
     Route::post('/planes', [PlanController::class, 'store'])->name('planes.store');
-    Route::put('sadmin/planes/{id}', [PlanController::class, 'update'])->name('planes.update');
-    Route::delete('sadmin/planes/{id}', [PlanController::class, 'destroy'])->name('planes.destroy');
-});
-
+    Route::put('/planes/{id}', [PlanController::class, 'update'])->name('planes.update');
+    Route::delete('/planes/{id}', [PlanController::class, 'destroy'])->name('planes.destroy');
+}); 
 
 // Rutas administrador de empresas en vista sadmin
 Route::post('/sadmin/usuarios', [UsuarioController::class, 'store'])

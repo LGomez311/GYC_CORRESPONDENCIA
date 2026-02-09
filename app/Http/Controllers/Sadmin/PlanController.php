@@ -5,10 +5,10 @@ namespace App\Http\Controllers\Sadmin;
 use App\Http\Controllers\Controller;
 use App\Models\Plan;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 
 class PlanController extends Controller
 {
+    // ================= LISTAR =================
     public function index(Request $request)
     {
         $planes = Plan::query()
@@ -22,60 +22,82 @@ class PlanController extends Controller
         return view('sadmin.cplanes', compact('planes'));
     }
 
-
-
-
+    // ================= CREAR =================
     public function store(Request $request)
     {
-        try {
-            $request->validate([
-                'nomb_plan'   => 'nullable',
-                'valor'       => 'nullable',
-                'descripcion' => 'nullable',
-                'duracion'    => 'nullable',
-            ]);
+        $request->validate(
+            [
+                'nomb_plan' => [
+                    'required',
+                    'string',
+                    'min:3',
+                    'max:100',
+                    'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/'
+                ],
+                'valor'       => 'required|numeric|min:1',
+                'duracion'    => 'required|integer|min:1',
+                'descripcion' => 'required|string|max:255',
+            ],
+            [
+                'nomb_plan.required' => 'El nombre del plan es obligatorio',
+                'nomb_plan.min'      => 'El nombre debe tener al menos 3 caracteres',
+                'nomb_plan.regex'    => 'El nombre del plan solo puede contener letras',
+                'valor.required'     => 'El valor del plan es obligatorio',
+                'duracion.required'  => 'La duración es obligatoria',
+                'descripcion.required' => 'La descripción no puede estar vacía',
+            ]
+        );
 
-            Plan::create([
-                'nomb_plan'   => $request->nomb_plan,
-                'valor'       => $request->valor,
-                'descripcion' => $request->descripcion,
-                'duracion'    => $request->duracion,
-            ]);
+        Plan::create($request->only([
+            'nomb_plan',
+            'valor',
+            'duracion',
+            'descripcion'
+        ]));
 
-            return redirect()
-                ->route('cplanes')
-                ->with('success', 'Plan creado correctamente');
-        } catch (ValidationException $e) {
-            // Retornar con errores en forma de alert
-            return redirect()->back()
-                ->withErrors($e->errors())
-                ->withInput()
-                ->with('error', 'Hubo errores en el formulario');
-        }
+        return redirect()
+            ->route('cplanes')
+            ->with('success', 'Plan creado correctamente');
     }
 
-
+    // ================= ACTUALIZAR =================
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'nomb_plan'   => 'nullable',
-            'valor'       => 'nullable',
-            'descripcion' => 'nullable',
-            'duracion'    => 'nullable',
-        ]);
+        $request->validate(
+            [
+                'nomb_plan'   => 'required|string|min:3|max:100',
+                'valor'       => 'required|numeric|min:1',
+                'duracion'    => 'required|integer|min:1',
+                'descripcion' => 'required|string|max:255',
+            ],
+            [
+                'nomb_plan.required'   => 'El nombre del plan es obligatorio',
+                'nomb_plan.min'        => 'El nombre debe tener al menos 3 caracteres',
+                'valor.required'       => 'El valor del plan es obligatorio',
+                'valor.numeric'        => 'El valor debe ser numérico',
+                'valor.min'            => 'El valor debe ser mayor a 0',
+                'duracion.required'    => 'La duración es obligatoria',
+                'duracion.integer'     => 'La duración debe ser un número entero',
+                'duracion.min'         => 'La duración debe ser mayor a 0',
+                'descripcion.required' => 'La descripción no puede estar vacía y debe al menos 5 caracteres',
+            ]
+        );
 
         $plan = Plan::findOrFail($id);
 
-        $plan->update([
-            'nomb_plan'   => $request->nomb_plan,
-            'valor'       => $request->valor,
-            'descripcion' => $request->descripcion,
-            'duracion'    => $request->duracion,
-        ]);
+        $plan->update($request->only([
+            'nomb_plan',
+            'valor',
+            'duracion',
+            'descripcion'
+        ]));
 
-        return redirect()->route('cplanes')->with('success', 'Plan actualizado correectamente');
+        return redirect()
+            ->route('cplanes')
+            ->with('success', 'Plan actualizado correctamente');
     }
 
+    // ================= ELIMINAR =================
     public function destroy($id)
     {
         $plan = Plan::findOrFail($id);
