@@ -91,14 +91,12 @@
                             <td class="px-6 py-4 text-right">
                                 <div class="flex justify-end gap-1">
                                     <button
-                                        onclick="openEditModal(
-                                            {{ $plan->id_plan }},
-                                            @js($plan->nomb_plan),
-                                            {{ $plan->valor }},
-                                            {{ $plan->duracion }},
-                                            @js($plan->descripcion)
-                                        )"
-                                        class="p-2 text-[#4c669a] hover:text-primary">
+                                        data-id="{{ $plan->id_plan }}"
+                                        data-nombre="{{ $plan->nomb_plan }}"
+                                        data-valor="{{ $plan->valor }}"
+                                        data-duracion="{{ $plan->duracion }}"
+                                        data-descripcion="{{ $plan->descripcion }}"
+                                        class="btn-edit p-2 text-[#4c669a] hover:text-primary">
                                         <span class="material-symbols-outlined text-[20px]">edit</span>
                                     </button>
 
@@ -126,197 +124,196 @@
                 </table>
             </div>
 
+            <!-- Overlay Crear -->
+            <div id="overlayCreatePlan" class="fixed inset-0 bg-black/50 hidden z-40"></div>
 
-          {{-- MODAL CREAR --}}
-<div id="createModal" class="fixed inset-0 hidden z-50 bg-black/50 items-center justify-center">
-    <div class="bg-white dark:bg-[#161d2b] rounded-xl w-full max-w-md p-6">
-        <h3 class="text-lg font-bold mb-4 dark:text-white">Crear Plan</h3>
+            <!-- MODAL CREAR -->
+            <div id="createModal" class="fixed inset-0 hidden z-50 flex items-center justify-center">
+                <div class="bg-white dark:bg-[#161d2b] w-full max-w-md rounded-xl shadow-xl p-6 relative">
 
-        <form action="{{ route('planes.store') }}" method="POST" class="space-y-4">
-            @csrf
+                    <!-- Header -->
+                    <div class="flex justify-between items-center border-b pb-4 mb-4">
+                        <h3 class="text-lg font-bold dark:text-white">Crear Plan</h3>
+                        <button onclick="closeCreateModal()" class="text-gray-400 hover:text-gray-700">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
 
-            {{-- Nombre --}}
-            <div>
-                <input
-                    id="create_nomb_plan"
-                    name="nomb_plan"
-                    value="{{ old('nomb_plan') }}"
-                    required
-                    placeholder="Nombre del plan"
-                    oninput="validateCreatePlan()"
-                    class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white
-                    @error('nomb_plan') border-red-500 @enderror">
+                    <!-- Body -->
+                    <form action="{{ route('planes.store') }}" method="POST" class="space-y-4">
+                        @csrf
 
-                {{-- Error JS --}}
-                <p id="error_create_nomb_plan" class="text-xs text-red-500 mt-1 hidden"></p>
+                        <!-- Nombre -->
+                        <div>
+                            <input
+                                id="create_nomb_plan"
+                                name="nomb_plan"
+                                value="{{ old('nomb_plan') }}"
+                                required
+                                placeholder="Nombre del plan"
+                                class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white
+                        @error('nomb_plan') border-red-500 @enderror"
+                                oninput="validateCreatePlan()">
+                            <p id="error_create_nomb_plan" class="text-xs text-red-500 mt-1 hidden"></p>
+                            @error('nomb_plan')
+                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-                {{-- Error Laravel --}}
-                @error('nomb_plan')
-                    <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                @enderror
+                        <!-- Valor -->
+                        <div>
+                            <input
+                                id="create_valor"
+                                name="valor"
+                                type="number"
+                                value="{{ old('valor') }}"
+                                required
+                                placeholder="Valor"
+                                class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white
+                        @error('valor') border-red-500 @enderror"
+                                oninput="validateCreatePlan()">
+                            <p id="error_create_valor" class="text-xs text-red-500 mt-1 hidden"></p>
+                            @error('valor')
+                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Duración -->
+                        <div>
+                            <input
+                                id="create_duracion"
+                                name="duracion"
+                                type="number"
+                                value="{{ old('duracion') }}"
+                                required
+                                placeholder="Duración (meses)"
+                                class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white
+                        @error('duracion') border-red-500 @enderror"
+                                oninput="validateCreatePlan()">
+                            <p id="error_create_duracion" class="text-xs text-red-500 mt-1 hidden"></p>
+                            @error('duracion')
+                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Descripción -->
+                        <div>
+                            <textarea
+                                id="create_descripcion"
+                                name="descripcion"
+                                required
+                                placeholder="Descripción del plan"
+                                class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white
+                        @error('descripcion') border-red-500 @enderror"
+                                oninput="validateCreatePlan()">{{ old('descripcion') }}</textarea>
+                            <p id="error_create_descripcion" class="text-xs text-red-500 mt-1 hidden"></p>
+                            @error('descripcion')
+                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="flex justify-end gap-2 pt-4 border-t">
+                            <button type="button" onclick="closeCreateModal()" class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors">
+                                Cancelar
+                            </button>
+
+                            <button
+                                id="btnCreatePlan"
+                                disabled
+                                class="px-4 py-2 rounded-lg bg-primary text-white font-bold opacity-50 cursor-not-allowed">
+                                Crear
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
 
-            {{-- Valor --}}
-            <div>
-                <input
-                    id="create_valor"
-                    name="valor"
-                    type="number"
-                    value="{{ old('valor') }}"
-                    required
-                    placeholder="Valor"
-                    oninput="validateCreatePlan()"
-                    class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white
-                    @error('valor') border-red-500 @enderror">
 
-                {{-- Error JS --}}
-                <p id="error_create_valor" class="text-xs text-red-500 mt-1 hidden"></p>
 
-                {{-- Error Laravel --}}
-                @error('valor')
-                    <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                @enderror
+            {{-- MODAL EDITAR --}}
+            <div id="editModal" class="fixed inset-0 hidden z-50 flex items-center justify-center">
+                <div class="bg-white dark:bg-[#161d2b] w-full max-w-md rounded-xl shadow-xl p-6 relative">
+
+                    <!-- Header -->
+                    <div class="flex justify-between items-center border-b pb-4 mb-4">
+                        <h3 class="text-lg font-bold dark:text-white">Editar Plan</h3>
+                        <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-700">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+
+                    <!-- Body -->
+                    <form id="editForm" method="POST" class="space-y-4">
+                        @csrf
+                        @method('PUT')
+
+                        {{-- Nombre --}}
+                        <div>
+                            <input
+                                id="edit_nomb_plan"
+                                name="nomb_plan"
+                                required
+                                placeholder="Nombre del plan"
+                                class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white">
+
+                            <p id="error_edit_nomb_plan" class="text-xs text-red-500 mt-1 hidden"></p>
+                        </div>
+
+                        {{-- Valor --}}
+                        <div>
+                            <input
+                                id="edit_valor"
+                                name="valor"
+                                type="number"
+                                required
+                                placeholder="Valor"
+                                class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white">
+
+                            <p id="error_edit_valor" class="text-xs text-red-500 mt-1 hidden"></p>
+                        </div>
+
+                        {{-- Duración --}}
+                        <div>
+                            <input
+                                id="edit_duracion"
+                                name="duracion"
+                                type="number"
+                                required
+                                placeholder="Duración (meses)"
+                                class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white">
+
+                            <p id="error_edit_duracion" class="text-xs text-red-500 mt-1 hidden"></p>
+                        </div>
+
+                        {{-- Descripción --}}
+                        <div>
+                            <textarea
+                                id="edit_descripcion"
+                                name="descripcion"
+                                required
+                                placeholder="Descripción del plan"
+                                class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white"></textarea>
+
+                            <p id="error_edit_descripcion" class="text-xs text-red-500 mt-1 hidden"></p>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="flex justify-end gap-2 pt-4 border-t">
+                            <button type="button" onclick="closeEditModal()" class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors">
+                                Cancelar
+                            </button>
+
+                            <button id="btnEditPlan" type="submit" disabled
+                                class="px-4 py-2 rounded-lg bg-primary text-white font-bold opacity-50 cursor-not-allowed">
+                                Actualizar
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
 
-            {{-- Duración --}}
-            <div>
-                <input
-                    id="create_duracion"
-                    name="duracion"
-                    type="number"
-                    value="{{ old('duracion') }}"
-                    required
-                    placeholder="Duración (meses)"
-                    oninput="validateCreatePlan()"
-                    class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white
-                    @error('duracion') border-red-500 @enderror">
 
-                {{-- Error JS --}}
-                <p id="error_create_duracion" class="text-xs text-red-500 mt-1 hidden"></p>
-
-                {{-- Error Laravel --}}
-                @error('duracion')
-                    <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                @enderror
-            </div>
-
-            {{-- Descripción --}}
-            <div>
-                <textarea
-                    id="create_descripcion"
-                    name="descripcion"
-                    required
-                    placeholder="Descripción del plan"
-                    oninput="validateCreatePlan()"
-                    class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white
-                    @error('descripcion') border-red-500 @enderror">{{ old('descripcion') }}</textarea>
-
-                {{-- Error JS --}}
-                <p id="error_create_descripcion" class="text-xs text-red-500 mt-1 hidden"></p>
-
-                {{-- Error Laravel --}}
-                @error('descripcion')
-                    <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <div class="flex justify-end gap-2">
-                <button type="button" onclick="closeCreateModal()" class="border px-4 py-2 rounded">
-                    Cancelar
-                </button>
-
-                <button
-                    id="btnCreatePlan"
-                    disabled
-                    class="bg-primary text-white px-4 py-2 rounded font-bold opacity-50 cursor-not-allowed">
-                    Crear
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-
-
-
-{{-- MODAL EDITAR --}}
-<div id="editModal" class="fixed inset-0 hidden z-50 bg-black/50 items-center justify-center">
-    <div class="bg-white dark:bg-[#161d2b] rounded-xl w-full max-w-md p-6">
-        <h3 class="text-lg font-bold mb-4 dark:text-white">Editar Plan</h3>
-
-        <form id="editForm" method="POST" class="space-y-4">
-            @csrf
-            @method('PUT')
-
-            {{-- Nombre --}}
-            <div>
-                <input
-                    id="edit_nomb_plan"
-                    name="nomb_plan"
-                    required
-                    placeholder="Nombre del plan"
-                    oninput="validateEditPlan()"
-                    class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white">
-
-                <p id="error_edit_nomb_plan" class="text-xs text-red-500 mt-1 hidden"></p>
-            </div>
-
-            {{-- Valor --}}
-            <div>
-                <input
-                    id="edit_valor"
-                    name="valor"
-                    type="number"
-                    required
-                    placeholder="Valor del plan"
-                    oninput="validateEditPlan()"
-                    class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white">
-
-                <p id="error_edit_valor" class="text-xs text-red-500 mt-1 hidden"></p>
-            </div>
-
-            {{-- Duración --}}
-            <div>
-                <input
-                    id="edit_duracion"
-                    name="duracion"
-                    type="number"
-                    required
-                    placeholder="Duración (meses)"
-                    oninput="validateEditPlan()"
-                    class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white">
-
-                <p id="error_edit_duracion" class="text-xs text-red-500 mt-1 hidden"></p>
-            </div>
-
-            {{-- Descripción --}}
-            <div>
-                <textarea
-                    id="edit_descripcion"
-                    name="descripcion"
-                    required
-                    placeholder="Descripción del plan"
-                    oninput="validateEditPlan()"
-                    class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white"></textarea>
-
-                <p id="error_edit_descripcion" class="text-xs text-red-500 mt-1 hidden"></p>
-            </div>
-
-            <div class="flex justify-end gap-2">
-                <button type="button" onclick="closeEditModal()" class="border px-4 py-2 rounded">
-                    Cancelar
-                </button>
-
-                <button
-                    id="btnEditPlan"
-                    disabled
-                    class="bg-primary text-white px-4 py-2 rounded font-bold opacity-50 cursor-not-allowed">
-                    Actualizar
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
 
 
 
@@ -363,52 +360,62 @@
 
 <script>
 /* =========================
-    REFERENCIAS
+   REFERENCIAS
 ========================= */
 const createModal = document.getElementById('createModal')
-const editModal   = document.getElementById('editModal')
-const editForm    = document.getElementById('editForm')
-
+const editModal = document.getElementById('editModal')
+const editForm = document.getElementById('editForm')
+const wrapper = document.getElementById('plansWrapper')
 const searchInput = document.getElementById('searchPlan')
-const wrapper     = document.getElementById('plansWrapper')
 
 /* =========================
-    MODALES
+   ESTADO (TOUCHED)
 ========================= */
-function openCreateModal() {
+const touchedCreate = { nombre:false, valor:false, duracion:false, descripcion:false }
+const touchedEdit   = { nombre:false, valor:false, duracion:false, descripcion:false }
+
+/* =========================
+   MODALES
+========================= */
+function openCreateModal(){
     createModal.classList.remove('hidden')
-    createModal.classList.add('flex')
-    validateCreatePlan()
+    document.getElementById('overlayCreatePlan').classList.remove('hidden')
+
+    // Reinicia formulario y estado
+    resetCreateForm()
 }
 
-function closeCreateModal() {
+
+function closeCreateModal(){
     createModal.classList.add('hidden')
-    createModal.classList.remove('flex')
+    document.getElementById('overlayCreatePlan').classList.add('hidden')
+    resetCreateForm()
 }
 
-function openEditModal(id, nombre, valor, duracion, descripcion) {
+function openEditModal(id,nombre,valor,duracion,descripcion){
     editForm.action = `/sadmin/planes/${id}`
-
     document.getElementById('edit_nomb_plan').value = nombre
     document.getElementById('edit_valor').value = valor
     document.getElementById('edit_duracion').value = duracion
     document.getElementById('edit_descripcion').value = descripcion ?? ''
-
+    
+    // Marcar todos los inputs como touched y validar para habilitar el botón
+    Object.keys(touchedEdit).forEach(k => touchedEdit[k]=true)
     validateEditPlan()
 
     editModal.classList.remove('hidden')
-    editModal.classList.add('flex')
+    document.getElementById('overlayEditPlan')?.classList.remove('hidden')
 }
 
-function closeEditModal() {
+function closeEditModal(){
     editModal.classList.add('hidden')
-    editModal.classList.remove('flex')
+    document.getElementById('overlayEditPlan')?.classList.add('hidden')
 }
 
 /* =========================
-    ELIMINAR
+   ELIMINAR
 ========================= */
-function openDeleteModal(id, name) {
+function openDeleteModal(id,name){
     Swal.fire({
         title: '¿Eliminar plan?',
         text: `Se eliminará el plan "${name}". Esta acción no se puede deshacer.`,
@@ -418,8 +425,8 @@ function openDeleteModal(id, name) {
         cancelButtonColor: '#6b7280',
         confirmButtonText: 'Sí, eliminar',
         cancelButtonText: 'Cancelar'
-    }).then((result) => {
-        if (result.isConfirmed) {
+    }).then(result=>{
+        if(result.isConfirmed){
             const form = document.getElementById('deleteForm')
             form.action = `/sadmin/planes/${id}`
             form.submit()
@@ -428,177 +435,222 @@ function openDeleteModal(id, name) {
 }
 
 /* =========================
-    BUSCADOR AJAX
+   BUSCADOR + PAGINACIÓN AJAX
 ========================= */
 let debounce = null
 let currentSearch = ''
 
-function loadPlans(url) {
-    fetch(url, {
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-    })
-    .then(res => res.text())
-    .then(html => {
-        const doc = new DOMParser().parseFromString(html, 'text/html')
-        const newWrapper = doc.getElementById('plansWrapper')
-        if (newWrapper) {
-            wrapper.innerHTML = newWrapper.innerHTML
-            bindPaginationLinks()
-        }
-    })
+function loadPlans(url){
+    fetch(url,{ headers:{'X-Requested-With':'XMLHttpRequest'}})
+        .then(res=>res.text())
+        .then(html=>{
+            const doc = new DOMParser().parseFromString(html,'text/html')
+            const newWrapper = doc.getElementById('plansWrapper')
+            if(newWrapper){
+                wrapper.innerHTML = newWrapper.innerHTML
+            }
+        })
 }
 
-function bindPaginationLinks() {
-    document.querySelectorAll('#plansWrapper a').forEach(link => {
-        if (!link.href) return
-        link.addEventListener('click', e => {
+function bindPaginationLinks(){
+    document.querySelectorAll('#plansWrapper a').forEach(link=>{
+        if(!link.href) return
+        link.addEventListener('click', e=>{
             e.preventDefault()
             const url = new URL(link.href)
-            url.searchParams.set('search', currentSearch)
+            if(currentSearch) url.searchParams.set('search',currentSearch)
             loadPlans(url.toString())
         })
     })
 }
 
-if (searchInput) {
-    searchInput.addEventListener('input', function () {
+if(searchInput){
+    searchInput.addEventListener('input', function(){
         clearTimeout(debounce)
         currentSearch = this.value.trim()
-
-        debounce = setTimeout(() => {
+        debounce = setTimeout(()=>{
             const url = new URL(`{{ route('cplanes') }}`)
-            if (currentSearch) {
-                url.searchParams.set('search', currentSearch)
-            }
+            if(currentSearch) url.searchParams.set('search',currentSearch)
             loadPlans(url.toString())
-        }, 300)
+        },300)
     })
 }
 
-bindPaginationLinks()
+/* =========================
+   DELEGACIÓN DE EVENTOS PARA BOTONES DINÁMICOS
+========================= */
+wrapper.addEventListener('click', function(e){
+    const editBtn = e.target.closest('.btn-edit')
+    const deleteBtn = e.target.closest('.btn-delete')
+    
+    if(editBtn){
+        const data = editBtn.dataset
+        openEditModal(data.id, data.nombre, data.valor, data.duracion, data.descripcion)
+    }
+    if(deleteBtn){
+        const data = deleteBtn.dataset
+        openDeleteModal(data.id, data.nombre)
+    }
+})
+
+document.getElementById('btnOpenCreateModal')?.addEventListener('click', openCreateModal)
 
 /* =========================
-    VALIDACIONES CREATE
+   VALIDACIONES
 ========================= */
-function validateCreatePlan() {
+function validateCreatePlan(){
     const nombre = document.getElementById('create_nomb_plan')
     const valor = document.getElementById('create_valor')
     const duracion = document.getElementById('create_duracion')
     const descripcion = document.getElementById('create_descripcion')
     const btn = document.getElementById('btnCreatePlan')
-
     let valid = true
 
-    if (nombre.value.trim().length < 3) {
-        showError('error_create_nomb_plan', 'El nombre debe tener al menos 3 caracteres')
+    // Solo mostramos errores si el campo fue tocado
+    if(touchedCreate.nombre && nombre.value.trim().length < 3){
+        showError('error_create_nomb_plan','El nombre debe tener al menos 3 caracteres')
+        nombre.classList.add('border-red-500')
         valid = false
-    } else hideError('error_create_nomb_plan')
+    } else {
+        hideError('error_create_nomb_plan')
+        nombre.classList.remove('border-red-500')
+    }
 
-    if (Number(valor.value) <= 0) {
-        showError('error_create_valor', 'El valor debe ser mayor a 0')
+    const valorNum = Number(valor.value) || 0
+    if(touchedCreate.valor && valorNum <= 0){
+        showError('error_create_valor','El valor debe ser mayor a 0')
+        valor.classList.add('border-red-500')
         valid = false
-    } else hideError('error_create_valor')
+    } else {
+        hideError('error_create_valor')
+        valor.classList.remove('border-red-500')
+    }
 
-    if (Number(duracion.value) <= 0) {
-        showError('error_create_duracion', 'La duración debe ser mayor a 0')
+    const duracionNum = Number(duracion.value) || 0
+    if(touchedCreate.duracion && duracionNum <= 0){
+        showError('error_create_duracion','La duración debe ser mayor a 0')
+        duracion.classList.add('border-red-500')
         valid = false
-    } else hideError('error_create_duracion')
+    } else {
+        hideError('error_create_duracion')
+        duracion.classList.remove('border-red-500')
+    }
 
-    if (descripcion.value.trim().length < 5) {
-        showError('error_create_descripcion', 'La descripción es obligatoria y debe tener al menos 5 caracteres')
+    if(touchedCreate.descripcion && descripcion.value.trim().length < 5){
+        showError('error_create_descripcion','La descripción debe tener al menos 5 caracteres')
+        descripcion.classList.add('border-red-500')
         valid = false
-    } else hideError('error_create_descripcion')
+    } else {
+        hideError('error_create_descripcion')
+        descripcion.classList.remove('border-red-500')
+    }
+
+    // Para habilitar el botón, validamos todos los campos independientemente de touched
+    const allValid = nombre.value.trim().length >= 3 &&
+                     valorNum > 0 &&
+                     duracionNum > 0 &&
+                     descripcion.value.trim().length >= 5
+
+    btn.disabled = !allValid
+    btn.classList.toggle('opacity-50', !allValid)
+    btn.classList.toggle('cursor-not-allowed', !allValid)
+}
+
+
+function validateEditPlan(){
+    const nombre = document.getElementById('edit_nomb_plan')
+    const valor = document.getElementById('edit_valor')
+    const duracion = document.getElementById('edit_duracion')
+    const descripcion = document.getElementById('edit_descripcion')
+    const btn = document.getElementById('btnEditPlan')
+    let valid = true
+
+    if(touchedEdit.nombre){
+        if(nombre.value.trim().length<3){ showError('error_edit_nomb_plan','Debe tener al menos 3 caracteres'); nombre.classList.add('border-red-500'); valid=false }
+        else{ hideError('error_edit_nomb_plan'); nombre.classList.remove('border-red-500') }
+    }else valid=false
+
+    const valorNum = Number(valor.value)||0
+    if(touchedEdit.valor){
+        if(valorNum<=0){ showError('error_edit_valor','Debe ser mayor a 0'); valor.classList.add('border-red-500'); valid=false }
+        else{ hideError('error_edit_valor'); valor.classList.remove('border-red-500') }
+    }else valid=false
+
+    const duracionNum = Number(duracion.value)||0
+    if(touchedEdit.duracion){
+        if(duracionNum<=0){ showError('error_edit_duracion','Debe ser mayor a 0'); duracion.classList.add('border-red-500'); valid=false }
+        else{ hideError('error_edit_duracion'); duracion.classList.remove('border-red-500') }
+    }else valid=false
+
+    if(touchedEdit.descripcion){
+        if(descripcion.value.trim().length<5){ showError('error_edit_descripcion','Debe tener al menos 5 caracteres'); descripcion.classList.add('border-red-500'); valid=false }
+        else{ hideError('error_edit_descripcion'); descripcion.classList.remove('border-red-500') }
+    }else valid=false
 
     btn.disabled = !valid
-    btn.classList.toggle('opacity-50', !valid)
-    btn.classList.toggle('cursor-not-allowed', !valid)
+    btn.classList.toggle('opacity-50',!valid)
+    btn.classList.toggle('cursor-not-allowed',!valid)
 }
 
 /* =========================
-    VALIDACIONES EDIT
+   EVENTOS INPUTS
 ========================= */
-function validateEditPlan() {
-        const nombre = document.getElementById('edit_nomb_plan')
-        const valor = document.getElementById('edit_valor')
-        const duracion = document.getElementById('edit_duracion')
-        const descripcion = document.getElementById('edit_descripcion')
-        const btn = document.getElementById('btnEditPlan')
-
-        let valid = true
-        const regexLetras = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/
-
-        // Nombre
-        if (nombre.value.trim().length < 3) {
-            showError('error_edit_nomb_plan', 'Debe tener al menos 3 caracteres')
-            valid = false
-        } else if (!regexLetras.test(nombre.value)) {
-            showError('error_edit_nomb_plan', 'Solo se permiten letras')
-            valid = false
-        } else {
-            hideError('error_edit_nomb_plan')
-        }
-
-        // Valor
-        if (Number(valor.value) <= 0) {
-            showError('error_edit_valor', 'Debe ser mayor a 0')
-            valid = false
-        } else {
-            hideError('error_edit_valor')
-        }
-
-        // Duración
-        if (Number(duracion.value) <= 0) {
-            showError('error_edit_duracion', 'Debe ser mayor a 0')
-            valid = false
-        } else {
-            hideError('error_edit_duracion')
-        }
-
-        // Descripción
-        if (descripcion.value.trim().length < 5) {
-            showError('error_edit_descripcion', 'La descripción es obligatoria y minimo 5 caracteres')
-            valid = false
-        } else {
-            hideError('error_edit_descripcion')
-        }
-
-        btn.disabled = !valid
-        btn.classList.toggle('opacity-50', !valid)
-        btn.classList.toggle('cursor-not-allowed', !valid)
-    }
+['create_nomb_plan','create_valor','create_duracion','create_descripcion'].forEach(id=>{
+    document.getElementById(id)?.addEventListener('input', ()=>{
+        touchedCreate[id.replace('create_','').replace('_plan','')]=true
+        validateCreatePlan()
+    })
+})
+['edit_nomb_plan','edit_valor','edit_duracion','edit_descripcion'].forEach(id=>{
+    document.getElementById(id)?.addEventListener('input', ()=>{
+        touchedEdit[id.replace('edit_','').replace('_plan','')]=true
+        validateEditPlan()
+    })
+})
 
 /* =========================
-    HELPERS
+   RESET FORMULARIOS
 ========================= */
-function showError(id, message) {
-    const el = document.getElementById(id)
-    if (!el) return
-    el.textContent = message
+function resetCreateForm(){
+    Object.keys(touchedCreate).forEach(k=>touchedCreate[k]=false)
+    ['error_create_nomb_plan','error_create_valor','error_create_duracion','error_create_descripcion'].forEach(hideError)
+    const btn = document.getElementById('btnCreatePlan')
+    btn.disabled=true
+    btn.classList.add('opacity-50','cursor-not-allowed')
+    ['create_nomb_plan','create_valor','create_duracion','create_descripcion'].forEach(id=>document.getElementById(id)?.classList.remove('border-red-500'))
+}
+
+function resetEditForm(){
+    Object.keys(touchedEdit).forEach(k=>touchedEdit[k]=false)
+    ['error_edit_nomb_plan','error_edit_valor','error_edit_duracion','error_edit_descripcion'].forEach(hideError)
+    const btn = document.getElementById('btnEditPlan')
+    btn.disabled=true
+    btn.classList.add('opacity-50','cursor-not-allowed')
+    ['edit_nomb_plan','edit_valor','edit_duracion','edit_descripcion'].forEach(id=>document.getElementById(id)?.classList.remove('border-red-500'))
+}
+
+/* =========================
+   HELPERS
+========================= */
+function showError(id,message){
+    const el=document.getElementById(id)
+    if(!el) return
+    el.textContent=message
     el.classList.remove('hidden')
 }
 
-function hideError(id) {
-    const el = document.getElementById(id)
-    if (!el) return
-    el.textContent = ''
+function hideError(id){
+    const el=document.getElementById(id)
+    if(!el) return
+    el.textContent=''
     el.classList.add('hidden')
 }
 
-
-
 /* =========================
-    EVENTOS INPUT
+   INICIALIZACIÓN
 ========================= */
-document.querySelectorAll(
-    '#create_nomb_plan, #create_valor, #create_duracion, #create_descripcion'
-).forEach(el => el.addEventListener('input', validateCreatePlan))
-
-document.querySelectorAll(
-    '#edit_nomb_plan, #edit_valor, #edit_duracion, #edit_descripcion'
-).forEach(el => el.addEventListener('input', validateEditPlan))
+bindPaginationLinks()
 </script>
-
-
 
 {{-- ALERTAS --}}
 @if (session('success'))
