@@ -67,6 +67,8 @@
             </main>
         </div>
     </div>
+
+    @yield('modals')
 </body>
 
 

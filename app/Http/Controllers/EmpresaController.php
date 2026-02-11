@@ -82,3 +82,4 @@ class EmpresaController extends Controller
             ->with('success', 'Empresa eliminada correctamente');
     }
 }
+    
