@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+
 class Pago extends Model
 {
     protected $table = 'pagos'; // nombre real de tu tabla
@@ -29,6 +30,6 @@ class Pago extends Model
 
     public function estado()
     {
-        return $this->belongsTo(EstadoPago::class, 'id_est_pago');
+        return $this->belongsTo(Estado::class, 'id_est_pago');
     }
 }
