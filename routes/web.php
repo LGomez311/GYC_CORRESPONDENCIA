@@ -98,13 +98,15 @@ Route::get('/admin/pagos', function () {
     return view('admin.pagos');
 })->name('admin.pagos');
 
-// Rutas del plan
-Route::prefix('sadmin')->group(function () {
+// rutas del plan 
+    Route::prefix('sadmin')->group(function () {
     Route::get('/planes', [PlanController::class, 'index'])->name('cplanes');
     Route::post('/planes', [PlanController::class, 'store'])->name('planes.store');
+
     Route::put('/planes/{id}', [PlanController::class, 'update'])->name('planes.update');
     Route::delete('/planes/{id}', [PlanController::class, 'destroy'])->name('planes.destroy');
 });
+
 
 // Rutas administrador de empresas en vista sadmin
 Route::post('/sadmin/usuarios', [UsuarioController::class, 'store'])
@@ -115,18 +117,5 @@ Route::put('sadmin/admins/{documento}', [UsuarioController::class, 'update'])
 
 Route::delete('/usuarios/{emple_doc}', [UsuarioController::class, 'destroy'])
     ->name('usuarios.destroy');
-
-// ruta para historial de pago
-
-Route::get('/sadmin/pagos', [PagoController::class, 'index'])
-    ->name('sadmin.pagos');
-
-    // ruta para comprobar pagos
-
-    Route::prefix('sadmin')->group(function () {
-    Route::get('/pagos', [PagoController::class, 'index'])->name('pagos.index');
-
-    Route::post('/pagos/{id}/aprobar', [PagoController::class, 'aprobar'])->name('pagos.aprobar');
-    Route::post('/pagos/{id}/denegar', [PagoController::class, 'denegar'])->name('pagos.denegar');
-});
+    });
 
