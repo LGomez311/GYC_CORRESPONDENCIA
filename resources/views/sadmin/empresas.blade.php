@@ -12,7 +12,7 @@
                     Gestión de Empresas
                 </h1>
                 <p class="text-[#4c669a] dark:text-gray-400">
-                    Administre el directorio de empresas clientes y sus planes activos.
+                    Administre el directorio de empresas y clientes.
                 </p>
             </div>
 
@@ -22,144 +22,221 @@
                 Añadir Empresa
             </button>
         </div>
-
-        <!-- Tabla -->
         <div
             class="bg-white dark:bg-[#161d2b] rounded-xl border border-[#cfd7e7] dark:border-gray-800 overflow-hidden shadow-sm">
-            <table class="w-full text-left border-collapse">
-                <thead class="bg-background-light dark:bg-background-dark/50">
-                    <tr>
-                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Empresa</th>
-                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">NIT</th>
-                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Dirección</th>
-                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Teléfono</th>
-                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Correo</th>
-                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Estado</th>
-                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase text-right">Acciones</th>
-                    </tr>
-                </thead>
+            <div class="p-6 border-b border-[#cfd7e7] dark:border-gray-800">
+                <h2 class="text-lg font-bold dark:text-white">Empresas Registradas</h2>
+            </div>
+            <!-- TABLA -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
 
-                <tbody class="divide-y divide-[#cfd7e7] dark:divide-gray-800">
-
-                    @foreach ($empresas as $empresa)
+                    <thead class="bg-background-light dark:bg-background-dark/50">
                         <tr>
-                            <td>{{ $empresa->nomb_empresa }}</td>
-                            <td>{{ $empresa->nit_empresa }}</td>
-                            <td>{{ $empresa->direccion }}</td>
-                            <td>{{ $empresa->contacto }}</td>
-                            <td>{{ $empresa->empresa_correo }}</td>
-
-                            <td class="text-right">
-                                <div class="flex justify-end gap-2">
-
-                                    <!-- EDITAR -->
-                                    <button
-                                        onclick="openEditModal(
-                                        '{{ $empresa->nit_empresa }}',
-                                        '{{ $empresa->nomb_empresa }}',
-                                        '{{ $empresa->direccion }}',
-                                        '{{ $empresa->contacto }}',
-                                        '{{ $empresa->empresa_correo }}'
-                                        )">
-                                        <span class="material-symbols-outlined">edit</span>
-                                    </button>
-
-                                    <!-- ELIMINAR -->
-                                    <form action="{{ route('empresas.destroy', $empresa->nit_empresa) }}" method="POST"
-                                        onsubmit="return confirm('¿Eliminar esta empresa?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit">
-                                            <span class="material-symbols-outlined">delete</span>
-                                        </button>
-                                    </form>
-
-                                </div>
-                            </td>
+                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Empresa</th>
+                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">NIT</th>
+                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Dirección</th>
+                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Teléfono</th>
+                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Correo</th>
+                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase text-right">Acciones</th>
                         </tr>
-                    @endforeach
+                    </thead>
 
+                    <tbody class="divide-y divide-[#cfd7e7] dark:divide-gray-800">
 
-                </tbody>
-            </table>
+                        @foreach ($empresas as $empresa)
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+
+                                <!-- EMPRESA -->
+                                <td class="px-6 py-4">
+                                    <span class="text-sm font-bold dark:text-white">
+                                        {{ $empresa->nomb_empresa }}
+                                    </span>
+                                </td>
+
+                                <!-- NIT -->
+                                <td class="px-6 py-4 text-sm text-[#4c669a] dark:text-gray-400">
+                                    {{ $empresa->nit_empresa }}
+                                </td>
+
+                                <!-- DIRECCIÓN -->
+                                <td class="px-6 py-4 text-sm dark:text-gray-300">
+                                    {{ $empresa->direccion }}
+                                </td>
+
+                                <!-- TELÉFONO -->
+                                <td class="px-6 py-4 text-sm dark:text-gray-300">
+                                    {{ $empresa->contacto }}
+                                </td>
+
+                                <!-- CORREO -->
+                                <td class="px-6 py-4 text-sm dark:text-gray-300">
+                                    {{ $empresa->empresa_correo }}
+                                </td>
+
+                                <!-- ACCIONES -->
+                                <td class="px-6 py-4 text-right">
+                                    <div class="flex items-center justify-end gap-1">
+
+                                        <!-- EDITAR -->
+                                        <button
+                                            onclick="openEditModal(
+                                    '{{ $empresa->nit_empresa }}',
+                                    '{{ $empresa->nomb_empresa }}',
+                                    '{{ $empresa->direccion }}',
+                                    '{{ $empresa->contacto }}',
+                                    '{{ $empresa->empresa_correo }}'
+                                )"
+                                            class="p-2 text-[#4c669a] hover:text-primary transition">
+                                            <span class="material-symbols-outlined text-[20px]">edit</span>
+                                        </button>
+
+                                        <!-- ELIMINAR -->
+                                        <form class="delete-form"
+                                            action="{{ route('empresas.destroy', $empresa->nit_empresa) }}" method="POST">
+                                            @csrf
+                                            @method('DELETE')
+
+                                            <button type="submit" class="p-2 text-[#4c669a] hover:text-red-500 transition">
+                                                <span class="material-symbols-outlined text-[20px]">delete</span>
+                                            </button>
+                                        </form>
+
+                                    </div>
+                                </td>
+
+                            </tr>
+                        @endforeach
+
+                    </tbody>
+                </table>
+            </div>
+
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const deleteForms = document.querySelectorAll('.delete-form');
+
+            deleteForms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault(); // Detiene el submit por defecto
+
+                    Swal.fire({
+                        title: '¿Estás seguro?',
+                        text: "¡No podrás revertir esto!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Sí, eliminar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit(); // Si confirma, se envía el formulario
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+    @if (session('success'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Operación exitosa!',
+                    text: "{{ session('success') }}",
+                    timer: 2500,
+                    showConfirmButton: false
+                });
+            });
+        </script>
+    @endif
+
+
 @endsection
 
 {{-- ===================== MODALES ===================== --}}
 @section('modals')
-    <!-- Modal Crear -->
-    <div id="createModal" class="fixed inset-0 flex items-center justify-center hidden z-50">
-        <div
-            class="w-full max-w-[560px] bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+
+    <!-- Modal Crear Empresa -->
+    <div id="createModal" class="fixed inset-0 flex items-center justify-center hidden z-50 bg-black/40">
+        <div class="bg-white w-full max-w-3xl rounded-xl shadow-xl p-6 relative">
 
             <!-- Header -->
-            <div class="px-8 pt-10 pb-6 text-center border-b border-slate-100 dark:border-slate-800 relative">
-                <h2 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-                    Registrar Nueva Empresa
-                </h2>
-                <p class="mt-2 text-slate-500 dark:text-slate-400">
-                    Complete los datos de la organización.
-                </p>
+            <div class="flex justify-between items-center border-b pb-4 mb-6">
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-800">
+                        Registrar Nueva Empresa
+                    </h2>
+                    <p class="text-sm text-gray-500">
+                        Complete los datos de la organización
+                    </p>
+                </div>
 
-                <!-- Cerrar -->
-                <button onclick="closeModals()" class="absolute top-6 right-6 text-slate-400 hover:text-slate-700">
+                <button onclick="closeModals()" class="text-gray-500 hover:text-gray-800">
                     <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
 
             <!-- Formulario -->
-            <form action="{{ route('empresas.store') }}" method="POST" class="px-8 pb-10 pt-8 space-y-6">
+            <form id="empresaForm" action="{{ route('empresas.store') }}" method="POST" class="space-y-6">
                 @csrf
 
-                <div class="flex flex-col gap-2">
-                    <label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Nombre Empresa</label>
-                    <input name="nomb_empresa" type="text"
-                        class="w-full h-12 px-4 rounded-lg border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-primary focus:border-primary"
-                        placeholder="Ej: Innova Tech S.A.S.">
-                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                <div class="flex flex-col gap-2">
-                    <label class="text-sm font-semibold text-slate-700 dark:text-slate-300">NIT</label>
-                    <input name="nit_empresa" type="text"
-                        class="w-full h-12 px-4 rounded-lg border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-primary focus:border-primary"
-                        placeholder="900.000.000-1">
-                </div>
-
-                <div class="flex flex-col gap-2">
-                    <label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Dirección</label>
-                    <input name="direccion" type="text"
-                        class="w-full h-12 px-4 rounded-lg border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-primary focus:border-primary"
-                        placeholder="Calle 123 #45-67">
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="flex flex-col gap-2">
-                        <label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Teléfono</label>
-                        <input name="contacto" type="tel"
-                            class="w-full h-12 px-4 rounded-lg border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-primary focus:border-primary"
-                            placeholder="+57 300 000 0000">
+                    <!-- Nombre -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Nombre Empresa</label>
+                        <input id="nomb_empresa" name="nomb_empresa" type="text"
+                            class="mt-1 w-full rounded-lg border-gray-300">
+                        <p class="text-sm text-red-600 hidden" id="error-nombre"></p>
                     </div>
 
-                    <div class="flex flex-col gap-2">
-                        <label class="text-sm font-semibold text-slate-700 dark:text-slate-300">Correo</label>
-                        <input name="empresa_correo" type="email"
-                            class="w-full h-12 px-4 rounded-lg border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-primary focus:border-primary"
-                            placeholder="contacto@empresa.com">
+                    <!-- NIT -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">NIT</label>
+                        <input id="nit_empresa" name="nit_empresa" type="text"
+                            class="mt-1 w-full rounded-lg border-gray-300">
+                        <p class="text-sm text-red-600 hidden" id="error-nit"></p>
                     </div>
+
+                    <!-- Dirección -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Dirección</label>
+                        <input id="direccion" name="direccion" type="text"
+                            class="mt-1 w-full rounded-lg border-gray-300">
+                        <p class="text-sm text-red-600 hidden" id="error-direccion"></p>
+                    </div>
+
+                    <!-- Teléfono -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Teléfono</label>
+                        <input id="contacto" name="contacto" type="text" class="mt-1 w-full rounded-lg border-gray-300">
+                        <p class="text-sm text-red-600 hidden" id="error-contacto"></p>
+                    </div>
+
+                    <!-- Correo -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700">Correo</label>
+                        <input id="empresa_correo" name="empresa_correo" type="email"
+                            class="mt-1 w-full rounded-lg border-gray-300">
+                        <p class="text-sm text-red-600 hidden" id="error-correo"></p>
+                    </div>
+
                 </div>
 
                 <!-- Acciones -->
-                <div class="flex gap-4 pt-4">
-                    <!-- VOLVER -->
+                <div class="flex justify-end gap-3 pt-6 border-t">
                     <button type="button" onclick="closeModals()"
-                        class="w-1/2 h-12 rounded-lg border border-slate-300 text-slate-700 font-semibold hover:bg-slate-100 transition">
-                        Volver
+                        class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100">
+                        Cancelar
                     </button>
 
-                    <!-- GUARDAR -->
-                    <button type="submit"
-                        class="w-1/2 h-12 bg-primary hover:bg-primary/90 text-white font-bold rounded-lg shadow-lg shadow-primary/25 flex items-center justify-center gap-2">
+                    <button id="btnGuardar" type="submit" disabled
+                        class="px-6 py-2 rounded-lg bg-blue-600 text-white flex items-center gap-2 opacity-50 cursor-not-allowed">
                         <span class="material-symbols-outlined">save</span>
                         Guardar
                     </button>
@@ -169,69 +246,80 @@
     </div>
 
 
-    <!-- Modal Editar -->
-    <!-- Modal Editar -->
+
+
+
+    <!-- Modal Editar Empresa -->
     <div id="editModal" class="fixed inset-0 flex items-center justify-center hidden z-50">
-        <div
-            class="w-full max-w-[560px] bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+        <div class="bg-white w-full max-w-3xl rounded-xl shadow-xl p-6 relative">
 
             <!-- Header -->
-            <div class="px-8 pt-10 pb-6 text-center border-b border-slate-100 dark:border-slate-800 relative">
-                <h2 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-                    Editar Empresa
-                </h2>
-                <p class="mt-2 text-slate-500 dark:text-slate-400">
-                    Modifique la información de la empresa.
-                </p>
+            <div class="flex justify-between items-center border-b pb-4 mb-6">
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-800">
+                        Editar Empresa
+                    </h2>
+                    <p class="text-sm text-gray-500">
+                        Modifique la información de la empresa
+                    </p>
+                </div>
 
-                <button onclick="closeModals()" class="absolute top-6 right-6 text-slate-400 hover:text-slate-700">
+                <button onclick="closeModals()" class="text-gray-500 hover:text-gray-800">
                     <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
 
-            <form id="editForm" method="POST" class="px-8 pb-10 pt-8 space-y-6">
+            <form id="editForm" method="POST" class="space-y-6">
                 @csrf
                 @method('PUT')
 
-                <input type="hidden" id="editNit">
+                <!-- NIT ORIGINAL (para la URL) -->
+                <input type="hidden" id="editNitOriginal">
 
-                <div class="flex flex-col gap-2">
-                    <label class="text-sm font-semibold">Nombre Empresa</label>
-                    <input id="editNombre" name="nomb_empresa"
-                        class="w-full h-12 px-4 rounded-lg border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-primary">
-                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                <div class="flex flex-col gap-2">
-                    <label class="text-sm font-semibold">Dirección</label>
-                    <input id="editDireccion" name="direccion"
-                        class="w-full h-12 px-4 rounded-lg border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-primary">
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="flex flex-col gap-2">
-                        <label class="text-sm font-semibold">Teléfono</label>
-                        <input id="editContacto" name="contacto"
-                            class="w-full h-12 px-4 rounded-lg border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-primary">
+                    <!-- NIT EDITABLE -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">NIT</label>
+                        <input id="editNit" name="nit_empresa" type="text"
+                            class="mt-1 w-full rounded-lg border-gray-300">
                     </div>
 
-                    <div class="flex flex-col gap-2">
-                        <label class="text-sm font-semibold">Correo</label>
+                    <!-- NOMBRE -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Nombre Empresa</label>
+                        <input id="editNombre" name="nomb_empresa" class="mt-1 w-full rounded-lg border-gray-300">
+                    </div>
+
+                    <!-- DIRECCIÓN -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Dirección</label>
+                        <input id="editDireccion" name="direccion" class="mt-1 w-full rounded-lg border-gray-300">
+                    </div>
+
+                    <!-- TELÉFONO -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Teléfono</label>
+                        <input id="editContacto" name="contacto" class="mt-1 w-full rounded-lg border-gray-300">
+                    </div>
+
+                    <!-- CORREO -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Correo</label>
                         <input id="editCorreo" name="empresa_correo" type="email"
-                            class="w-full h-12 px-4 rounded-lg border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-primary">
+                            class="mt-1 w-full rounded-lg border-gray-300">
                     </div>
+
                 </div>
 
                 <!-- Acciones -->
-                <div class="flex gap-4 pt-4">
-                    <!-- VOLVER -->
+                <div class="flex justify-end gap-3 pt-6 border-t">
                     <button type="button" onclick="closeModals()"
-                        class="w-1/2 h-12 rounded-lg border border-slate-300 text-slate-700 font-semibold hover:bg-slate-100 transition">
-                        Volver
+                        class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100">
+                        Cancelar
                     </button>
 
-                    <!-- GUARDAR -->
-                    <button type="submit"
-                        class="w-1/2 h-12 bg-primary hover:bg-primary/90 text-white font-bold rounded-lg shadow-lg shadow-primary/25 flex items-center justify-center gap-2">
+                    <button type="submit" class="px-6 py-2 rounded-lg bg-blue-600 text-white flex items-center gap-2">
                         <span class="material-symbols-outlined">save</span>
                         Guardar Cambios
                     </button>
@@ -239,6 +327,7 @@
             </form>
         </div>
     </div>
+
 
 
 
@@ -255,7 +344,17 @@
         }
 
         function openEditModal(nit, nombre, direccion, contacto, correo) {
+
+            // La ruta sigue usando el NIT original
             document.getElementById('editForm').action = `/sadmin/empresas/${nit}`;
+
+            // Guardamos el NIT original (por seguridad / referencia)
+            document.getElementById('editNitOriginal').value = nit;
+
+            // NIT editable
+            document.getElementById('editNit').value = nit;
+
+            // Resto de campos
             document.getElementById('editNombre').value = nombre;
             document.getElementById('editDireccion').value = direccion;
             document.getElementById('editContacto').value = contacto;
@@ -265,6 +364,156 @@
             document.getElementById('modalOverlay').classList.remove('hidden');
         }
     </script>
+
+    <script>
+        const form = document.getElementById('empresaForm');
+        const btnGuardar = document.getElementById('btnGuardar');
+
+        const fields = {
+            nomb_empresa: {
+                error: 'error-nombre',
+                touched: false,
+                max: 100,
+                validate(v) {
+                    if (!v) return 'El nombre es obligatorio';
+                    if (v.length < 3) return 'Mínimo 3 caracteres';
+                    if (v.length > this.max) return `Máximo ${this.max} caracteres`;
+                    if (/^[0-9]+$/.test(v)) return 'No puede ser solo números';
+                    if (/^[^a-zA-Z0-9 ]+$/.test(v)) return 'No puede ser solo símbolos';
+                    return null;
+                }
+            },
+
+            nit_empresa: {
+                error: 'error-nit',
+                touched: false,
+                max: 15,
+                validate(v) {
+                    if (!v) return 'El NIT es obligatorio';
+                    if (!/^[0-9]+$/.test(v)) return 'Solo números';
+                    if (v.length < 6) return 'Mínimo 6 dígitos';
+                    if (v.length > this.max) return `Máximo ${this.max} dígitos`;
+                    return null;
+                }
+            },
+
+            direccion: {
+                error: 'error-direccion',
+                touched: false,
+                max: 150,
+                validate(v) {
+                    if (!v) return 'La dirección es obligatoria';
+                    if (v.length < 5) return 'Mínimo 5 caracteres';
+                    if (v.length > this.max) return `Máximo ${this.max} caracteres`;
+                    if (/[<>$%{}]/.test(v)) return 'Caracteres no permitidos';
+                    return null;
+                }
+            },
+
+            contacto: {
+                error: 'error-contacto',
+                touched: false,
+                max: 15,
+                validate(v) {
+                    if (!v) return 'El teléfono es obligatorio';
+                    if (!/^[0-9]+$/.test(v)) return 'Solo números';
+                    if (v.length < 7) return 'Mínimo 7 dígitos';
+                    if (v.length > this.max) return `Máximo ${this.max} dígitos`;
+                    return null;
+                }
+            },
+
+            empresa_correo: {
+                error: 'error-correo',
+                touched: false,
+                max: 100,
+                validate(v) {
+                    if (!v) return 'El correo es obligatorio';
+                    if (v.length > this.max) return `Máximo ${this.max} caracteres`;
+                    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return 'Correo inválido';
+                    return null;
+                }
+            }
+        };
+
+        /**
+         * Valida SOLO un campo
+         */
+        function validateField(input) {
+            const field = fields[input.id];
+            const errorEl = document.getElementById(field.error);
+            const value = input.value.trim();
+
+            if (!field.touched) return true;
+
+            const error = field.validate(value);
+
+            if (error) {
+                input.classList.add('border-red-500');
+                input.classList.remove('border-green-500');
+                errorEl.textContent = error;
+                errorEl.classList.remove('hidden');
+                return false;
+            } else {
+                input.classList.remove('border-red-500');
+                input.classList.add('border-green-500');
+                errorEl.classList.add('hidden');
+                return true;
+            }
+        }
+
+        /**
+         * Revisa TODO el formulario SIN mostrar errores
+         */
+        function isFormValid() {
+            return Object.keys(fields).every(id => {
+                const input = document.getElementById(id);
+                return !fields[id].validate(input.value.trim());
+            });
+        }
+
+        /**
+         * BLOQUEO REAL DEL SUBMIT
+         */
+        form.addEventListener('submit', e => {
+            let valid = true;
+
+            Object.keys(fields).forEach(id => {
+                const input = document.getElementById(id);
+                fields[id].touched = true;
+                if (!validateField(input)) valid = false;
+            });
+
+            if (!valid) {
+                e.preventDefault(); // 🚫 aquí se bloquea el SQL
+                btnGuardar.disabled = true;
+            }
+        });
+
+        /**
+         * Validación en vivo (campo por campo)
+         */
+        Object.keys(fields).forEach(id => {
+            const input = document.getElementById(id);
+
+            input.addEventListener('input', () => {
+                fields[id].touched = true;
+                validateField(input);
+
+                btnGuardar.disabled = !isFormValid();
+                btnGuardar.classList.toggle('opacity-50', btnGuardar.disabled);
+                btnGuardar.classList.toggle('cursor-not-allowed', btnGuardar.disabled);
+            });
+
+            input.addEventListener('blur', () => {
+                fields[id].touched = true;
+                validateField(input);
+            });
+        });
+    </script>
+
+
+
 
 
 @endsection
