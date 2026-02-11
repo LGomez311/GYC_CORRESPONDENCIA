@@ -115,3 +115,18 @@ Route::put('sadmin/admins/{documento}', [UsuarioController::class, 'update'])
 
 Route::delete('/usuarios/{emple_doc}', [UsuarioController::class, 'destroy'])
     ->name('usuarios.destroy');
+
+// ruta para historial de pago
+
+Route::get('/sadmin/pagos', [PagoController::class, 'index'])
+    ->name('sadmin.pagos');
+
+    // ruta para comprobar pagos
+
+    Route::prefix('sadmin')->group(function () {
+    Route::get('/pagos', [PagoController::class, 'index'])->name('pagos.index');
+
+    Route::post('/pagos/{id}/aprobar', [PagoController::class, 'aprobar'])->name('pagos.aprobar');
+    Route::post('/pagos/{id}/denegar', [PagoController::class, 'denegar'])->name('pagos.denegar');
+});
+
