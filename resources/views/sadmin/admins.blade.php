@@ -314,7 +314,7 @@
                 <!-- Acciones -->
                 <div class="flex justify-end gap-3 pt-6 border-t">
                     <button type="button" onclick="closeModal()"
-                        class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100">
+                        class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors">
                         Cancelar
                     </button>
                     <button id="btnGuardar" type="submit" disabled

@@ -24,94 +24,74 @@
         </div>
         <div
             class="bg-white dark:bg-[#161d2b] rounded-xl border border-[#cfd7e7] dark:border-gray-800 overflow-hidden shadow-sm">
-            <div class="p-6 border-b border-[#cfd7e7] dark:border-gray-800">
-                <h2 class="text-lg font-bold dark:text-white">Empresas Registradas</h2>
-            </div>
-            <!-- TABLA -->
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
+        <div class="p-6 border-b border-[#cfd7e7] dark:border-gray-800">
+            <h2 class="text-lg font-bold dark:text-white">Empresas Registradas</h2>
+        </div>
 
-                    <thead class="bg-background-light dark:bg-background-dark/50">
-                        <tr>
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Empresa</th>
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">NIT</th>
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Dirección</th>
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Teléfono</th>
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Correo</th>
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase text-right">Acciones</th>
-                        </tr>
-                    </thead>
+        <!-- Tabla -->
+        <div
+            class="bg-white dark:bg-[#161d2b] border border-[#cfd7e7] dark:border-gray-800 overflow-hidden shadow-sm">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-background-light dark:bg-background-dark/50">
+                    <tr>
+                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Empresa</th>
+                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">NIT</th>
+                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Dirección</th>
+                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Teléfono</th>
+                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Correo</th>
 
-                    <tbody class="divide-y divide-[#cfd7e7] dark:divide-gray-800">
+                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase text-right">Acciones</th>
+                    </tr>
+                </thead>
 
-                        @foreach ($empresas as $empresa)
-                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                <tbody class="divide-y divide-[#cfd7e7] dark:divide-gray-800">
 
-                                <!-- EMPRESA -->
-                                <td class="px-6 py-4">
-                                    <span class="text-sm font-bold dark:text-white">
-                                        {{ $empresa->nomb_empresa }}
-                                    </span>
-                                </td>
-
-                                <!-- NIT -->
-                                <td class="px-6 py-4 text-sm text-[#4c669a] dark:text-gray-400">
-                                    {{ $empresa->nit_empresa }}
-                                </td>
-
-                                <!-- DIRECCIÓN -->
-                                <td class="px-6 py-4 text-sm dark:text-gray-300">
-                                    {{ $empresa->direccion }}
-                                </td>
-
-                                <!-- TELÉFONO -->
-                                <td class="px-6 py-4 text-sm dark:text-gray-300">
-                                    {{ $empresa->contacto }}
-                                </td>
-
-                                <!-- CORREO -->
-                                <td class="px-6 py-4 text-sm dark:text-gray-300">
-                                    {{ $empresa->empresa_correo }}
-                                </td>
-
-                                <!-- ACCIONES -->
-                                <td class="px-6 py-4 text-right">
-                                    <div class="flex items-center justify-end gap-1">
-
-                                        <!-- EDITAR -->
-                                        <button
-                                            onclick="openEditModal(
-                                    '{{ $empresa->nit_empresa }}',
-                                    '{{ $empresa->nomb_empresa }}',
-                                    '{{ $empresa->direccion }}',
-                                    '{{ $empresa->contacto }}',
-                                    '{{ $empresa->empresa_correo }}'
-                                )"
-                                            class="p-2 text-[#4c669a] hover:text-primary transition">
-                                            <span class="material-symbols-outlined text-[20px]">edit</span>
-                                        </button>
-
-                                        <!-- ELIMINAR -->
-                                        <form class="delete-form"
-                                            action="{{ route('empresas.destroy', $empresa->nit_empresa) }}" method="POST">
-                                            @csrf
-                                            @method('DELETE')
-
-                                            <button type="submit" class="p-2 text-[#4c669a] hover:text-red-500 transition">
-                                                <span class="material-symbols-outlined text-[20px]">delete</span>
-                                            </button>
-                                        </form>
+                    @foreach ($empresas as $empresa)
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div>
 
                                     </div>
-                                </td>
+                                    {{ $empresa->nomb_empresa }}
+                            </td>
+                            <td>{{ $empresa->nit_empresa }}</td>
+                            <td>{{ $empresa->direccion }}</td>
+                            <td>{{ $empresa->contacto }}</td>
+                            <td>{{ $empresa->empresa_correo }}</td>
 
-                            </tr>
-                        @endforeach
+                            <td class="text-right">
+                                <div class="flex justify-center gap-1">
 
-                    </tbody>
-                </table>
-            </div>
+                                    <!-- EDITAR -->
+                                    <button
+                                        onclick="openEditModal(
+                                        '{{ $empresa->nit_empresa }}',
+                                        '{{ $empresa->nomb_empresa }}',
+                                        '{{ $empresa->direccion }}',
+                                        '{{ $empresa->contacto }}',
+                                        '{{ $empresa->empresa_correo }}'
+                                        )">
+                                        <span class="material-symbols-outlined">edit</span>
+                                    </button>
 
+                                    <!-- ELIMINAR -->
+                                    <form class="delete-form"
+                                        action="{{ route('empresas.destroy', $empresa->nit_empresa) }}" method="POST">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit">
+                                            <span class="material-symbols-outlined">delete</span>
+                                        </button>
+
+
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
+
+                </tbody>
+            </table>
         </div>
     </div>
 
@@ -141,20 +121,6 @@
             });
         });
     </script>
-    @if (session('success'))
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                Swal.fire({
-                    icon: 'success',
-                    title: '¡Operación exitosa!',
-                    text: "{{ session('success') }}",
-                    timer: 2500,
-                    showConfirmButton: false
-                });
-            });
-        </script>
-    @endif
-
 
 @endsection
 
@@ -461,59 +427,5 @@
                 return true;
             }
         }
-
-        /**
-         * Revisa TODO el formulario SIN mostrar errores
-         */
-        function isFormValid() {
-            return Object.keys(fields).every(id => {
-                const input = document.getElementById(id);
-                return !fields[id].validate(input.value.trim());
-            });
-        }
-
-        /**
-         * BLOQUEO REAL DEL SUBMIT
-         */
-        form.addEventListener('submit', e => {
-            let valid = true;
-
-            Object.keys(fields).forEach(id => {
-                const input = document.getElementById(id);
-                fields[id].touched = true;
-                if (!validateField(input)) valid = false;
-            });
-
-            if (!valid) {
-                e.preventDefault(); // 🚫 aquí se bloquea el SQL
-                btnGuardar.disabled = true;
-            }
-        });
-
-        /**
-         * Validación en vivo (campo por campo)
-         */
-        Object.keys(fields).forEach(id => {
-            const input = document.getElementById(id);
-
-            input.addEventListener('input', () => {
-                fields[id].touched = true;
-                validateField(input);
-
-                btnGuardar.disabled = !isFormValid();
-                btnGuardar.classList.toggle('opacity-50', btnGuardar.disabled);
-                btnGuardar.classList.toggle('cursor-not-allowed', btnGuardar.disabled);
-            });
-
-            input.addEventListener('blur', () => {
-                fields[id].touched = true;
-                validateField(input);
-            });
-        });
-    </script>
-
-
-
-
 
 @endsection

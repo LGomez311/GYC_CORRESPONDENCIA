@@ -1,159 +1,12 @@
-<!DOCTYPE html>
-
-<html class="light" lang="es">
+@extends('admin.layouts.app')
 
 
-<head>
-    <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Consulta de Correspondencia (Solo Lectura) - Sistema de Mensajería</title>
-    <link href="https://fonts.googleapis.com" rel="preconnect" />
-    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap"
-        rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
-        rel="stylesheet" />
-    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
-    <script>
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        primary: "#2563eb",
-                        "background-light": "#f8fafc",
-                        "background-dark": "#0f172a",
-                    },
-                    fontFamily: {
-                        display: ["Inter", "sans-serif"],
-                    },
-                    borderRadius: {
-                        DEFAULT: "0.75rem",
-                    },
-                },
-            },
-        };
-    </script>
-    <style type="text/tailwindcss">
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-
-        .active-nav {
-            background-color: #eff6ff;
-            color: #2563eb;
-        }
-
-        .dark .active-nav {
-            background-color: #1e293b;
-            color: #60a5fa;
-        }
-
-        .sidebar-item-active {
-            @apply bg-blue-50 text-primary dark:bg-slate-800 dark:text-blue-400;
-        }
-
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-    </style>
-</head>
-
-<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex">
-    <aside
-        class="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col h-screen sticky top-0">
-        <div class="p-6 flex items-center gap-3">
-            <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white">
-                <span class="material-icons-round">mail</span>
-            </div>
-            <div>
-                <h1 class="font-bold text-sm leading-tight">Sistema de<br />Mensajería</h1>
-            </div>
-        </div>
-        <nav class="flex-1 px-4 space-y-1 overflow-y-auto">
-            <p class="px-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 mt-6">
-                Gestión Central</p>
-
-            <a href="{{ route('resumen') }}"
-                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                <span class="material-icons-round text-[20px]">dashboard</span>
-                Resumen
-            </a>
-
-            <a href="{{ route('correspondencia') }}"
-                class="flex items-center gap-3 px-3 py-2.5 rounded-lg active-nav font-medium transition-colors">
-                <span class="material-symbols-outlined">inbox</span>
-                Correspondencia
-            </a>
-            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-                href="#">
-                <span class="material-icons-round text-[20px]">bar_chart</span>
-                Reportes
-            </a>
-            <p class="px-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 mt-8">
-                Sistema</p>
-
-            <a href="{{ route('usuarios') }}"
-                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                <span class="material-icons-round text-[20px]">people</span>
-                Ususarios
-            </a>
-
-            <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-                href="#">
-                <span class="material-icons-round text-[20px]">settings</span>
-                Configuración
-            </a>
-        </nav>
+@section('title', 'Panel de Admin de empresa')
+<!-- Main Content -->
+@section('content')
+   
         
-        <div class="mt-auto p-6 border-t border-slate-200 dark:border-slate-800">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
-                    <img class="w-full h-full object-cover" data-alt="Avatar de perfil de usuario administrador"
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDeOwG6ve_Mksrm4Ma_20obFe7IX0H7gK7EgSTEuguFi38JMMXi7xWA0zh7rWaUjBVeCUQhWoKl9rrSxB-9usSvJoaJRPFdGFzLYd3HL1mkeeluCWsYDO-2xQwyPYSPaVSCL3VXfCkPPfMcS-IUZ5AOCjlyj2DOfv8BKyx_bNcTCVc4rnrG_DhjdhbA9NoKwG2xxyQsK53tD6U_en-paoCHMpK8TtslKuPYLsKugXgYFufOuReZuBf0tnmXdB4euWGOHx4xsHZ-Oh8E" />
-                </div>
-                <div class="flex flex-col">
-                    <span class="text-xs font-semibold">Cerrar Sesión</span>
-                </div>
-                <span class="material-symbols-outlined text-slate-400 ml-auto cursor-pointer">logout</span>
-            </div>
-        </div>
-    </aside>
-    <!-- Main Content -->
-    <main class="flex-1 ml-64">
-        <!-- Header -->
-        <header
-            class="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 sticky top-0 z-10">
-            <div class="flex items-center gap-4 flex-1 max-w-xl">
-                <div class="relative w-full">
-                    <span
-                        class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
-                    <input
-                        class="w-full pl-10 pr-4 py-2 bg-background-light dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/50 transition-all"
-                        placeholder="Buscar usuarios, áreas o correos..." type="text" />
-                </div>
-            </div>
-            <div class="flex items-center gap-4">
-                <button class="relative p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
-                    <span class="material-symbols-outlined">notifications</span>
-                    <span
-                        class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
-                </button>
-                <button class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
-                    <span class="material-symbols-outlined">help</span>
-                </button>
-                <div class="h-8 w-[1px] bg-slate-200 dark:bg-slate-700 mx-2"></div>
-                <div class="flex items-center gap-3">
-                    <span class="text-sm font-medium">Admin User</span>
-                    <div
-                        class="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
-                        AU
-                    </div>
-                </div>
-            </div>
-        </header>
+        
         <div class="p-1">
             <!-- Page Title and Action -->
             <div class="flex items-center justify-between mb-8">
@@ -426,8 +279,4 @@
                 </div>
             </div>
         </div>
-    </main>
-    </div>
-</body>
-
-</html>
+    @endsection
