@@ -34,93 +34,75 @@
                         <tr>
                             <th
                                 class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">
-                                Nombre del Administrador
-                            </th>
+                                Nombre del Administrador</th>
                             <th
                                 class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">
-                                Empresa Asociada
-                            </th>
+                                Empresa Asociada</th>
                             <th
                                 class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">
-                                Correo Electrónico
-                            </th>
+                                Correo Electrónico</th>
                             <th
                                 class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">
-                                Estado
-                            </th>
+                                Estado</th>
                             <th
                                 class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider text-right">
-                                Acciones
-                            </th>
+                                Acciones</th>
                         </tr>
                     </thead>
-
                     <tbody class="divide-y divide-[#cfd7e7] dark:divide-gray-800">
-
-                        @forelse ($users as $user)
+                        @foreach ($users as $user)
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-
-                                <!-- Nombre + Imagen -->
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">
                                         <div
                                             class="size-10 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center overflow-hidden">
                                             <img alt="Avatar" class="w-full h-full object-cover"
-                                                src="{{ $user->emple_img ? asset('storage/' . $user->emple_img) : asset('img/default-user.png') }}">
+                                                src="{{ asset('storage/' . $user->emple_img) }}">
                                         </div>
                                         <div class="flex flex-col">
-                                            <span class="text-sm font-bold text-[#0d121b] dark:text-white">
-                                                {{ $user->emple_nombres }} {{ $user->emple_apellidos }}
+                                            <span
+                                                class="text-sm font-bold text-[#0d121b] dark:text-white">{{ $user->emple_nombres }}
+                                                {{ $user->emple_apellidos }}
                                             </span>
-                                            <span class="text-xs text-[#4c669a] dark:text-gray-400">
-                                                DOCUMENTO: {{ $user->emple_doc }}
-                                            </span>
+                                            <span class="text-xs text-[#4c669a] dark:text-gray-400">DOCUMENTO:
+                                                {{ $user->emple_doc }}</span>
                                         </div>
                                     </div>
                                 </td>
-
-                                <!-- Empresa -->
                                 <td class="px-6 py-4">
-                                    <span class="text-sm font-medium text-[#0d121b] dark:text-gray-300">
-                                        {{ $user->empresa->nomb_empresa ?? 'Sin empresa asignada' }}
-                                    </span>
+                                    <span class="text-sm font-medium text-[#0d121b] dark:text-gray-300">Global Tech
+                                        Solutions</span>
                                 </td>
-
-                                <!-- Correo -->
-                                <td class="px-6 py-4">
-                                    <span class="text-sm text-[#4c669a] dark:text-gray-400 underline decoration-primary/30">
-                                        {{ $user->emple_correo }}
-                                    </span>
-                                </td>
-
-                                <!-- Estado -->
                                 <td class="px-6 py-4">
                                     <span
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                        bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                                        {{ $user->estado->estado_nomb ?? 'Sin estado' }}
-                                    </span>
+                                        class="text-sm text-[#4c669a] dark:text-gray-400 underline decoration-primary/30">{{ $user->emple_correo }}<span>
                                 </td>
 
-                                <!-- Acciones -->
+                                <td class="px-6 py-4">
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                        {{ $user->estado->estado_nomb }}
+
+                                    </span>
+                                </td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex justify-end gap-1">
-
                                         <button onclick="openModalProfile(this)"
                                             class="p-2 text-[#4c669a] hover:text-primary transition-colors"
                                             title="Ver detalles" data-documento="{{ $user->emple_doc }}"
                                             data-nit="{{ $user->empresa->nit_empresa ?? '' }}"
-                                            data-empresa="{{ $user->empresa->nomb_empresa ?? '' }}"
+                                            data-empresa="{{ $user->empresa->nombre_empresa ?? '' }}"
                                             data-nombres="{{ $user->emple_nombres }}"
                                             data-apellidos="{{ $user->emple_apellidos }}"
                                             data-telefono="{{ $user->emple_tel }}" data-correo="{{ $user->emple_correo }}"
                                             data-estado="{{ $user->estado->estado_nomb ?? '' }}"
                                             data-rol="{{ $user->rol->rol_nomb ?? '' }}"
                                             data-area="{{ $user->area->area_nomb ?? '' }}"
-                                            data-foto="{{ $user->emple_img ? asset('storage/' . $user->emple_img) : asset('img/default-user.png') }}">
+                                            data-foto="{{ asset('storage/' . $user->emple_img) }}"
+                                            class="p-2 text-[#4c669a] hover:text-primary transition-colors"
+                                            title="Ver detalles">
                                             <span class="material-symbols-outlined text-[20px]">visibility</span>
                                         </button>
-
                                         <button onclick='openModalEdit(@json($user))'
                                             class="p-2 text-[#4c669a] hover:text-primary transition-colors" title="Editar">
                                             <span class="material-symbols-outlined text-[20px]">edit</span>
@@ -141,23 +123,26 @@
                                     </div>
                                 </td>
                             </tr>
-
-                        @empty
+                        @endforeach
+                        @if ($users->count() > 0)
+                            @foreach ($users as $user)
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                    <!-- TODA tu fila actual -->
+                                </tr>
+                            @endforeach
+                        @else
                             <tr>
-                                <td colspan="5" class="px-6 py-10 text-center">
+                                <td colspan="6" class="px-6 py-10 text-center">
                                     <div
-                                        class="inline-flex items-center gap-2 px-4 py-2 rounded-lg
-                        bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-sm">
+                                        class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-sm">
                                         <span class="material-symbols-outlined text-[18px]">info</span>
                                         No hay registros disponibles
                                     </div>
                                 </td>
                             </tr>
-                        @endforelse
-
+                        @endif
                     </tbody>
                 </table>
-
             </div>
 
 
@@ -237,16 +222,10 @@
                     <!-- NIT Empresa (automático) -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Empresa (NIT)</label>
-                        <select name="nit_empresa" class="mt-1 w-full rounded-lg border-gray-300">
-                            <option value="">Seleccione una empresa</option>
-                            @foreach ($empresas as $empresa)
-                                <option value="{{ $empresa->nit_empresa }}">
-                                    {{ $empresa->nit_empresa }} - {{ $empresa->nomb_empresa }}
-                                </option>
-                            @endforeach
+                        <select disabled class="mt-1 w-full rounded-lg border-gray-300 bg-gray-100">
+                            <option>900123456 - Global Tech Solutions</option>
                         </select>
                     </div>
-
 
                     <!-- Nombres -->
                     <div>
@@ -317,7 +296,7 @@
                             <option>Activo</option>
                         </select>
                     </div>
-
+                    <input type="hidden" name="nit_empresa" value="900123456">
                     <input type="hidden" name="emple_estado" value="1">
                     <input type="hidden" name="emple_rol" value="2">
 
@@ -519,19 +498,12 @@
                     </div>
 
                     <!-- NIT Empresa (automático) -->
-
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Empresa (NIT)</label>
-                        <select name="nit_empresa" id="edit_empresa" class="mt-1 w-full rounded-lg border-gray-300">
-                            <option value="">Seleccione una empresa</option>
-                            @foreach ($empresas as $empresa)
-                                <option value="{{ $empresa->nit_empresa }}">
-                                    {{ $empresa->nit_empresa }} - {{ $empresa->nomb_empresa }}
-                                </option>
-                            @endforeach
+                        <select disabled class="mt-1 w-full rounded-lg border-gray-300 bg-gray-100">
+                            <option>900123456 - Global Tech Solutions</option>
                         </select>
                     </div>
-
 
                     <!-- Nombres -->
                     <div>
@@ -649,9 +621,6 @@
             document.getElementById('edit_telefono').value = user.emple_tel;
             document.getElementById('edit_correo').value = user.emple_correo;
 
-            // 🔹 Empresa actual
-            document.getElementById('edit_empresa').value = user.nit_empresa;
-
             // 🔹 Estado actual
             document.getElementById('edit_estado').value = user.emple_estado;
 
@@ -659,6 +628,12 @@
 
             document.getElementById('userModalEdit').classList.remove('hidden');
             document.getElementById('modalOverlayEdit').classList.remove('hidden');
+        }
+
+
+        function closeModalEdit() {
+            document.getElementById('userModalEdit').classList.add('hidden');
+            document.getElementById('modalOverlayEdit').classList.add('hidden');
         }
     </script>
 
@@ -741,7 +716,7 @@
 
                     <span class="text-sm text-gray-500">Foto de perfil</span>
                 </div>
-
+                
 
                 <!-- Datos -->
                 <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">

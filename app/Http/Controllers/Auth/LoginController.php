@@ -26,10 +26,9 @@ class LoginController extends Controller
         // Intentar login como empleado
         if (Auth::guard('web')->attempt(['emple_doc' => $number, 'password' => $password])) {
             $empleado = Auth::guard('web')->user();
-
+            
             if ($empleado->emple_rol == 1) return redirect()->route('sadmin.index');
             if ($empleado->emple_rol == 2) return redirect()->route('admin.index');
-
             return redirect()->route('empleado.index');
         }
 
@@ -43,17 +42,15 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
-        Auth::guard('web')->logout();
-        Auth::guard('remitente')->logout();
+        if (Auth::guard('web')->check()) {
+            Auth::guard('web')->logout();
+        } elseif (Auth::guard('remitente')->check()) {
+            Auth::guard('remitente')->logout();
+        }
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login')
-            ->withHeaders([
-                'Cache-Control' => 'no-cache, no-store, must-revalidate',
-                'Pragma' => 'no-cache',
-                'Expires' => '0',
-            ]);
+        return redirect()->route('login.form');
     }
 }

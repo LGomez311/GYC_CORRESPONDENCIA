@@ -9,9 +9,9 @@
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" crossorigin href="https://fonts.gstatic.com" />
-    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700;900&display=swap"
-        rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700;900&display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet" />
     <script>
         tailwind.config = {
@@ -60,8 +60,7 @@
             {{-- Formulario de login --}}
             <div class="w-full lg:w-1/2 p-8 sm:p-12 md:p-16">
                 <h1 class="text-4xl font-black text-[#0d121b] dark:text-gray-100 pb-2">Iniciar Sesión</h1>
-                <p class="text-base text-[#4c669a] dark:text-gray-400 mb-6">Ingresa tus credenciales para acceder al
-                    sistema.</p>
+                <p class="text-base text-[#4c669a] dark:text-gray-400 mb-6">Ingresa tus credenciales para acceder al sistema.</p>
 
                 <form method="POST" action="{{ route('login') }}" class="flex flex-col gap-4">
                     @csrf
@@ -95,7 +94,7 @@
                     </label>
 
                     {{-- Errores de login --}}
-                    @if ($errors->has('login'))
+                    @if($errors->has('login'))
                         <p class="text-red-500 text-sm">{{ $errors->first('login') }}</p>
                     @endif
 
@@ -106,11 +105,7 @@
                     </button>
 
                     {{-- Olvidó contraseña --}}
-                    <a href="{{ route('password.request') }}"
-                        class="text-sm text-primary hover:underline text-right mt-2">
-                        ¿Olvidaste tu contraseña?
-                    </a>
-
+                    <a href="#" class="text-sm text-primary hover:underline text-right mt-2">¿Olvidaste tu contraseña?</a>
                 </form>
             </div>
         </div>
