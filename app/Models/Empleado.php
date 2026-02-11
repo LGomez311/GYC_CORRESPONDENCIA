@@ -6,7 +6,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Models\Rol;
 use App\Models\Estado;
-
+use App\Models\Area;
+use App\Models\Empresa; 
 
 class Empleado extends Authenticatable
 {
@@ -16,7 +17,6 @@ class Empleado extends Authenticatable
     protected $primaryKey = 'emple_doc';
     public $incrementing = false;
     protected $keyType = 'string';
-
 
     protected $fillable = [
         'emple_doc',
@@ -32,9 +32,8 @@ class Empleado extends Authenticatable
         'emple_area'
     ];
 
-
     protected $hidden = [
-        'password', // Evita mostrar la contraseña en JSON
+        'password',
     ];
 
     /**
@@ -48,6 +47,7 @@ class Empleado extends Authenticatable
     /**
      * Relaciones
      */
+
     public function rol()
     {
         return $this->belongsTo(Rol::class, 'emple_rol', 'id_rol');
@@ -61,6 +61,12 @@ class Empleado extends Authenticatable
     public function estado()
     {
         return $this->belongsTo(Estado::class, 'emple_estado', 'id_estado');
+    }
+
+    // 👇 RELACIÓN CON EMPRESA (LO QUE FALTABA)
+    public function empresa()
+    {
+        return $this->belongsTo(Empresa::class, 'nit_empresa', 'nit_empresa');
     }
 
     public $timestamps = false;

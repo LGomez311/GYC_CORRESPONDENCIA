@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Sadmin\UsuarioController;
 use App\Http\Controllers\EmpresaController;
 use App\Http\Controllers\Sadmin\PlanController;
+use App\Http\Controllers\Auth\PasswordController;
 
 
 // Ruta para redirigir directamente al login
@@ -108,3 +109,17 @@ Route::put('sadmin/admins/{documento}', [UsuarioController::class, 'update'])
 
 Route::delete('/usuarios/{emple_doc}', [UsuarioController::class, 'destroy'])
     ->name('usuarios.destroy');
+
+
+    
+
+Route::get('/recuperar', [PasswordController::class, 'showEmailForm'])->name('password.request');
+Route::post('/recuperar', [PasswordController::class, 'sendCode'])->name('password.send');
+
+Route::get('/verificar-codigo', [PasswordController::class, 'showVerifyForm'])->name('password.verify');
+Route::post('/verificar-codigo', [PasswordController::class, 'verifyCode'])->name('password.check');
+
+Route::get('/nueva-password', [PasswordController::class, 'showResetForm'])->name('password.reset.form');
+Route::post('/nueva-password', [PasswordController::class, 'resetPassword'])->name('password.update');
+
+
