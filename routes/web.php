@@ -3,9 +3,16 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Sadmin\UsuarioController;
 use App\Http\Controllers\EmpresaController;
-use App\Http\Controllers\Sadmin\PlanController;
+use App\Http\Controllers\Admin\PlanController as AdminPlanController;
+use App\Http\Controllers\Sadmin\PlanController as SadminPlanController;
+use App\Http\Controllers\PagoController;
+
+Route::post('/pagos/notificar', [PagoController::class, 'store'])
+    ->name('pagos.store');
 
 
+Route::get('admin/pagos/{plan}', [PagoController::class, 'index'])
+    ->name('admin.pagos.index');
 // Ruta para redirigir directamente al login
 Route::get('/', function () {
     return redirect()->route('login');
@@ -18,7 +25,7 @@ Route::get('/sadmin', function () {
     return view('sadmin.index');
 });
 
-Route::get('/sadmin/pagos', function() {
+Route::get('/sadmin/pagos', function () {
     return view('sadmin.pagos');
 })->name('sadmin.pagos');
 
@@ -31,7 +38,7 @@ Route::get('/sadmin/planes', function () {
 Route::get('/sadmin/admins', [UsuarioController::class, 'index'])
     ->name('admins');
 
-Route::get('/admin/planes', [PlanController::class, 'index'])
+Route::get('/admin/planes', [AdminPlanController::class, 'index'])
     ->name('admin.planes');
 
 // ================= EMPRESAS CRUD =================
@@ -79,15 +86,15 @@ Route::get('admin/index', function () {
     return view('admin.index');
 })->name('admin.index');
 
-Route::get('/admin/planes', function() {
-    return view('admin.planes');
-})->name('admin.planes');
+Route::get('/admin/planes', [AdminPlanController::class, 'index'])
+    ->name('admin.planes');
+
 
 Route::get('admin/usuarios', function () {
     return view('admin.usuarios');
 })->name('admin.usuarios');
 
-Route::get('/admin/pagos', function() {
+Route::get('/admin/pagos', function () {
     return view('admin.pagos');
 })->name('admin.pagos');
 
@@ -97,7 +104,7 @@ Route::prefix('sadmin')->group(function () {
     Route::post('/planes', [PlanController::class, 'store'])->name('planes.store');
     Route::put('/planes/{id}', [PlanController::class, 'update'])->name('planes.update');
     Route::delete('/planes/{id}', [PlanController::class, 'destroy'])->name('planes.destroy');
-}); 
+});
 
 // Rutas administrador de empresas en vista sadmin
 Route::post('/sadmin/usuarios', [UsuarioController::class, 'store'])
