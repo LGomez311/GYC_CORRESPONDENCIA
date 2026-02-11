@@ -5,6 +5,7 @@ use App\Http\Controllers\Sadmin\UsuarioController;
 use App\Http\Controllers\EmpresaController;
 use App\Http\Controllers\Sadmin\PlanController;
 
+
 // Ruta para redirigir directamente al login
 Route::get('/', function () {
     return redirect()->route('login');
@@ -17,6 +18,10 @@ Route::get('/sadmin', function () {
     return view('sadmin.index');
 });
 
+Route::get('/sadmin/pagos', function() {
+    return view('sadmin.pagos');
+})->name('sadmin.pagos');
+
 // Vista crear licencias
 Route::get('/sadmin/planes', function () {
     return view('sadmin.cplanes');
@@ -25,6 +30,9 @@ Route::get('/sadmin/planes', function () {
 // Vista admins
 Route::get('/sadmin/admins', [UsuarioController::class, 'index'])
     ->name('admins');
+
+Route::get('/admin/planes', [PlanController::class, 'index'])
+    ->name('admin.planes');
 
 // ================= EMPRESAS CRUD =================
 Route::prefix('sadmin')->group(function () {
@@ -63,18 +71,25 @@ Route::middleware('auth:remitente')->group(function () {
 
 
 // Rutas del admin
-
-Route::get('/correspondencia', function () {
+Route::get('/admin/correspondencia', function () {
     return view('admin.correspondencia');
-})->name('correspondencia');
+})->name('admin.correspondencia');
 
-Route::get('/resumen', function () {
+Route::get('admin/index', function () {
     return view('admin.index');
-})->name('resumen');
+})->name('admin.index');
 
-Route::get('/usuarios', function () {
+Route::get('/admin/planes', function() {
+    return view('admin.planes');
+})->name('admin.planes');
+
+Route::get('admin/usuarios', function () {
     return view('admin.usuarios');
-})->name('usuarios');
+})->name('admin.usuarios');
+
+Route::get('/admin/pagos', function() {
+    return view('admin.pagos');
+})->name('admin.pagos');
 
 // rutas del plan 
     Route::prefix('sadmin')->group(function () {
