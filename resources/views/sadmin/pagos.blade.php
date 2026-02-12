@@ -1,6 +1,6 @@
 @extends('sadmin.layouts.app')
 
-@section('title', 'Panel de Licencias')
+@section('title', 'Panel de Pagos')
 
 @section('content')
 <div class="p-8 max-w-7xl mx-auto w-full">

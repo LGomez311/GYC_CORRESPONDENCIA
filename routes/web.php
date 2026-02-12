@@ -12,6 +12,9 @@ use App\Http\Controllers\Admin\PagoController as AdminPagoController;
 use App\Http\Controllers\Sadmin\PlanController as SadminPlanController;
 use App\Http\Controllers\Admin\PlanController as AdminPlanController;
 
+// RUTA PARA LICENCIAS - KEVIN
+use App\Http\Controllers\Sadmin\LicenciaController;
+
 // ================= AUTH =================
 
 // Login
@@ -87,4 +90,13 @@ Route::prefix('sadmin')->group(function () {
     // Aprobar/Denegar
     Route::post('/pagos/{id}/aprobar', [SadminPagoController::class, 'aprobar'])->name('sadmin.pagos.aprobar');
     Route::post('/pagos/{id}/denegar', [SadminPagoController::class, 'denegar'])->name('sadmin.pagos.denegar');
+});
+
+// ruta para creacion de licencias - Kevin
+Route::prefix('sadmin')->group(function () {
+    Route::get('/licencias', [LicenciaController::class, 'index'])
+        ->name('sadmin.licencias');
+
+    Route::post('/licencias', [LicenciaController::class, 'store'])
+        ->name('sadmin.licencias.store');
 });

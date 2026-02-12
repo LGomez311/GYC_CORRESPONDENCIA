@@ -8,9 +8,8 @@
         <div class="flex flex-wrap justify-between items-end gap-3 mb-8">
             <div class="flex flex-col gap-1">
                 <h1 class="text-[#0d121b] dark:text-white text-3xl font-black leading-tight tracking-tight">
-                    Panel de Gestión de Licencias</h1>
-                <p class="text-[#4c669a] dark:text-gray-400 text-base font-normal">Supervise y controle el ciclo
-                    de vida de los servicios de correspondencia.</p>
+                    Panel de Gestion de SuperAdmin</h1>
+                <p class="text-[#4c669a] dark:text-gray-400 text-base font-normal">Supervise y controle el siste según la empresa que requiera</p>
             </div>
             <div class="flex gap-3">
                 <button
