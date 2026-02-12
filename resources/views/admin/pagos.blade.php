@@ -8,7 +8,7 @@
 
         <p>
             <strong>Precio:</strong>
-            <span id="precio" data-usd="{{ $plan->valor }}"></span>
+            <span id="precio">{{ $plan->valor }} COP</span>
         </p>
 
         <p><strong>Duración:</strong> {{ $plan->duracion }} días</p>
@@ -22,17 +22,7 @@
 
 
 
-    <script>
-        const tasaUSD_COP = 4000; // 1 USD = 4000 COP (ajústalo si quieres)
-
-        const precioElemento = document.getElementById('precio');
-        const precioUSD = parseFloat(precioElemento.dataset.usd);
-
-        const precioCOP = precioUSD * tasaUSD_COP;
-
-        precioElemento.textContent =
-            precioCOP.toLocaleString('es-CO') + ' COP';
-    </script>
+    
     <script>
         function openModal() {
             document.getElementById('paymentModal').classList.remove('hidden');
@@ -59,7 +49,7 @@
             <p class="mb-2">
                 <strong>Precio:</strong>
                 <span class="text-green-600 font-semibold">
-                    ${{ number_format($plan->valor, 0, ',', '.') }}
+                    ${{ ($plan->valor) }}
                 </span>
             </p>
 
@@ -73,7 +63,7 @@
             <form action="{{ route('pagos.store', $plan->id_plan) }}" method="POST" enctype="multipart/form-data">
                 @csrf
 
-                <input type="hidden" name="plan_id" value="{{ $plan->id }}">
+                <input type="hidden" name="id_plan" value="{{ $plan->id_plan }}">
 
                 <!-- Comprobante -->
                 <div class="mb-4">

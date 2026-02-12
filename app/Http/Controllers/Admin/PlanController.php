@@ -9,8 +9,8 @@ class PlanController extends Controller
 {
     public function index()
     {
-        $planes = Plan::all();
-        return view('admin.planes', compact('planes'));
+        $plans = Plan::all();
+        return view('admin.planes', compact('plans'));
     }
 }
 

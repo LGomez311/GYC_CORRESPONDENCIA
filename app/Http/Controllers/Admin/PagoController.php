@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use App\Models\Plan;
 use App\Models\Pago;
 use App\Models\Empresa;
-use Carbon\Carbon;
 
 
 class PagoController extends Controller
@@ -20,11 +19,11 @@ class PagoController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'plan_id' => 'required|exists:planes,id',
+            'id_plan' => '',
             'comprobante' => 'nullable|image|max:2048',
         ]);
 
-        $plan = Plan::findOrFail($request->plan_id);
+        $id_plan = Plan::findOrFail($request->id_plan);
 
         // 🔹 Obtener automáticamente el NIT de la única empresa
         $empresa = Empresa::first(); // SOLO HAY UNA
@@ -38,13 +37,13 @@ class PagoController extends Controller
 
         // 🔹 Crear pago
         Pago::create([
-            'id_plan'     => $plan->id,
-            'monto'       => $plan->valor,
+            'id_plan'     => $id_plan->id_plan,
+            'monto'       => $id_plan->valor,
             'comprobante' => $rutaComprobante,
             'moneda'      => 'COP',
             'nit_empresa' => $empresa->nit,
             'id_est_pago' => 0, // EN ESPERA
-            'fecha_pago'  => Carbon::now(),
+            'fecha_pago'  => now(),
         ]);
 
         return back()->with('success', 'Pago notificado correctamente. En espera de aprobación.');

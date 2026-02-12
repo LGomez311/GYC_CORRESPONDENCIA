@@ -75,6 +75,7 @@ Route::prefix('admin')->group(function () {
 
     // Planes
     Route::get('/planes', [AdminPlanController::class, 'index'])->name('admin.planes');
+    
 
     // Pagos
     Route::get('/pagos/{plan}', [AdminPagoController::class, 'index'])->name('admin.pagos.index');

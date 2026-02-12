@@ -23,7 +23,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 py-3 mb-10">
 
-            @foreach ($planes as $plan)
+            @foreach ($plans as $plan)
                 <div
                     class="flex flex-1 flex-col gap-4 rounded-xl border border-solid border-[#cfd7e7]
                    dark:border-[#2c3444] bg-white dark:bg-[#1a2130] p-6 shadow-sm
@@ -35,7 +35,7 @@
                         </h2>
 
                         <p class="flex items-baseline gap-1 text-[#0d121b] dark:text-[#f8f9fc]">
-                            <span class="text-4xl font-black">$ {{ $plan->valor }}</span>
+                            <span class="text-4xl font-black">$ {{ $plan->valor }} </span>
                             <span class="text-base font-bold">/{{ $plan->duracion }} Dias</span>
                         </p>
                     </div>
