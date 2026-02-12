@@ -94,10 +94,15 @@ Route::prefix('sadmin')->group(function () {
 });
 
 // ruta para creacion de licencias - Kevin
-Route::prefix('sadmin')->group(function () {
+
+Route::prefix('sadmin')->name('sadmin.')->group(function () {
+
     Route::get('/licencias', [LicenciaController::class, 'index'])
-        ->name('sadmin.licencias');
+        ->name('licencias');
 
     Route::post('/licencias', [LicenciaController::class, 'store'])
-        ->name('sadmin.licencias.store');
+        ->name('licencias.store');
+
+    Route::post('/licencias/{id}/toggle', [LicenciaController::class, 'toggle'])
+        ->name('licencias.toggle');
 });

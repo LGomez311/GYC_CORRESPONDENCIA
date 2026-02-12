@@ -25,8 +25,20 @@
 
                 {{-- Empresa --}}
                 <div>
-                    <label class="block text-xs font-bold text-[#4c669a] dark:text-gray-300 mb-1">Empresa (NIT)</label>
-                    <input type="text" name="nit_empresa" class="w-full px-3 py-2 border rounded-lg text-sm dark:bg-[#1b2030] dark:border-gray-700 dark:text-gray-200" required>
+                    <label class="block text-xs font-bold text-[#4c669a] dark:text-gray-300 mb-1">
+                        Empresa
+                    </label>
+                    <select name="nit_empresa"
+                        class="w-full px-3 py-2 border rounded-lg text-sm
+                        dark:bg-[#1b2030] dark:border-gray-700 dark:text-gray-200"
+                        required>
+                        <option value="">Seleccione una empresa</option>
+                        @foreach($empresas as $empresa)
+                        <option value="{{ $empresa->nit_empresa }}">
+                            {{ $empresa->razon_social }} ({{ $empresa->nit_empresa }})
+                        </option>
+                        @endforeach
+                    </select>
                 </div>
 
                 {{-- Plan --}}
@@ -35,7 +47,7 @@
                     <select name="id_plan" class="w-full px-3 py-2 border rounded-lg text-sm dark:bg-[#1b2030] dark:border-gray-700 dark:text-gray-200" required>
                         <option value="">Seleccione un plan</option>
                         @foreach($planes as $plan)
-                            <option value="{{ $plan->id_plan }}">{{ $plan->nomb_plan }}</option>
+                        <option value="{{ $plan->id_plan }}">{{ $plan->nomb_plan }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -46,7 +58,7 @@
                     <select name="id_estado" class="w-full px-3 py-2 border rounded-lg text-sm dark:bg-[#1b2030] dark:border-gray-700 dark:text-gray-200" required>
                         <option value="">Seleccione un estado</option>
                         @foreach($estados as $estado)
-                            <option value="{{ $estado->id_estado }}">{{ $estado->nombre_estado }}</option>
+                        <option value="{{ $estado->id_estado }}">{{ $estado->estado_nomb }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -57,14 +69,14 @@
                     <select name="id_pago" class="w-full px-3 py-2 border rounded-lg text-sm dark:bg-[#1b2030] dark:border-gray-700 dark:text-gray-200" required>
                         <option value="">Seleccione un pago</option>
                         @foreach($pagos as $pago)
-                            <option value="{{ $pago->id_pago }}">#{{ $pago->id_pago }} - {{ $pago->nomb_plan }}</option>
+                        <option value="{{ $pago->id_pago }}">#{{ $pago->id_pago }} - {{ $pago->nomb_plan }}</option>
                         @endforeach
                     </select>
                 </div>
             </div>
 
             <button type="submit" class="mt-4 bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors shadow-sm">
-                Crear Licencia
+                Activar Licencia
             </button>
         </form>
     </div>
@@ -87,31 +99,31 @@
                 </thead>
                 <tbody class="divide-y divide-[#cfd7e7] dark:divide-gray-800">
                     @forelse($licencias as $licencia)
-                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                            <td class="px-6 py-4 text-sm font-bold">{{ $licencia->id_licencia }}</td>
-                            <td class="px-6 py-4 text-sm">{{ $licencia->nit_empresa }}</td>
-                            <td class="px-6 py-4 text-sm">{{ $licencia->plan->nomb_plan ?? '-' }}</td>
-                            <td class="px-6 py-4 text-sm font-bold">{{ $licencia->estado->nombre_estado ?? '-' }}</td>
-                            <td class="px-6 py-4 text-sm">{{ $licencia->pago->nomb_plan ?? '-' }}</td>
-                            <td class="px-6 py-4 text-sm">{{ \Carbon\Carbon::parse($licencia->fecha_inicio)->format('Y-m-d') }}</td>
-                            <td class="px-6 py-4 text-sm">{{ \Carbon\Carbon::parse($licencia->fecha_fin)->format('Y-m-d') }}</td>
-                            <td class="px-6 py-4 text-center">
-                                <form action="{{ route('sadmin.licencias.toggle', $licencia->id_licencia) }}" method="POST">
-                                    @csrf
-                                    <button type="submit"
-                                        class="px-3 py-1.5 rounded text-xs font-bold text-white
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                        <td class="px-6 py-4 text-sm font-bold">{{ $licencia->id_licencia }}</td>
+                        <td class="px-6 py-4 text-sm">{{ $licencia->nit_empresa }}</td>
+                        <td class="px-6 py-4 text-sm">{{ $licencia->plan->nomb_plan ?? '-' }}</td>
+                        <td class="px-6 py-4 text-sm font-bold">{{ $licencia->estado->nombre_estado ?? '-' }}</td>
+                        <td class="px-6 py-4 text-sm">{{ $licencia->pago->nomb_plan ?? '-' }}</td>
+                        <td class="px-6 py-4 text-sm">{{ \Carbon\Carbon::parse($licencia->fecha_inicio)->format('Y-m-d') }}</td>
+                        <td class="px-6 py-4 text-sm">{{ \Carbon\Carbon::parse($licencia->fecha_fin)->format('Y-m-d') }}</td>
+                        <td class="px-6 py-4 text-center">
+                            <form action="{{ route('sadmin.licencias.toggle', $licencia->id_licencia) }}" method="POST">
+                                @csrf
+                                <button type="submit"
+                                    class="px-3 py-1.5 rounded text-xs font-bold text-white
                                         {{ $licencia->id_estado == 1 ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700' }} transition-colors shadow-sm">
-                                        {{ $licencia->id_estado == 1 ? 'Desactivar' : 'Activar' }}
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
+                                    {{ $licencia->id_estado == 1 ? 'Desactivar' : 'Activar' }}
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
                     @empty
-                        <tr>
-                            <td colspan="8" class="text-center py-6 text-gray-400">
-                                No hay licencias registradas
-                            </td>
-                        </tr>
+                    <tr>
+                        <td colspan="8" class="text-center py-6 text-gray-400">
+                            No hay licencias registradas
+                        </td>
+                    </tr>
                     @endforelse
                 </tbody>
             </table>
