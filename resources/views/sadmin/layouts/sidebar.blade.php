@@ -25,7 +25,7 @@
 
 <aside
     class="w-64 flex-shrink-0 border-r border-[#cfd7e7] dark:border-gray-800 bg-white dark:bg-[#161d2b] flex flex-col">
-    
+
     <div class="p-6 flex items-center gap-3">
         <div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
             <span class="material-symbols-outlined">shield_person</span>
@@ -81,21 +81,22 @@
             <a
                 href="{{ route('admins') }}"
                 class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-                {{ request()->routeIs('admins*')
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                }}">
+    {{ request()->routeIs('admins*')
+        ? 'bg-primary/10 text-primary'
+        : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+    }}">
                 <span class="material-symbols-outlined">group</span>
                 <p class="text-sm font-medium">Administradores</p>
             </a>
 
+            <!-- Pagos -->
             <a
                 href="{{ route('sadmin.pagos') }}"
                 class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-                {{ request()->routeIs('admins*')
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                }}">
+    {{ request()->routeIs('sadmin.pagos*')
+        ? 'bg-primary/10 text-primary'
+        : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+    }}">
                 <span class="material-symbols-outlined">payments</span>
                 <p class="text-sm font-medium leading-normal">Pagos</p>
             </a>

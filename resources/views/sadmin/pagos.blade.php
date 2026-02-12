@@ -31,6 +31,7 @@
                         <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Fecha de Pago</th>
                         <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Estado</th>
                         <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Comprobante</th>
+                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase text-center">Acción</th>
                     </tr>
                 </thead>
 
@@ -76,7 +77,36 @@
                         <td class="px-6 py-4 text-sm">
                             {{ $pago->comprobante }}
                         </td>
+                        {{-- BOTONES SOLO SI ESTÁ EN ESPERA --}}
+<td class="px-6 py-4 text-center">
+    @if($pago->estado_nomb == 'En espera')
+        <div class="flex justify-center gap-2">
+            <form action="{{ route('sadmin.pagos.aprobar', $pago->id_pago) }}" method="POST">
+                @csrf
+                <button type="submit"
+                    class="flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white rounded text-xs font-bold hover:bg-green-700 transition-colors shadow-sm">
+                    <span class="material-symbols-outlined text-sm">check_circle</span>
+                    Confirmar
+                </button>
+            </form>
 
+            <form action="{{ route('sadmin.pagos.denegar', $pago->id_pago) }}" method="POST">
+                @csrf
+                <button type="submit"
+                    class="flex items-center gap-1 px-3 py-1.5 bg-red-600 text-white rounded text-xs font-bold hover:bg-red-700 transition-colors shadow-sm">
+                    <span class="material-symbols-outlined text-sm">cancel</span>
+                    Denegar
+                </button>
+            </form>
+        </div>
+    @else
+        <span class="text-gray-400 font-bold text-xs">Revisado</span>
+    @endif
+</td>
+                        
+
+                        <td class="px-6 py-4">
+    <div class="flex justify-center gap-2">
                     </tr>
                     @empty
                     <tr>

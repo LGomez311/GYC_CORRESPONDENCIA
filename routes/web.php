@@ -81,3 +81,10 @@ Route::prefix('admin')->group(function () {
     Route::get('/correspondencia', fn() => view('admin.correspondencia'))->name('admin.correspondencia');
     Route::get('/usuarios', fn() => view('admin.usuarios'))->name('admin.usuarios');
 });
+
+// Cambiar estado de pago - Kevin 
+Route::prefix('sadmin')->group(function () {
+    // Aprobar/Denegar
+    Route::post('/pagos/{id}/aprobar', [SadminPagoController::class, 'aprobar'])->name('sadmin.pagos.aprobar');
+    Route::post('/pagos/{id}/denegar', [SadminPagoController::class, 'denegar'])->name('sadmin.pagos.denegar');
+});

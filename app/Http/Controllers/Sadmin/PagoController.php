@@ -26,4 +26,15 @@ class PagoController extends Controller
 
         return view('sadmin.pagos', compact('pagos'));
     }
+    public function aprobar($id)
+    {
+        DB::table('pagos')->where('id_pago', $id)->update(['id_est_pago' => 4]); // 4 = Aprobado
+        return back()->with('success', 'Pago aprobado correctamente.');
+    }
+
+    public function denegar($id)
+    {
+        DB::table('pagos')->where('id_pago', $id)->update(['id_est_pago' => 5]); // 5 = No Aprobado
+        return back()->with('error', 'Pago denegado.');
+    }
 }
