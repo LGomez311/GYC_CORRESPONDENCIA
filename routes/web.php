@@ -1,61 +1,16 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Sadmin\UsuarioController;
-use App\Http\Controllers\EmpresaController;
-use App\Http\Controllers\Admin\PlanController as AdminPlanController;
+use App\Http\Controllers\Sadmin\EmpresaController;
+
+// Alias para controllers con nombres iguales
+use App\Http\Controllers\Sadmin\PagoController as SadminPagoController;
+use App\Http\Controllers\Admin\PagoController as AdminPagoController;
+
 use App\Http\Controllers\Sadmin\PlanController as SadminPlanController;
-use App\Http\Controllers\PagoController;
-
-Route::post('/pagos/notificar', [PagoController::class, 'store'])
-    ->name('pagos.store');
-
-
-Route::get('admin/pagos/{plan}', [PagoController::class, 'index'])
-    ->name('admin.pagos.index');
-// Ruta para redirigir directamente al login
-Route::get('/', function () {
-    return redirect()->route('login');
-});
-
-// ================= SUPER ADMIN =================
-
-// Vista index
-Route::get('/sadmin', function () {
-    return view('sadmin.index');
-});
-
-Route::get('/sadmin/pagos', function () {
-    return view('sadmin.pagos');
-})->name('sadmin.pagos');
-
-// Vista crear licencias
-Route::get('/sadmin/planes', function () {
-    return view('sadmin.cplanes');
-})->name('cplanes');
-
-// Vista admins
-Route::get('/sadmin/admins', [UsuarioController::class, 'index'])
-    ->name('admins');
-
-Route::get('/admin/planes', [AdminPlanController::class, 'index'])
-    ->name('admin.planes');
-
-// ================= EMPRESAS CRUD =================
-Route::prefix('sadmin')->group(function () {
-
-    Route::get('/empresas', [EmpresaController::class, 'index'])
-        ->name('empresas');
-
-    Route::post('/empresas', [EmpresaController::class, 'store'])
-        ->name('empresas.store');
-
-    Route::put('/empresas/{nit}', [EmpresaController::class, 'update'])
-        ->name('empresas.update');
-
-    Route::delete('/empresas/{nit}', [EmpresaController::class, 'destroy'])
-        ->name('empresas.destroy');
-});
+use App\Http\Controllers\Admin\PlanController as AdminPlanController;
 
 // ================= AUTH =================
 
@@ -63,6 +18,11 @@ Route::prefix('sadmin')->group(function () {
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+// Redirigir raíz al login
+Route::get('/', function () {
+    return redirect()->route('login');
+});
 
 // ================= DASHBOARDS =================
 Route::middleware('auth:web')->group(function () {
@@ -75,47 +35,49 @@ Route::middleware('auth:remitente')->group(function () {
     Route::get('/remitente', fn() => view('remitente.index'))->name('remitente.index');
 });
 
+// ================= SUPER ADMIN =================
+Route::prefix('sadmin')->group(function () {
 
+    // Dashboard
+    Route::get('/', fn() => view('sadmin.index'))->name('sadmin.dashboard');
 
-// Rutas del admin
-Route::get('/admin/correspondencia', function () {
-    return view('admin.correspondencia');
-})->name('admin.correspondencia');
+    // Pagos
+    Route::get('/pagos', [SadminPagoController::class, 'index'])->name('sadmin.pagos');
+    Route::post('/pagos/notificar', [SadminPagoController::class, 'store'])->name('sadmin.pagos.store');
 
-Route::get('admin/index', function () {
-    return view('admin.index');
-})->name('admin.index');
+    // Planes
+    Route::get('/planes', [SadminPlanController::class, 'index'])->name('cplanes');
+    Route::post('/planes', [SadminPlanController::class, 'store'])->name('planes.store');
+    Route::put('/planes/{id}', [SadminPlanController::class, 'update'])->name('planes.update');
+    Route::delete('/planes/{id}', [SadminPlanController::class, 'destroy'])->name('planes.destroy');
 
-Route::get('/admin/planes', [AdminPlanController::class, 'index'])
-    ->name('admin.planes');
+    // Empresas CRUD
+    Route::get('/empresas', [EmpresaController::class, 'index'])->name('empresas');
+    Route::post('/empresas', [EmpresaController::class, 'store'])->name('empresas.store');
+    Route::put('/empresas/{nit}', [EmpresaController::class, 'update'])->name('empresas.update');
+    Route::delete('/empresas/{nit}', [EmpresaController::class, 'destroy'])->name('empresas.destroy');
 
-
-Route::get('admin/usuarios', function () {
-    return view('admin.usuarios');
-})->name('admin.usuarios');
-
-Route::get('/admin/pagos', function () {
-    return view('admin.pagos');
-})->name('admin.pagos');
-
-// rutas del plan 
-    Route::prefix('sadmin')->group(function () {
-    Route::get('/planes', [PlanController::class, 'index'])->name('cplanes');
-    Route::post('/planes', [PlanController::class, 'store'])->name('planes.store');
-
-    Route::put('/planes/{id}', [PlanController::class, 'update'])->name('planes.update');
-    Route::delete('/planes/{id}', [PlanController::class, 'destroy'])->name('planes.destroy');
+    // Usuarios CRUD
+    Route::get('/admins', [UsuarioController::class, 'index'])->name('admins');
+    Route::post('/usuarios', [UsuarioController::class, 'store'])->name('sadmin.store');
+    Route::put('/admins/{documento}', [UsuarioController::class, 'update'])->name('admins.update');
+    Route::delete('/usuarios/{emple_doc}', [UsuarioController::class, 'destroy'])->name('usuarios.destroy');
 });
 
+// ================= ADMIN =================
+Route::prefix('admin')->group(function () {
 
-// Rutas administrador de empresas en vista sadmin
-Route::post('/sadmin/usuarios', [UsuarioController::class, 'store'])
-    ->name('sadmin.store');
+    // Dashboard
+    Route::get('/', fn() => view('admin.index'))->name('admin.index');
 
-Route::put('sadmin/admins/{documento}', [UsuarioController::class, 'update'])
-    ->name('admins.update');
+    // Planes
+    Route::get('/planes', [AdminPlanController::class, 'index'])->name('admin.planes');
 
-Route::delete('/usuarios/{emple_doc}', [UsuarioController::class, 'destroy'])
-    ->name('usuarios.destroy');
-    });
+    // Pagos
+    Route::get('/pagos/{plan}', [AdminPagoController::class, 'index'])->name('admin.pagos.index');
+    Route::post('/pagos', [AdminPagoController::class, 'store'])->name('pagos.store');
 
+    // Otros recursos del admin
+    Route::get('/correspondencia', fn() => view('admin.correspondencia'))->name('admin.correspondencia');
+    Route::get('/usuarios', fn() => view('admin.usuarios'))->name('admin.usuarios');
+});

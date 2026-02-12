@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Sadmin;
 
-use App\Models\Empresa;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Empresa;
 
 class EmpresaController extends Controller
 {
