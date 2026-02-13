@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 12, 2026 at 11:11 PM
+-- Generation Time: Feb 13, 2026 at 07:00 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -120,9 +120,9 @@ CREATE TABLE `empleado` (
 --
 
 INSERT INTO `empleado` (`emple_doc`, `nit_empresa`, `password`, `emple_nombres`, `emple_apellidos`, `emple_tel`, `emple_correo`, `emple_img`, `fecha_limite`, `emple_estado`, `emple_rol`, `emple_area`) VALUES
-(1001, NULL, '$2y$12$ipkGIRI86WapHF7i9cT6meu.6aVgg.qox1Y7t1Ek5hCE8ISDIb/c2', 'Kevin', 'Villafrade', NULL, 'kevin@gmail.com', NULL, NULL, 1, 1, NULL),
-(1002, NULL, '$2y$12$LWO14So.uSotCedN4ZOsbedPxbXwu1Fer2DwScs0Rz1gybCkV2xBO', 'Luis', 'Gomez', NULL, 'luis@gmail.com', 'empleado/G3Nd4kFx4CZEWNXYj7PupotVAEtIJ80xXHFnsVOC.jpg', NULL, 1, 2, NULL),
-(1003, NULL, '$2y$12$D/IFN/RIgdO.pfvfZql2WulD8j8abFaYrOdKC/JqJHTDheJ.avaOO', 'Yuber', 'Paez', NULL, 'yuber@gmail.com', NULL, NULL, 1, 3, NULL),
+(1001, '3241234', '$2y$12$ipkGIRI86WapHF7i9cT6meu.6aVgg.qox1Y7t1Ek5hCE8ISDIb/c2', 'Kevin', 'Villafrade', NULL, 'kevin@gmail.com', NULL, NULL, 1, 1, NULL),
+(1002, '3241234', '$2y$12$LWO14So.uSotCedN4ZOsbedPxbXwu1Fer2DwScs0Rz1gybCkV2xBO', 'Luis', 'Gomez', NULL, 'luis@gmail.com', 'empleado/G3Nd4kFx4CZEWNXYj7PupotVAEtIJ80xXHFnsVOC.jpg', NULL, 1, 2, NULL),
+(1003, '3241234', '$2y$12$D/IFN/RIgdO.pfvfZql2WulD8j8abFaYrOdKC/JqJHTDheJ.avaOO', 'Yuber', 'Paez', NULL, 'yuber@gmail.com', NULL, NULL, 1, 3, NULL),
 (2323, '3241234', '$2y$12$yzH/FluEwl5o27OLFhpt/eCQiiQvkAuzdjQ7fbeGNnePJjnPwpYIm', 'Asdas', 'Asdasd', '4232343435', 'asdas@gmail.com', NULL, NULL, 1, 2, NULL);
 
 -- --------------------------------------------------------
@@ -289,21 +289,11 @@ CREATE TABLE `pagos` (
   `id_plan` int(10) DEFAULT NULL,
   `monto` decimal(10,2) DEFAULT NULL,
   `comprobante` varchar(500) DEFAULT NULL,
+  `nit_empresa` varchar(25) NOT NULL,
   `moneda` varchar(10) DEFAULT NULL,
   `id_est_pago` int(10) DEFAULT NULL,
   `fecha_pago` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `pagos`
---
-
-INSERT INTO `pagos` (`id_pago`, `id_plan`, `monto`, `comprobante`, `moneda`, `id_est_pago`, `fecha_pago`) VALUES
-(1, 7, 200000.00, '', 'usd', 4, '2026-02-11 19:48:38'),
-(2, 4, 150000.00, '', 'cop', 5, '2026-02-11 20:29:49'),
-(3, 4, 30000.00, '', 'cop', 4, '2026-02-11 20:30:25'),
-(4, 4, 50.00, NULL, 'USD', 5, '2026-02-12 20:07:36'),
-(5, 4, 200000.00, NULL, 'COP', 0, '2026-02-12 21:52:32');
 
 -- --------------------------------------------------------
 
@@ -327,7 +317,7 @@ CREATE TABLE `plan` (
   `id_plan` int(10) NOT NULL,
   `nomb_plan` varchar(50) NOT NULL,
   `valor` int(12) NOT NULL,
-  `descripcion` varchar(255) NOT NULL,
+  `descripcion` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`descripcion`)),
   `duracion` int(10) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -336,10 +326,10 @@ CREATE TABLE `plan` (
 --
 
 INSERT INTO `plan` (`id_plan`, `nomb_plan`, `valor`, `descripcion`, `duracion`) VALUES
-(4, 'Mensual', 200000, 'Acceso completo al sistema. Soporte básico. Garantía 7 días.', 30),
-(5, 'Trimestral', 540000, 'Acceso completo al sistema. Soporte prioritario. Garantía 14 días. Incluye 1 capacitación.', 90),
-(6, 'Semestral', 1040000, 'Acceso completo al sistema. Soporte prioritario extendido. Garantía 30 días. Incluye 2 capacitaciones.', 180),
-(7, 'Anual', 1920000, 'Acceso completo al sistema. Soporte premium. Garantía 60 días. Incluye 4 capacitaciones.', 365);
+(4, 'Mensual', 200000, '[\"Acceso completo al sistema.\",\"Soporte básico.\",\"Garantía 7 días.\"]', 30),
+(5, 'Trimestral', 540000, '[\"Acceso completo al sistema.\",\"Soporte prioritario.\",\"Garantía 14 días.\", \"Incluye 1 capacitación.\"]', 90),
+(6, 'Semestral', 1040000, '[\"Acceso completo al sistema.\",\"Soporte prioritario extendido.\",\"Garantía 30 días.\", \"Incluye 2 capacitaciones.\"]\r\n', 180),
+(7, 'Anual', 1920000, '[\"Acceso completo al sistema.\",\"Soporte premium.\",\"Garantía 60 días.\", \"Incluye 4 capacitaciones.\"]', 365);
 
 -- --------------------------------------------------------
 
@@ -446,8 +436,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('9mysbN48kremXsOMNZmAscMLdD80hdcvKnH7DjaD', 1002, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoibFQzTHVmRmpaVTcwZHoyQlRRbG1DSzNLZDZxUmJtRk5OU1duakhDSyI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzU6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hZG1pbi9wYWdvcy80IjtzOjU6InJvdXRlIjtzOjE3OiJhZG1pbi5wYWdvcy5pbmRleCI7fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjEwMDI7fQ==', 1770933153),
-('BHCfi6t5b1rBjDo9ddOOqfjW32HofFc0MFAnKcjP', 1001, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoib1ZaQ2tjVGhBUDRMbldoVUdKRjk4bDdGVlJQanJXc1FUMzJzTEtKeCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzg6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zYWRtaW4vbGljZW5jaWFzIjtzOjU6InJvdXRlIjtzOjE2OiJzYWRtaW4ubGljZW5jaWFzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MTAwMTt9', 1770925867);
+('oNhpBM2MHR0blHLYEKQDP4t4sBx1I9GbrheeyLZY', 1001, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiVkk5M1hhRzB2dFhnRUJ2MklsVGZJbndZUVZjS0k3SmZvcEtYd1hieiI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzg6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zYWRtaW4vbGljZW5jaWFzIjtzOjU6InJvdXRlIjtzOjE2OiJzYWRtaW4ubGljZW5jaWFzIjt9czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MTAwMTt9', 1771005585);
 
 -- --------------------------------------------------------
 
@@ -606,7 +595,8 @@ ALTER TABLE `migrations`
 ALTER TABLE `pagos`
   ADD PRIMARY KEY (`id_pago`),
   ADD KEY `id_plan` (`id_plan`),
-  ADD KEY `id_est_pago` (`id_est_pago`);
+  ADD KEY `id_est_pago` (`id_est_pago`),
+  ADD KEY `nit_empresa` (`nit_empresa`);
 
 --
 -- Indexes for table `password_reset_tokens`
@@ -708,7 +698,7 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT for table `licencia`
 --
 ALTER TABLE `licencia`
-  MODIFY `id_licencia` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_licencia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `migrations`
@@ -720,7 +710,7 @@ ALTER TABLE `migrations`
 -- AUTO_INCREMENT for table `pagos`
 --
 ALTER TABLE `pagos`
-  MODIFY `id_pago` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id_pago` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
 
 --
 -- AUTO_INCREMENT for table `plan`
@@ -791,7 +781,8 @@ ALTER TABLE `licencia`
 --
 ALTER TABLE `pagos`
   ADD CONSTRAINT `pagos_ibfk_1` FOREIGN KEY (`id_plan`) REFERENCES `plan` (`id_plan`),
-  ADD CONSTRAINT `pagos_ibfk_2` FOREIGN KEY (`id_est_pago`) REFERENCES `estado` (`id_estado`);
+  ADD CONSTRAINT `pagos_ibfk_2` FOREIGN KEY (`id_est_pago`) REFERENCES `estado` (`id_estado`),
+  ADD CONSTRAINT `pagos_ibfk_3` FOREIGN KEY (`nit_empresa`) REFERENCES `empresa` (`nit_empresa`);
 
 --
 -- Constraints for table `radicados`

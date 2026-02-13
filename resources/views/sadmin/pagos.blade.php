@@ -31,6 +31,7 @@
                             <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Monto</th>
                             <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Fecha de Pago</th>
                             <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Comprobante</th>
+                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Estado</th>
                             <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase text-center">Acción</th>
                         </tr>
                     </thead>
@@ -68,6 +69,8 @@
                                     </div>
                                 </td>
 
+
+
                                 <td class="px-6 py-4">
                                     <button
                                         class="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-[#0d121b] dark:text-white text-xs font-bold rounded flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
@@ -77,7 +80,9 @@
 
                                 </td>
 
-
+                                <td class="px-6 py-4 text-sm font-bold">
+                                    {{ $pago->estado_nomb }}
+                                </td>
 
                                 {{-- BOTONES SOLO SI ESTÁ EN ESPERA --}}
                                 <td class="px-6 py-4 text-center">
@@ -166,7 +171,7 @@
                 ✖
             </button>
 
-           
+
             <!-- Imagen del comprobante -->
             <img id="imagenComprobante" src="" alt="Comprobante" class="w-full max-h-[80vh] object-contain rounded">
 

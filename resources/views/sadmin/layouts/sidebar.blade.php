@@ -42,85 +42,71 @@
             </h1>
 
             <!-- Resumen -->
-            <a
-                href="{{ route('sadmin.index') }}"
+            <a href="{{ route('sadmin.index') }}"
                 class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
                 {{ request()->routeIs('sadmin.index')
                     ? 'bg-primary/10 text-primary'
-                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                }}">
+                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
                 <span class="material-symbols-outlined">dashboard</span>
                 <p class="text-sm font-medium">Resumen</p>
             </a>
 
             <!-- Empresas -->
-            <a
-                href="{{ route('empresas') }}"
+            <a href="{{ route('empresas') }}"
                 class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
                 {{ request()->routeIs('empresas*')
                     ? 'bg-primary/10 text-primary'
-                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                }}">
+                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
                 <span class="material-symbols-outlined">bar_chart</span>
                 <p class="text-sm font-medium">Empresas</p>
             </a>
 
             <!-- Planes -->
-            <a
-                href="{{ route('cplanes') }}"
+            <a href="{{ route('cplanes') }}"
                 class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
                 {{ request()->routeIs('cplanes*')
                     ? 'bg-primary/10 text-primary'
-                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                }}">
+                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
                 <span class="material-symbols-outlined">corporate_fare</span>
                 <p class="text-sm font-medium">Planes</p>
             </a>
 
             <!-- Administradores -->
-            <a
-                href="{{ route('admins') }}"
+            <a href="{{ route('admins') }}"
                 class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
     {{ request()->routeIs('admins*')
         ? 'bg-primary/10 text-primary'
-        : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-    }}">
+        : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
                 <span class="material-symbols-outlined">group</span>
                 <p class="text-sm font-medium">Administradores</p>
             </a>
 
             <!-- Pagos -->
-            <a
-                href="{{ route('sadmin.pagos') }}"
+            <a href="{{ route('sadmin.pagos') }}"
                 class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
     {{ request()->routeIs('sadmin.pagos*')
         ? 'bg-primary/10 text-primary'
-        : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-    }}">
+        : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
                 <span class="material-symbols-outlined">payments</span>
                 <p class="text-sm font-medium leading-normal">Pagos</p>
             </a>
 
-                        <!-- Licencias -->
-            <a
-                href="{{ route('sadmin.licencias') }}"
+            <!-- Licencias -->
+            <a href="{{ route('sadmin.licencias') }}"
                 class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-    {{ request()->routeIs('sadmin.pagos*')
+    {{ request()->routeIs('sadmin.licencias*')
         ? 'bg-primary/10 text-primary'
-        : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-    }}">
+        : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
                 <span class="material-symbols-outlined">badge</span>
                 <p class="text-sm font-medium leading-normal">Licencias</p>
             </a>
 
             <!-- Configuración -->
-            <a
-                href="#"
+            <a href="#"
                 class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
                 {{ request()->routeIs('configuracion*')
                     ? 'bg-primary/10 text-primary'
-                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                }}">
+                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
                 <span class="material-symbols-outlined">settings</span>
                 <p class="text-sm font-medium">Configuración</p>
             </a>
@@ -130,8 +116,7 @@
 
     <div class="p-4 border-t border-[#cfd7e7] dark:border-gray-800">
         <div class="flex items-center gap-3 px-2">
-            <div
-                class="size-10 rounded-full bg-cover bg-center border-2 border-primary/20"
+            <div class="size-10 rounded-full bg-cover bg-center border-2 border-primary/20"
                 style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDJcGRY-BUZTWEM5ibdEl0CAPx6S68HRHNI75XLKXGYO_z1Yd7z2gBTZpw0ZjxccQMZRPFckRBrh-k7UE4xhSIaLL0haUdYWhwJV-R6N0qYwl3sPmvAFlE9FWn1Q5cnjIBQhPIHL_W1uUjO8qxMuQot0PIQwxRKisYbuWi7hiavy--o7Mj7AxnATmf44PtXGyJwvy_d7zhcMujMnynV0amQBSz0Zd2oZuguH4G1yeeA5wQUDqNieSzOs_pwq9oJk6WCOwYWzncf6FA");'>
             </div>
             <div class="overflow-hidden">

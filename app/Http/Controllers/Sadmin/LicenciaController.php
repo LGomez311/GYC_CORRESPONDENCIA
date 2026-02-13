@@ -17,7 +17,7 @@ class LicenciaController extends Controller
     public function index()
     {
         $licencias = Licencia::with('plan')
-            ->orderBy('fecha_inicio', 'desc')
+            ->orderBy('fecha_inicio', 'asc')
             ->get();
 
         $planes = Plan::all();
