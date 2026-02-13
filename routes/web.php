@@ -12,6 +12,8 @@ use App\Http\Controllers\Admin\PagoController as AdminPagoController;
 use App\Http\Controllers\Sadmin\PlanController as SadminPlanController;
 use App\Http\Controllers\Admin\PlanController as AdminPlanController;
 
+
+
 // RUTA PARA LICENCIAS - KEVIN
 use App\Http\Controllers\Sadmin\LicenciaController;
 
@@ -70,14 +72,19 @@ Route::prefix('sadmin')->group(function () {
 // ================= ADMIN =================
 Route::prefix('admin')->group(function () {
 
+     Route::get('/historialp', [AdminPagoController::class, 'historial'])->name('admin.historialp');
+
     // Dashboard
     Route::get('/', fn() => view('admin.index'))->name('admin.index');
 
     // Planes
     Route::get('/planes', [AdminPlanController::class, 'index'])->name('admin.planes');
-    
 
+    Route::get('/historialp', function () {
+        return view('admin.historialp');
+    })->name('admin.historialp');
     // Pagos
+
     Route::get('/pagos/{plan}', [AdminPagoController::class, 'index'])->name('admin.pagos.index');
     Route::post('/pagos', [AdminPagoController::class, 'store'])->name('pagos.store');
 

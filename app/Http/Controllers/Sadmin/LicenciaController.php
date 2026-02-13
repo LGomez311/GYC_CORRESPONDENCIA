@@ -77,7 +77,7 @@ class LicenciaController extends Controller
         }
 
 
-        $fechaFin = (clone $fechaInicio)->addDays($plan->duracion_dias);
+        $fechaFin = (clone $fechaInicio)->addDays($plan->duracion);
 
         Licencia::create([
             'nit_empresa'     => $request->nit_empresa,

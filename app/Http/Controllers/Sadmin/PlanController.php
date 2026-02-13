@@ -38,8 +38,10 @@ class PlanController extends Controller
             Plan::create([
                 'nomb_plan'   => $request->nomb_plan,
                 'valor'       => $request->valor,
-                'descripcion' => $request->descripcion,
                 'duracion'    => $request->duracion,
+                'descripcion' => $request->beneficios
+                    ? array_filter(array_map('trim', explode("\n", $request->beneficios)))
+                    : [],
             ]);
 
             return redirect()

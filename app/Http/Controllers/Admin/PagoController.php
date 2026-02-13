@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\Plan;
 use App\Models\Pago;
 use App\Models\Empresa;
+use Carbon\Carbon;
+
 
 
 class PagoController extends Controller
@@ -25,8 +27,7 @@ class PagoController extends Controller
 
         $id_plan = Plan::findOrFail($request->id_plan);
 
-        // 🔹 Obtener automáticamente el NIT de la única empresa
-        $empresa = Empresa::first(); // SOLO HAY UNA
+        $empresa = Empresa::first(); // único registro
 
         // 🔹 Guardar comprobante si existe
         $rutaComprobante = null;
@@ -41,11 +42,11 @@ class PagoController extends Controller
             'monto'       => $id_plan->valor,
             'comprobante' => $rutaComprobante,
             'moneda'      => 'COP',
-            'nit_empresa' => $empresa->nit,
+            'nit_empresa' => $empresa->nit_empresa,
             'id_est_pago' => 0, // EN ESPERA
-            'fecha_pago'  => now(),
+            'fecha_pago'  => Carbon::now('America/Bogota'),
         ]);
 
-        return back()->with('success', 'Pago notificado correctamente. En espera de aprobación.');
+        return redirect('admin')->with('success', 'Pago notificado correctamente. En espera de aprobación.');
     }
 }

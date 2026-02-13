@@ -25,7 +25,7 @@
 
 <aside
     class="w-64 flex-shrink-0 border-r border-[#cfd7e7] dark:border-gray-800 bg-white dark:bg-[#161d2b] flex flex-col">
-    
+
     <div class="p-6 flex items-center gap-3">
         <div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
             <span class="material-symbols-outlined">shield_person</span>
@@ -42,72 +42,62 @@
             </h1>
 
             <!-- Resumen -->
-            <a
-                href="{{ route('admin.index') }}"
+            <a href="{{ route('admin.index') }}"
                 class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
                 {{ request()->routeIs('sadmin.index')
                     ? 'bg-primary/10 text-primary'
-                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                }}">
+                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
                 <span class="material-symbols-outlined">dashboard</span>
                 <p class="text-sm font-medium">Resumen</p>
             </a>
 
             <!-- Empresas -->
-            <a
-                href=""
+            <a href=""
                 class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
                 {{ request()->routeIs('empresas*')
                     ? 'bg-primary/10 text-primary'
-                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                }}">
+                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
                 <span class="material-symbols-outlined">bar_chart</span>
                 <p class="text-sm font-medium">Empresas</p>
             </a>
 
             <!-- Planes -->
-            <a
-                href=""
-                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-                {{ request()->routeIs('')
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                }}">
-                <span class="material-symbols-outlined">corporate_fare</span>
-                <p class="text-sm font-medium">CAMBIAR</p>
-            </a>
+            
 
             <!-- Administradores -->
-            <a
-                href="{{ route('admin.usuarios') }}"
+            <a href="{{ route('admin.usuarios') }}"
                 class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
                 {{ request()->routeIs('admins*')
                     ? 'bg-primary/10 text-primary'
-                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                }}">
+                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
                 <span class="material-symbols-outlined">group</span>
                 <p class="text-sm font-medium">Usuarios</p>
             </a>
 
-            <a
-                href="{{ route('admin.planes') }}"
+            <a href="{{ route('admin.planes') }}"
                 class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
                 {{ request()->routeIs('admins*')
                     ? 'bg-primary/10 text-primary'
-                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                }}">
+                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
                 <span class="material-symbols-outlined">payments</span>
-                <p class="text-sm font-medium leading-normal">Planes y pagos</p>
+                <p class="text-sm font-medium leading-normal">Pagar planes</p>
+            </a>
+
+            <a href="{{ route('admin.historialp') }}"
+                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
+                {{ request()->routeIs('')
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
+                <span class="material-symbols-outlined">corporate_fare</span>
+                <p class="text-sm font-medium">Historial de pagos</p>
             </a>
 
             <!-- Configuración -->
-            <a
-                href="#"
+            <a href="#"
                 class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
                 {{ request()->routeIs('configuracion*')
                     ? 'bg-primary/10 text-primary'
-                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                }}">
+                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
                 <span class="material-symbols-outlined">settings</span>
                 <p class="text-sm font-medium">Configuración</p>
             </a>
@@ -117,8 +107,7 @@
 
     <div class="p-4 border-t border-[#cfd7e7] dark:border-gray-800">
         <div class="flex items-center gap-3 px-2">
-            <div
-                class="size-10 rounded-full bg-cover bg-center border-2 border-primary/20"
+            <div class="size-10 rounded-full bg-cover bg-center border-2 border-primary/20"
                 style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDJcGRY-BUZTWEM5ibdEl0CAPx6S68HRHNI75XLKXGYO_z1Yd7z2gBTZpw0ZjxccQMZRPFckRBrh-k7UE4xhSIaLL0haUdYWhwJV-R6N0qYwl3sPmvAFlE9FWn1Q5cnjIBQhPIHL_W1uUjO8qxMuQot0PIQwxRKisYbuWi7hiavy--o7Mj7AxnATmf44PtXGyJwvy_d7zhcMujMnynV0amQBSz0Zd2oZuguH4G1yeeA5wQUDqNieSzOs_pwq9oJk6WCOwYWzncf6FA");'>
             </div>
             <div class="overflow-hidden">
@@ -130,5 +119,25 @@
                 </p>
             </div>
         </div>
+    </div>
+    <div class="mt-4">
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+
+            <button type="submit"
+                class="w-full flex items-center gap-3 px-3 py-2 rounded-lg
+                   text-red-600 dark:text-red-400
+                   hover:bg-red-50 dark:hover:bg-red-900/20
+                   transition-colors">
+
+                <span class="material-symbols-outlined text-[20px]">
+                    logout
+                </span>
+
+                <span class="text-sm font-medium">
+                    Cerrar sesión
+                </span>
+            </button>
+        </form>
     </div>
 </aside>

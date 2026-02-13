@@ -4,6 +4,7 @@
 @section('title', 'Panel de Admin de empresa')
 <!-- Main Content -->
 @section('content')
+
 <div class="mx-auto flex w-full max-w-7xl flex-col">
     <!-- PageHeading -->
     <div class="flex flex-wrap items-center justify-between gap-4">

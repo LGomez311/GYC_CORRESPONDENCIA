@@ -14,6 +14,8 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
         rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
         .material-symbols-outlined {
             font-variation-settings:
@@ -60,8 +62,8 @@
             @include('admin.layouts.sidebar')
 
             <main class="flex-1 p-8">
-                
-                
+
+
 
                 @yield('content')
             </main>
@@ -69,6 +71,36 @@
     </div>
 
     @yield('modals')
+    @if (session('success'))
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Éxito',
+                text: "{{ session('success') }}"
+            });
+        </script>
+    @endif
+
+    @if (session('error'))
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: "{{ session('error') }}"
+            });
+        </script>
+    @endif
+
+    @if (session('warning'))
+        <script>
+            Swal.fire({
+                icon: 'warning',
+                title: 'Atención',
+                text: "{{ session('warning') }}"
+            });
+        </script>
+    @endif
+
 </body>
 
 
