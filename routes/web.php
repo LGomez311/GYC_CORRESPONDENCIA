@@ -72,7 +72,7 @@ Route::prefix('sadmin')->group(function () {
 // ================= ADMIN =================
 Route::prefix('admin')->group(function () {
 
-     Route::get('/historialp', [AdminPagoController::class, 'historial'])->name('admin.historialp');
+    Route::get('/historialp', [AdminPagoController::class, 'historial'])->name('admin.historialp');
 
     // Dashboard
     Route::get('/', fn() => view('admin.index'))->name('admin.index');
@@ -113,3 +113,9 @@ Route::prefix('sadmin')->name('sadmin.')->group(function () {
     Route::post('/licencias/{id}/toggle', [LicenciaController::class, 'toggle'])
         ->name('licencias.toggle');
 });
+
+//ruta remitente - Kevin
+
+    Route::get('/remitente', function () {
+    return view('remitente.index');
+})->name('remitente.index');
