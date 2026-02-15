@@ -82,43 +82,28 @@ Route::prefix('admin')
     ->middleware(['auth:web', 'licencia.activa'])
     ->group(function () {
 
-<<<<<<< HEAD
-
-=======
->>>>>>> kevin
-
         // Dashboard
         Route::get('/', fn() => view('admin.index'))->name('admin.index');
 
         // Planes
         Route::get('/planes', [AdminPlanController::class, 'index'])->name('admin.planes');
 
-<<<<<<< HEAD
-    // Pagos
-=======
-        //Mostrar pagos en admin
-        Route::get('/historialp', function () {
-            return view('admin.historialp');
-        })->name('admin.historialp');
         // Pagos
->>>>>>> kevin
 
         Route::get('/pagos/{plan}', [AdminPagoController::class, 'index'])->name('admin.pagos.index');
         Route::post('/pagos', [AdminPagoController::class, 'store'])->name('pagos.store');
 
-<<<<<<< HEAD
-    Route::get('/historialp', [AdminPagoController::class, 'historial'])->name('admin.historialp');
+        Route::get('/historialp', [AdminPagoController::class, 'historial'])->name('admin.historialp');
 
-    // Otros recursos del admin
-    Route::get('/correspondencia', fn() => view('admin.correspondencia'))->name('admin.correspondencia');
-    Route::get('/usuarios', fn() => view('admin.usuarios'))->name('admin.usuarios');
-});
-=======
         // Otros recursos del admin
         Route::get('/correspondencia', fn() => view('admin.correspondencia'))->name('admin.correspondencia');
         Route::get('/usuarios', fn() => view('admin.usuarios'))->name('admin.usuarios');
     });
->>>>>>> kevin
+
+// Otros recursos del admin
+Route::get('/correspondencia', fn() => view('admin.correspondencia'))->name('admin.correspondencia');
+Route::get('/usuarios', fn() => view('admin.usuarios'))->name('admin.usuarios');
+
 
 // Cambiar estado de pago - Kevin 
 Route::prefix('sadmin')->group(function () {
