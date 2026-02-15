@@ -11,8 +11,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+
+        // 👇 REGISTRAR TU MIDDLEWARE AQUÍ
+        $middleware->alias([
+            'licencia.activa' => \App\Http\Middleware\LicenciaActiva::class,
+        ]);
+
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
-    })->create();
+    })
+    ->create();

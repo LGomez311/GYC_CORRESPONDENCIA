@@ -22,7 +22,15 @@ class LicenciaController extends Controller
 
         $planes = Plan::all();
 
-        $pagos = Pago::where('id_est_pago', 4)->get();
+        $pagos = Pago::where('id_est_pago', 4)
+            ->whereNotIn('id_pago', function ($query) {
+                $query->select('id_pago')
+                    ->from('licencia')
+                    ->whereNotNull('id_pago');
+            })
+            ->with('plan') // importante para mostrar el nombre del plan
+            ->get();
+
         // 4 = Aprobado (según tu tabla estado)
 
         // SOLO estados 1 y 2
