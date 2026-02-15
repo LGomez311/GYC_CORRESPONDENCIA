@@ -6,52 +6,83 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Licencia;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\View;
 
 class LicenciaActiva
 {
     public function handle(Request $request, Closure $next)
     {
-        // 🔹 SuperAdmin libre
+        /**
+         * 🔹 SuperAdmin libre
+         */
         if (Auth::guard('web')->check() && Auth::guard('web')->user()->emple_rol == 1) {
+            View::share('licenciaBloqueada', false);
             return $next($request);
         }
 
-        // 🔹 Empleado / Admin
+        /**
+         * 🔹 ADMIN / USUARIO
+         */
         if (Auth::guard('web')->check()) {
 
             $user = Auth::guard('web')->user();
 
-            $licencia = Licencia::where('nit_empresa', $user->nit_empresa)
+            $licenciaActiva = Licencia::where('nit_empresa', $user->nit_empresa)
                 ->where('id_estado', 1)
-                ->where('fecha_fin', '>=', Carbon::now())
-                ->first();
+                ->where('fecha_fin', '>=', now())
+                ->exists();
 
-            if (!$licencia) {
-                Auth::guard('web')->logout();
+            // 🔑 Compartimos el estado SOLO para la vista
+            View::share('licenciaBloqueada', !$licenciaActiva);
 
-                return redirect()->route('login')
-                    ->withErrors(['login' => 'Licencia inactiva o vencida']);
+
+            // 🔑 PERMITIR SOLO ESTAS RUTAS CON LICENCIA VENCIDA
+            $rutasPermitidas = [
+                'admin.planes',
+                'admin.historialp',
+                'admin.pagos.index',
+                'pagos.store',
+            ];
+
+            if ($request->routeIs($rutasPermitidas)) {
+                return $next($request);
+            }
+
+            if (!$licenciaActiva) {
+
+                if (!session()->has('licencia_alert_mostrada')) {
+                    session()->flash('licencia_vencida', true);
+                    session()->put('licencia_alert_mostrada', true);
+                }
+
+                return redirect()->route('admin.planes');
             }
         }
 
-        // 🔹 Remitente
+        /**
+         * 🔹 REMITENTE (bloqueo total)
+         */
         if (Auth::guard('remitente')->check()) {
 
             $user = Auth::guard('remitente')->user();
 
-            $licencia = Licencia::where('nit_empresa', $user->nit_empresa)
-                ->where('id_estado', 1)
-                ->where('fecha_fin', '>=', Carbon::now())
-                ->first();
+            // Buscar si hay alguna licencia activa
+            $licenciaValida = Licencia::where('nit_empresa', $user->nit_empresa)
+                ->where('id_estado', 1) // activo
+                ->where('fecha_fin', '>=', now())
+                ->exists();
 
-            if (!$licencia) {
+            // Si NO hay licencia válida, cerrar sesión
+            if (!$licenciaValida) {
                 Auth::guard('remitente')->logout();
 
                 return redirect()->route('login')
-                    ->withErrors(['login' => 'Licencia inactiva o vencida']);
+                    ->withErrors(['login' => 'Licencia inactiva, vencida o desactivada']);
             }
         }
+
+
+
 
         return $next($request);
     }

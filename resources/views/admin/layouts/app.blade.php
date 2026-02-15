@@ -56,19 +56,34 @@
 
 
 <body class="font-display">
+    @if (!empty($licenciaBloqueada))
+        <div class="fixed top-0 left-0 right-0 z-50 bg-red-600 text-white">
+            <div class="flex items-center justify-between px-6 py-2 text-sm">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined fill text-white text-base">
+                        warning
+                    </span>
+                    <span>
+                        Tu licencia está bloqueada. Realiza el pago para continuar usando el sistema.
+                    </span>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <div
-        class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden">
+        class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden
+        @if (!empty($licenciaBloqueada)) pt-10 @endif">
         <div class="flex min-h-screen">
             @include('admin.layouts.sidebar')
 
             <main class="flex-1 p-8">
 
-
-
                 @yield('content')
             </main>
         </div>
     </div>
+
 
     @yield('modals')
     @if (session('success'))

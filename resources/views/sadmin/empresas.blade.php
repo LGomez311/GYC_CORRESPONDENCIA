@@ -39,25 +39,25 @@
                     <thead class="bg-background-light dark:bg-background-dark/50">
                         <tr>
                             <th
-                                class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">
+                                class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider align-middle text-center">
                                 Empresa</th>
                             <th
-                                class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">
+                                class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider align-middle text-center">
                                 NIT</th>
                             <th
-                                class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">
+                                class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider align-middle text-center">
                                 PLAN ACTUAL</th>
                             <th
-                                class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">
+                                class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider align-middle text-center">
                                 Dirección</th>
                             <th
-                                class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">
+                                class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider align-middle text-center">
                                 Teléfono</th>
                             <th
-                                class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">
+                                class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider align-middle text-center">
                                 Correo</th>
                             <th
-                                class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider text-right">
+                                class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider align-middle text-center">
                                 Acciones</th>
                         </tr>
                     </thead>
@@ -68,14 +68,14 @@
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
 
                                 <!-- EMPRESA -->
-                                <td class="px-6 py-4">
+                                <td class="px-6 py-4 text-sm dark:text-gray-300 align-middle text-center">
                                     <span class="text-sm font-bold text-[#0d121b] dark:text-white">
                                         {{ $empresa->nomb_empresa }}
                                     </span>
                                 </td>
 
                                 <!-- NIT -->
-                                <td class="px-6 py-4 text-sm text-[#0d121b] dark:text-gray-300">
+                                <td class="px-6 py-4 text-sm dark:text-gray-300 align-middle text-center">
                                     {{ $empresa->nit_empresa }}
                                 </td>
 
@@ -102,7 +102,7 @@
                                     $plan = $empresa->licencia->plan ?? null;
                                 @endphp
 
-                                <td class="px-6 py-4 text-sm">
+                                <td class="px-6 py-4 text-sm dark:text-gray-300 align-middle text-center">
                                     <span
                                         class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                         {{ $plan && isset($planes[$plan->id_plan]) ? $planes[$plan->id_plan] : $sinPlan }}">
@@ -115,22 +115,23 @@
 
 
                                 <!-- DIRECCIÓN -->
-                                <td class="px-6 py-4 text-sm dark:text-gray-300">
+                                <td class="px-6 py-4 text-sm dark:text-gray-300 align-middle text-center">
                                     {{ $empresa->direccion }}
                                 </td>
 
                                 <!-- TELÉFONO -->
-                                <td class="px-6 py-4 text-sm dark:text-gray-300">
+                                <td class="px-6 py-4 text-sm dark:text-gray-300 align-middle text-center">
                                     {{ $empresa->contacto }}
                                 </td>
 
                                 <!-- CORREO -->
-                                <td class="px-6 py-4 text-sm dark:text-gray-300">
-                                    {{ $empresa->empresa_correo }}
+                                <td class="px-6 py-4 text-sm dark:text-gray-300 align-middle text-center">
+                                    <span class="text-sm text-[#4c669a] dark:text-gray-400 underline decoration-primary/30">
+                                        {{ $empresa->empresa_correo }}</span>
                                 </td>
 
                                 <!-- ACCIONES -->
-                                <td class="px-6 py-4 text-right">
+                                <td class="px-6 py-4 text-sm dark:text-gray-300 align-middle text-center">
                                     <div class="flex items-center justify-end gap-1">
 
                                         <!-- EDITAR -->

@@ -18,19 +18,19 @@ class LoginController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'number' => 'required|numeric',
+            'number'   => 'required|numeric',
             'password' => 'required|string',
         ]);
 
-        $number = $request->number;
+        $number   = $request->number;
         $password = $request->password;
 
-        //  Intentar login como empleado
+        // 🔹 LOGIN EMPLEADO / ADMIN / SUPERADMIN
         if (Auth::guard('web')->attempt(['emple_doc' => $number, 'password' => $password])) {
 
             $empleado = Auth::guard('web')->user();
 
-            // Validar licencia SOLO si NO es SuperAdmin
+            // 🔹 Validar licencia SOLO si NO es SuperAdmin
             if ($empleado->emple_rol != 1) {
 
                 $licenciaActiva = Licencia::where('nit_empresa', $empleado->nit_empresa)
@@ -38,12 +38,20 @@ class LoginController extends Controller
                     ->where('fecha_fin', '>=', Carbon::now())
                     ->first();
 
+                // ❌ Sin licencia
                 if (!$licenciaActiva) {
-                    Auth::guard('web')->logout();
 
-                    return back()->withErrors([
-                        'login' => 'La licencia de la empresa está inactiva o vencida'
-                    ]);
+                    // 🟡 Admin empresa → entra con advertencia
+                    if ($empleado->emple_rol == 2) {
+                        session(['licencia_vencida' => true]);
+                    } else {
+                        // 🔴 Empleado normal → fuera
+                        Auth::guard('web')->logout();
+
+                        return back()->withErrors([
+                            'login' => 'La licencia de la empresa está inactiva o vencida'
+                        ]);
+                    }
                 }
             }
 
@@ -53,7 +61,7 @@ class LoginController extends Controller
             return redirect()->route('empleado.index');
         }
 
-        //  Intentar login como remitente
+        // 🔹 LOGIN REMITENTE
         if (Auth::guard('remitente')->attempt(['rem_doc' => $number, 'password' => $password])) {
 
             $remitente = Auth::guard('remitente')->user();
@@ -63,7 +71,9 @@ class LoginController extends Controller
                 ->where('fecha_fin', '>=', Carbon::now())
                 ->first();
 
+            // ❌ Remitente sin licencia → fuera SIEMPRE
             if (!$licenciaActiva) {
+
                 Auth::guard('remitente')->logout();
 
                 return back()->withErrors([
@@ -74,7 +84,7 @@ class LoginController extends Controller
             return redirect()->route('remitente.index');
         }
 
-        //  Si no autenticó ninguno
+        // ❌ Ningún login válido
         return back()->withErrors([
             'login' => 'Credenciales incorrectas'
         ]);

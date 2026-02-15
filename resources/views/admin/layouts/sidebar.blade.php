@@ -37,72 +37,79 @@
 
     <nav class="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
         <div class="flex flex-col gap-1">
-            <h1 class="text-[#4c669a] dark:text-gray-400 text-[10px] uppercase font-bold px-3 py-2">
-                Gestión Central
-            </h1>
 
-            <!-- Resumen -->
-            <a href="{{ route('admin.index') }}"
-                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-                {{ request()->routeIs('sadmin.index')
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
-                <span class="material-symbols-outlined">dashboard</span>
-                <p class="text-sm font-medium">Resumen</p>
-            </a>
+            @if (!empty($licenciaBloqueada))
+                <!-- SOLO cuando la licencia está vencida -->
 
-            <!-- Empresas -->
-            {{-- <a href=""
-                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-                {{ request()->routeIs('empresas*')
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
-                <span class="material-symbols-outlined">bar_chart</span>
-                <p class="text-sm font-medium">Empresas</p>
-            </a> --}}
+                <h1 class="text-[#4c669a] dark:text-gray-400 text-[10px] uppercase font-bold px-3 py-2">
+                    Licencia vencida
+                </h1>
 
-            <!-- Planes -->
-            
+                <a href="{{ route('admin.planes') }}"
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
+            text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                    <span class="material-symbols-outlined">payments</span>
+                    <p class="text-sm font-medium leading-normal">Pagar planes</p>
+                </a>
 
-            <!-- Administradores -->
-            <a href="{{ route('admin.usuarios') }}"
-                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-                {{ request()->routeIs('admins*')
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
-                <span class="material-symbols-outlined">group</span>
-                <p class="text-sm font-medium">Usuarios</p>
-            </a>
+                <a href="{{ route('admin.historialp') }}"
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
+            text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                    <span class="material-symbols-outlined">corporate_fare</span>
+                    <p class="text-sm font-medium">Historial de pagos</p>
+                </a>
+            @else
+                <!-- MENÚ NORMAL (licencia activa) -->
 
-            <a href="{{ route('admin.planes') }}"
-                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-                {{ request()->routeIs('admins*')
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
-                <span class="material-symbols-outlined">payments</span>
-                <p class="text-sm font-medium leading-normal">Pagar planes</p>
-            </a>
+                <h1 class="text-[#4c669a] dark:text-gray-400 text-[10px] uppercase font-bold px-3 py-2">
+                    Gestión Central
+                </h1>
 
-            <a href="{{ route('admin.historialp') }}"
-                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-                {{ request()->routeIs('')
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
-                <span class="material-symbols-outlined">corporate_fare</span>
-                <p class="text-sm font-medium">Historial de pagos</p>
-            </a>
+                <!-- Resumen -->
+                <a href="{{ route('admin.index') }}"
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
+            {{ request()->routeIs('admin.index')
+                ? 'bg-primary/10 text-primary'
+                : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    <p class="text-sm font-medium">Resumen</p>
+                </a>
 
-            <!-- Configuración -->
-            <a href="#"
-                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-                {{ request()->routeIs('configuracion*')
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
-                <span class="material-symbols-outlined">settings</span>
-                <p class="text-sm font-medium">Configuración</p>
-            </a>
+                <!-- Usuarios -->
+                <a href="{{ route('admin.usuarios') }}"
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
+            text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                    <span class="material-symbols-outlined">group</span>
+                    <p class="text-sm font-medium">Usuarios</p>
+                </a>
+
+                <!-- Pagar planes -->
+                <a href="{{ route('admin.planes') }}"
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
+            text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                    <span class="material-symbols-outlined">payments</span>
+                    <p class="text-sm font-medium leading-normal">Pagar planes</p>
+                </a>
+
+                <!-- Historial -->
+                <a href="{{ route('admin.historialp') }}"
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
+            text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                    <span class="material-symbols-outlined">corporate_fare</span>
+                    <p class="text-sm font-medium">Historial de pagos</p>
+                </a>
+
+                <!-- Configuración -->
+                <a href="#"
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
+            text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                    <span class="material-symbols-outlined">settings</span>
+                    <p class="text-sm font-medium">Configuración</p>
+                </a>
+            @endif
 
         </div>
+
     </nav>
 
     <div class="p-4 border-t border-[#cfd7e7] dark:border-gray-800">
@@ -140,4 +147,5 @@
             </button>
         </form>
     </div>
+
 </aside>
