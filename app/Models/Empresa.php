@@ -19,4 +19,13 @@ class Empresa extends Model
         'contacto',
         'empresa_correo',
     ];
+
+    public function licencia()
+    {
+        return $this->hasOne(
+            Licencia::class,
+            'nit_empresa',   // FK en licencia
+            'nit_empresa'    // PK en empresa
+        );
+    }
 }

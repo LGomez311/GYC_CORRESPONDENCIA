@@ -27,7 +27,11 @@ class Licencia extends Model
 
     public function plan()
     {
-        return $this->belongsTo(Plan::class, 'id_plan');
+        return $this->belongsTo(
+            Plan::class,
+            'id_plan',   // FK en licencia
+            'id_plan'    // PK en plan
+        );
     }
 
     public function licenciaPadre()

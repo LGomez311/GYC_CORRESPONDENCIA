@@ -4,6 +4,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Sadmin\UsuarioController;
 use App\Http\Controllers\Sadmin\EmpresaController;
+use App\Exports\PagosExport;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Models\Pago;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 // Alias para controllers con nombres iguales
 use App\Http\Controllers\Sadmin\PagoController as SadminPagoController;
@@ -16,7 +20,21 @@ Route::get('/admin/historialp', [AdminPagoController::class, 'historial'])
     ->name('admin.historialp');
 
 
+// Ruta de exportar excel con datos
+Route::get('/admin/pagos/export/excel', function () {
+    return Excel::download(new PagosExport, 'pagos.xlsx');
+})->name('pagos.export.excel');
 
+// Ruta para exportar pdf con datos
+Route::get('/admin/pagos/export/pdf', function () {
+
+    $pagos = Pago::with(['plan', 'estado'])->get();
+
+    $pdf = Pdf::loadView('admin.pdf.pagos_pdf', compact('pagos'))
+        ->setPaper('A4', 'landscape');
+
+    return $pdf->download('pagos.pdf');
+})->name('pagos.export.pdf');
 // RUTA PARA LICENCIAS - KEVIN
 use App\Http\Controllers\Sadmin\LicenciaController;
 

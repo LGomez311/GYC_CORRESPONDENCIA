@@ -60,7 +60,7 @@
                                 <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Plan</th>
                                 <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Descripción</th>
                                 <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Precio</th>
-                                <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Duración</th>
+                                <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Duración (Dias)</th>
                                 <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase text-right">Acciones</th>
                             </tr>
                         </thead>
@@ -88,7 +88,7 @@
                                     </td>
 
                                     <td class="px-6 py-4 text-sm dark:text-gray-300">
-                                        {{ $plan->duracion }} mes/es
+                                        {{ $plan->duracion }} Días
                                     </td>
 
                                     <td class="px-6 py-4 text-right">

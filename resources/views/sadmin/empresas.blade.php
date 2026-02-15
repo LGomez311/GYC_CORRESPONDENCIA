@@ -24,21 +24,41 @@
         </div>
         <div
             class="bg-white dark:bg-[#161d2b] rounded-xl border border-[#cfd7e7] dark:border-gray-800 overflow-hidden shadow-sm">
-            <div class="p-6 border-b border-[#cfd7e7] dark:border-gray-800">
-                <h2 class="text-lg font-bold dark:text-white">Empresas Registradas</h2>
+            <div
+                class="p-6 border-b border-[#cfd7e7] dark:border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <h2 class="text-[#0d121b] dark:text-white text-lg font-bold leading-tight">Empresas Registradas</h2>
+                <div class="flex gap-2">
+                    <button
+                        class="px-3 py-1.5 text-xs font-bold border border-[#cfd7e7] dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-1 dark:text-white">
+                        <span class="material-symbols-outlined text-sm">download</span> Exportar
+                    </button>
+                </div>
             </div>
-            <!-- TABLA -->
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
-
                     <thead class="bg-background-light dark:bg-background-dark/50">
                         <tr>
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Empresa</th>
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">NIT</th>
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Dirección</th>
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Teléfono</th>
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Correo</th>
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase text-right">Acciones</th>
+                            <th
+                                class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">
+                                Empresa</th>
+                            <th
+                                class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">
+                                NIT</th>
+                            <th
+                                class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">
+                                PLAN ACTUAL</th>
+                            <th
+                                class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">
+                                Dirección</th>
+                            <th
+                                class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">
+                                Teléfono</th>
+                            <th
+                                class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">
+                                Correo</th>
+                            <th
+                                class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider text-right">
+                                Acciones</th>
                         </tr>
                     </thead>
 
@@ -49,15 +69,50 @@
 
                                 <!-- EMPRESA -->
                                 <td class="px-6 py-4">
-                                    <span class="text-sm font-bold dark:text-white">
+                                    <span class="text-sm font-bold text-[#0d121b] dark:text-white">
                                         {{ $empresa->nomb_empresa }}
                                     </span>
                                 </td>
 
                                 <!-- NIT -->
-                                <td class="px-6 py-4 text-sm text-[#4c669a] dark:text-gray-400">
+                                <td class="px-6 py-4 text-sm text-[#0d121b] dark:text-gray-300">
                                     {{ $empresa->nit_empresa }}
                                 </td>
+
+
+                                {{-- Plan actual --}}
+                                @php
+                                    $planes = [
+                                        4 => 'bg-gray-50 text-gray-700 border border-gray-300
+                                        dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600',
+
+                                        5 => 'bg-blue-50 text-blue-700 border border-blue-300
+                                        dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700',
+
+                                        6 => 'bg-green-50 text-green-700 border border-green-300
+                                        dark:bg-green-900/30 dark:text-green-300 dark:border-green-700',
+
+                                        7 => 'bg-purple-50 text-purple-700 border border-purple-300
+                                        dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-700',
+                                    ];
+
+                                    $sinPlan = 'bg-red-50 text-red-700 border border-red-300
+                                    dark:bg-red-900/30 dark:text-red-300 dark:border-red-700';
+
+                                    $plan = $empresa->licencia->plan ?? null;
+                                @endphp
+
+                                <td class="px-6 py-4 text-sm">
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                        {{ $plan && isset($planes[$plan->id_plan]) ? $planes[$plan->id_plan] : $sinPlan }}">
+                                        {{ $plan->nomb_plan ?? 'SIN PLAN' }}
+                                    </span>
+                                </td>
+
+
+
+
 
                                 <!-- DIRECCIÓN -->
                                 <td class="px-6 py-4 text-sm dark:text-gray-300">
