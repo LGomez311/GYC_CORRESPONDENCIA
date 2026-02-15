@@ -40,7 +40,11 @@ class PlanController extends Controller
                 'valor'       => $request->valor,
                 'duracion'    => $request->duracion,
                 'descripcion' => $request->beneficios
-                    ? array_filter(array_map('trim', explode("\n", $request->beneficios)))
+                    ? array_values(
+                        array_filter(
+                            array_map('trim', explode("\n", $request->beneficios))
+                        )
+                    )
                     : [],
             ]);
 
@@ -71,7 +75,9 @@ class PlanController extends Controller
         $plan->update([
             'nomb_plan'   => $request->nomb_plan,
             'valor'       => $request->valor,
-            'descripcion' => $request->descripcion,
+            'descripcion' => $request->beneficios
+                ? array_filter(array_map('trim', explode("\n", $request->beneficios)))
+                : [],
             'duracion'    => $request->duracion,
         ]);
 

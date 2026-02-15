@@ -1,7 +1,9 @@
 @extends('admin.layouts.app')
 
 @section('content')
-    <div class="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div class="flex items-center justify-center bg-gray-50 px-4">
+
+
         <div class="w-full max-w-lg bg-white rounded-xl shadow-lg p-6">
 
             <!-- Título -->
@@ -49,7 +51,7 @@
                     Proceder al pago
                 </button>
 
-                <a href="{{ url()->previous() }}"
+                <a href="{{ route('admin.planes') }}"
                     class="flex-1 text-center border border-gray-300 hover:bg-gray-100 text-gray-700 font-semibold py-3 rounded-lg transition">
                     Cancelar
                 </a>
@@ -151,7 +153,7 @@
                     </label>
                     <input type="file" name="comprobante" class="w-full border rounded-lg p-2 text-sm">
                     <p class="text-xs text-gray-500 mt-1">
-                        Puedes adjuntar una imagen o PDF del comprobante.
+                        Puedes adjuntar una imagen del comprobante.
                     </p>
                 </div>
 

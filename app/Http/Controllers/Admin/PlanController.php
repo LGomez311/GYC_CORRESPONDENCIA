@@ -14,5 +14,5 @@ class PlanController extends Controller
         $plans = Plan::all();
         return view('admin.planes', compact('plans'));
     }
-
+    
 }

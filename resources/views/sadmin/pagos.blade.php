@@ -77,7 +77,6 @@
                                         onclick="abrirModal('{{ asset('storage/' . $pago->comprobante) }}')">
                                         <span class="material-symbols-outlined text-sm">visibility</span> Ver Comprobante
                                     </button>
-
                                 </td>
 
                                 <td class="px-6 py-4 text-sm font-bold">

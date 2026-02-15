@@ -18,6 +18,19 @@ class PagoController extends Controller
         return view('admin.pagos', compact('plan'));
     }
 
+    public function historial()
+    {
+        $pagos = Pago::with([
+            'plan',
+            'empresa',
+            'estado'
+        ])
+            ->orderBy('id_pago', 'desc')
+            ->get();
+
+        return view('admin.historialp', compact('pagos'));
+    }
+
     public function store(Request $request)
     {
         $request->validate([
