@@ -13,7 +13,7 @@ class EmpresaController extends Controller
      */
     public function index()
     {
-        $empresas = Empresa::all();
+        $empresas = Empresa::with('licencia.plan')->get();
         return view('sadmin.empresas', compact('empresas'));
     }
 
@@ -130,4 +130,3 @@ public function exportCsv()
 }
 
 }
-    

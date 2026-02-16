@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 
+
 class Pago extends Model
 {
     protected $table = 'pagos'; // nombre real de tu tabla
@@ -19,17 +20,24 @@ class Pago extends Model
         'monto',
         'moneda',
         'id_est_pago',
-        'fecha_pago'
+        'nit_empresa',
+        'fecha_pago',
+        'comprobante',
     ];
 
     // Relaciones opcionales
     public function plan()
     {
-        return $this->belongsTo(Plan::class, 'id_plan');
+        return $this->belongsTo(Plan::class, 'id_plan', );
     }
 
     public function estado()
     {
         return $this->belongsTo(Estado::class, 'id_est_pago');
+    }
+
+    public function empresa()
+    {
+        return $this->belongsTo(Empresa::class, 'id_empresa');
     }
 }

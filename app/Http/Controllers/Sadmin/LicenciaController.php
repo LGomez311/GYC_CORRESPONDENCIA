@@ -6,29 +6,45 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Licencia;
 use App\Models\Plan;
+use App\Models\Pago;
+use App\Models\Estado;
+use App\Models\Empresa;
 use Carbon\Carbon;
-use App\Models\Pago; 
 
 class LicenciaController extends Controller
 {
 
- public function index()
+    public function index()
     {
         $licencias = Licencia::with('plan')
-            ->orderBy('fecha_inicio', 'desc')
+            ->orderBy('fecha_inicio', 'asc')
             ->get();
 
         $planes = Plan::all();
 
-        $pagos = Pago::where('id_est_pago', 4)->get();
+        $pagos = Pago::where('id_est_pago', 4)
+            ->whereNotIn('id_pago', function ($query) {
+                $query->select('id_pago')
+                    ->from('licencia')
+                    ->whereNotNull('id_pago');
+            })
+            ->with('plan') // importante para mostrar el nombre del plan
+            ->get();
+
         // 4 = Aprobado (según tu tabla estado)
 
-         $estados = Estado::all();
+        // SOLO estados 1 y 2
+        $estados = Estado::whereIn('id_estado', [1, 2])->get();
+
+        // Empresas existentes
+        $empresas = Empresa::select('nit_empresa')->get();
 
         return view('sadmin.licencias', compact(
             'licencias',
             'planes',
-            'pagos'
+            'pagos',
+            'estados',
+            'empresas'
         ));
     }
     public function store(Request $request)
@@ -36,12 +52,13 @@ class LicenciaController extends Controller
         $request->validate([
             'nit_empresa' => 'required|string|max:25',
             'id_plan'     => 'required|exists:plan,id_plan',
-            'id_pago'     => 'required|exists:pago,id_pago',
+            'id_pago'     => 'required|exists:pagos,id_pago',
+            'id_estado'   => 'required|in:1,2'
         ]);
 
         $plan = Plan::findOrFail($request->id_plan);
 
-        // 🔎 Última licencia activa de la empresa
+        //  Última licencia activa de la empresa
         $licenciaAnterior = Licencia::where('nit_empresa', $request->nit_empresa)
             ->where('id_estado', 1) // Activa
             ->orderBy('fecha_fin', 'desc')
@@ -68,7 +85,7 @@ class LicenciaController extends Controller
         }
 
 
-        $fechaFin = (clone $fechaInicio)->addDays($plan->duracion_dias);
+        $fechaFin = (clone $fechaInicio)->addDays($plan->duracion);
 
         Licencia::create([
             'nit_empresa'     => $request->nit_empresa,
@@ -84,5 +101,22 @@ class LicenciaController extends Controller
         return redirect()
             ->route('sadmin.licencias')
             ->with('success', "Licencia {$tipo_licencia} realizada correctamente.");
+    }
+    public function toggle($id)
+    {
+        $licencia = Licencia::findOrFail($id);
+
+        // Si está activa (1) → pasar a inactiva (2)
+        if ($licencia->id_estado == 1) {
+            $licencia->id_estado = 2;
+        } else {
+            $licencia->id_estado = 1;
+        }
+
+        $licencia->save();
+
+        return redirect()
+            ->route('sadmin.licencias')
+            ->with('success', 'Estado de la licencia actualizado correctamente.');
     }
 }

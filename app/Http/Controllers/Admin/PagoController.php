@@ -10,6 +10,7 @@ use App\Models\Empresa;
 use Carbon\Carbon;
 
 
+
 class PagoController extends Controller
 {
     public function index(Plan $plan)
@@ -17,17 +18,29 @@ class PagoController extends Controller
         return view('admin.pagos', compact('plan'));
     }
 
+    public function historial()
+    {
+        $pagos = Pago::with([
+            'plan',
+            'empresa',
+            'estado'
+        ])
+            ->orderBy('id_pago', 'desc')
+            ->get();
+
+        return view('admin.historialp', compact('pagos'));
+    }
+
     public function store(Request $request)
     {
         $request->validate([
-            'plan_id' => 'required|exists:planes,id',
+            'id_plan' => '',
             'comprobante' => 'nullable|image|max:2048',
         ]);
 
-        $plan = Plan::findOrFail($request->plan_id);
+        $id_plan = Plan::findOrFail($request->id_plan);
 
-        // 🔹 Obtener automáticamente el NIT de la única empresa
-        $empresa = Empresa::first(); // SOLO HAY UNA
+        $empresa = Empresa::first(); // único registro
 
         // 🔹 Guardar comprobante si existe
         $rutaComprobante = null;
@@ -38,15 +51,15 @@ class PagoController extends Controller
 
         // 🔹 Crear pago
         Pago::create([
-            'id_plan'     => $plan->id,
-            'monto'       => $plan->valor,
+            'id_plan'     => $id_plan->id_plan,
+            'monto'       => $id_plan->valor,
             'comprobante' => $rutaComprobante,
             'moneda'      => 'COP',
-            'nit_empresa' => $empresa->nit,
+            'nit_empresa' => $empresa->nit_empresa,
             'id_est_pago' => 0, // EN ESPERA
-            'fecha_pago'  => Carbon::now(),
+            'fecha_pago'  => Carbon::now('America/Bogota'),
         ]);
 
-        return back()->with('success', 'Pago notificado correctamente. En espera de aprobación.');
+        return redirect('admin')->with('success', 'Pago notificado correctamente. En espera de aprobación.');
     }
 }

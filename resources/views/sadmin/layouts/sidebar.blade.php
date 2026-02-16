@@ -94,7 +94,7 @@
             <!-- Licencias -->
             <a href="{{ route('sadmin.licencias') }}"
                 class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-    {{ request()->routeIs('sadmin.pagos*')
+    {{ request()->routeIs('sadmin.licencias*')
         ? 'bg-primary/10 text-primary'
         : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
                 <span class="material-symbols-outlined">badge</span>
@@ -128,19 +128,5 @@
                 </p>
             </div>
         </div>
-    </div>
-    <div class="p-4 border-t border-[#cfd7e7] dark:border-gray-800">
-        <!-- Botón Cerrar Sesión -->
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit"
-                class="w-full flex items-center gap-3 px-3 py-2 rounded-lg
-                       text-red-600 dark:text-red-400
-                       hover:bg-red-50 dark:hover:bg-red-900/20
-                       transition-colors text-sm font-medium">
-                <span class="material-symbols-outlined text-base">logout</span>
-                Cerrar sesión
-            </button>
-        </form>
     </div>
 </aside>

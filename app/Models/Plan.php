@@ -18,4 +18,7 @@ class Plan extends Model
         'descripcion',
         'duracion',
     ];
+    protected $casts = [
+        'descripcion' => 'array',
+    ];
 }
