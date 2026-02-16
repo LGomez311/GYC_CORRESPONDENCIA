@@ -110,32 +110,12 @@
 
 
                                 {{-- Plan actual --}}
-                                @php
-                                    $planes = [
-                                        4 => 'bg-gray-50 text-gray-700 border border-gray-300
-                                        dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600',
-
-                                        5 => 'bg-blue-50 text-blue-700 border border-blue-300
-                                        dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700',
-
-                                        6 => 'bg-green-50 text-green-700 border border-green-300
-                                        dark:bg-green-900/30 dark:text-green-300 dark:border-green-700',
-
-                                        7 => 'bg-purple-50 text-purple-700 border border-purple-300
-                                        dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-700',
-                                    ];
-
-                                    $sinPlan = 'bg-red-50 text-red-700 border border-red-300
-                                    dark:bg-red-900/30 dark:text-red-300 dark:border-red-700';
-
-                                    $plan = $empresa->licencia->plan ?? null;
-                                @endphp
+                    
 
                                 <td class="px-6 py-4 text-sm dark:text-gray-300 align-middle text-center">
                                     <span
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                        {{ $plan && isset($planes[$plan->id_plan]) ? $planes[$plan->id_plan] : $sinPlan }}">
-                                        {{ $plan->nomb_plan ?? 'SIN PLAN' }}
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                                        
                                     </span>
                                 </td>
 

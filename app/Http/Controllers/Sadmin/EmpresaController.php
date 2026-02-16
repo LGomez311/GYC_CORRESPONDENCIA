@@ -13,7 +13,7 @@ class EmpresaController extends Controller
      */
     public function index()
     {
-        $empresas = Empresa::with('licencia.plan')->get();
+        $empresas = Empresa::all();
         return view('sadmin.empresas', compact('empresas'));
     }
 
