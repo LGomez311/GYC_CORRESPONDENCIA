@@ -127,23 +127,17 @@
             </div>
         </div>
     </div>
-    <div class="mt-4">
+    <div class="p-4 border-t border-[#cfd7e7] dark:border-gray-800">
+    <!-- Botón Cerrar Sesión -->
         <form method="POST" action="{{ route('logout') }}">
             @csrf
-
             <button type="submit"
                 class="w-full flex items-center gap-3 px-3 py-2 rounded-lg
-                   text-red-600 dark:text-red-400
-                   hover:bg-red-50 dark:hover:bg-red-900/20
-                   transition-colors">
-
-                <span class="material-symbols-outlined text-[20px]">
-                    logout
-                </span>
-
-                <span class="text-sm font-medium">
-                    Cerrar sesión
-                </span>
+                       text-red-600 dark:text-red-400
+                       hover:bg-red-50 dark:hover:bg-red-900/20
+                       transition-colors text-sm font-medium">
+                <span class="material-symbols-outlined text-base">logout</span>
+                Cerrar sesión
             </button>
         </form>
     </div>
