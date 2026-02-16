@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Sadmin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Empleado;
+use App\Models\Empresa;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -18,8 +19,9 @@ class UsuarioController extends Controller
             ->get();
 
         $estados = Estado::all();
+        $empresas = Empresa::all();
 
-        return view('sadmin.admins', compact('users', 'estados'));
+        return view('sadmin.admins', compact('users', 'estados', 'empresas'));
     }
 
     public function store(Request $request)
@@ -68,11 +70,12 @@ class UsuarioController extends Controller
         $request->validate([
             'emple_nombres'   => 'required|string|max:100',
             'emple_apellidos' => 'required|string|max:100',
-            'emple_tel'       => 'nullable',
+            'emple_tel'       => 'required|digits:10',
             'emple_correo'    => 'required|email|unique:empleado,emple_correo,' . $documento . ',emple_doc',
-            'password'        => 'nullable',
+            'password'        => 'nullable|min:8',
             'emple_img'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'emple_estado'       => 'required|exists:estado,id_estado',
+            'emple_estado'    => 'required|exists:estado,id_estado',
+            'nit_empresa'     => 'required|exists:empresa,nit_empresa',
         ]);
 
         // 2. Buscar empleado
@@ -85,6 +88,7 @@ class UsuarioController extends Controller
             'emple_tel'       => $request->emple_tel,
             'emple_correo'    => $request->emple_correo,
             'emple_estado'    => $request->emple_estado,
+            'nit_empresa'     => $request->nit_empresa,
         ];
 
         // 4. Solo actualizar password si viene en el request
@@ -106,7 +110,7 @@ class UsuarioController extends Controller
             $data['emple_img'] = $ruta;
         }
 
-        // 5. Update
+        // 6. Update
         $empleado->update($data);
 
         return redirect()->back()->with('success', 'Usuario actualizado correctamente');

@@ -75,7 +75,7 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     <span
-                                        class="text-sm text-[#4c669a] dark:text-gray-400 underline decoration-primary/30">{{ $user->emple_correo }}<span>
+                                        class="text-sm text-[#4c669a] dark:text-gray-400 underline decoration-primary/30">{{ $user->emple_correo }}</span>
                                 </td>
 
                                 <td class="px-6 py-4">
@@ -103,8 +103,15 @@
                                             title="Ver detalles">
                                             <span class="material-symbols-outlined text-[20px]">visibility</span>
                                         </button>
-                                        <button onclick='openModalEdit(@json($user))'
-                                            class="p-2 text-[#4c669a] hover:text-primary transition-colors" title="Editar">
+                                        <button onclick='openModalEdit(this)'
+                                            class="p-2 text-[#4c669a] hover:text-primary transition-colors" title="Editar"
+                                            data-documento="{{ $user->emple_doc }}"
+                                            data-nit="{{ $user->nit_empresa }}"
+                                            data-nombres="{{ $user->emple_nombres }}"
+                                            data-apellidos="{{ $user->emple_apellidos }}"
+                                            data-telefono="{{ $user->emple_tel }}"
+                                            data-correo="{{ $user->emple_correo }}"
+                                            data-estado="{{ $user->emple_estado }}">
                                             <span class="material-symbols-outlined text-[20px]">edit</span>
                                         </button>
 
@@ -124,13 +131,7 @@
                                 </td>
                             </tr>
                         @endforeach
-                        @if ($users->count() > 0)
-                            @foreach ($users as $user)
-                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                                    <!-- TODA tu fila actual -->
-                                </tr>
-                            @endforeach
-                        @else
+                        @if ($users->count() == 0)
                             <tr>
                                 <td colspan="6" class="px-6 py-10 text-center">
                                     <div
@@ -186,6 +187,155 @@
 
 @section('modals')
 
+    <!-- Scripts globales (cargados primero) -->
+    <script>
+        // Variables de validación para EDICIÓN
+        let validEdit = {
+            nombres: false,
+            apellidos: false,
+            telefono: false,
+            correo: false,
+            estado: false
+        };
+
+        // Validación de texto para edición
+        function validateTextoEdit(input, errorId) {
+            input.value = input.value
+                .replace(/[^a-zA-Z\s]/g, '')
+                .replace(/\b\w/g, l => l.toUpperCase());
+
+            const isValid = /^[A-Z][a-zA-Z\s]*$/.test(input.value);
+            validEdit[input.id.replace('edit_', '')] = isValid;
+            toggleErrorEdit(errorId, !isValid);
+            checkFormEdit();
+        }
+
+        // Validación de teléfono para edición
+        function validateTelefonoEdit(input) {
+            input.value = input.value.replace(/\D/g, '').slice(0, 10);
+            validEdit.telefono = input.value.length === 10;
+            toggleErrorEdit('edit-error-telefono', !validEdit.telefono);
+            checkFormEdit();
+        }
+
+        // Validación de correo para edición
+        function validateCorreoEdit(input) {
+            const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            validEdit.correo = regex.test(input.value);
+            toggleErrorEdit('edit-error-correo', !validEdit.correo);
+            checkFormEdit();
+        }
+
+        // Validación de estado para edición
+        function validateEstadoEdit(input) {
+            validEdit.estado = input.value !== '';
+            checkFormEdit();
+        }
+
+        // Mostrar/ocultar errores para edición
+        function toggleErrorEdit(id, show) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.classList.toggle('hidden', !show);
+            }
+        }
+
+        // Habilitar botón de edición (sin requerir contraseña)
+        function checkFormEdit() {
+            const isValid = Object.values(validEdit).every(v => v === true);
+            const btn = document.getElementById('btnGuardarEdit');
+
+            btn.disabled = !isValid;
+            btn.classList.toggle('opacity-50', !isValid);
+            btn.classList.toggle('cursor-not-allowed', !isValid);
+        }
+
+        // FUNCIÓN PARA ABRIR MODAL DE EDICIÓN
+        function openModalEdit(btn) {
+            try {
+                // Validar que el botón existe
+                if (!btn || !btn.dataset) {
+                    console.error('Botón no válido');
+                    return;
+                }
+
+                // Obtener todos los elementos
+                const form = document.getElementById('formEdit');
+                const editDoc = document.getElementById('edit_documento');
+                const editNit = document.getElementById('edit_nit');
+                const editNombres = document.getElementById('edit_nombres');
+                const editApellidos = document.getElementById('edit_apellidos');
+                const editTelefono = document.getElementById('edit_telefono');
+                const editCorreo = document.getElementById('edit_correo');
+                const editEstado = document.getElementById('edit_estado');
+                const editPassword = document.getElementById('edit_password');
+                const userModalEdit = document.getElementById('userModalEdit');
+                const modalOverlayEdit = document.getElementById('modalOverlayEdit');
+
+                // Validar que todos los elementos existen
+                if (!form || !editDoc || !editNombres || !editApellidos || !editTelefono || 
+                    !editCorreo || !editEstado || !userModalEdit || !modalOverlayEdit) {
+                    console.error('Algunos elementos no existen en el DOM');
+                    return;
+                }
+
+                // Obtener datos del botón
+                const documento = btn.dataset.documento || '';
+                const nit = btn.dataset.nit || '';
+                const nombres = btn.dataset.nombres || '';
+                const apellidos = btn.dataset.apellidos || '';
+                const telefono = btn.dataset.telefono || '';
+                const correo = btn.dataset.correo || '';
+                const estado = btn.dataset.estado || '';
+
+                // Establecer la acción del formulario
+                form.action = `/sadmin/admins/${documento}`;
+
+                // Llenar los campos
+                editDoc.value = documento;
+                editNit.value = nit;
+                editNombres.value = nombres;
+                editApellidos.value = apellidos;
+                editTelefono.value = telefono;
+                editCorreo.value = correo;
+                editEstado.value = estado;
+                if (editPassword) {
+                    editPassword.value = '';
+                }
+
+                // Validar campos al abrir
+                if (typeof validEdit !== 'undefined') {
+                    validEdit.nombres = nombres && /^[A-Z][a-zA-Z\s]*$/.test(nombres);
+                    validEdit.apellidos = apellidos && /^[A-Z][a-zA-Z\s]*$/.test(apellidos);
+                    validEdit.telefono = telefono && telefono.toString().length === 10;
+                    validEdit.correo = correo && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo);
+                    validEdit.estado = estado && estado !== '';
+
+                    // Actualizar estado del botón
+                    if (typeof checkFormEdit !== 'undefined') {
+                        checkFormEdit();
+                    }
+                }
+
+                // Mostrar modal
+                userModalEdit.classList.remove('hidden');
+                modalOverlayEdit.classList.remove('hidden');
+                
+                console.log('Modal abierto exitosamente');
+            } catch(e) {
+                console.error('Error al abrir modal:', e);
+                alert('Error: ' + e.message);
+            }
+        }
+
+        function closeModalEdit() {
+            const userModalEdit = document.getElementById('userModalEdit');
+            const modalOverlayEdit = document.getElementById('modalOverlayEdit');
+            if (userModalEdit) userModalEdit.classList.add('hidden');
+            if (modalOverlayEdit) modalOverlayEdit.classList.add('hidden');
+        }
+    </script>
+
     <!-- Overlay -->
     <div id="modalOverlay" class="fixed inset-0 bg-black/40 hidden z-40"></div>
 
@@ -219,11 +369,14 @@
 
                     </div>
 
-                    <!-- NIT Empresa (automático) -->
+                    <!-- NIT Empresa -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Empresa (NIT)</label>
-                        <select disabled class="mt-1 w-full rounded-lg border-gray-300 bg-gray-100">
-                            <option>900123456 - Global Tech Solutions</option>
+                        <select name="nit_empresa" class="mt-1 w-full rounded-lg border-gray-300" required>
+                            <option value="">Seleccionar empresa...</option>
+                            @foreach ($empresas as $empresa)
+                                <option value="{{ $empresa->nit_empresa }}">{{ $empresa->nit_empresa }} - {{ $empresa->nomb_empresa ?? 'Sin nombre' }}</option>
+                            @endforeach
                         </select>
                     </div>
 
@@ -296,7 +449,6 @@
                             <option>Activo</option>
                         </select>
                     </div>
-                    <input type="hidden" name="nit_empresa" value="900123456">
                     <input type="hidden" name="emple_estado" value="1">
                     <input type="hidden" name="emple_rol" value="2">
 
@@ -497,11 +649,14 @@
 
                     </div>
 
-                    <!-- NIT Empresa (automático) -->
+                    <!-- NIT Empresa -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Empresa (NIT)</label>
-                        <select disabled class="mt-1 w-full rounded-lg border-gray-300 bg-gray-100">
-                            <option>900123456 - Global Tech Solutions</option>
+                        <select name="nit_empresa" id="edit_nit" class="mt-1 w-full rounded-lg border-gray-300" required>
+                            <option value="">Seleccionar empresa...</option>
+                            @foreach ($empresas as $empresa)
+                                <option value="{{ $empresa->nit_empresa }}">{{ $empresa->nit_empresa }} - {{ $empresa->nomb_empresa ?? 'Sin nombre' }}</option>
+                            @endforeach
                         </select>
                     </div>
 
@@ -509,8 +664,8 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Nombres</label>
                         <input name="emple_nombres" id="edit_nombres" type="text"
-                            class="mt-1 w-full rounded-lg border-gray-300" oninput="validateTexto(this, 'error-nombres')">
-                        <p id="error-nombres" class="text-sm text-red-500 hidden">
+                            class="mt-1 w-full rounded-lg border-gray-300" oninput="validateTextoEdit(this, 'edit-error-nombres')">
+                        <p id="edit-error-nombres" class="text-sm text-red-500 hidden">
                             Solo letras, primera letra en mayúscula
                         </p>
 
@@ -521,8 +676,8 @@
                         <label class="block text-sm font-medium text-gray-700">Apellidos</label>
                         <input name="emple_apellidos" id="edit_apellidos" type="text"
                             class="mt-1 w-full rounded-lg border-gray-300"
-                            oninput="validateTexto(this, 'error-apellidos')">
-                        <p id="error-apellidos" class="text-sm text-red-500 hidden">
+                            oninput="validateTextoEdit(this, 'edit-error-apellidos')">
+                        <p id="edit-error-apellidos" class="text-sm text-red-500 hidden">
                             Solo letras, primera letra en mayúscula
                         </p>
 
@@ -532,8 +687,8 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Teléfono</label>
                         <input name="emple_tel" id="edit_telefono" type="text"
-                            class="mt-1 w-full rounded-lg border-gray-300" oninput="validateTelefono(this)">
-                        <p id="error-telefono" class="text-sm text-red-500 hidden">
+                            class="mt-1 w-full rounded-lg border-gray-300" oninput="validateTelefonoEdit(this)">
+                        <p id="edit-error-telefono" class="text-sm text-red-500 hidden">
                             Solo números, máximo 10 dígitos
                         </p>
 
@@ -543,20 +698,20 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Correo electrónico</label>
                         <input name="emple_correo" id="edit_correo" type="email"
-                            class="mt-1 w-full rounded-lg border-gray-300" oninput="validateCorreo(this)">
-                        <p id="error-correo" class="text-sm text-red-500 hidden">
+                            class="mt-1 w-full rounded-lg border-gray-300" oninput="validateCorreoEdit(this)">
+                        <p id="edit-error-correo" class="text-sm text-red-500 hidden">
                             Correo electrónico inválido
                         </p>
 
                     </div>
 
-                    <!-- Password -->
+                    <!-- Password (OPCIONAL) -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Contraseña</label>
+                        <label class="block text-sm font-medium text-gray-700">Contraseña (Opcional)</label>
                         <input name="password" id="edit_password" type="password"
-                            class="mt-1 w-full rounded-lg border-gray-300" oninput="validatePassword(this)">
-                        <p id="error-password" class="text-sm text-red-500 hidden">
-                            Mín 8 caracteres, 1 minúscula y 3 números
+                            class="mt-1 w-full rounded-lg border-gray-300">
+                        <p class="text-xs text-gray-500 mt-1">
+                            Déjalo en blanco para mantener la contraseña actual
                         </p>
 
                     </div>
@@ -567,11 +722,11 @@
                         <input name="emple_img" type="file" class="mt-1 w-full rounded-lg border-gray-300">
                     </div>
 
-                    <!-- Estado (automático) -->
                     <!-- Estado -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Estado</label>
-                        <select name="emple_estado" id="edit_estado" class="mt-1 w-full rounded-lg border-gray-300">
+                        <select name="emple_estado" id="edit_estado" class="mt-1 w-full rounded-lg border-gray-300" onchange="validateEstadoEdit(this)">
+                            <option value="">Seleccionar estado...</option>
                             @foreach ($estados as $estado)
                                 <option value="{{ $estado->id_estado }}">
                                     {{ $estado->estado_nomb }}
@@ -579,7 +734,6 @@
                             @endforeach
                         </select>
                     </div>
-
 
                     <!-- Rol (automático) -->
                     <div>
@@ -607,36 +761,6 @@
             </form>
         </div>
     </div>
-
-    <!-- Scripts -->
-    <script>
-        function openModalEdit(user) {
-
-            const form = document.getElementById('formEdit');
-            form.action = `{{ url('sadmin/admins') }}/${user.emple_doc}`;
-
-            document.getElementById('edit_documento').value = user.emple_doc;
-            document.getElementById('edit_nombres').value = user.emple_nombres;
-            document.getElementById('edit_apellidos').value = user.emple_apellidos;
-            document.getElementById('edit_telefono').value = user.emple_tel;
-            document.getElementById('edit_correo').value = user.emple_correo;
-
-            // 🔹 Estado actual
-            document.getElementById('edit_estado').value = user.emple_estado;
-
-            document.getElementById('edit_password').value = '';
-
-            document.getElementById('userModalEdit').classList.remove('hidden');
-            document.getElementById('modalOverlayEdit').classList.remove('hidden');
-        }
-
-
-        function closeModalEdit() {
-            document.getElementById('userModalEdit').classList.add('hidden');
-            document.getElementById('modalOverlayEdit').classList.add('hidden');
-        }
-    </script>
-
 
     @if (session()->has('success'))
         <script>
@@ -711,7 +835,7 @@
                 <!-- Foto de perfil -->
                 <div class="flex flex-col items-center gap-4">
                     <img id="profile_foto"
-                        src="{{ $user->emple_img ? asset('storage/' . $user->emple_img) : asset('img/default-user.png') }}"
+                        src="/img/default-user.png"
                         class="w-40 h-40 rounded-full object-cover border shadow" alt="Foto de perfil">
 
                     <span class="text-sm text-gray-500">Foto de perfil</span>

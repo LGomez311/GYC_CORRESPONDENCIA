@@ -42,15 +42,19 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
-        if (Auth::guard('web')->check()) {
-            Auth::guard('web')->logout();
-        } elseif (Auth::guard('remitente')->check()) {
-            Auth::guard('remitente')->logout();
-        }
+        Auth::guard('web')->logout();
+        Auth::guard('remitente')->logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login.form');
+        return redirect()
+            ->route('login')
+            ->withHeaders([
+                'Cache-Control' => 'no-cache, no-store, must-revalidate',
+                'Pragma' => 'no-cache',
+                'Expires' => '0',
+            ]);
     }
+
 }

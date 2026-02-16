@@ -82,5 +82,52 @@ class EmpresaController extends Controller
         return redirect()->route('empresas')
             ->with('success', 'Empresa eliminada correctamente');
     }
+
+    /**
+ * Exportar empresas a CSV
+ */
+public function exportCsv()
+{
+    $empresas = Empresa::orderBy('nomb_empresa')->get();
+
+    $filename = "empresas_" . now()->format('Ymd_His') . ".csv";
+
+    $headers = [
+        "Content-Type" => "text/csv; charset=UTF-8",
+        "Content-Disposition" => "attachment; filename=\"$filename\"",
+    ];
+
+    $callback = function () use ($empresas) {
+
+        $file = fopen('php://output', 'w');
+
+        // 👇 Esto evita problemas de tildes en Excel
+        fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+
+        // Encabezados
+        fputcsv($file, [
+            'Empresa',
+            'NIT',
+            'Dirección',
+            'Teléfono',
+            'Correo',
+        ]);
+
+        foreach ($empresas as $empresa) {
+            fputcsv($file, [
+                $empresa->nomb_empresa,
+                $empresa->nit_empresa,
+                $empresa->direccion,
+                $empresa->contacto,
+                $empresa->empresa_correo,
+            ]);
+        }
+
+        fclose($file);
+    };
+
+    return response()->stream($callback, 200, $headers);
+}
+
 }
     

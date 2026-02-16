@@ -6,8 +6,10 @@
     <div class="p-8 max-w-7xl mx-auto w-full">
 
         <!-- Header -->
-        <div class="flex flex-wrap justify-between items-end gap-3 mb-8">
-            <div class="flex flex-col gap-1">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
+
+            <!-- Título -->
+            <div>
                 <h1 class="text-[#0d121b] dark:text-white text-3xl font-black tracking-tight">
                     Gestión de Empresas
                 </h1>
@@ -16,12 +18,39 @@
                 </p>
             </div>
 
-            <button onclick="openCreateModal()"
-                class="px-4 py-2 bg-primary text-white rounded-lg font-bold text-sm flex items-center gap-2 shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all">
-                <span class="material-symbols-outlined text-sm">add</span>
-                Añadir Empresa
-            </button>
+            <!-- Botones -->
+            <div class="flex items-center gap-3">
+
+                <!-- Botón Exportar -->
+                <a href="{{ route('empresas.export.csv') }}"
+                    class="px-4 py-2 border border-green-600 text-green-600 
+                   rounded-lg font-semibold text-sm 
+                   flex items-center gap-2 
+                   hover:bg-green-600 hover:text-white 
+                   transition-all duration-200">
+
+                    <span class="material-symbols-outlined text-[18px]">
+                        download
+                    </span>
+                    Exportar CSV
+                </a>
+
+                <!-- Botón Crear -->
+                <button onclick="openCreateModal()"
+                    class="px-5 py-2.5 bg-primary text-white rounded-lg 
+                   font-bold text-sm flex items-center gap-2 
+                   shadow-lg shadow-primary/20 
+                   hover:bg-primary/90 transition-all duration-200">
+
+                    <span class="material-symbols-outlined text-[18px]">
+                        add
+                    </span>
+                    Añadir Empresa
+                </button>
+
+            </div>
         </div>
+
         <div
             class="bg-white dark:bg-[#161d2b] rounded-xl border border-[#cfd7e7] dark:border-gray-800 overflow-hidden shadow-sm">
             <div class="p-6 border-b border-[#cfd7e7] dark:border-gray-800">

@@ -100,3 +100,29 @@ Route::prefix('sadmin')->group(function () {
     Route::post('/licencias', [LicenciaController::class, 'store'])
         ->name('sadmin.licencias.store');
 });
+
+
+//exportar excel - gomez
+Route::get(
+    '/sadmin/empresas/export-csv',
+    [EmpresaController::class, 'exportCsv']
+)->name('empresas.export.csv');
+
+// ================= RECUPERACIÓN DE CONTRASEÑA =================-Gomez
+
+use App\Http\Controllers\Auth\EmpleadoPasswordController;
+
+Route::prefix('empleado')->group(function () {
+
+    Route::get('forgot-password', [EmpleadoPasswordController::class, 'showForgotForm'])
+        ->name('empleado.password.forgot');
+
+    Route::post('send-code', [EmpleadoPasswordController::class, 'sendCode'])
+        ->name('empleado.password.send');
+
+    Route::get('verify-code', [EmpleadoPasswordController::class, 'showVerifyForm'])
+        ->name('empleado.password.verify');
+
+    Route::post('reset-password', [EmpleadoPasswordController::class, 'resetPassword'])
+        ->name('empleado.password.reset');
+});
