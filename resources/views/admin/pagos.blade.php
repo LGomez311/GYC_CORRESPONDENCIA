@@ -80,10 +80,11 @@
 @section('modals')
     <!-- Modal -->
 
-    <div id="paymentModal" class="fixed inset-0 bg-black/60 flex items-center justify-center hidden z-50 px-4">
+    <div id="paymentModal"
+        class="fixed inset-0 bg-black/60 flex items-center justify-center hidden z-50 px-4 overflow-y-auto">
 
         <!-- Caja del modal -->
-        <div class="bg-white rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto p-6 shadow-2xl">
+        <div class="bg-white rounded-2xl w-full max-w-xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
 
             <!-- Header -->
             <div class="mb-5 border-b pb-3">
@@ -145,6 +146,24 @@
 
                 @csrf
                 <input type="hidden" name="id_plan" value="{{ $plan->id_plan }}">
+
+                <!-- Fecha inicio de licencia -->
+                <div class="mb-4">
+                    <label class="block font-semibold text-gray-700 mb-1 text-sm">
+                        Fecha de inicio del plan
+                    </label>
+
+                    <input type="date" name="fecha_inicio" min="{{ now()->toDateString() }}"
+                        class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-green-500 focus:outline-none">
+
+                    <div class="mt-2 bg-orange-50 border-l-4 border-orange-400 p-3 rounded-md">
+                        <p class="text-sm text-orange-800">
+                            ⚠️ <strong>Importante:</strong> Si no seleccionas una fecha, el plan iniciará el día en que el
+                            pago sea aprobado.
+                        </p>
+                    </div>
+                </div>
+
 
                 <!-- Comprobante -->
                 <div class="mb-4">

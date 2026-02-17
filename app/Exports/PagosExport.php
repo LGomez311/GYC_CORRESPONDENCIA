@@ -10,12 +10,15 @@ class PagosExport implements FromCollection, WithHeadings
 {
     public function collection()
     {
-        return Pago::with(['plan', 'estado'])->get()->map(function ($pago) {
+        return Pago::with(['plan', 'estado', 'admin'])->get()->map(function ($pago) {
             return [
                 'ID Pago' => $pago->id_pago,
                 'Plan' => $pago->plan->nomb_plan ?? '',
-                'Monto' => $pago->monto,
-                'Fecha de Pago' => $pago->fecha_pago,
+                'Pagado por' => $pago->admin
+                    ? $pago->admin->emple_nombres . ' ' . $pago->admin->emple_apellidos
+                    : '',
+                'Fecha Pago' => $pago->fecha_pago,
+                'Inicio Licencia' => $pago->fecha_inicio,
                 'Estado' => $pago->estado->estado_nomb ?? '',
             ];
         });
@@ -26,10 +29,10 @@ class PagosExport implements FromCollection, WithHeadings
         return [
             'ID Pago',
             'Plan',
-            'Monto',
-            'Fecha de Pago',
+            'Pagado por',
+            'Fecha Pago',
+            'Inicio Licencia',
             'Estado',
         ];
     }
 }
-

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 13-02-2026 a las 20:33:38
+-- Tiempo de generación: 16-02-2026 a las 21:41:36
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -185,7 +185,6 @@ CREATE TABLE `empleado` (
   `emple_tel` varchar(25) DEFAULT NULL,
   `emple_correo` varchar(255) DEFAULT NULL,
   `emple_img` varchar(500) DEFAULT NULL,
-  `fecha_limite` datetime DEFAULT NULL,
   `emple_estado` int(20) DEFAULT NULL,
   `emple_rol` int(20) DEFAULT NULL,
   `emple_area` int(11) DEFAULT NULL
@@ -195,11 +194,11 @@ CREATE TABLE `empleado` (
 -- Volcado de datos para la tabla `empleado`
 --
 
-INSERT INTO `empleado` (`emple_doc`, `nit_empresa`, `password`, `emple_nombres`, `emple_apellidos`, `emple_tel`, `emple_correo`, `emple_img`, `fecha_limite`, `emple_estado`, `emple_rol`, `emple_area`) VALUES
-(1001, '3241234', '$2y$12$ipkGIRI86WapHF7i9cT6meu.6aVgg.qox1Y7t1Ek5hCE8ISDIb/c2', 'Kevin', 'Villafrade', NULL, 'kevin@gmail.com', NULL, NULL, 1, 1, NULL),
-(1002, '3241234', '$2y$12$LWO14So.uSotCedN4ZOsbedPxbXwu1Fer2DwScs0Rz1gybCkV2xBO', 'Luis', 'Gomez', NULL, 'luis@gmail.com', 'empleado/G3Nd4kFx4CZEWNXYj7PupotVAEtIJ80xXHFnsVOC.jpg', NULL, 1, 2, NULL),
-(1003, '3241234', '$2y$12$D/IFN/RIgdO.pfvfZql2WulD8j8abFaYrOdKC/JqJHTDheJ.avaOO', 'Yuber', 'Paez', NULL, 'yuber@gmail.com', NULL, NULL, 1, 3, NULL),
-(2323, '3241234', '$2y$12$yzH/FluEwl5o27OLFhpt/eCQiiQvkAuzdjQ7fbeGNnePJjnPwpYIm', 'Asdas', 'Asdasd', '4232343435', 'asdas@gmail.com', NULL, NULL, 1, 2, NULL);
+INSERT INTO `empleado` (`emple_doc`, `nit_empresa`, `password`, `emple_nombres`, `emple_apellidos`, `emple_tel`, `emple_correo`, `emple_img`, `emple_estado`, `emple_rol`, `emple_area`) VALUES
+(1001, '3241234', '$2y$12$ipkGIRI86WapHF7i9cT6meu.6aVgg.qox1Y7t1Ek5hCE8ISDIb/c2', 'Kevin', 'Villafrade', NULL, 'kevin@gmail.com', NULL, 1, 1, NULL),
+(1002, '3241234', '$2y$12$LWO14So.uSotCedN4ZOsbedPxbXwu1Fer2DwScs0Rz1gybCkV2xBO', 'Luis', 'Gomez', NULL, 'luis@gmail.com', 'empleado/G3Nd4kFx4CZEWNXYj7PupotVAEtIJ80xXHFnsVOC.jpg', 1, 2, NULL),
+(1003, '3241234', '$2y$12$D/IFN/RIgdO.pfvfZql2WulD8j8abFaYrOdKC/JqJHTDheJ.avaOO', 'Yuber', 'Paez', NULL, 'yuber@gmail.com', NULL, 1, 3, NULL),
+(2323, '3241234', '$2y$12$yzH/FluEwl5o27OLFhpt/eCQiiQvkAuzdjQ7fbeGNnePJjnPwpYIm', 'Asdas', 'Asdasd', '4232343435', 'asdas@gmail.com', NULL, 1, 2, NULL);
 
 -- --------------------------------------------------------
 
@@ -210,6 +209,7 @@ INSERT INTO `empleado` (`emple_doc`, `nit_empresa`, `password`, `emple_nombres`,
 CREATE TABLE `empresa` (
   `nit_empresa` varchar(25) NOT NULL,
   `nomb_empresa` varchar(50) NOT NULL,
+  `id_representante` int(20) NOT NULL,
   `direccion` varchar(50) NOT NULL,
   `contacto` varchar(100) NOT NULL,
   `empresa_correo` varchar(100) NOT NULL
@@ -219,8 +219,8 @@ CREATE TABLE `empresa` (
 -- Volcado de datos para la tabla `empresa`
 --
 
-INSERT INTO `empresa` (`nit_empresa`, `nomb_empresa`, `direccion`, `contacto`, `empresa_correo`) VALUES
-('3241234', 'saffsda', 'fddsfa', '54234', 'pruebaaaa@gmail.com');
+INSERT INTO `empresa` (`nit_empresa`, `nomb_empresa`, `id_representante`, `direccion`, `contacto`, `empresa_correo`) VALUES
+('3241234', 'Soluciones Tecnológicas Andinas S.A.S.', 1002, 'Cra 545 N54-6 ', '3154764785', 'andinasas@gmail.com');
 
 -- --------------------------------------------------------
 
@@ -323,22 +323,13 @@ CREATE TABLE `job_batches` (
 
 CREATE TABLE `licencia` (
   `id_licencia` int(11) NOT NULL,
-  `nit_empresa` varchar(25) NOT NULL,
-  `id_plan` int(10) NOT NULL,
   `id_estado` int(20) NOT NULL,
   `id_pago` int(10) NOT NULL,
   `fecha_inicio` datetime NOT NULL,
-  `fecha_fin` datetime NOT NULL,
+  `fecha_fin` datetime DEFAULT NULL,
   `tipo_licencia` enum('ACTIVACION','RENOVACION') NOT NULL,
   `licencia_origen` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `licencia`
---
-
-INSERT INTO `licencia` (`id_licencia`, `nit_empresa`, `id_plan`, `id_estado`, `id_pago`, `fecha_inicio`, `fecha_fin`, `tipo_licencia`, `licencia_origen`) VALUES
-(10, '3241234', 4, 1, 42, '2026-02-13 19:03:00', '2026-03-15 19:03:00', 'ACTIVACION', NULL);
 
 -- --------------------------------------------------------
 
@@ -370,20 +361,13 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 CREATE TABLE `pagos` (
   `id_pago` int(10) NOT NULL,
   `id_plan` int(10) DEFAULT NULL,
-  `monto` decimal(10,2) DEFAULT NULL,
   `comprobante` varchar(500) DEFAULT NULL,
-  `nit_empresa` varchar(25) NOT NULL,
+  `id_admin` int(11) NOT NULL,
   `moneda` varchar(10) DEFAULT NULL,
   `id_est_pago` int(10) DEFAULT NULL,
-  `fecha_pago` datetime DEFAULT NULL
+  `fecha_pago` datetime DEFAULT NULL,
+  `fecha_inicio` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `pagos`
---
-
-INSERT INTO `pagos` (`id_pago`, `id_plan`, `monto`, `comprobante`, `nit_empresa`, `moneda`, `id_est_pago`, `fecha_pago`) VALUES
-(42, 7, 50000.00, NULL, '3241234', 'cop', 4, NULL);
 
 -- --------------------------------------------------------
 
@@ -632,7 +616,8 @@ ALTER TABLE `empleado`
 -- Indices de la tabla `empresa`
 --
 ALTER TABLE `empresa`
-  ADD PRIMARY KEY (`nit_empresa`);
+  ADD PRIMARY KEY (`nit_empresa`),
+  ADD KEY `id_representante` (`id_representante`);
 
 --
 -- Indices de la tabla `envio`
@@ -677,9 +662,7 @@ ALTER TABLE `job_batches`
 ALTER TABLE `licencia`
   ADD PRIMARY KEY (`id_licencia`),
   ADD KEY `id_estado` (`id_estado`),
-  ADD KEY `nit_empresa` (`nit_empresa`),
-  ADD KEY `id_pago` (`id_pago`),
-  ADD KEY `id_plan` (`id_plan`);
+  ADD KEY `id_pago` (`id_pago`);
 
 --
 -- Indices de la tabla `migrations`
@@ -694,7 +677,7 @@ ALTER TABLE `pagos`
   ADD PRIMARY KEY (`id_pago`),
   ADD KEY `id_plan` (`id_plan`),
   ADD KEY `id_est_pago` (`id_est_pago`),
-  ADD KEY `nit_empresa` (`nit_empresa`);
+  ADD KEY `id_admin` (`id_admin`);
 
 --
 -- Indices de la tabla `password_reset_tokens`
@@ -856,6 +839,12 @@ ALTER TABLE `empleado`
   ADD CONSTRAINT `empleado_ibfk_4` FOREIGN KEY (`nit_empresa`) REFERENCES `empresa` (`nit_empresa`);
 
 --
+-- Filtros para la tabla `empresa`
+--
+ALTER TABLE `empresa`
+  ADD CONSTRAINT `empresa_ibfk_1` FOREIGN KEY (`id_representante`) REFERENCES `empleado` (`emple_doc`);
+
+--
 -- Filtros para la tabla `envio`
 --
 ALTER TABLE `envio`
@@ -870,9 +859,7 @@ ALTER TABLE `envio`
 --
 ALTER TABLE `licencia`
   ADD CONSTRAINT `licencia_ibfk_3` FOREIGN KEY (`id_estado`) REFERENCES `estado` (`id_estado`),
-  ADD CONSTRAINT `licencia_ibfk_5` FOREIGN KEY (`nit_empresa`) REFERENCES `empresa` (`nit_empresa`),
-  ADD CONSTRAINT `licencia_ibfk_6` FOREIGN KEY (`id_pago`) REFERENCES `pagos` (`id_pago`),
-  ADD CONSTRAINT `licencia_ibfk_7` FOREIGN KEY (`id_plan`) REFERENCES `plan` (`id_plan`);
+  ADD CONSTRAINT `licencia_ibfk_6` FOREIGN KEY (`id_pago`) REFERENCES `pagos` (`id_pago`);
 
 --
 -- Filtros para la tabla `pagos`
@@ -880,7 +867,7 @@ ALTER TABLE `licencia`
 ALTER TABLE `pagos`
   ADD CONSTRAINT `pagos_ibfk_1` FOREIGN KEY (`id_plan`) REFERENCES `plan` (`id_plan`),
   ADD CONSTRAINT `pagos_ibfk_2` FOREIGN KEY (`id_est_pago`) REFERENCES `estado` (`id_estado`),
-  ADD CONSTRAINT `pagos_ibfk_3` FOREIGN KEY (`nit_empresa`) REFERENCES `empresa` (`nit_empresa`);
+  ADD CONSTRAINT `pagos_ibfk_4` FOREIGN KEY (`id_admin`) REFERENCES `empleado` (`emple_doc`);
 
 --
 -- Filtros para la tabla `radicados`

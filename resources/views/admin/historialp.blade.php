@@ -11,7 +11,7 @@
         <div class="flex flex-wrap justify-between items-end gap-3 mb-8">
             <div class="flex flex-col gap-1">
                 <h1 class="text-[#0d121b] dark:text-white text-3xl font-black leading-tight tracking-tight">
-                    Validación de Pagos
+                    Historial de pagos
                 </h1>
                 <p class="text-[#4c669a] dark:text-gray-400 text-base font-normal">
                     Gestione y verifique los pagos de servicios realizados por las empresas.
@@ -28,7 +28,7 @@
                     <div
                         class="p-6 border-b border-[#cfd7e7] dark:border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <h2 class="text-[#0d121b] dark:text-white text-lg font-bold leading-tight">Listado Detallado de
-                            Licencias</h2>
+                            Pagos</h2>
                         <div class="flex gap-2">
                             {{-- <button
                                 class="px-3 py-1.5 text-xs font-bold border border-[#cfd7e7] dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-1 dark:text-white">

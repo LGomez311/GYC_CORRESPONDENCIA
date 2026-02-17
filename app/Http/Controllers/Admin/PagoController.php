@@ -8,8 +8,7 @@ use App\Models\Plan;
 use App\Models\Pago;
 use App\Models\Empresa;
 use Carbon\Carbon;
-
-
+use Illuminate\Support\Facades\Auth;
 
 class PagoController extends Controller
 {
@@ -20,13 +19,7 @@ class PagoController extends Controller
 
     public function historial()
     {
-        $pagos = Pago::with([
-            'plan',
-            'empresa',
-            'estado'
-        ])
-            ->orderBy('id_pago', 'desc')
-            ->get();
+        $pagos = Pago::all();
 
         return view('admin.historialp', compact('pagos'));
     }
@@ -34,15 +27,16 @@ class PagoController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'id_plan' => '',
+            'id_plan'     => 'required|exists:plan,id_plan',
+            'fecha_inicio'  => 'nullable|date|after_or_equal:today',
             'comprobante' => 'nullable|image|max:2048',
         ]);
 
-        $id_plan = Plan::findOrFail($request->id_plan);
+        $plan = Plan::findOrFail($request->id_plan);
+        $empresa = Empresa::first(); // empresa única
+        $admin = Auth::user();       // admin autenticado
 
-        $empresa = Empresa::first(); // único registro
-
-        // 🔹 Guardar comprobante si existe
+        // 🔹 Guardar comprobante
         $rutaComprobante = null;
         if ($request->hasFile('comprobante')) {
             $rutaComprobante = $request->file('comprobante')
@@ -51,15 +45,19 @@ class PagoController extends Controller
 
         // 🔹 Crear pago
         Pago::create([
-            'id_plan'     => $id_plan->id_plan,
-            'monto'       => $id_plan->valor,
-            'comprobante' => $rutaComprobante,
-            'moneda'      => 'COP',
-            'nit_empresa' => $empresa->nit_empresa,
-            'id_est_pago' => 0, // EN ESPERA
-            'fecha_pago'  => Carbon::now('America/Bogota'),
+            'id_plan'       => $plan->id_plan,
+            'monto'         => $plan->valor,
+            'comprobante'   => $rutaComprobante,
+            'moneda'        => 'COP',
+            'nit_empresa'   => $empresa->nit_empresa,
+            'id_est_pago'   => 0, // 🔹 EN ESPERA (DEBE EXISTIR EN tabla estado)
+            'id_admin'      => $admin->emple_doc, // 🔹 FK empleado
+            'fecha_pago'    => Carbon::now('America/Bogota'),
+            'fecha_inicio'  => $request->fecha_inicio,
         ]);
 
-        return redirect('admin')->with('success', 'Pago notificado correctamente. En espera de aprobación.');
+        return redirect()
+            ->route('admin.index')
+            ->with('success', 'Pago notificado correctamente. En espera de aprobación.');
     }
 }
