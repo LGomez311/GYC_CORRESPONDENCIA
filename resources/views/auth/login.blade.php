@@ -59,6 +59,14 @@
 
             {{-- Formulario de login --}}
             <div class="w-full lg:w-1/2 p-8 sm:p-12 md:p-16">
+
+                {{-- Botón volver --}}
+                <a href="{{ route('index') }}"
+                    class="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline mb-6">
+                    <span class="material-symbols-outlined text-base">arrow_back</span>
+                    Volver
+                </a>
+
                 <h1 class="text-4xl font-black text-[#0d121b] dark:text-gray-100 pb-2">Iniciar Sesión</h1>
                 <p class="text-base text-[#4c669a] dark:text-gray-400 mb-6">Ingresa tus credenciales para acceder al
                     sistema.</p>
@@ -87,13 +95,7 @@
                         @enderror
                     </label>
 
-                    {{-- Recordarme --}}
-                    <label class="flex items-center gap-3">
-                        <input type="checkbox" name="remember"
-                            class="form-checkbox h-5 w-5 rounded border-[#cfd7e7] dark:border-slate-600 text-primary focus:ring-2 focus:ring-primary/50" />
-                        <span class="text-base text-[#0d121b] dark:text-gray-200">Recordarme</span>
-                    </label>
-
+                    
                     {{-- Errores de login --}}
                     @if ($errors->has('login'))
                         <p class="text-red-500 text-sm">{{ $errors->first('login') }}</p>

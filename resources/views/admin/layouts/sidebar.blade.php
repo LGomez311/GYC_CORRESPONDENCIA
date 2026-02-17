@@ -31,7 +31,7 @@
             <span class="material-symbols-outlined">shield_person</span>
         </div>
         <h2 class="text-[#0d121b] dark:text-white text-lg font-bold leading-tight tracking-tight">
-            Nombre de la empresa
+            {{ auth()->user()->empresa->nomb_empresa ?? 'Sin empresa asignada' }}
         </h2>
     </div>
 
@@ -65,18 +65,10 @@
                     Gestión Central
                 </h1>
 
-                <!-- Resumen -->
-                <a href="{{ route('admin.index') }}"
-                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-            {{ request()->routeIs('admin.index')
-                ? 'bg-primary/10 text-primary'
-                : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
-                    <span class="material-symbols-outlined">dashboard</span>
-                    <p class="text-sm font-medium">Resumen</p>
-                </a>
+                
 
                 <!-- Usuarios -->
-                <a href="{{ route('admin.usuarios') }}"
+                <a href="{{ route('admin.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
             text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
                     <span class="material-symbols-outlined">group</span>
@@ -100,12 +92,12 @@
                 </a>
 
                 <!-- Configuración -->
-                <a href="#"
+                {{-- <a href="#"
                     class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
             text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
                     <span class="material-symbols-outlined">settings</span>
                     <p class="text-sm font-medium">Configuración</p>
-                </a>
+                </a> --}}
             @endif
 
         </div>

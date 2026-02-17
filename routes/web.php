@@ -19,6 +19,9 @@ use App\Http\Controllers\Admin\PlanController as AdminPlanController;
 Route::get('/admin/historialp', [AdminPagoController::class, 'historial'])
     ->name('admin.historialp');
 
+Route::get('/', function () {
+    return view('index');
+})->name('index');
 
 // Ruta de exportar excel con datos
 Route::get('/admin/pagos/export/excel', function () {
@@ -45,10 +48,6 @@ Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-// Redirigir raíz al login
-Route::get('/', function () {
-    return redirect()->route('login');
-});
 
 // ================= DASHBOARDS ================= --KEVIN SABADO 14/02--
 Route::middleware(['auth:web', 'licencia.activa'])->group(function () {
@@ -107,7 +106,7 @@ Route::prefix('admin')
     ->group(function () {
 
         // Dashboard
-        Route::get('/', fn() => view('admin.index'))->name('admin.index');
+        Route::get('/', fn() => view('admin.usuarios'))->name('admin.index');
 
         // Planes
         Route::get('/planes', [AdminPlanController::class, 'index'])->name('admin.planes');
