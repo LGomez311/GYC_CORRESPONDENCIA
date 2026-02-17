@@ -1,5 +1,4 @@
 @if ($paginator->hasPages())
-    <div class="w-full border-t border-[#cfd7e7] dark:border-gray-800">
         <div id="paginationInfo"
              class="px-6 py-4 flex flex-wrap gap-3 items-center justify-between w-full">
 

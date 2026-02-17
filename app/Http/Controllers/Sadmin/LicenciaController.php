@@ -15,7 +15,7 @@ class LicenciaController extends Controller
                 'pago.admin.empresa'
             ])
             ->orderBy('fecha_inicio', 'asc')
-            ->paginate(5); 
+            ->paginate(3); 
 
         return view('sadmin.licencias', compact('licencias'));
     }

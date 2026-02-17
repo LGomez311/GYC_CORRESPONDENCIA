@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Sadmin\UsuarioController;
 use App\Http\Controllers\Sadmin\EmpresaController;
 use App\Exports\PagosExport;
+use App\Exports\LicenciasExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\Pago;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -98,6 +99,30 @@ Route::prefix('sadmin')
         Route::post('/usuarios', [UsuarioController::class, 'store'])->name('sadmin.store');
         Route::put('/admins/{documento}', [UsuarioController::class, 'update'])->name('admins.update');
         Route::delete('/usuarios/{emple_doc}', [UsuarioController::class, 'destroy'])->name('usuarios.destroy');
+
+        // export - excel - pdf - kevin
+
+        // licencias - excel
+        Route::get('/sadmin/licencias/export/excel', function () {
+            return Excel::download(new LicenciasExport, 'licencias.xlsx');
+        })->name('sadmin.licencias.export.excel');
+        // licencias - pdf 
+        Route::get('/sadmin/licencias/export/pdf', function () {
+            $pdf = Pdf::loadView('sadmin.pdf.licencias_pdf');
+            return $pdf->download('licencias.pdf');
+        })->name('sadmin.licencias.export.pdf');
+
+        // pagos excel
+        Route::get('/sadmin/pagos/export/excel', function () {
+            return Excel::download(new \App\Exports\PagosExport, 'pagos.xlsx');
+        })->name('sadmin.pagos.export.excel');
+
+        // pagos pdf
+        Route::get('/sadmin/pagos/export/pdf', function () {
+            $pagos = \App\Models\Pago::with(['plan', 'estado'])->get(); // Traes los datos que necesitas
+            $pdf = Pdf::loadView('sadmin.pdf.pagos_pdf', compact('pagos'));
+            return $pdf->download('pagos.pdf');
+        })->name('sadmin.pagos.export.pdf');
     });
 
 
