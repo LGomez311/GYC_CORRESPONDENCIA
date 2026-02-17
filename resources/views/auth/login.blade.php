@@ -61,7 +61,7 @@
             <div class="w-full lg:w-1/2 p-8 sm:p-12 md:p-16">
 
                 {{-- Botón volver --}}
-                <a href="{{ route('index') }}"
+                <a href="{{ route('web.index') }}"
                     class="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline mb-6">
                     <span class="material-symbols-outlined text-base">arrow_back</span>
                     Volver

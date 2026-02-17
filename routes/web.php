@@ -8,6 +8,7 @@ use App\Exports\PagosExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\Pago;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Http\Controllers\Web\LandingController;
 
 // Alias para controllers con nombres iguales
 use App\Http\Controllers\Sadmin\PagoController as SadminPagoController;
@@ -19,9 +20,9 @@ use App\Http\Controllers\Admin\PlanController as AdminPlanController;
 Route::get('/admin/historialp', [AdminPagoController::class, 'historial'])
     ->name('admin.historialp');
 
-Route::get('/', function () {
-    return view('index');
-})->name('index');
+Route::get('/', [LandingController::class, 'index'])->name('web.index');
+
+
 
 // Ruta de exportar excel con datos
 Route::get('/admin/pagos/export/excel', function () {

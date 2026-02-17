@@ -58,7 +58,7 @@
                 <div class="bg-primary text-white p-1.5 rounded-lg flex items-center justify-center">
                     <span class="material-symbols-outlined text-2xl">mail</span>
                 </div>
-                <h2 class="text-[#0d121b] text-xl font-extrabold tracking-tight">GestionCorr</h2>
+                <h2 class="text-[#0d121b] text-xl font-extrabold tracking-tight">GYC Correspondencia</h2>
             </div>
             <nav class="hidden md:flex items-center gap-10">
                 <a class="text-[#4c669a] hover:text-primary text-sm font-semibold transition-colors"
@@ -92,7 +92,7 @@
                     <div
                         class="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full w-fit border border-primary/20">
                         <span class="material-symbols-outlined text-sm">verified</span>
-                        <span class="text-xs font-bold uppercase tracking-wider">Gestión Profesional 2.0</span>
+                        <span class="text-xs font-bold uppercase tracking-wider">Gestión Profesional</span>
                     </div>
                     <h1 class="text-5xl md:text-6xl font-black text-[#0d121b] leading-[1.1] tracking-tight">
                         Transforme su Gestión de <span class="text-primary">Correspondencia</span>
@@ -111,7 +111,7 @@
                             Ver demo en vivo <span class="material-symbols-outlined">play_circle</span>
                         </button>
                     </div>
-                    <div class="flex items-center gap-6 pt-4 border-t border-[#e7ebf3]">
+                    {{-- <div class="flex items-center gap-6 pt-4 border-t border-[#e7ebf3]">
                         <div class="flex -space-x-3">
                             <div class="w-10 h-10 rounded-full border-2 border-white bg-gray-200 overflow-hidden">
                                 <img alt="Usuario" data-alt="Avatar of a happy customer"
@@ -127,7 +127,7 @@
                             </div>
                         </div>
                         <p class="text-sm text-[#4c669a] font-medium">+2,500 instituciones confían en nosotros</p>
-                    </div>
+                    </div> --}}
                 </div>
                 <div class="relative group">
                     <div
@@ -147,7 +147,7 @@
         <section class="py-20 bg-white" id="how-it-works">
             <div class="max-w-[1280px] mx-auto px-6 md:px-20 text-center mb-16">
                 <h3 class="text-primary font-bold text-sm uppercase tracking-[0.2em] mb-4">Proceso Ágil</h3>
-                <h2 class="text-3xl md:text-4xl font-black text-[#0d121b]">¿Cómo empezar con GestionCorr?</h2>
+                <h2 class="text-3xl md:text-4xl font-black text-[#0d121b]">¿Cómo empezar con GYC Correspondencia?</h2>
             </div>
             <div class="max-w-[1280px] mx-auto px-6 md:px-20">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -155,11 +155,11 @@
                     <div class="relative flex flex-col items-center text-center group">
                         <div
                             class="w-16 h-16 bg-primary/5 rounded-2xl flex items-center justify-center mb-6 border border-primary/10 group-hover:bg-primary group-hover:text-white transition-all">
-                            <span class="material-symbols-outlined text-3xl">person_add</span>
+                            <span class="material-symbols-outlined text-3xl">support_agent</span>
                         </div>
-                        <h4 class="text-lg font-bold mb-2">1. Registro</h4>
-                        <p class="text-sm text-[#4c669a] leading-relaxed">Cree su cuenta institucional en minutos con
-                            sus datos básicos.</p>
+                        <h4 class="text-lg font-bold mb-2">1. Contacto y Diagnóstico</h4>
+                        <p class="text-sm text-[#4c669a] leading-relaxed">El cliente se comunica con nuestro equipo para
+                            validar sus necesidades y confirmar que GYC Correspondencia es la solución adecuada.</p>
                         <div
                             class="hidden md:block absolute top-8 left-1/2 w-full h-[2px] bg-gradient-to-r from-primary/20 to-transparent ml-8">
                         </div>
@@ -170,9 +170,9 @@
                             class="w-16 h-16 bg-primary/5 rounded-2xl flex items-center justify-center mb-6 border border-primary/10 group-hover:bg-primary group-hover:text-white transition-all">
                             <span class="material-symbols-outlined text-3xl">fact_check</span>
                         </div>
-                        <h4 class="text-lg font-bold mb-2">2. Selección de Plan</h4>
-                        <p class="text-sm text-[#4c669a] leading-relaxed">Elija el nivel de servicio que mejor se adapte
-                            a sus necesidades operativas.</p>
+                        <h4 class="text-lg font-bold mb-2">2. Selección del Plan</h4>
+                        <p class="text-sm text-[#4c669a] leading-relaxed">El cliente elige el plan que mejor se adapta a
+                            su organización según los usuarios y funcionalidades mostradas en esta página.</p>
                         <div
                             class="hidden md:block absolute top-8 left-1/2 w-full h-[2px] bg-gradient-to-r from-primary/20 to-transparent ml-8">
                         </div>
@@ -181,11 +181,12 @@
                     <div class="relative flex flex-col items-center text-center group">
                         <div
                             class="w-16 h-16 bg-primary/5 rounded-2xl flex items-center justify-center mb-6 border border-primary/10 group-hover:bg-primary group-hover:text-white transition-all">
-                            <span class="material-symbols-outlined text-3xl">qr_code_2</span>
+                            <span class="material-symbols-outlined text-3xl">settings</span>
                         </div>
-                        <h4 class="text-lg font-bold mb-2">3. Pago QR</h4>
-                        <p class="text-sm text-[#4c669a] leading-relaxed">Escanee el código para un procesamiento de
-                            pago inmediato y seguro.</p>
+                        <h4 class="text-lg font-bold mb-2">3. Instalación y Configuración</h4>
+                        <p class="text-sm text-[#4c669a] leading-relaxed">Nuestro equipo instala el sistema en la
+                            infraestructura del cliente y configura usuarios, áreas y permisos según el plan contratado.
+                        </p>
                         <div
                             class="hidden md:block absolute top-8 left-1/2 w-full h-[2px] bg-gradient-to-r from-primary/20 to-transparent ml-8">
                         </div>
@@ -194,11 +195,11 @@
                     <div class="relative flex flex-col items-center text-center group">
                         <div
                             class="w-16 h-16 bg-primary/5 rounded-2xl flex items-center justify-center mb-6 border border-primary/10 group-hover:bg-primary group-hover:text-white transition-all">
-                            <span class="material-symbols-outlined text-3xl">rocket_launch</span>
+                            <span class="material-symbols-outlined text-3xl">school</span>
                         </div>
-                        <h4 class="text-lg font-bold mb-2">4. Activación</h4>
-                        <p class="text-sm text-[#4c669a] leading-relaxed">Acceso instantáneo a todas las herramientas de
-                            control y seguimiento.</p>
+                        <h4 class="text-lg font-bold mb-2">4. Capacitación</h4>
+                        <p class="text-sm text-[#4c669a] leading-relaxed">Se capacita al personal autorizado y se deja
+                            el sistema completamente operativo.</p>
                     </div>
                 </div>
             </div>
@@ -219,22 +220,21 @@
                             class="bg-white p-8 rounded-2xl border border-[#e7ebf3] hover:border-primary/50 transition-all shadow-sm">
                             <span class="material-symbols-outlined text-primary text-3xl mb-4">archive</span>
                             <h4 class="font-bold text-lg mb-2">Archivo Digital</h4>
-                            <p class="text-sm text-[#4c669a] leading-relaxed">Escanee y almacene documentos físicos en
-                                nuestra nube segura.</p>
+                            <p class="text-sm text-[#4c669a] leading-relaxed">Escanee y almacene documentos físicos.</p>
                         </div>
                         <div
                             class="bg-white p-8 rounded-2xl border border-[#e7ebf3] hover:border-primary/50 transition-all shadow-sm">
                             <span
                                 class="material-symbols-outlined text-primary text-3xl mb-4">notifications_active</span>
                             <h4 class="font-bold text-lg mb-2">Alertas en Vivo</h4>
-                            <p class="text-sm text-[#4c669a] leading-relaxed">Notificaciones automáticas vía email o
-                                SMS para entregas urgentes.</p>
+                            <p class="text-sm text-[#4c669a] leading-relaxed">Notificaciones automáticas para entregas
+                                urgentes.</p>
                         </div>
                         <div
                             class="bg-white p-8 rounded-2xl border border-[#e7ebf3] hover:border-primary/50 transition-all shadow-sm">
                             <span class="material-symbols-outlined text-primary text-3xl mb-4">security</span>
                             <h4 class="font-bold text-lg mb-2">Máxima Seguridad</h4>
-                            <p class="text-sm text-[#4c669a] leading-relaxed">Encriptación de grado bancario para toda
+                            <p class="text-sm text-[#4c669a] leading-relaxed">Seguridad para toda
                                 su información sensible.</p>
                         </div>
                     </div>
@@ -244,7 +244,7 @@
                     <h2 class="text-4xl font-black text-[#0d121b] leading-tight">Diseñado para la eficiencia
                         institucional</h2>
                     <p class="text-lg text-[#4c669a] leading-relaxed">
-                        No pierda nunca más un sobre o paquete. GestionCorr centraliza la entrada y salida de
+                        No pierda nunca más un sobre o paquete. GYC Correspondencia centraliza la entrada y salida de
                         mensajería, eliminando el error humano y acelerando los procesos internos.
                     </p>
                     <ul class="flex flex-col gap-4">
@@ -258,7 +258,7 @@
                         </li>
                         <li class="flex items-center gap-3 text-sm font-semibold text-[#0d121b]">
                             <span class="material-symbols-outlined text-green-500 font-bold">check_circle</span>
-                            Firma digital para confirmación de entrega
+                            Copias de seguridad de toda la correspondencia
                         </li>
                     </ul>
                 </div>
@@ -267,109 +267,74 @@
         <!-- Pricing Section -->
         <section class="py-24 bg-white" id="pricing">
             <div class="max-w-[1280px] mx-auto px-6 md:px-20 text-center mb-16">
-                <h2 class="text-4xl font-black text-[#0d121b] mb-4">Planes diseñados para cada tamaño</h2>
-                <p class="text-[#4c669a] text-lg max-w-2xl mx-auto">Precios transparentes y escalables. Comience gratis
-                    y crezca con nosotros.</p>
+                <h2 class="text-4xl font-black text-[#0d121b] mb-4">
+                    Planes diseñados para cada tamaño
+                </h2>
+                <p class="text-[#4c669a] text-lg max-w-2xl mx-auto">
+                    Precios transparentes y escalables. Comience gratis y crezca con nosotros.
+                </p>
             </div>
-            <div class="max-w-[1100px] mx-auto px-6 grid md:grid-cols-3 gap-8">
-                <!-- Basic Plan -->
-                <div
-                    class="bg-white border border-[#e7ebf3] rounded-3xl p-8 flex flex-col hover:border-primary/30 transition-all shadow-lg shadow-gray-100/50">
-                    <h3 class="text-lg font-bold mb-2">Básico</h3>
-                    <div class="flex items-baseline gap-1 mb-6">
-                        <span class="text-4xl font-black">$29</span>
-                        <span class="text-[#4c669a] text-sm">/mes</span>
-                    </div>
-                    <p class="text-sm text-[#4c669a] mb-8">Para oficinas pequeñas y despachos independientes.</p>
-                    <ul class="flex flex-col gap-4 mb-10 flex-grow">
-                        <li class="flex items-center gap-3 text-sm">
-                            <span class="material-symbols-outlined text-primary text-xl">check</span>
-                            Hasta 500 envíos/mes
-                        </li>
-                        <li class="flex items-center gap-3 text-sm">
-                            <span class="material-symbols-outlined text-primary text-xl">check</span>
-                            3 Usuarios simultáneos
-                        </li>
-                        <li class="flex items-center gap-3 text-sm text-gray-400">
-                            <span class="material-symbols-outlined text-xl">close</span>
-                            Firma Digital
-                        </li>
-                        <li class="flex items-center gap-3 text-sm text-gray-400">
-                            <span class="material-symbols-outlined text-xl">close</span>
-                            Soporte Prioritario
-                        </li>
-                    </ul>
-                    <button
-                        class="w-full py-3 border border-primary text-primary font-bold rounded-xl hover:bg-primary/5 transition-all">Seleccionar
-                        Plan</button>
-                </div>
-                <!-- Professional Plan (Featured) -->
-                <div
-                    class="bg-white border-2 border-primary rounded-3xl p-8 flex flex-col relative transform scale-105 shadow-2xl shadow-primary/10">
-                    <div
-                        class="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-white text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full">
-                        Más Popular
-                    </div>
-                    <h3 class="text-lg font-bold mb-2">Profesional</h3>
-                    <div class="flex items-baseline gap-1 mb-6">
-                        <span class="text-4xl font-black text-primary">$79</span>
-                        <span class="text-[#4c669a] text-sm">/mes</span>
-                    </div>
-                    <p class="text-sm text-[#4c669a] mb-8">Ideal para medianas empresas e instituciones públicas.</p>
-                    <ul class="flex flex-col gap-4 mb-10 flex-grow">
-                        <li class="flex items-center gap-3 text-sm font-medium">
-                            <span class="material-symbols-outlined text-primary text-xl font-bold">check</span>
-                            Envíos ilimitados
-                        </li>
-                        <li class="flex items-center gap-3 text-sm font-medium">
-                            <span class="material-symbols-outlined text-primary text-xl font-bold">check</span>
-                            15 Usuarios simultáneos
-                        </li>
-                        <li class="flex items-center gap-3 text-sm font-medium">
-                            <span class="material-symbols-outlined text-primary text-xl font-bold">check</span>
-                            Firma Digital incluida
-                        </li>
-                        <li class="flex items-center gap-3 text-sm font-medium">
-                            <span class="material-symbols-outlined text-primary text-xl font-bold">check</span>
-                            API de integración
-                        </li>
-                    </ul>
-                    <button
-                        class="w-full py-4 bg-primary text-white font-bold rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-primary/30">Seleccionar
-                        Plan</button>
-                </div>
-                <!-- Enterprise Plan -->
-                <div
-                    class="bg-white border border-[#e7ebf3] rounded-3xl p-8 flex flex-col hover:border-primary/30 transition-all shadow-lg shadow-gray-100/50">
-                    <h3 class="text-lg font-bold mb-2">Corporativo</h3>
-                    <div class="flex items-baseline gap-1 mb-6">
-                        <span class="text-4xl font-black">Personalizado</span>
-                    </div>
-                    <p class="text-sm text-[#4c669a] mb-8">Soluciones a medida para grandes corporaciones.</p>
-                    <ul class="flex flex-col gap-4 mb-10 flex-grow">
-                        <li class="flex items-center gap-3 text-sm">
-                            <span class="material-symbols-outlined text-primary text-xl">check</span>
-                            Servidor dedicado (On-premise)
-                        </li>
-                        <li class="flex items-center gap-3 text-sm">
-                            <span class="material-symbols-outlined text-primary text-xl">check</span>
-                            Usuarios ilimitados
-                        </li>
-                        <li class="flex items-center gap-3 text-sm">
-                            <span class="material-symbols-outlined text-primary text-xl">check</span>
-                            Soporte 24/7 Premium
-                        </li>
-                        <li class="flex items-center gap-3 text-sm">
-                            <span class="material-symbols-outlined text-primary text-xl">check</span>
-                            Capacitación presencial
-                        </li>
-                    </ul>
-                    <button
-                        class="w-full py-3 border border-[#0d121b] text-[#0d121b] font-bold rounded-xl hover:bg-gray-50 transition-all">Contactar
-                        Ventas</button>
+
+            <div class="max-w-7xl mx-auto px-6 md:px-12">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+
+
+                    @foreach ($planes as $plan)
+                        <div
+                            class="flex flex-col justify-between h-full min-h-[440px]
+                rounded-2xl border border-[#cfd7e7]
+                bg-white p-6 shadow-sm hover:shadow-xl transition">
+
+                            <!-- Info -->
+                            <div>
+                                <h2 class="text-xl font-extrabold text-[#0d121b] mb-3">
+                                    {{ $plan->nomb_plan }}
+                                </h2>
+
+                                <div class="mb-4">
+                                    <span class="block text-4xl font-black text-[#0d121b]">
+                                        ${{ number_format($plan->valor, 0, ',', '.') }}
+                                    </span>
+
+                                    <span class="text-sm font-semibold text-[#4c669a]">
+                                        {{ $plan->duracion ? $plan->duracion . ' días' : 'Pago único' }}
+                                    </span>
+                                </div>
+
+                                <!-- Beneficios -->
+                                <div class="flex flex-col gap-3 text-sm text-[#0d121b] min-h-[120px]">
+                                    @forelse ($plan->descripcion ?? [] as $beneficio)
+                                        <div class="flex items-center gap-2">
+                                            <span class="material-symbols-outlined text-primary text-base">
+                                                check_circle
+                                            </span>
+                                            {{ $beneficio }}
+                                        </div>
+                                    @empty
+                                        <span class="text-gray-400">
+                                            Este plan no tiene beneficios registrados
+                                        </span>
+                                    @endforelse
+                                </div>
+                            </div>
+
+                            <!-- Botón -->
+                            <a href="#" class="mt-6">
+                                <button
+                                    class="w-full h-11 rounded-xl bg-[#e7ebf3]
+                        text-[#0d121b] font-bold
+                        hover:bg-primary hover:text-white transition">
+                                    Seleccionar
+                                </button>
+                            </a>
+                        </div>
+                    @endforeach
+
                 </div>
             </div>
         </section>
+
+
         <!-- CTA Section -->
         <section class="py-20 px-6">
             <div
