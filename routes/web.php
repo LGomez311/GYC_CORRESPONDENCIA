@@ -64,7 +64,6 @@ Route::middleware(['auth:web', 'licencia.activa'])->group(function () {
 });
 
 
-// ================= SUPER ADMIN =================
 Route::prefix('sadmin')
     ->middleware('auth:web')
     ->group(function () {
@@ -73,8 +72,14 @@ Route::prefix('sadmin')
         Route::get('/', fn() => view('sadmin.index'))->name('sadmin.dashboard');
 
         // Pagos
-        Route::get('/pagos', [SadminPagoController::class, 'index'])->name('sadmin.pagos');
-        Route::post('/pagos/notificar', [SadminPagoController::class, 'store'])->name('sadmin.pagos.store');
+        Route::get('/pagos', [SadminPagoController::class, 'index'])
+            ->name('sadmin.pagos');
+
+        Route::post('/pagos/{id}/aprobar', [SadminPagoController::class, 'aprobar'])
+            ->name('sadmin.pagos.aprobar');
+
+        Route::post('/pagos/{id}/denegar', [SadminPagoController::class, 'denegar'])
+            ->name('sadmin.pagos.denegar');
 
         // Planes
         Route::get('/planes', [SadminPlanController::class, 'index'])->name('cplanes');
@@ -82,18 +87,19 @@ Route::prefix('sadmin')
         Route::put('/planes/{id}', [SadminPlanController::class, 'update'])->name('planes.update');
         Route::delete('/planes/{id}', [SadminPlanController::class, 'destroy'])->name('planes.destroy');
 
-        // Empresas CRUD
+        // Empresas
         Route::get('/empresas', [EmpresaController::class, 'index'])->name('empresas');
         Route::post('/empresas', [EmpresaController::class, 'store'])->name('empresas.store');
         Route::put('/empresas/{nit}', [EmpresaController::class, 'update'])->name('empresas.update');
         Route::delete('/empresas/{nit}', [EmpresaController::class, 'destroy'])->name('empresas.destroy');
 
-        // Usuarios CRUD
+        // Usuarios
         Route::get('/admins', [UsuarioController::class, 'index'])->name('admins');
         Route::post('/usuarios', [UsuarioController::class, 'store'])->name('sadmin.store');
         Route::put('/admins/{documento}', [UsuarioController::class, 'update'])->name('admins.update');
         Route::delete('/usuarios/{emple_doc}', [UsuarioController::class, 'destroy'])->name('usuarios.destroy');
     });
+
 
 // ================= ADMIN =================
 Route::prefix('admin')
@@ -122,13 +128,6 @@ Route::prefix('admin')
 Route::get('/correspondencia', fn() => view('admin.correspondencia'))->name('admin.correspondencia');
 Route::get('/usuarios', fn() => view('admin.usuarios'))->name('admin.usuarios');
 
-
-// Cambiar estado de pago - Kevin 
-Route::prefix('sadmin')->group(function () {
-    // Aprobar/Denegar
-    Route::post('/pagos/{id}/aprobar', [SadminPagoController::class, 'aprobar'])->name('sadmin.pagos.aprobar');
-    Route::post('/pagos/{id}/denegar', [SadminPagoController::class, 'denegar'])->name('sadmin.pagos.denegar');
-});
 
 // ruta para creacion de licencias - Kevin
 

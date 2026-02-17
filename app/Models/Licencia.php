@@ -3,20 +3,16 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Plan;
 use App\Models\Pago;
+use App\Models\Estado;
 
 class Licencia extends Model
 {
     protected $table = 'licencia';
-
     protected $primaryKey = 'id_licencia';
-
     public $timestamps = false;
 
     protected $fillable = [
-        'nit_empresa',
-        'id_plan',
         'id_pago',
         'id_estado',
         'fecha_inicio',
@@ -25,27 +21,21 @@ class Licencia extends Model
         'licencia_origen',
     ];
 
-    public function plan()
+    // Licencia → Pago
+    public function pago()
     {
-        return $this->belongsTo(
-            Plan::class,
-            'id_plan',   // FK en licencia
-            'id_plan'    // PK en plan
-        );
+        return $this->belongsTo(Pago::class, 'id_pago');
     }
 
-    public function licenciaPadre()
-    {
-        return $this->belongsTo(Licencia::class, 'licencia_origen');
-    }
-
+    // Licencia → Estado
     public function estado()
     {
         return $this->belongsTo(Estado::class, 'id_estado');
     }
 
-    public function pagos()
+    // Licencia padre (renovación)
+    public function licenciaPadre()
     {
-        return $this->belongsTo(Pago::class, 'id_pago');
+        return $this->belongsTo(Licencia::class, 'licencia_origen');
     }
 }

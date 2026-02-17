@@ -17,80 +17,6 @@
         </div>
     </div>
 
-    {{-- FORMULARIO PARA CREAR LICENCIA --}}
-    <div
-        class="bg-white dark:bg-[#161d2b] rounded-xl border border-[#cfd7e7] dark:border-gray-800 overflow-hidden shadow-sm mb-8 p-6">
-        <form action="{{ route('sadmin.licencias.store') }}" method="POST" class="flex flex-col gap-4">
-            @csrf
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-
-                {{-- Empresa --}}
-                <div>
-                    <label class="block text-xs font-bold text-[#4c669a] dark:text-gray-300 mb-1">
-                        Empresa
-                    </label>
-                    <select name="nit_empresa"
-                        class="w-full px-3 py-2 border rounded-lg text-sm
-                        dark:bg-[#1b2030] dark:border-gray-700 dark:text-gray-200"
-                        required>
-                        <option value="">Seleccione una empresa</option>
-                        @foreach ($empresas as $empresa)
-                        <option value="{{ $empresa->nit_empresa }}">
-                            {{ $empresa->razon_social }} ({{ $empresa->nit_empresa }})
-                        </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                {{-- Plan --}}
-                <div>
-                    <label class="block text-xs font-bold text-[#4c669a] dark:text-gray-300 mb-1">Plan</label>
-                    <select name="id_plan"
-                        class="w-full px-3 py-2 border rounded-lg text-sm dark:bg-[#1b2030] dark:border-gray-700 dark:text-gray-200"
-                        required>
-                        <option value="">Seleccione un plan</option>
-                        @foreach ($planes as $plan)
-                        <option value="{{ $plan->id_plan }}">{{ $plan->nomb_plan }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                {{-- Estado --}}
-                <div>
-                    <label class="block text-xs font-bold text-[#4c669a] dark:text-gray-300 mb-1">Estado</label>
-                    <select name="id_estado"
-                        class="w-full px-3 py-2 border rounded-lg text-sm dark:bg-[#1b2030] dark:border-gray-700 dark:text-gray-200"
-                        required>
-                        <option value="">Seleccione un estado</option>
-                        @foreach ($estados as $estado)
-                        <option value="{{ $estado->id_estado }}">{{ $estado->estado_nomb }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                {{-- Pago --}}
-                <div>
-                    <label class="block text-xs font-bold text-[#4c669a] dark:text-gray-300 mb-1">Pago</label>
-                    <select name="id_pago"
-                        class="w-full px-3 py-2 border rounded-lg text-sm dark:bg-[#1b2030] dark:border-gray-700 dark:text-gray-200"
-                        required>
-                        <option value="">Seleccione un pago</option>
-                        @foreach ($pagos as $pago)
-                        <option value="{{ $pago->id_pago }}">
-                            #{{ $pago->id_pago }} - {{ $pago->plan->nomb_plan ?? 'Sin plan' }}
-                        </option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-
-            <button type="submit"
-                class="mt-4 bg-primary text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors shadow-sm">
-                Activar/Renovar Licencia
-            </button>
-        </form>
-    </div>
-
     {{-- TABLA DE LICENCIAS --}}
     <div
         class="bg-white dark:bg-[#161d2b] rounded-xl border border-[#cfd7e7] dark:border-gray-800 overflow-hidden shadow-sm">
@@ -102,7 +28,6 @@
                         <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Empresa</th>
                         <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Plan</th>
                         <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Estado</th>
-                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Pago</th>
                         <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Inicio</th>
                         <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Fin</th>
                         <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Tipo de licencia</th>
@@ -113,12 +38,22 @@
                     @forelse($licencias as $licencia)
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
                         <td class="px-6 py-4 text-sm font-bold">{{ $licencia->id_licencia }}</td>
-                        <td class="px-6 py-4 text-sm">{{ $licencia->nit_empresa }}</td>
-                        <td class="px-6 py-4 text-sm">{{ $licencia->plan->nomb_plan ?? '-' }}</td>
-                        <td class="px-6 py-4 text-sm font-bold">{{ $licencia->estado->estado_nomb ?? '-' }}</td>
                         <td class="px-6 py-4 text-sm">
-                            {{ isset($licencia->pagos->monto) ? number_format($licencia->pagos->monto, 2, ',', '.') : '-' }}
+                            <div class="flex flex-col leading-tight">
+                                <span class="font-semibold text-gray-900 dark:text-white">
+                                    {{ $licencia->pago->admin->empresa->nomb_empresa ?? 'Empresa no encontrada' }}
+                                </span>
+                                <span class="text-xs text-gray-500">
+                                    NIT: {{ $licencia->pago->admin->empresa->nit_empresa ?? '-' }}
+                                </span>
+                            </div>
                         </td>
+                        <td class="px-6 py-4 text-sm">
+                            <span class="font-semibold text-gray-800 dark:text-gray-200">
+                                {{ $licencia->pago->plan->nomb_plan ?? '-' }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-sm font-bold">{{ $licencia->estado->estado_nomb ?? '-' }}</td>
 
                         <td class="px-6 py-4 text-sm">
                             {{ \Carbon\Carbon::parse($licencia->fecha_inicio)->format('Y-m-d') }}
@@ -152,6 +87,9 @@
                     @endforelse
                 </tbody>
             </table>
+            <div class="px-6 py-4 flex justify-center">
+                {{ $licencias->links() }}
+            </div>
         </div>
     </div>
 
