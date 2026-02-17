@@ -8,6 +8,8 @@ use App\Exports\PagosExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\Pago;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Http\Controllers\Sadmin\PlanController;
+
 
 // Alias para controllers con nombres iguales
 use App\Http\Controllers\Sadmin\PagoController as SadminPagoController;
@@ -175,3 +177,37 @@ Route::prefix('empleado')->group(function () {
     Route::post('reset-password', [EmpleadoPasswordController::class, 'resetPassword'])
         ->name('empleado.password.reset');
 });
+
+// Exportar pagos a PDF y Excel - Gomez
+Route::get('/sadmin/admins/export/pdf', [UsuarioController::class, 'exportPdf'])
+    ->name('sadmin.export.pdf');
+
+Route::get('/sadmin/admins/export/excel', [UsuarioController::class, 'exportExcel'])
+    ->name('sadmin.export.excel');
+
+// EXPORTAR ADMINS
+Route::get('/sadmin/admins/export/pdf', [UsuarioController::class, 'exportPdf'])
+    ->name('sadmin.export.pdf');
+
+Route::get('/sadmin/admins/export/excel', [UsuarioController::class, 'exportExcel'])
+    ->name('sadmin.export.excel');
+
+    
+// EXPORTAR PLANES
+
+Route::get('/sadmin/planes/export/pdf', [PlanController::class, 'exportPdf'])
+    ->name('planes.export.pdf');
+
+
+Route::get('/sadmin/planes/export/excel', [PlanController::class, 'exportExcel'])
+    ->name('planes.export.excel');
+
+    // EXPORTAR EMPRESAS
+
+
+Route::get('/sadmin/empresas/export/pdf', [EmpresaController::class, 'exportPdf'])
+    ->name('empresas.export.pdf');
+
+Route::get('/sadmin/empresas/export/excel', [EmpresaController::class, 'exportExcel'])
+    ->name('empresas.export.excel');
+

@@ -46,9 +46,18 @@
         <div
             class="bg-white dark:bg-[#161d2b] rounded-xl border border-[#cfd7e7] dark:border-gray-800 overflow-hidden shadow-sm">
 
-            <div class="p-6 border-b border-[#cfd7e7] dark:border-gray-800">
+            <div class="p-6 border-b border-[#cfd7e7] dark:border-gray-800 flex justify-between items-center">
+
                 <h2 class="text-lg font-bold dark:text-white">Planes Disponibles</h2>
+
+                <button onclick="openExportModal()"
+                    class="px-3 py-2 border border-[#cfd7e7] dark:border-gray-700 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors dark:text-white">
+                    <span class="material-symbols-outlined text-sm">download</span>
+                    Exportar
+                </button>
+
             </div>
+
 
             <div id="plansWrapper">
                 {{-- TABLA --}}
@@ -325,8 +334,8 @@
 
     <script>
         /* =========================
-               REFERENCIAS
-            ========================= */
+                           REFERENCIAS
+                        ========================= */
         const createModal = document.getElementById('createModal')
         const editModal = document.getElementById('editModal')
         const editForm = document.getElementById('editForm')
@@ -693,6 +702,53 @@
             })
         </script>
     @endif
+
+    {{-- MODAL EXPORTAR --}}
+    <div id="exportModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg w-72 p-5">
+
+            <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-4">
+                Exportar Planes
+            </h3>
+
+            <div class="flex flex-col gap-3">
+
+                <!-- PDF -->
+                <a href="{{ route('planes.export.pdf') }}"
+                    class="flex items-center gap-2 px-4 py-2 text-sm font-semibold border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                    <span class="material-symbols-outlined text-red-600">picture_as_pdf</span>
+                    PDF
+                </a>
+
+                <!-- Excel -->
+                <a href="{{ route('planes.export.excel') }}"
+                    class="flex items-center gap-2 px-4 py-2 text-sm font-semibold border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                    <span class="material-symbols-outlined text-green-600">grid_on</span>
+                    Excel
+                </a>
+
+            </div>
+
+            <button onclick="closeExportModal()"
+                class="mt-4 w-full text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                Cancelar
+            </button>
+
+        </div>
+    </div>
+
+    <script>
+        function openExportModal() {
+            document.getElementById('exportModal').classList.remove('hidden');
+            document.getElementById('exportModal').classList.add('flex');
+        }
+
+        function closeExportModal() {
+            document.getElementById('exportModal').classList.add('hidden');
+            document.getElementById('exportModal').classList.remove('flex');
+        }
+    </script>
+
 
 
 

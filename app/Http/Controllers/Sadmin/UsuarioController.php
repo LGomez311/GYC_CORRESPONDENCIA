@@ -9,20 +9,25 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Estado;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\AdminsExport;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class UsuarioController extends Controller
 {
     public function index()
     {
         $users = Empleado::with(['rol'])
-            ->where('emple_rol', 2) // 👈 SOLO SuperAdmin
-            ->get();
+            ->where('emple_rol', 2)
+            ->orderBy('emple_nombres')
+            ->paginate(1);
 
         $estados = Estado::all();
         $empresas = Empresa::all();
 
         return view('sadmin.admins', compact('users', 'estados', 'empresas'));
     }
+
 
     public function store(Request $request)
     {
@@ -128,5 +133,24 @@ class UsuarioController extends Controller
         $user->delete();
 
         return redirect()->back()->with('success', 'Usuario eliminado correctamente');
+    }
+
+
+
+    public function exportExcel()
+    {
+        return Excel::download(new AdminsExport, 'admins_empresas.xlsx');
+    }
+
+
+    public function exportPdf()
+    {
+        $admins = Empleado::with(['empresa', 'estado', 'rol', 'area'])
+            ->where('emple_rol', 2) // solo admins empresa si quieres
+            ->get();
+
+        $pdf = Pdf::loadView('sadmin.exports.admins_pdf', compact('admins'));
+
+        return $pdf->download('admins_empresas.pdf');
     }
 }

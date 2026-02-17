@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Plan;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\PlanesExport;
 
 class PlanController extends Controller
 {
@@ -93,4 +96,19 @@ class PlanController extends Controller
             ->route('cplanes')
             ->with('success', 'Plan eliminado correctamente');
     }
+
+    public function exportPdf()
+    {
+        $planes = Plan::all();
+
+        $pdf = Pdf::loadView('sadmin.exports.planes_pdf', compact('planes'));
+
+        return $pdf->download('planes_sistema.pdf');
+    }
+
+    public function exportExcel()
+    {
+        return Excel::download(new PlanesExport, 'planes_sistema.xlsx');
+    }
+
 }
