@@ -20,7 +20,7 @@ class UsuarioController extends Controller
         $users = Empleado::with(['rol'])
             ->where('emple_rol', 2)
             ->orderBy('emple_nombres')
-            ->paginate(1);
+            ->paginate(3);
 
         $estados = Estado::all();
         $empresas = Empresa::all();

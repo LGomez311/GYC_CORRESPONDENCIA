@@ -27,4 +27,9 @@ class PlanController extends Controller
         return Excel::download(new PlanesExport, 'planes_sistema.xlsx');
     }
 
+    public function index()
+    {
+        $plans = Plan::all();
+        return view('admin.planes', compact('plans'));
+    }
 }

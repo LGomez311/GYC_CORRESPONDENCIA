@@ -19,7 +19,9 @@ class PagoController extends Controller
 
     public function historial()
     {
-        $pagos = Pago::all();
+        $pagos = Pago::with(['plan', 'estado', 'admin'])
+            ->orderBy('fecha_pago', 'desc')
+            ->paginate(4);
 
         return view('admin.historialp', compact('pagos'));
     }

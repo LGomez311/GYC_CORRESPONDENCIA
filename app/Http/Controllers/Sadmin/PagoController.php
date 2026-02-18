@@ -14,7 +14,7 @@ class PagoController extends Controller
         // Paginación: 10 registros por página (ajusta a tu gusto)
         $pagos = Pago::with(['plan', 'estado', 'admin'])
             ->orderBy('fecha_pago', 'desc')
-            ->paginate(3);
+            ->paginate(4);
 
         return view('sadmin.pagos', compact('pagos'));
     }

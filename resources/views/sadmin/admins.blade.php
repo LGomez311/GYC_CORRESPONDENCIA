@@ -66,13 +66,23 @@
             for (const [fieldName, value] of Object.entries(fields)) {
                 if (!value) continue;
                 if (detectSQLInjection(value)) {
-                    return { valid: false, threat: 'SQL Injection', field: fieldName };
+                    return {
+                        valid: false,
+                        threat: 'SQL Injection',
+                        field: fieldName
+                    };
                 }
                 if (detectXSSAttempt(value)) {
-                    return { valid: false, threat: 'XSS Attack', field: fieldName };
+                    return {
+                        valid: false,
+                        threat: 'XSS Attack',
+                        field: fieldName
+                    };
                 }
             }
-            return { valid: true };
+            return {
+                valid: true
+            };
         }
 
         /**
@@ -138,8 +148,10 @@
                                 class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">
                                 Nombre del Administrador</th>
                             <th
-                                class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">
-                                Empresa Asociada</th>
+                                class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider text-center">
+                                Empresa Asociada
+                            </th>
+
                             <th
                                 class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">
                                 Correo Electrónico</th>
@@ -171,9 +183,10 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4">
-                                    <span class="text-sm font-medium text-[#0d121b] dark:text-gray-300">Global Tech
-                                        Solutions</span>
+                                <td class="px-6 py-4 text-sm dark:text-gray-300 align-middle text-center">
+                                    <span class="text-sm font-bold text-[#0d121b] dark:text-white">
+                                        {{ $user->empresa->nomb_empresa }}
+                                    </span>
                                 </td>
                                 <td class="px-6 py-4">
                                     <span
@@ -205,9 +218,10 @@
                                             title="Ver detalles">
                                             <span class="material-symbols-outlined text-[20px]">visibility</span>
                                         </button>
-                                        <button class="p-2 text-[#4c669a] hover:text-primary transition-colors btn-open-edit" title="Editar"
-                                            data-documento="{{ $user->emple_doc }}" data-nit="{{ $user->nit_empresa }}"
-                                            data-nombres="{{ $user->emple_nombres }}"
+                                        <button
+                                            class="p-2 text-[#4c669a] hover:text-primary transition-colors btn-open-edit"
+                                            title="Editar" data-documento="{{ $user->emple_doc }}"
+                                            data-nit="{{ $user->nit_empresa }}" data-nombres="{{ $user->emple_nombres }}"
                                             data-apellidos="{{ $user->emple_apellidos }}"
                                             data-telefono="{{ $user->emple_tel }}" data-correo="{{ $user->emple_correo }}"
                                             data-estado="{{ $user->emple_estado }}">
@@ -359,7 +373,7 @@
                 .replace(/\b\w/g, l => l.toUpperCase());
 
             const isValid = /^[A-Z][a-zA-Z\s]*$/.test(input.value);
-            
+
             // 🔒 Validar contra XSS
             if (detectXSSAttempt(input.value)) {
                 const errorEl = document.getElementById(errorId);
@@ -385,7 +399,7 @@
         function validateCorreoEdit(input) {
             const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             validEdit.correo = regex.test(input.value);
-            
+
             // 🔒 Validar contra XSS
             if (detectXSSAttempt(input.value)) {
                 const errorEl = document.getElementById('edit-error-correo');
@@ -643,7 +657,7 @@
                     editInputs.forEach(input => {
                         input.addEventListener('paste', (e) => {
                             const pastedText = e.clipboardData.getData('text');
-                            
+
                             if (detectXSSAttempt(pastedText) || detectSQLInjection(pastedText)) {
                                 e.preventDefault();
                                 Swal.fire({
@@ -679,7 +693,8 @@
             </div>
 
             <!-- Formulario -->
-            <form method="POST" action="{{ route('sadmin.store') }}" id="userForm" enctype="multipart/form-data" class="space-y-6">
+            <form method="POST" action="{{ route('sadmin.store') }}" id="userForm" enctype="multipart/form-data"
+                class="space-y-6">
                 @csrf
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
@@ -824,7 +839,7 @@
         function validateDocumento(input, errorId = 'error-documento') {
             input.value = input.value.replace(/\D/g, '');
             valid.documento = input.value.length > 0;
-            
+
             // 🔒 Validar contra inyecciones
             if (detectSQLInjection(input.value)) {
                 toggleError(errorId, true);
@@ -842,7 +857,7 @@
                 .replace(/\b\w/g, l => l.toUpperCase());
 
             const isValid = /^[A-Z][a-zA-Z\s]*$/.test(input.value);
-            
+
             // 🔒 Validar contra XSS
             if (detectXSSAttempt(input.value)) {
                 toggleError(errorId, true);
@@ -866,7 +881,7 @@
         function validateCorreo(input) {
             const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             valid.correo = regex.test(input.value);
-            
+
             // 🔒 Validar contra XSS
             if (detectXSSAttempt(input.value)) {
                 toggleError('error-correo', true);
@@ -907,7 +922,8 @@
 
         // 🔒 Prevenir pegado de contenido malicioso y asociar envío seguro cuando el DOM esté listo
         document.addEventListener('DOMContentLoaded', function() {
-            const formInputs = document.querySelectorAll('#userForm input[type="text"], #userForm input[type="email"]');
+            const formInputs = document.querySelectorAll(
+                '#userForm input[type="text"], #userForm input[type="email"]');
 
             formInputs.forEach(input => {
                 input.addEventListener('paste', (e) => {
