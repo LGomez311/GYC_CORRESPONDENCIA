@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Plan;
+
 
 class Empresa extends Model
 {
@@ -27,5 +29,10 @@ class Empresa extends Model
             'nit_empresa',   // FK en licencia
             'nit_empresa'    // PK en empresa
         );
+    }
+    
+    public function plan()
+    {
+        return $this->belongsTo(Plan::class, 'plan_id');
     }
 }

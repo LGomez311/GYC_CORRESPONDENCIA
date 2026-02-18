@@ -13,11 +13,19 @@
                     los perfiles de administradores para cada organización.</p>
             </div>
             <div class="flex gap-3">
+
+
+
+
+                {{-- BOTÓN CREAR --}}
                 <button onclick="openModal()"
                     class="px-4 py-2 bg-primary text-white rounded-lg font-bold text-sm flex items-center gap-2 shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all">
                     <span class="material-symbols-outlined text-sm">person_add</span>
                     Crear Nuevo Admin
                 </button>
+
+
+
             </div>
         </div>
         <div
@@ -26,6 +34,13 @@
                 class="p-6 border-b border-[#cfd7e7] dark:border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <h2 class="text-[#0d121b] dark:text-white text-lg font-bold leading-tight">Administradores de
                     Empresas</h2>
+
+                {{-- BOTÓN EXPORTAR --}}
+                <button onclick="openExportModal()"
+                    class="px-3 py-2 border border-[#cfd7e7] dark:border-gray-700 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors dark:text-white">
+                    <span class="material-symbols-outlined text-sm">download</span>
+                    Exportar
+                </button>
 
             </div>
             <div class="overflow-x-auto">
@@ -105,12 +120,10 @@
                                         </button>
                                         <button onclick='openModalEdit(this)'
                                             class="p-2 text-[#4c669a] hover:text-primary transition-colors" title="Editar"
-                                            data-documento="{{ $user->emple_doc }}"
-                                            data-nit="{{ $user->nit_empresa }}"
+                                            data-documento="{{ $user->emple_doc }}" data-nit="{{ $user->nit_empresa }}"
                                             data-nombres="{{ $user->emple_nombres }}"
                                             data-apellidos="{{ $user->emple_apellidos }}"
-                                            data-telefono="{{ $user->emple_tel }}"
-                                            data-correo="{{ $user->emple_correo }}"
+                                            data-telefono="{{ $user->emple_tel }}" data-correo="{{ $user->emple_correo }}"
                                             data-estado="{{ $user->emple_estado }}">
                                             <span class="material-symbols-outlined text-[20px]">edit</span>
                                         </button>
@@ -144,6 +157,10 @@
                         @endif
                     </tbody>
                 </table>
+                <div class="p-4 border-t border-[#cfd7e7] dark:border-gray-800">
+                    {{ $users->links() }}
+                </div>
+
             </div>
 
 
@@ -182,6 +199,53 @@
             });
         });
     </script>
+
+    {{-- MODAL EXPORTAR --}}
+    <div id="exportModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg w-72 p-5">
+
+            <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-4">
+                Exportar Administradores
+            </h3>
+
+            <div class="flex flex-col gap-3">
+
+                <!-- PDF -->
+                <a href="{{ route('sadmin.export.pdf') }}"
+                    class="flex items-center gap-2 px-4 py-2 text-sm font-semibold border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                    <span class="material-symbols-outlined text-red-600">picture_as_pdf</span>
+                    PDF
+                </a>
+
+                <!-- Excel -->
+                <a href="{{ route('sadmin.export.excel') }}"
+                    class="flex items-center gap-2 px-4 py-2 text-sm font-semibold border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                    <span class="material-symbols-outlined text-green-600">grid_on</span>
+                    Excel
+                </a>
+
+            </div>
+
+            <button onclick="closeExportModal()"
+                class="mt-4 w-full text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                Cancelar
+            </button>
+
+        </div>
+    </div>
+    <script>
+        function openExportModal() {
+            document.getElementById('exportModal').classList.remove('hidden');
+            document.getElementById('exportModal').classList.add('flex');
+        }
+
+        function closeExportModal() {
+            document.getElementById('exportModal').classList.add('hidden');
+            document.getElementById('exportModal').classList.remove('flex');
+        }
+    </script>
+
+
 
 @endsection
 
@@ -273,7 +337,7 @@
                 const modalOverlayEdit = document.getElementById('modalOverlayEdit');
 
                 // Validar que todos los elementos existen
-                if (!form || !editDoc || !editNombres || !editApellidos || !editTelefono || 
+                if (!form || !editDoc || !editNombres || !editApellidos || !editTelefono ||
                     !editCorreo || !editEstado || !userModalEdit || !modalOverlayEdit) {
                     console.error('Algunos elementos no existen en el DOM');
                     return;
@@ -320,9 +384,9 @@
                 // Mostrar modal
                 userModalEdit.classList.remove('hidden');
                 modalOverlayEdit.classList.remove('hidden');
-                
+
                 console.log('Modal abierto exitosamente');
-            } catch(e) {
+            } catch (e) {
                 console.error('Error al abrir modal:', e);
                 alert('Error: ' + e.message);
             }
@@ -361,8 +425,8 @@
                     <!-- Documento -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Documento</label>
-                        <input name="emple_doc" id="documento" type="text" class="mt-1 w-full rounded-lg border-gray-300"
-                            oninput="validateDocumento(this)">
+                        <input name="emple_doc" id="documento" type="text"
+                            class="mt-1 w-full rounded-lg border-gray-300" oninput="validateDocumento(this)">
                         <p id="error-documento" class="text-sm text-red-500 hidden">
                             Solo números, sin puntos
                         </p>
@@ -375,7 +439,8 @@
                         <select name="nit_empresa" class="mt-1 w-full rounded-lg border-gray-300" required>
                             <option value="">Seleccionar empresa...</option>
                             @foreach ($empresas as $empresa)
-                                <option value="{{ $empresa->nit_empresa }}">{{ $empresa->nit_empresa }} - {{ $empresa->nomb_empresa ?? 'Sin nombre' }}</option>
+                                <option value="{{ $empresa->nit_empresa }}">{{ $empresa->nit_empresa }} -
+                                    {{ $empresa->nomb_empresa ?? 'Sin nombre' }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -652,10 +717,12 @@
                     <!-- NIT Empresa -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Empresa (NIT)</label>
-                        <select name="nit_empresa" id="edit_nit" class="mt-1 w-full rounded-lg border-gray-300" required>
+                        <select name="nit_empresa" id="edit_nit" class="mt-1 w-full rounded-lg border-gray-300"
+                            required>
                             <option value="">Seleccionar empresa...</option>
                             @foreach ($empresas as $empresa)
-                                <option value="{{ $empresa->nit_empresa }}">{{ $empresa->nit_empresa }} - {{ $empresa->nomb_empresa ?? 'Sin nombre' }}</option>
+                                <option value="{{ $empresa->nit_empresa }}">{{ $empresa->nit_empresa }} -
+                                    {{ $empresa->nomb_empresa ?? 'Sin nombre' }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -664,7 +731,8 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Nombres</label>
                         <input name="emple_nombres" id="edit_nombres" type="text"
-                            class="mt-1 w-full rounded-lg border-gray-300" oninput="validateTextoEdit(this, 'edit-error-nombres')">
+                            class="mt-1 w-full rounded-lg border-gray-300"
+                            oninput="validateTextoEdit(this, 'edit-error-nombres')">
                         <p id="edit-error-nombres" class="text-sm text-red-500 hidden">
                             Solo letras, primera letra en mayúscula
                         </p>
@@ -725,7 +793,8 @@
                     <!-- Estado -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Estado</label>
-                        <select name="emple_estado" id="edit_estado" class="mt-1 w-full rounded-lg border-gray-300" onchange="validateEstadoEdit(this)">
+                        <select name="emple_estado" id="edit_estado" class="mt-1 w-full rounded-lg border-gray-300"
+                            onchange="validateEstadoEdit(this)">
                             <option value="">Seleccionar estado...</option>
                             @foreach ($estados as $estado)
                                 <option value="{{ $estado->id_estado }}">
@@ -834,13 +903,12 @@
 
                 <!-- Foto de perfil -->
                 <div class="flex flex-col items-center gap-4">
-                    <img id="profile_foto"
-                        src="/img/default-user.png"
+                    <img id="profile_foto" src="/img/default-user.png"
                         class="w-40 h-40 rounded-full object-cover border shadow" alt="Foto de perfil">
 
                     <span class="text-sm text-gray-500">Foto de perfil</span>
                 </div>
-                
+
 
                 <!-- Datos -->
                 <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">

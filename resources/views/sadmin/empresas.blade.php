@@ -21,20 +21,6 @@
             <!-- Botones -->
             <div class="flex items-center gap-3">
 
-                <!-- Botón Exportar -->
-                <a href="{{ route('empresas.export.csv') }}"
-                    class="px-4 py-2 border border-green-600 text-green-600 
-                   rounded-lg font-semibold text-sm 
-                   flex items-center gap-2 
-                   hover:bg-green-600 hover:text-white 
-                   transition-all duration-200">
-
-                    <span class="material-symbols-outlined text-[18px]">
-                        download
-                    </span>
-                    Exportar CSV
-                </a>
-
                 <!-- Botón Crear -->
                 <button onclick="openCreateModal()"
                     class="px-5 py-2.5 bg-primary text-white rounded-lg 
@@ -57,10 +43,13 @@
                 class="p-6 border-b border-[#cfd7e7] dark:border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <h2 class="text-[#0d121b] dark:text-white text-lg font-bold leading-tight">Empresas Registradas</h2>
                 <div class="flex gap-2">
-                    <button
-                        class="px-3 py-1.5 text-xs font-bold border border-[#cfd7e7] dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-1 dark:text-white">
-                        <span class="material-symbols-outlined text-sm">download</span> Exportar
+
+                    <button onclick="openExportModal()"
+                        class="px-3 py-2 border border-[#cfd7e7] dark:border-gray-700 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors dark:text-white">
+                        <span class="material-symbols-outlined text-sm">download</span>
+                        Exportar
                     </button>
+
                 </div>
             </div>
             <div class="overflow-x-auto">
@@ -110,12 +99,11 @@
 
 
                                 {{-- Plan actual --}}
-                    
+
 
                                 <td class="px-6 py-4 text-sm dark:text-gray-300 align-middle text-center">
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
-                                        
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+
                                     </span>
                                 </td>
 
@@ -155,18 +143,6 @@
                                             class="p-2 text-[#4c669a] hover:text-primary transition">
                                             <span class="material-symbols-outlined text-[20px]">edit</span>
                                         </button>
-
-                                        <!-- ELIMINAR -->
-                                        <form class="delete-form"
-                                            action="{{ route('empresas.destroy', $empresa->nit_empresa) }}" method="POST">
-                                            @csrf
-                                            @method('DELETE')
-
-                                            <button type="submit" class="p-2 text-[#4c669a] hover:text-red-500 transition">
-                                                <span class="material-symbols-outlined text-[20px]">delete</span>
-                                            </button>
-                                        </form>
-
                                     </div>
                                 </td>
 
@@ -175,6 +151,10 @@
 
                     </tbody>
                 </table>
+                <div class="p-4 border-t border-[#cfd7e7] dark:border-gray-800">
+                    {{ $empresas->links() }}
+                </div>
+
             </div>
 
         </div>
@@ -577,6 +557,51 @@
         });
     </script>
 
+    {{-- MODAL EXPORTAR --}}
+    <div id="exportModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg w-72 p-5">
+
+            <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-4">
+                Exportar Empresas
+            </h3>
+
+            <div class="flex flex-col gap-3">
+
+                <!-- PDF -->
+                <a href="{{ route('empresas.export.pdf') }}"
+                    class="flex items-center gap-2 px-4 py-2 text-sm font-semibold border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                    <span class="material-symbols-outlined text-red-600">picture_as_pdf</span>
+                    PDF
+                </a>
+
+                <!-- Excel -->
+                <a href="{{ route('empresas.export.excel') }}"
+                    class="flex items-center gap-2 px-4 py-2 text-sm font-semibold border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                    <span class="material-symbols-outlined text-green-600">grid_on</span>
+                    Excel
+                </a>
+
+            </div>
+
+            <button onclick="closeExportModal()"
+                class="mt-4 w-full text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                Cancelar
+            </button>
+
+        </div>
+    </div>
+
+    <script>
+        function openExportModal() {
+            document.getElementById('exportModal').classList.remove('hidden');
+            document.getElementById('exportModal').classList.add('flex');
+        }
+
+        function closeExportModal() {
+            document.getElementById('exportModal').classList.add('hidden');
+            document.getElementById('exportModal').classList.remove('flex');
+        }
+    </script>
 
 
 
