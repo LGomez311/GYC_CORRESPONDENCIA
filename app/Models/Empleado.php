@@ -67,6 +67,7 @@ class Empleado extends Authenticatable
     {
         return $this->belongsTo(Empresa::class, 'nit_empresa');
     }
+    
 
     public $timestamps = false;
 
