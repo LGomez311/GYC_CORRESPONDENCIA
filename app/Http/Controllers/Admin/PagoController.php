@@ -59,7 +59,7 @@ class PagoController extends Controller
         ]);
 
         return redirect()
-            ->route('admin.index')
+            ->route('admin.historialp')
             ->with('success', 'Pago notificado correctamente. En espera de aprobación.');
     }
 }

@@ -51,6 +51,7 @@
                                 <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Plan</th>
                                 <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Pagado por</th>
                                 <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Fecha de Pago</th>
+                                <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Inicio de licencia</th>
                                 <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Estado</th>
                                 <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Comprobante</th>
                             </tr>
@@ -92,6 +93,10 @@
                                                 {{ \Carbon\Carbon::parse($pago->fecha_pago)->format('H:i:s') }}
                                             </span>
                                         </div>
+                                    </td>
+
+                                    <td class="px-6 py-4 text-sm">
+                                        {{ $pago->fecha_inicio ? \Carbon\Carbon::parse($pago->fecha_inicio)->format('Y-m-d') : '—' }}
                                     </td>
 
                                     <td class="px-6 py-4 text-sm font-bold">

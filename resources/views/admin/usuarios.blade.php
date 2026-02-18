@@ -4,10 +4,7 @@
 @section('title', 'Panel de Admin de empresa')
 <!-- Main Content -->
 @section('content')
-   
-        
-        
-        <div class="p-1">
+        {{-- <div class="p-1">
             <!-- Page Title and Action -->
             <div class="flex items-center justify-between mb-8">
                 <div>
@@ -198,5 +195,5 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
     @endsection
