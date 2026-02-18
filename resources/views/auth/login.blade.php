@@ -87,12 +87,7 @@
                         @enderror
                     </label>
 
-                    {{-- Recordarme --}}
-                    <label class="flex items-center gap-3">
-                        <input type="checkbox" name="remember"
-                            class="form-checkbox h-5 w-5 rounded border-[#cfd7e7] dark:border-slate-600 text-primary focus:ring-2 focus:ring-primary/50" />
-                        <span class="text-base text-[#0d121b] dark:text-gray-200">Recordarme</span>
-                    </label>
+                    
 
                     {{-- Errores de login --}}
                     @if ($errors->has('login'))
