@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 16-02-2026 a las 21:41:36
+-- Tiempo de generación: 18-02-2026 a las 18:54:37
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -196,9 +196,11 @@ CREATE TABLE `empleado` (
 
 INSERT INTO `empleado` (`emple_doc`, `nit_empresa`, `password`, `emple_nombres`, `emple_apellidos`, `emple_tel`, `emple_correo`, `emple_img`, `emple_estado`, `emple_rol`, `emple_area`) VALUES
 (1001, '3241234', '$2y$12$ipkGIRI86WapHF7i9cT6meu.6aVgg.qox1Y7t1Ek5hCE8ISDIb/c2', 'Kevin', 'Villafrade', NULL, 'kevin@gmail.com', NULL, 1, 1, NULL),
-(1002, '3241234', '$2y$12$LWO14So.uSotCedN4ZOsbedPxbXwu1Fer2DwScs0Rz1gybCkV2xBO', 'Luis', 'Gomez', NULL, 'luis@gmail.com', 'empleado/G3Nd4kFx4CZEWNXYj7PupotVAEtIJ80xXHFnsVOC.jpg', 1, 2, NULL),
+(1002, '3241234', '$2y$12$yQegE6huWkGNqaC5j7iOFOI/oCHXFrXp7bebCYfN1oEXDVn5Y4M7G', 'Luis', 'Gomez', '3153524586', 'lucho3112007@gmail.com', 'empleado/G3Nd4kFx4CZEWNXYj7PupotVAEtIJ80xXHFnsVOC.jpg', 1, 2, NULL),
 (1003, '3241234', '$2y$12$D/IFN/RIgdO.pfvfZql2WulD8j8abFaYrOdKC/JqJHTDheJ.avaOO', 'Yuber', 'Paez', NULL, 'yuber@gmail.com', NULL, 1, 3, NULL),
-(2323, '3241234', '$2y$12$yzH/FluEwl5o27OLFhpt/eCQiiQvkAuzdjQ7fbeGNnePJjnPwpYIm', 'Asdas', 'Asdasd', '4232343435', 'asdas@gmail.com', NULL, 1, 2, NULL);
+(2323, '3241234', '$2y$12$yzH/FluEwl5o27OLFhpt/eCQiiQvkAuzdjQ7fbeGNnePJjnPwpYIm', 'Asdasw', 'Asda', '4232343435', 'asdas@gmail.com', NULL, 2, 2, NULL),
+(1102323, '3241234', '$2y$12$bbNSa3kWKRQ1Io.XLCP.U.6.JVko.UJCzeRCcZFx/dvxcP/amm2n.', 'Luis', 'Gomez', '3153524586', 'lucho3112007@gmail.com', NULL, 1, 2, NULL),
+(1106394865, '12313', '$2y$12$8vJ/YIj2qgMZ4SWI.tZeHurILM6cm3hfdXfqxzS/3SFt1NmkWt.0G', 'Luis', 'Gomez', '3153524586', 'lucho3112007@gmail.com', NULL, 1, 2, NULL);
 
 -- --------------------------------------------------------
 
@@ -220,7 +222,9 @@ CREATE TABLE `empresa` (
 --
 
 INSERT INTO `empresa` (`nit_empresa`, `nomb_empresa`, `id_representante`, `direccion`, `contacto`, `empresa_correo`) VALUES
-('3241234', 'Soluciones Tecnológicas Andinas S.A.S.', 1002, 'Cra 545 N54-6 ', '3154764785', 'andinasas@gmail.com');
+('12313', 'sena1', 1002, 'Cra. 21 Sur #145-77, Ibague, Tolima', '3153524586', 'lucho3112007@gmail.com'),
+('3241234', 'Soluciones Tecnológicas Andinas S.A.S.', 1002, 'Cra 545 N54-622', '3154764785', 'andinasas@gmail.com'),
+('7777777777777', 'sena', 1002, 'Cra. 21 Sur #145-77, Ibague, Tolima', '3153524586', 'lucho3112007@gmail.com');
 
 -- --------------------------------------------------------
 
@@ -350,7 +354,8 @@ CREATE TABLE `migrations` (
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (1, '0001_01_01_000000_create_users_table', 1),
 (2, '0001_01_01_000001_create_cache_table', 1),
-(3, '0001_01_01_000002_create_jobs_table', 1);
+(3, '0001_01_01_000002_create_jobs_table', 1),
+(4, '2026_02_16_162424_create_password_codes_table', 2);
 
 -- --------------------------------------------------------
 
@@ -368,6 +373,21 @@ CREATE TABLE `pagos` (
   `fecha_pago` datetime DEFAULT NULL,
   `fecha_inicio` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `password_codes`
+--
+
+CREATE TABLE `password_codes` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `emple_correo` varchar(255) NOT NULL,
+  `code` varchar(255) NOT NULL,
+  `expires_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -403,7 +423,7 @@ INSERT INTO `plan` (`id_plan`, `nomb_plan`, `valor`, `descripcion`, `duracion`) 
 (4, 'Mensual', 200000, '[\"Acceso completo al sistema.\",\"Soporte básico.\",\"Garantía 7 días.\"]', 30),
 (5, 'Trimestral', 540000, '[\"Acceso completo al sistema.\",\"Soporte prioritario.\",\"Garantía 14 días.\", \"Incluye 1 capacitación.\"]', 90),
 (6, 'Semestral', 1040000, '[\"Acceso completo al sistema.\",\"Soporte prioritario extendido.\",\"Garantía 30 días.\", \"Incluye 2 capacitaciones.\"]\r\n', 180),
-(7, 'Anual', 1920000, '[\"Acceso completo al sistema.\",\"Soporte premium.\",\"Garantía 60 días.\", \"Incluye 4 capacitaciones.\"]', 365);
+(7, 'Anuall', 1920000, '[]', 365);
 
 -- --------------------------------------------------------
 
@@ -517,8 +537,8 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('oNhpBM2MHR0blHLYEKQDP4t4sBx1I9GbrheeyLZY', 1001, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiVkk5M1hhRzB2dFhnRUJ2MklsVGZJbndZUVZjS0k3SmZvcEtYd1hieiI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzg6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zYWRtaW4vbGljZW5jaWFzIjtzOjU6InJvdXRlIjtzOjE2OiJzYWRtaW4ubGljZW5jaWFzIjt9czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MTAwMTt9', 1771005585),
-('r7kKm5Z5RZWLGSGGY57UpYNoljwgDn6k4CdFPGOo', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoidHppSnBvOWNlRk5tNVZYMnlwM2ZLUDJOMGlZczVGcERXWkFWMkVVNCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9yZW1pdGVudGUiO3M6NToicm91dGUiO3M6MTU6InJlbWl0ZW50ZS5pbmRleCI7fXM6NTY6ImxvZ2luX3JlbWl0ZW50ZV81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjEwMDQ7fQ==', 1771011115);
+('Bfi5QOy2hzOti3BusrL5HSqPgFuzzbEvaxxhFVVZ', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoidjROUkN2T0FLYkZQbXB5RVdGUW1ZU3dhY2NIN08zWHBnMlQzUll4VyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9sb2dpbiI7czo1OiJyb3V0ZSI7czo1OiJsb2dpbiI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1771437196),
+('rfXQQWL4cJeqX9yG6hdU6EyKeWMcoJhNPk4bTu97', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoicGhaRlV6cWVkbXV0OVlHdUxpYkJBVWdtdHNyMXZCWUcxSm5xbmRlSiI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo5OiJ3ZWIuaW5kZXgiO319', 1771391730);
 
 -- --------------------------------------------------------
 
@@ -680,6 +700,12 @@ ALTER TABLE `pagos`
   ADD KEY `id_admin` (`id_admin`);
 
 --
+-- Indices de la tabla `password_codes`
+--
+ALTER TABLE `password_codes`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indices de la tabla `password_reset_tokens`
 --
 ALTER TABLE `password_reset_tokens`
@@ -785,13 +811,19 @@ ALTER TABLE `licencia`
 -- AUTO_INCREMENT de la tabla `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `pagos`
 --
 ALTER TABLE `pagos`
   MODIFY `id_pago` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
+
+--
+-- AUTO_INCREMENT de la tabla `password_codes`
+--
+ALTER TABLE `password_codes`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `plan`
