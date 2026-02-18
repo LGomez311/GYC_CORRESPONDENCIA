@@ -9,30 +9,32 @@ use App\Models\Plan;
 class Empresa extends Model
 {
     protected $table = 'empresa';
+
     protected $primaryKey = 'nit_empresa';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     public $timestamps = false;
 
     protected $fillable = [
         'nit_empresa',
         'nomb_empresa',
+        'id_representante',
         'direccion',
         'contacto',
-        'empresa_correo',
+        'empresa_correo'
     ];
 
-    public function licencia()
+    public function representante()
     {
-        return $this->hasOne(
-            Licencia::class,
-            'nit_empresa',   // FK en licencia
-            'nit_empresa'    // PK en empresa
+        return $this->belongsTo(
+            Empleado::class,
+            'id_representante',
+            'emple_doc'
         );
     }
-    
-    public function plan()
-    {
-        return $this->belongsTo(Plan::class, 'plan_id');
     }
-}
+
+    

@@ -69,4 +69,14 @@ class Empleado extends Authenticatable
     }
 
     public $timestamps = false;
+
+    public function pagos()
+    {
+        return $this->hasMany(
+            \App\Models\Pago::class,
+            'id_admin',   // FK en pagos
+            'emple_doc'   // PK en empleado
+        );
+    }
+    
 }

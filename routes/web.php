@@ -10,6 +10,8 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Models\Pago;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\Sadmin\PlanController;
+use App\Http\Controllers\LandingController;
+
 
 
 // Alias para controllers con nombres iguales
@@ -234,3 +236,6 @@ Route::get('/sadmin/empresas/export/pdf', [EmpresaController::class, 'exportPdf'
 Route::get('/sadmin/empresas/export/excel', [EmpresaController::class, 'exportExcel'])
     ->name('empresas.export.excel');
 
+use App\Http\Controllers\HomeController;
+
+Route::get('/', [HomeController::class, 'index'])->name('web.index');

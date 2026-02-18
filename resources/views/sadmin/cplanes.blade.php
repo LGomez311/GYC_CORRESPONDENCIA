@@ -334,8 +334,8 @@
 
     <script>
         /* =========================
-                           REFERENCIAS
-                        ========================= */
+                               REFERENCIAS
+                            ========================= */
         const createModal = document.getElementById('createModal')
         const editModal = document.getElementById('editModal')
         const editForm = document.getElementById('editForm')
@@ -436,9 +436,11 @@
                     const newWrapper = doc.getElementById('plansWrapper')
                     if (newWrapper) {
                         wrapper.innerHTML = newWrapper.innerHTML
+                        bindPaginationLinks() // 🔥 MUY IMPORTANTE
                     }
                 })
         }
+
 
         function bindPaginationLinks() {
             document.querySelectorAll('#plansWrapper a').forEach(link => {

@@ -4,6 +4,93 @@
 
 @section('content')
 
+    <script>
+        /**
+         * ===== FUNCIONES DE SEGURIDAD Y SANITIZACIÓN (Se cargan PRIMERO) =====
+         */
+
+        /**
+         * Sanitiza strings contra XSS
+         */
+        function sanitizeString(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#x27;')
+                .replace(/\//g, '&#x2F;');
+        }
+
+        /**
+         * Detecta patrones de inyección SQL
+         */
+        function detectSQLInjection(str) {
+            if (!str) return false;
+            const sqlPatterns = [
+                /(\b(UNION|SELECT|INSERT|UPDATE|DELETE|DROP|EXEC|EXECUTE|SCRIPT|ALERT|EVAL)\b)/gi,
+                /(-{2}|\/\*|\*\/|;)/g,
+                /(javascript:|onerror=|onload=|onclick=)/gi
+            ];
+            return sqlPatterns.some(pattern => {
+                pattern.lastIndex = 0;
+                return pattern.test(str);
+            });
+        }
+
+        /**
+         * Valida contra XSS
+         */
+        function detectXSSAttempt(str) {
+            if (!str) return false;
+            const xssPatterns = [
+                /<script[^>]*>.*?<\/script>/gi,
+                /javascript:/gi,
+                /<iframe[^>]*>/gi,
+                /<img[^>]*on/gi,
+                /on(load|error|click|mouse)[^=]*=/gi,
+                /<svg[^>]*on/gi,
+                /eval\(/gi
+            ];
+            return xssPatterns.some(pattern => {
+                pattern.lastIndex = 0;
+                return pattern.test(str);
+            });
+        }
+
+        /**
+         * Valida entrada de usuario
+         */
+        function validateSecurityThreats(fields = {}) {
+            for (const [fieldName, value] of Object.entries(fields)) {
+                if (!value) continue;
+                if (detectSQLInjection(value)) {
+                    return { valid: false, threat: 'SQL Injection', field: fieldName };
+                }
+                if (detectXSSAttempt(value)) {
+                    return { valid: false, threat: 'XSS Attack', field: fieldName };
+                }
+            }
+            return { valid: true };
+        }
+
+        /**
+         * Previene múltiples envíos (rate limiting)
+         */
+        let formSubmitTimestamp = 0;
+        const FORM_SUBMIT_COOLDOWN = 2000;
+
+        function canSubmitForm() {
+            const now = Date.now();
+            if (now - formSubmitTimestamp < FORM_SUBMIT_COOLDOWN) {
+                return false;
+            }
+            formSubmitTimestamp = now;
+            return true;
+        }
+    </script>
+
     <div class="p-8 max-w-7xl mx-auto w-full">
         <div class="flex flex-wrap justify-between items-end gap-3 mb-8">
             <div class="flex flex-col gap-1">
@@ -118,8 +205,7 @@
                                             title="Ver detalles">
                                             <span class="material-symbols-outlined text-[20px]">visibility</span>
                                         </button>
-                                        <button onclick='openModalEdit(this)'
-                                            class="p-2 text-[#4c669a] hover:text-primary transition-colors" title="Editar"
+                                        <button class="p-2 text-[#4c669a] hover:text-primary transition-colors btn-open-edit" title="Editar"
                                             data-documento="{{ $user->emple_doc }}" data-nit="{{ $user->nit_empresa }}"
                                             data-nombres="{{ $user->emple_nombres }}"
                                             data-apellidos="{{ $user->emple_apellidos }}"
@@ -253,7 +339,9 @@
 
     <!-- Scripts globales (cargados primero) -->
     <script>
-        // Variables de validación para EDICIÓN
+        /**
+         * ===== VALIDACIONES DEL FORMULARIO DE EDITAR ADMIN =====
+         */
         let validEdit = {
             nombres: false,
             apellidos: false,
@@ -262,6 +350,8 @@
             estado: false
         };
 
+        let editFormOriginalData = {};
+
         // Validación de texto para edición
         function validateTextoEdit(input, errorId) {
             input.value = input.value
@@ -269,8 +359,17 @@
                 .replace(/\b\w/g, l => l.toUpperCase());
 
             const isValid = /^[A-Z][a-zA-Z\s]*$/.test(input.value);
-            validEdit[input.id.replace('edit_', '')] = isValid;
-            toggleErrorEdit(errorId, !isValid);
+            
+            // 🔒 Validar contra XSS
+            if (detectXSSAttempt(input.value)) {
+                const errorEl = document.getElementById(errorId);
+                if (errorEl) errorEl.textContent = 'Caracteres no permitidos (XSS detectado)';
+                toggleErrorEdit(errorId, true);
+                validEdit[input.id.replace('edit_', '')] = false;
+            } else {
+                validEdit[input.id.replace('edit_', '')] = isValid;
+                toggleErrorEdit(errorId, !isValid);
+            }
             checkFormEdit();
         }
 
@@ -286,7 +385,16 @@
         function validateCorreoEdit(input) {
             const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             validEdit.correo = regex.test(input.value);
-            toggleErrorEdit('edit-error-correo', !validEdit.correo);
+            
+            // 🔒 Validar contra XSS
+            if (detectXSSAttempt(input.value)) {
+                const errorEl = document.getElementById('edit-error-correo');
+                if (errorEl) errorEl.textContent = 'Correo contiene caracteres no permitidos';
+                toggleErrorEdit('edit-error-correo', true);
+                validEdit.correo = false;
+            } else {
+                toggleErrorEdit('edit-error-correo', !validEdit.correo);
+            }
             checkFormEdit();
         }
 
@@ -304,7 +412,37 @@
             }
         }
 
-        // Habilitar botón de edición (sin requerir contraseña)
+        // Detectar cambios en el formulario de edición
+        function hasEditFormChanged() {
+            const fieldMap = {
+                'edit_nombres': 'edit_nombres',
+                'edit_apellidos': 'edit_apellidos',
+                'edit_telefono': 'edit_telefono',
+                'edit_correo': 'edit_correo',
+                'edit_estado': 'edit_estado'
+            };
+
+            for (const [fieldId, key] of Object.entries(fieldMap)) {
+                const input = document.getElementById(fieldId);
+                if (input && input.value.trim() !== editFormOriginalData[key]) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Guardar datos originales
+        function saveEditFormOriginalData() {
+            editFormOriginalData = {
+                edit_nombres: document.getElementById('edit_nombres')?.value.trim() || '',
+                edit_apellidos: document.getElementById('edit_apellidos')?.value.trim() || '',
+                edit_telefono: document.getElementById('edit_telefono')?.value.trim() || '',
+                edit_correo: document.getElementById('edit_correo')?.value.trim() || '',
+                edit_estado: document.getElementById('edit_estado')?.value.trim() || ''
+            };
+        }
+
+        // Habilitar botón de edición
         function checkFormEdit() {
             const isValid = Object.values(validEdit).every(v => v === true);
             const btn = document.getElementById('btnGuardarEdit');
@@ -317,13 +455,11 @@
         // FUNCIÓN PARA ABRIR MODAL DE EDICIÓN
         function openModalEdit(btn) {
             try {
-                // Validar que el botón existe
                 if (!btn || !btn.dataset) {
                     console.error('Botón no válido');
                     return;
                 }
 
-                // Obtener todos los elementos
                 const form = document.getElementById('formEdit');
                 const editDoc = document.getElementById('edit_documento');
                 const editNit = document.getElementById('edit_nit');
@@ -336,52 +472,67 @@
                 const userModalEdit = document.getElementById('userModalEdit');
                 const modalOverlayEdit = document.getElementById('modalOverlayEdit');
 
-                // Validar que todos los elementos existen
                 if (!form || !editDoc || !editNombres || !editApellidos || !editTelefono ||
                     !editCorreo || !editEstado || !userModalEdit || !modalOverlayEdit) {
                     console.error('Algunos elementos no existen en el DOM');
                     return;
                 }
 
-                // Obtener datos del botón
-                const documento = btn.dataset.documento || '';
-                const nit = btn.dataset.nit || '';
-                const nombres = btn.dataset.nombres || '';
-                const apellidos = btn.dataset.apellidos || '';
-                const telefono = btn.dataset.telefono || '';
-                const correo = btn.dataset.correo || '';
-                const estado = btn.dataset.estado || '';
+                // Obtener y sanitizar datos del botón
+                const data = {
+                    documento: sanitizeString(btn.dataset.documento || ''),
+                    nit: sanitizeString(btn.dataset.nit || ''),
+                    nombres: sanitizeString(btn.dataset.nombres || ''),
+                    apellidos: sanitizeString(btn.dataset.apellidos || ''),
+                    telefono: sanitizeString(btn.dataset.telefono || ''),
+                    correo: sanitizeString(btn.dataset.correo || ''),
+                    estado: sanitizeString(btn.dataset.estado || '')
+                };
+
+                // 🔒 Validar seguridad de los datos
+                const securityCheck = validateSecurityThreats(data);
+                if (!securityCheck.valid) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Seguridad',
+                        text: `Datos sospechosos detectados en: ${securityCheck.field}`,
+                        timer: 3000
+                    });
+                    return;
+                }
 
                 // Establecer la acción del formulario
-                form.action = `/sadmin/admins/${documento}`;
+                form.action = `/sadmin/admins/${data.documento}`;
 
                 // Llenar los campos
-                editDoc.value = documento;
-                editNit.value = nit;
-                editNombres.value = nombres;
-                editApellidos.value = apellidos;
-                editTelefono.value = telefono;
-                editCorreo.value = correo;
-                editEstado.value = estado;
+                editDoc.value = data.documento;
+                editNit.value = data.nit;
+                editNombres.value = data.nombres;
+                editApellidos.value = data.apellidos;
+                editTelefono.value = data.telefono;
+                editCorreo.value = data.correo;
+                editEstado.value = data.estado;
                 if (editPassword) {
                     editPassword.value = '';
                 }
 
+                // 🔒 Guardar datos originales para detectar cambios
+                saveEditFormOriginalData();
+
                 // Validar campos al abrir
-                if (typeof validEdit !== 'undefined') {
-                    validEdit.nombres = nombres && /^[A-Z][a-zA-Z\s]*$/.test(nombres);
-                    validEdit.apellidos = apellidos && /^[A-Z][a-zA-Z\s]*$/.test(apellidos);
-                    validEdit.telefono = telefono && telefono.toString().length === 10;
-                    validEdit.correo = correo && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo);
-                    validEdit.estado = estado && estado !== '';
+                validEdit.nombres = data.nombres && /^[A-Z][a-zA-Z\s]*$/.test(data.nombres);
+                validEdit.apellidos = data.apellidos && /^[A-Z][a-zA-Z\s]*$/.test(data.apellidos);
+                validEdit.telefono = data.telefono && data.telefono.toString().length === 10;
+                validEdit.correo = data.correo && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.correo);
+                validEdit.estado = data.estado && data.estado !== '';
 
-                    // Actualizar estado del botón
-                    if (typeof checkFormEdit !== 'undefined') {
-                        checkFormEdit();
-                    }
-                }
+                // 🔒 Limpiar errores visuales
+                Object.keys(validEdit).forEach(key => {
+                    const errorEl = document.getElementById(`edit-error-${key}`);
+                    if (errorEl) errorEl.classList.add('hidden');
+                });
 
-                // Mostrar modal
+                checkFormEdit();
                 userModalEdit.classList.remove('hidden');
                 modalOverlayEdit.classList.remove('hidden');
 
@@ -398,6 +549,116 @@
             if (userModalEdit) userModalEdit.classList.add('hidden');
             if (modalOverlayEdit) modalOverlayEdit.classList.add('hidden');
         }
+
+        // Exponer funciones globalmente para llamadas inline (onclick)
+        try {
+            window.openModalEdit = openModalEdit;
+            window.closeModalEdit = closeModalEdit;
+        } catch (e) {
+            console.warn('No se pudo exponer funciones de modal globalmente', e);
+        }
+
+        // Asociar listeners a botones de editar (evita depender de onclick inline)
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.btn-open-edit').forEach(btn => {
+                // evitar doble registro
+                if (btn.dataset.listenerAttached) return;
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    try {
+                        openModalEdit(this);
+                    } catch (err) {
+                        console.error('Error al abrir modal edit programático:', err);
+                    }
+                });
+                btn.dataset.listenerAttached = '1';
+            });
+        });
+
+        // 🔒 Validación al enviar formulario de edición
+        document.addEventListener('DOMContentLoaded', function() {
+            const formEdit = document.getElementById('formEdit');
+            if (formEdit) {
+                formEdit.addEventListener('submit', function(e) {
+                    // Rate limiting
+                    if (!canSubmitForm()) {
+                        e.preventDefault();
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Espera un momento',
+                            text: 'Por favor, espera antes de enviar nuevamente',
+                            timer: 1500
+                        });
+                        return;
+                    }
+
+                    // Recopilar datos del formulario
+                    const formData = {
+                        nombres: document.getElementById('edit_nombres').value,
+                        apellidos: document.getElementById('edit_apellidos').value,
+                        correo: document.getElementById('edit_correo').value
+                    };
+
+                    // Validar seguridad
+                    const securityCheck = validateSecurityThreats(formData);
+                    if (!securityCheck.valid) {
+                        e.preventDefault();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Alerta de Seguridad',
+                            text: `Se detectó un intento de ${securityCheck.threat}. Campo: ${securityCheck.field}`,
+                            timer: 3000
+                        });
+                        return;
+                    }
+
+                    // Validar que haya cambios
+                    if (!hasEditFormChanged()) {
+                        e.preventDefault();
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'Sin cambios',
+                            text: 'No hay cambios que guardar',
+                            timer: 2000
+                        });
+                        return;
+                    }
+
+                    // Validar que todos los campos sean válidos
+                    if (!Object.values(validEdit).every(v => v === true)) {
+                        e.preventDefault();
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Errores de validación',
+                            text: 'Por favor, verifica los campos resaltados',
+                            timer: 2000
+                        });
+                    }
+                });
+
+                // 🔒 Prevenir pegado de contenido malicioso en editar
+                const editForm = document.getElementById('formEdit');
+                if (editForm) {
+                    const editInputs = editForm.querySelectorAll('input[type="text"], input[type="email"]');
+                    editInputs.forEach(input => {
+                        input.addEventListener('paste', (e) => {
+                            const pastedText = e.clipboardData.getData('text');
+                            
+                            if (detectXSSAttempt(pastedText) || detectSQLInjection(pastedText)) {
+                                e.preventDefault();
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Contenido no permitido',
+                                    text: 'El contenido que intentas pegar contiene caracteres no válidos',
+                                    timer: 2000
+                                });
+                                return false;
+                            }
+                        });
+                    });
+                }
+            }
+        });
     </script>
 
     <!-- Overlay -->
@@ -418,7 +679,7 @@
             </div>
 
             <!-- Formulario -->
-            <form method="POST" action="{{ route('sadmin.store') }}" enctype="multipart/form-data" class="space-y-6">
+            <form method="POST" action="{{ route('sadmin.store') }}" id="userForm" enctype="multipart/form-data" class="space-y-6">
                 @csrf
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
@@ -547,17 +808,9 @@
 
     <!-- Scripts -->
     <script>
-        function openModal() {
-            document.getElementById('userModal').classList.remove('hidden');
-            document.getElementById('modalOverlay').classList.remove('hidden');
-        }
-
-        function closeModal() {
-            document.getElementById('userModal').classList.add('hidden');
-            document.getElementById('modalOverlay').classList.add('hidden');
-        }
-    </script>
-    <script>
+        /**
+         * ===== VALIDACIONES DEL FORMULARIO DE CREAR ADMIN =====
+         */
         let valid = {
             documento: false,
             nombres: false,
@@ -567,27 +820,41 @@
             password: false
         };
 
-        // Solo números
-        function validateDocumento(input) {
+        // Validar Documento - Solo números
+        function validateDocumento(input, errorId = 'error-documento') {
             input.value = input.value.replace(/\D/g, '');
             valid.documento = input.value.length > 0;
-            toggleError('error-documento', !valid.documento);
+            
+            // 🔒 Validar contra inyecciones
+            if (detectSQLInjection(input.value)) {
+                toggleError(errorId, true);
+                valid.documento = false;
+            } else {
+                toggleError(errorId, !valid.documento);
+            }
             checkForm();
         }
 
-        // Letras + primera mayúscula
+        // Validar texto - Letras + primera mayúscula
         function validateTexto(input, errorId) {
             input.value = input.value
                 .replace(/[^a-zA-Z\s]/g, '')
                 .replace(/\b\w/g, l => l.toUpperCase());
 
             const isValid = /^[A-Z][a-zA-Z\s]*$/.test(input.value);
-            valid[input.id] = isValid;
-            toggleError(errorId, !isValid);
+            
+            // 🔒 Validar contra XSS
+            if (detectXSSAttempt(input.value)) {
+                toggleError(errorId, true);
+                valid[input.id] = false;
+            } else {
+                valid[input.id] = isValid;
+                toggleError(errorId, !isValid);
+            }
             checkForm();
         }
 
-        // Teléfono
+        // Validar Teléfono
         function validateTelefono(input) {
             input.value = input.value.replace(/\D/g, '').slice(0, 10);
             valid.telefono = input.value.length === 10;
@@ -595,15 +862,22 @@
             checkForm();
         }
 
-        // Correo
+        // Validar Correo
         function validateCorreo(input) {
             const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             valid.correo = regex.test(input.value);
-            toggleError('error-correo', !valid.correo);
+            
+            // 🔒 Validar contra XSS
+            if (detectXSSAttempt(input.value)) {
+                toggleError('error-correo', true);
+                valid.correo = false;
+            } else {
+                toggleError('error-correo', !valid.correo);
+            }
             checkForm();
         }
 
-        // Contraseña
+        // Validar Contraseña
         function validatePassword(input) {
             const numbers = input.value.replace(/\D/g, '').length;
             const regex = /^(?=.*[a-z]).{8,}$/;
@@ -615,7 +889,10 @@
 
         // Mostrar / ocultar errores
         function toggleError(id, show) {
-            document.getElementById(id).classList.toggle('hidden', !show);
+            const element = document.getElementById(id);
+            if (element) {
+                element.classList.toggle('hidden', !show);
+            }
         }
 
         // Habilitar botón
@@ -626,6 +903,101 @@
             btn.disabled = !isValid;
             btn.classList.toggle('opacity-50', !isValid);
             btn.classList.toggle('cursor-not-allowed', !isValid);
+        }
+
+        // 🔒 Prevenir pegado de contenido malicioso y asociar envío seguro cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            const formInputs = document.querySelectorAll('#userForm input[type="text"], #userForm input[type="email"]');
+
+            formInputs.forEach(input => {
+                input.addEventListener('paste', (e) => {
+                    const pastedText = e.clipboardData.getData('text');
+
+                    if (detectXSSAttempt(pastedText) || detectSQLInjection(pastedText)) {
+                        e.preventDefault();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Contenido no permitido',
+                            text: 'El contenido que intentas pegar contiene caracteres no válidos',
+                            timer: 2000
+                        });
+                        return false;
+                    }
+                });
+            });
+
+            // 🔒 Validación al enviar formulario (adjuntar listener ahora que el formulario existe)
+            const userForm = document.getElementById('userForm');
+            if (userForm) {
+                userForm.addEventListener('submit', function(e) {
+                    // Rate limiting
+                    if (!canSubmitForm()) {
+                        e.preventDefault();
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Espera un momento',
+                            text: 'Por favor, espera antes de enviar nuevamente',
+                            timer: 1500
+                        });
+                        return;
+                    }
+
+                    // Recopilar datos
+                    const formData = {
+                        documento: document.getElementById('documento').value,
+                        nombres: document.getElementById('nombres').value,
+                        apellidos: document.getElementById('apellidos').value,
+                        correo: document.getElementById('correo').value
+                    };
+
+                    // Validar seguridad
+                    const securityCheck = validateSecurityThreats(formData);
+                    if (!securityCheck.valid) {
+                        e.preventDefault();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Alerta de Seguridad',
+                            text: `Se detectó un intento de ${securityCheck.threat}. Campo: ${securityCheck.field}`,
+                            timer: 3000
+                        });
+                        return;
+                    }
+
+                    // Validar que todos los campos sean válidos
+                    if (!Object.values(valid).every(v => v === true)) {
+                        e.preventDefault();
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Errores de validación',
+                            text: 'Por favor, verifica los campos resaltados',
+                            timer: 2000
+                        });
+                    }
+                });
+            }
+        });
+
+        // Funciones para abrir/cerrar modal de creación
+        function openModal() {
+            const overlay = document.getElementById('modalOverlay');
+            const modal = document.getElementById('userModal');
+            if (overlay) overlay.classList.remove('hidden');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            const overlay = document.getElementById('modalOverlay');
+            const modal = document.getElementById('userModal');
+            if (overlay) overlay.classList.add('hidden');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        // Exponer openModal/closeModal globalmente
+        try {
+            window.openModal = openModal;
+            window.closeModal = closeModal;
+        } catch (e) {
+            console.warn('No se pudo exponer funciones openModal/closeModal', e);
         }
     </script>
 
@@ -707,8 +1079,8 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Documento</label>
                         <input name="emple_doc" id="edit_documento" class="mt-1 w-full rounded-lg border-gray-300"
-                            oninput="validateDocumento(this)">
-                        <p id="error-documento" class="text-sm text-red-500 hidden">
+                            oninput="validateDocumento(this, 'edit-error-documento')">
+                        <p id="edit-error-documento" class="text-sm text-red-500 hidden">
                             Solo números, sin puntos
                         </p>
 
@@ -990,24 +1362,37 @@
     </div>
     <script>
         function openModalProfile(btn) {
+            // 🔒 Sanitizar todos los datos antes de mostrar
+            const sanitizedData = {
+                documento: sanitizeString(btn.dataset.documento || ''),
+                nit: sanitizeString(btn.dataset.nit || ''),
+                empresa: sanitizeString(btn.dataset.empresa || ''),
+                nombres: sanitizeString(btn.dataset.nombres || ''),
+                apellidos: sanitizeString(btn.dataset.apellidos || ''),
+                telefono: sanitizeString(btn.dataset.telefono || ''),
+                correo: sanitizeString(btn.dataset.correo || ''),
+                estado: sanitizeString(btn.dataset.estado || ''),
+                rol: sanitizeString(btn.dataset.rol || ''),
+                area: sanitizeString(btn.dataset.area || ''),
+                foto: sanitizeString(btn.dataset.foto || '')
+            };
 
-            document.getElementById('profile_documento').textContent = btn.dataset.documento;
-            document.getElementById('profile_nit').textContent = btn.dataset.nit;
-            document.getElementById('profile_empresa').textContent = btn.dataset.empresa;
-            document.getElementById('profile_nombres').textContent = btn.dataset.nombres;
-            document.getElementById('profile_apellidos').textContent = btn.dataset.apellidos;
-            document.getElementById('profile_telefono').textContent = btn.dataset.telefono;
-            document.getElementById('profile_correo').textContent = btn.dataset.correo;
-            document.getElementById('profile_estado').textContent = btn.dataset.estado;
-            document.getElementById('profile_rol').textContent = btn.dataset.rol;
-            document.getElementById('profile_area').textContent = btn.dataset.area;
-
-
+            // Mostrar datos sanitizados
+            document.getElementById('profile_documento').textContent = sanitizedData.documento;
+            document.getElementById('profile_nit').textContent = sanitizedData.nit;
+            document.getElementById('profile_empresa').textContent = sanitizedData.empresa;
+            document.getElementById('profile_nombres').textContent = sanitizedData.nombres;
+            document.getElementById('profile_apellidos').textContent = sanitizedData.apellidos;
+            document.getElementById('profile_telefono').textContent = sanitizedData.telefono;
+            document.getElementById('profile_correo').textContent = sanitizedData.correo;
+            document.getElementById('profile_estado').textContent = sanitizedData.estado;
+            document.getElementById('profile_rol').textContent = sanitizedData.rol;
+            document.getElementById('profile_area').textContent = sanitizedData.area;
 
             // Foto
             document.getElementById('profile_foto').src =
-                btn.dataset.foto && btn.dataset.foto !== '' ?
-                btn.dataset.foto :
+                sanitizedData.foto && sanitizedData.foto !== '' ?
+                sanitizedData.foto :
                 '/img/default-user.png';
 
             // Mostrar modal

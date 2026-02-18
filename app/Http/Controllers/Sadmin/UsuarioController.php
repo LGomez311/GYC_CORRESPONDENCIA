@@ -32,17 +32,24 @@ class UsuarioController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'emple_doc'       => 'nullable',
-            'emple_nombres'   => 'nullable',
-            'emple_apellidos' => 'nullable',
-            'emple_tel'       => 'nullable',
-            'emple_correo'    => 'nullable',
-            'password'        => 'nullable',
-            'emple_img'       => 'nullable',
-            'nit_empresa'     => 'nullable',
-            'emple_estado'    => 'nullable',
-            'emple_rol'       => 'nullable',
-            'emple_area'      => 'nullable',
+            'emple_doc'       => 'required|string|max:50|unique:empleado,emple_doc',
+            'emple_nombres'   => 'required|string|max:100',
+            'emple_apellidos' => 'required|string|max:100',
+            'emple_tel'       => 'required|digits:10',
+            'emple_correo'    => 'required|email|max:150|unique:empleado,emple_correo',
+            'password'        => ['required','string','min:8','regex:/^(?=(.*\\d){3,})(?=.*[a-z]).{8,}$/'],
+            'emple_img'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'nit_empresa'     => 'required|exists:empresa,nit_empresa',
+            'emple_estado'    => 'required|exists:estado,id_estado',
+            'emple_rol'       => 'required|integer',
+            'emple_area'      => 'nullable|integer',
+        ], [
+            'emple_doc.required' => 'El documento es obligatorio',
+            'emple_doc.unique' => 'Ya existe un usuario con este documento',
+            'emple_correo.unique' => 'El correo ya está registrado',
+            'nit_empresa.exists' => 'La empresa seleccionada no existe',
+            'emple_estado.exists' => 'El estado seleccionado no es válido',
+            'password.regex' => 'La contraseña debe tener al menos 8 caracteres, 1 letra minúscula y 3 números',
         ]);
 
         $rutaImagen = null;

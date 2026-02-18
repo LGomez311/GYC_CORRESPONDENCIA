@@ -12,18 +12,19 @@ use App\Exports\PlanesExport;
 
 class PlanController extends Controller
 {
-    public function index(Request $request)
-    {
-        $planes = Plan::query()
-            ->when($request->search, function ($query, $search) {
-                $query->where('nomb_plan', 'LIKE', "%{$search}%");
-            })
-            ->orderBy('id_plan', 'asc')
-            ->paginate(4)
-            ->withQueryString();
+   public function index(Request $request)
+{
+    $planes = Plan::query()
+        ->when($request->search, function ($query, $search) {
+            $query->where('nomb_plan', 'LIKE', "%{$search}%");
+        })
+        ->orderBy('id_plan', 'asc')
+        ->paginate(3) 
+        ->withQueryString();
 
-        return view('sadmin.cplanes', compact('planes'));
-    }
+    return view('sadmin.cplanes', compact('planes'));
+}
+
 
 
 

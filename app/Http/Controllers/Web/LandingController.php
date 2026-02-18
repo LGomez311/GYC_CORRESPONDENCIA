@@ -12,5 +12,7 @@ class LandingController extends Controller
         $planes = Plan::orderBy('valor')->get();
 
         return view('web.index', compact('planes'));
+   
+        return view('landing');
     }
 }
