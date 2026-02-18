@@ -9,6 +9,8 @@ use App\Exports\LicenciasExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\Pago;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Http\Controllers\Sadmin\PlanController;
+
 
 // Alias para controllers con nombres iguales
 use App\Http\Controllers\Sadmin\PagoController as SadminPagoController;
