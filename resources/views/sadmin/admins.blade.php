@@ -257,7 +257,7 @@
                         @endif
                     </tbody>
                 </table>
-                <div class="p-4 border-t border-[#cfd7e7] dark:border-gray-800">
+                <div class="flex gap-1">
                     {{ $users->links() }}
                 </div>
 

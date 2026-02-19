@@ -130,7 +130,7 @@
         </div>
 
             {{-- PAGINACIÓN --}}
-            <div class="px-6 py-4 border-t border-[#cfd7e7] dark:border-gray-800 flex justify-center">
+            <div class="flex gap-1">
                 {{ $licencias->links() }}
             </div>
 

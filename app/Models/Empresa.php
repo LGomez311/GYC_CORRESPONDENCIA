@@ -9,32 +9,18 @@ use App\Models\Plan;
 class Empresa extends Model
 {
     protected $table = 'empresa';
-
     protected $primaryKey = 'nit_empresa';
-
     public $incrementing = false;
-
-    protected $keyType = 'string';
-
     public $timestamps = false;
+    protected $keyType = 'string';
 
     protected $fillable = [
         'nit_empresa',
         'nomb_empresa',
-        'id_representante',
+        'doc_representante',
+        'nomb_representante',
         'direccion',
         'contacto',
-        'empresa_correo'
+        'empresa_correo',
     ];
-
-    public function representante()
-    {
-        return $this->belongsTo(
-            Empleado::class,
-            'id_representante',
-            'emple_doc'
-        );
-    }
-    }
-
-    
+}
