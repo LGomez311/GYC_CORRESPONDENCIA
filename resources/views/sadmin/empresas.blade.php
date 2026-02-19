@@ -207,6 +207,29 @@
 </script>
 @endif
 
+@if ($errors->any())
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    Swal.fire({
+        icon: 'error',
+        title: 'Error al registrar',
+        html: `
+            <ul style="text-align:left;">
+                @foreach ($errors->all() as $error)
+                    <li>• {{ $error }}</li>
+                @endforeach
+            </ul>
+        `,
+        confirmButtonColor: '#3085d6'
+    });
+
+    // 🔥 Volver a abrir el modal automáticamente
+    document.getElementById('createModal').classList.remove('hidden');
+});
+</script>
+@endif
+
+
 
 @endsection
 
@@ -251,7 +274,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700">NIT</label>
                     <input id="nit_empresa" name="nit_empresa" type="text"
-                        class="mt-1 w-full rounded-lg border-gray-300">
+                        class="mt-1 w-full rounded-lg border-gray-300" maxlength="10">
                     <p class="text-sm text-red-600 hidden" id="error-nit"></p>
                 </div>
 
@@ -266,7 +289,7 @@
                 <!-- Teléfono -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Teléfono</label>
-                    <input id="contacto" name="contacto" type="text" class="mt-1 w-full rounded-lg border-gray-300">
+                    <input id="contacto" name="contacto" type="text" class="mt-1 w-full rounded-lg border-gray-300" maxlength="12">
                     <p class="text-sm text-red-600 hidden" id="error-contacto"></p>
                 </div>
 
@@ -282,17 +305,27 @@
 
                 <!-- DOC REPRESENTANTE -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Documento Representante</label>
-                    <input name="doc_representante" type="text"
-                        class="mt-1 w-full rounded-lg border-gray-300" required>
+                    <label>Documento Representante</label>
+                    <input
+                        id="doc_representante"
+                        name="doc_representante"
+                        type="text"
+                        maxlength="10"
+                        class="mt-1 w-full rounded-lg border-gray-300">
+                    <p class="text-sm text-red-600 hidden" id="error-doc"></p>
                 </div>
 
                 <!-- NOMBRE REPRESENTANTE -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Nombre Representante</label>
-                    <input name="nomb_representante" type="text"
-                        class="mt-1 w-full rounded-lg border-gray-300" required>
+                    <label>Nombre Representante</label>
+                    <input
+                        id="nomb_representante"
+                        name="nomb_representante"
+                        type="text"
+                        class="mt-1 w-full rounded-lg border-gray-300">
+                    <p class="text-sm text-red-600 hidden" id="error-nombre-rep"></p>
                 </div>
+
 
 
             </div>
@@ -388,6 +421,7 @@
                         class="mt-1 w-full rounded-lg border-gray-300">
                 </div>
 
+
                 <!-- NOMBRE REPRESENTANTE -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Nombre Representante</label>
@@ -427,95 +461,148 @@
     let editFormOriginalData = {};
 
     const editFields = {
+
         editNit: {
-            error: 'edit-error-nit',
             touched: false,
-            max: 15,
             validate(v) {
+
                 if (!v) return 'El NIT es obligatorio';
-                if (!/^[0-9]+$/.test(v)) return 'Solo números';
-                if (v.length < 6) return 'Mínimo 6 dígitos';
-                if (v.length > this.max) return `Máximo ${this.max} dígitos`;
-                if (detectSQLInjection(v)) return 'NIT contiene caracteres no válidos';
+
+                if (/\s/.test(v))
+                    return 'No se permiten espacios';
+
+                if (!/^[0-9]+$/.test(v))
+                    return 'Solo números';
+
+                if (v.length < 9 || v.length > 10)
+                    return 'Debe tener entre 9 y 10 dígitos';
+
                 return null;
             }
         },
 
         editNombre: {
-            error: 'edit-error-nombre',
             touched: false,
-            max: 100,
             validate(v) {
-                if (!v) return 'El nombre es obligatorio';
-                if (v.length < 3) return 'Mínimo 3 caracteres';
-                if (v.length > this.max) return `Máximo ${this.max} caracteres`;
-                if (/^[0-9]+$/.test(v)) return 'No puede ser solo números';
-                if (detectXSSAttempt(v)) return 'Caracteres no permitidos (XSS detectado)';
-                if (detectSQLInjection(v)) return 'Caracteres no permitidos (patrón sospechoso)';
+
+                if (!v.trim())
+                    return 'El nombre es obligatorio';
+
+                if (v.length < 3 || v.length > 150)
+                    return 'Debe tener entre 3 y 150 caracteres';
+
+                if (/^[0-9]+$/.test(v))
+                    return 'No puede ser solo números';
+
+                if (/^[^a-zA-ZÀ-ÿ0-9]+$/.test(v))
+                    return 'No puede ser solo caracteres especiales';
+
                 return null;
             }
         },
 
         editDireccion: {
-            error: 'edit-error-direccion',
             touched: false,
-            max: 150,
             validate(v) {
-                if (!v) return 'La dirección es obligatoria';
-                if (v.length < 5) return 'Mínimo 5 caracteres';
-                if (v.length > this.max) return `Máximo ${this.max} caracteres`;
-                if (/[<>$%{}]/.test(v)) return 'Caracteres no permitidos';
-                if (detectXSSAttempt(v)) return 'Dirección contiene caracteres no permitidos';
+
+                if (!v) return null;
+
+                if (!v.trim())
+                    return 'No puede contener solo espacios';
+
+                if (v.length < 25 || v.length > 150)
+                    return 'Debe tener entre 25 y 150 caracteres';
+
                 return null;
             }
         },
 
         editContacto: {
-            error: 'edit-error-contacto',
             touched: false,
-            max: 15,
             validate(v) {
-                if (!v) return 'El teléfono es obligatorio';
-                if (!/^[0-9]+$/.test(v)) return 'Solo números';
-                if (v.length < 7) return 'Mínimo 7 dígitos';
-                if (v.length > this.max) return `Máximo ${this.max} dígitos`;
+
+                if (!v) return null;
+
+                if (!v.trim())
+                    return 'No puede contener solo espacios';
+
+                if (!/^[0-9]+$/.test(v))
+                    return 'Solo números';
+
+                if (v.length < 7 || v.length > 12)
+                    return 'Debe tener entre 7 y 12 dígitos';
+
                 return null;
             }
         },
 
         editCorreo: {
-            error: 'edit-error-correo',
             touched: false,
-            max: 100,
             validate(v) {
-                if (!v) return 'El correo es obligatorio';
-                if (v.length > this.max) return `Máximo ${this.max} caracteres`;
-                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return 'Correo inválido';
-                if (detectXSSAttempt(v)) return 'Correo contiene caracteres sospechosos';
+
+                if (!v)
+                    return 'Correo obligatorio';
+
+                if (/\s/.test(v))
+                    return 'No se permiten espacios';
+
+                if (v.length < 8 || v.length > 150)
+                    return 'Debe tener entre 8 y 150 caracteres';
+
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v))
+                    return 'Correo inválido';
+
                 return null;
             }
         },
 
         editDocRepresentante: {
             touched: false,
-            max: 20,
             validate(v) {
-                if (!v) return 'Documento obligatorio';
-                if (!/^[0-9]+$/.test(v)) return 'Solo números';
-                if (v.length < 6) return 'Mínimo 6 dígitos';
-                if (v.length > this.max) return `Máximo ${this.max} dígitos`;
+
+                if (!v)
+                    return 'Documento obligatorio';
+
+                if (/\s/.test(v))
+                    return 'No se permiten espacios';
+
+                if (!/^[0-9]+$/.test(v))
+                    return 'Solo números';
+
+                if (v.length < 6 || v.length > 10)
+                    return 'Debe tener entre 6 y 10 dígitos';
+
+                if (/^([0-9])\1+$/.test(v))
+                    return 'No se permiten números repetidos';
+
                 return null;
             }
         },
 
         editNombRepresentante: {
             touched: false,
-            max: 100,
             validate(v) {
-                if (!v) return 'Nombre obligatorio';
-                if (v.length < 3) return 'Mínimo 3 caracteres';
-                if (v.length > this.max) return `Máximo ${this.max} caracteres`;
-                if (/^[0-9]+$/.test(v)) return 'No puede ser solo números';
+
+if (!v.trim()) return 'El nombre es obligatorio';
+
+                if (v.length < 3 || v.length > 150)
+                    return 'Debe tener entre 3 y 150 caracteres';
+                
+                if (!v.trim())
+                    return 'El nombre es obligatorio';
+
+                if (/^\s|\s$/.test(v))
+                    return 'No debe iniciar ni terminar con espacios';
+
+                if (/\s{2,}/.test(v))
+                    return 'No se permiten espacios dobles';
+
+                if (/^[0-9]+$/.test(v))
+                    return 'No puede ser solo números';
+
+                if (/^[^a-zA-ZÀ-ÿ0-9]+$/.test(v))
+                    return 'No puede ser solo caracteres especiales';
+
                 return null;
             }
         }
@@ -653,10 +740,10 @@
             input.addEventListener('input', () => {
                 editFields[id].touched = true;
 
-                // 🔒 Sanitizar según el tipo de campo
+                //  Sanitizar según el tipo de campo
                 let value = input.value;
 
-                if (id === 'editNit' || id === 'editContacto') {
+                if (id === 'editNit' || id === 'editContacto' || id === 'doc_representante') {
                     input.value = value.replace(/[^0-9]/g, '');
                 }
 
@@ -665,12 +752,12 @@
 
             input.addEventListener('blur', () => {
                 editFields[id].touched = true;
-                // 🔒 Sanitizar y eliminar espacios extras
+                //  Sanitizar y eliminar espacios extras
                 input.value = input.value.trim();
                 validateEditField(id);
             });
 
-            // 🔒 Prevenir pegado de contenido malicioso
+            //  Prevenir pegado de contenido malicioso
             input.addEventListener('paste', (e) => {
                 const pastedText = e.clipboardData.getData('text');
 
@@ -744,7 +831,7 @@
             if (!value) continue;
 
             if (detectSQLInjection(value)) {
-                console.warn(`⚠️ Posible SQL injection en ${fieldName}:`, value);
+                console.warn(` Posible SQL injection en ${fieldName}:`, value);
                 return {
                     valid: false,
                     threat: 'SQL Injection',
@@ -753,7 +840,7 @@
             }
 
             if (detectXSSAttempt(value)) {
-                console.warn(`⚠️ Posible XSS en ${fieldName}:`, value);
+                console.warn(` Posible XSS en ${fieldName}:`, value);
                 return {
                     valid: false,
                     threat: 'XSS Attack',
@@ -775,7 +862,7 @@
     function canSubmitForm() {
         const now = Date.now();
         if (now - formSubmitTimestamp < FORM_SUBMIT_COOLDOWN) {
-            console.warn('⏱️ Espera antes de enviar nuevamente');
+            console.warn(' Espera antes de enviar nuevamente');
             return false;
         }
         formSubmitTimestamp = now;
@@ -784,7 +871,6 @@
 
     function openCreateModal() {
         document.getElementById('createModal').classList.remove('hidden');
-        document.getElementById('modalOverlay').classList.remove('hidden');
         // Limpiar formulario
         document.getElementById('empresaForm').reset();
     }
@@ -792,7 +878,6 @@
     function closeModals() {
         document.getElementById('createModal').classList.add('hidden');
         document.getElementById('editModal').classList.add('hidden');
-        document.getElementById('modalOverlay').classList.add('hidden');
         // Limpiar errores
         document.querySelectorAll('[id^="error-"]').forEach(el => el.classList.add('hidden'));
     }
@@ -828,20 +913,9 @@
         document.getElementById('editContacto').value = contacto;
         document.getElementById('editCorreo').value = correo;
 
-        // 🔥 NUEVOS CAMPOS
+        // NUEVOS CAMPOS
         document.getElementById('editDocRepresentante').value = docRepresentante;
         document.getElementById('editNombRepresentante').value = nombRepresentante;
-
-        // Guardar datos originales (para detectar cambios)
-        editFormOriginalData = {
-            editNit: nit,
-            editNombre: nombre,
-            editDireccion: direccion,
-            editContacto: contacto,
-            editCorreo: correo,
-            editDocRepresentante: docRepresentante,
-            editNombRepresentante: nombRepresentante,
-        };
 
         // Limpiar validaciones visuales
         Object.keys(editFields).forEach(id => {
@@ -854,40 +928,6 @@
 
         // Mostrar modal
         document.getElementById('editModal').classList.remove('hidden');
-
-        // La ruta sigue usando el NIT original
-        document.getElementById('editForm').action = `/sadmin/empresas/${sanitizedData.nit}`;
-
-        // Guardamos el NIT original (por seguridad / referencia)
-        document.getElementById('editNitOriginal').value = sanitizedData.nit;
-
-        // NIT editable
-        document.getElementById('editNit').value = sanitizedData.nit;
-
-        // Resto de campos
-        document.getElementById('editNombre').value = sanitizedData.nombre;
-        document.getElementById('editDireccion').value = sanitizedData.direccion;
-        document.getElementById('editContacto').value = sanitizedData.contacto;
-        document.getElementById('editCorreo').value = sanitizedData.correo;
-
-        // 🔒 Guardar datos originales para detectar cambios
-        editFormOriginalData = {
-            editNit: sanitizedData.nit,
-            editNombre: sanitizedData.nombre,
-            editDireccion: sanitizedData.direccion,
-            editContacto: sanitizedData.contacto,
-            editCorreo: sanitizedData.correo
-        };
-
-        // 🔒 Limpiar estados de validación
-        Object.keys(editFields).forEach(id => {
-            editFields[id].touched = false;
-            const input = document.getElementById(id);
-            input.classList.remove('border-red-500', 'border-green-500');
-        });
-
-        document.getElementById('editModal').classList.remove('hidden');
-        document.getElementById('modalOverlay').classList.remove('hidden');
     }
 </script>
 
@@ -899,20 +939,31 @@
     const btnGuardar = document.getElementById('btnGuardar');
 
     const fields = {
+
         nomb_empresa: {
             error: 'error-nombre',
             touched: false,
-            max: 100,
             validate(v) {
-                if (!v) return 'El nombre es obligatorio';
-                if (v.length < 3) return 'Mínimo 3 caracteres';
-                if (v.length > this.max) return `Máximo ${this.max} caracteres`;
-                if (/^[0-9]+$/.test(v)) return 'No puede ser solo números';
-                if (/^[^a-zA-Z0-9 ]+$/.test(v)) return 'No puede ser solo símbolos';
 
-                // 🔒 Seguridad: Detectar XSS e SQL injection
-                if (detectXSSAttempt(v)) return 'Caracteres no permitidos (XSS detectado)';
-                if (detectSQLInjection(v)) return 'Caracteres no permitidos (patrón sospechoso)';
+                if (!v.trim()) return 'El nombre es obligatorio';
+
+                if (v.length < 3 || v.length > 150)
+                    return 'Debe tener entre 3 y 150 caracteres';
+                
+                if (!v.trim())
+                    return 'El nombre es obligatorio';
+
+                if (/^\s|\s$/.test(v))
+                    return 'No debe iniciar ni terminar con espacios';
+
+                if (/\s{2,}/.test(v))
+                    return 'No se permiten espacios dobles';
+
+                if (/^[0-9]+$/.test(v))
+                    return 'No puede ser solo números';
+
+                if (/^[^a-zA-ZÀ-ÿ0-9]+$/.test(v))
+                    return 'No puede ser solo caracteres especiales';
 
                 return null;
             }
@@ -921,15 +972,18 @@
         nit_empresa: {
             error: 'error-nit',
             touched: false,
-            max: 15,
             validate(v) {
-                if (!v) return 'El NIT es obligatorio';
-                if (!/^[0-9]+$/.test(v)) return 'Solo números';
-                if (v.length < 6) return 'Mínimo 6 dígitos';
-                if (v.length > this.max) return `Máximo ${this.max} dígitos`;
 
-                // 🔒 Seguridad: Prevenir inyecciones
-                if (detectSQLInjection(v)) return 'NIT contiene caracteres no válidos';
+                if (!v) return 'El NIT es obligatorio';
+
+                if (/\s/.test(v))
+                    return 'No se permiten espacios';
+
+                if (!/^[0-9]+$/.test(v))
+                    return 'Solo números permitidos';
+
+                if (v.length < 9 || v.length > 10)
+                    return 'Debe tener entre 9 y 10 dígitos';
 
                 return null;
             }
@@ -938,15 +992,15 @@
         direccion: {
             error: 'error-direccion',
             touched: false,
-            max: 150,
             validate(v) {
-                if (!v) return 'La dirección es obligatoria';
-                if (v.length < 5) return 'Mínimo 5 caracteres';
-                if (v.length > this.max) return `Máximo ${this.max} caracteres`;
-                if (/[<>$%{}]/.test(v)) return 'Caracteres no permitidos';
 
-                // 🔒 Seguridad: Detectar XSS
-                if (detectXSSAttempt(v)) return 'Dirección contiene caracteres no permitidos';
+                if (!v) return null;
+
+                if (!v.trim())
+                    return 'No puede contener solo espacios';
+
+                if (v.length < 25 || v.length > 150)
+                    return 'Debe tener entre 25 y 150 caracteres';
 
                 return null;
             }
@@ -955,12 +1009,19 @@
         contacto: {
             error: 'error-contacto',
             touched: false,
-            max: 15,
             validate(v) {
-                if (!v) return 'El teléfono es obligatorio';
-                if (!/^[0-9]+$/.test(v)) return 'Solo números';
-                if (v.length < 7) return 'Mínimo 7 dígitos';
-                if (v.length > this.max) return `Máximo ${this.max} dígitos`;
+
+                if (!v) return null;
+
+                if (!v.trim())
+                    return 'No puede contener solo espacios';
+
+                if (!/^[0-9]+$/.test(v))
+                    return 'Solo números permitidos';
+
+                if (v.length < 7 || v.length > 12)
+                    return 'Debe tener entre 7 y 12 dígitos';
+
                 return null;
             }
         },
@@ -968,19 +1029,67 @@
         empresa_correo: {
             error: 'error-correo',
             touched: false,
-            max: 100,
             validate(v) {
-                if (!v) return 'El correo es obligatorio';
-                if (v.length > this.max) return `Máximo ${this.max} caracteres`;
-                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return 'Correo inválido';
 
-                // 🔒 Seguridad: Validar correo contra XSS
-                if (detectXSSAttempt(v)) return 'Correo contiene caracteres sospechosos';
+                if (!v) return 'El correo es obligatorio';
+
+                if (/\s/.test(v))
+                    return 'No se permiten espacios';
+
+                if (v.length < 8 || v.length > 150)
+                    return 'Debe tener entre 8 y 150 caracteres';
+
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v))
+                    return 'Formato inválido (ej: nombre@dominio.com)';
+
+                return null;
+            }
+        },
+
+        doc_representante: {
+            error: 'error-doc',
+            touched: false,
+            validate(v) {
+
+                if (!v) return 'Documento obligatorio';
+
+                if (/\s/.test(v))
+                    return 'No se permiten espacios';
+
+                if (!/^[0-9]+$/.test(v))
+                    return 'Solo números';
+
+                if (v.length < 6 || v.length > 10)
+                    return 'Debe tener entre 6 y 10 dígitos';
+
+                if (/^([0-9])\1+$/.test(v))
+                    return 'No se permiten números repetidos';
+
+                return null;
+            }
+        },
+
+        nomb_representante: {
+            error: 'error-nombre-rep',
+            touched: false,
+            validate(v) {
+
+                if (!v.trim())
+                    return 'Nombre obligatorio';
+
+                const palabras = v.trim().split(/\s+/);
+
+                if (palabras.length < 2 || palabras.length > 5)
+                    return 'Debe tener entre 2 y 5 palabras';
+
+                if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ' ]+$/.test(v))
+                    return 'Solo letras, tildes, espacios y apostrofe';
 
                 return null;
             }
         }
     };
+
 
     /**
      * Valida SOLO un campo
@@ -1084,11 +1193,11 @@
         input.addEventListener('input', () => {
             fields[id].touched = true;
 
-            // 🔒 Sanitizar el input en tiempo real
+            // Sanitizar el input en tiempo real
             let value = input.value;
 
             // Prevenir caracteres especiales peligrosos en ciertos campos
-            if (id === 'nit_empresa' || id === 'contacto') {
+            if (id === 'nit_empresa' || id === 'contacto' || id === 'doc_representante') {
                 input.value = value.replace(/[^0-9]/g, '');
             }
 
@@ -1105,7 +1214,7 @@
             validateField(input);
         });
 
-        // 🔒 Prevenir pegado de contenido malicioso
+        //  Prevenir pegado de contenido malicioso
         input.addEventListener('paste', (e) => {
             const pastedText = e.clipboardData.getData('text');
 
@@ -1123,7 +1232,7 @@
         });
     });
 
-    // 🔒 Validar que el representante sea seleccionado
+    //  Validar que el representante sea seleccionado
     const selectRepresentante = document.querySelector('select[name="id_representante"]');
     if (selectRepresentante) {
         selectRepresentante.addEventListener('change', () => {

@@ -17,10 +17,10 @@ class Empresa extends Model
     protected $fillable = [
         'nit_empresa',
         'nomb_empresa',
-        'doc_representante',
-        'nomb_representante',
         'direccion',
         'contacto',
         'empresa_correo',
+        'doc_representante',
+        'nomb_representante'
     ];
 }
