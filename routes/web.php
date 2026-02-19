@@ -11,6 +11,7 @@ use App\Models\Pago;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\Sadmin\PlanController;
 use App\Http\Controllers\LandingController;
+use App\Http\Controllers\Admin\AreaController;
 
 
 
@@ -217,7 +218,7 @@ Route::get('/sadmin/admins/export/pdf', [UsuarioController::class, 'exportPdf'])
 Route::get('/sadmin/admins/export/excel', [UsuarioController::class, 'exportExcel'])
     ->name('sadmin.export.excel');
 
-    
+
 // EXPORTAR PLANES
 
 Route::get('/sadmin/planes/export/pdf', [PlanController::class, 'exportPdf'])
@@ -227,7 +228,7 @@ Route::get('/sadmin/planes/export/pdf', [PlanController::class, 'exportPdf'])
 Route::get('/sadmin/planes/export/excel', [PlanController::class, 'exportExcel'])
     ->name('planes.export.excel');
 
-    // EXPORTAR EMPRESAS
+// EXPORTAR EMPRESAS
 
 
 Route::get('/sadmin/empresas/export/pdf', [EmpresaController::class, 'exportPdf'])
@@ -239,3 +240,43 @@ Route::get('/sadmin/empresas/export/excel', [EmpresaController::class, 'exportEx
 use App\Http\Controllers\HomeController;
 
 Route::get('/', [HomeController::class, 'index'])->name('web.index');
+
+
+//Rutas para otros recursos del admin-Gomez 
+Route::get('/admin/otros', [UsuarioController::class, 'otros'])
+    ->name('admin.otros');
+
+//RUTAS CRUD AREA - GOMEZ
+
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/areas', [AreaController::class, 'index'])->name('area.index');
+    Route::post('/areas', [AreaController::class, 'store'])->name('area.store');
+    Route::put('/areas/{id}', [AreaController::class, 'update'])->name('area.update');
+    Route::delete('/areas/{id}', [AreaController::class, 'destroy'])->name('area.destroy');
+});
+
+Route::prefix('admin')->name('admin.')->group(function () {
+
+    Route::get('/otros', function () {
+        return view('admin.otros');
+    })->name('otros');
+
+});
+
+//RUTAS CRUD DEPARTAMENTO - GOMEZ
+use App\Http\Controllers\Admin\DepartamentoController;
+
+Route::prefix('admin')->group(function () {
+
+    Route::get('/departamento', [DepartamentoController::class, 'index'])
+        ->name('admin.departamento.index');
+
+    Route::post('/departamento', [DepartamentoController::class, 'store'])
+        ->name('admin.departamento.store');
+
+    Route::put('/departamento/{id}', [DepartamentoController::class, 'update'])
+        ->name('admin.departamento.update');
+
+    Route::delete('/departamento/{id}', [DepartamentoController::class, 'destroy'])
+        ->name('admin.departamento.destroy');
+});

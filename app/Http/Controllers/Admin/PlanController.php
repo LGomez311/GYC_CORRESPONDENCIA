@@ -13,6 +13,11 @@ use App\Exports\PlanesExport;
 
 class PlanController extends Controller
 {
+    public function index()
+    {
+        $plans = Plan::all();
+        return view('admin.planes', compact('plans'));
+    }
     public function exportPdf()
     {
         $planes = Plan::all();
@@ -26,5 +31,6 @@ class PlanController extends Controller
     {
         return Excel::download(new PlanesExport, 'planes_sistema.xlsx');
     }
+
 
 }

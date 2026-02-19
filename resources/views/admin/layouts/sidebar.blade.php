@@ -23,8 +23,16 @@
     }
 </script>
 
-<aside
-    class="w-64 flex-shrink-0 border-r border-[#cfd7e7] dark:border-gray-800 bg-white dark:bg-[#161d2b] flex flex-col">
+<aside id="sidebar"
+    class="fixed md:relative z-50 md:z-auto
+           w-64 h-full md:h-full
+           -translate-x-full md:translate-x-0
+           transition-transform duration-300 ease-in-out
+           flex-shrink-0 border-r border-[#cfd7e7]
+           dark:border-gray-800 bg-white dark:bg-[#161d2b]
+           flex flex-col">
+
+
 
     <div class="p-6 flex items-center gap-3">
         <div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
@@ -65,7 +73,7 @@
                     Gestión Central
                 </h1>
 
-                
+
 
                 <!-- Usuarios -->
                 <a href="{{ route('admin.index') }}"
@@ -90,6 +98,21 @@
                     <span class="material-symbols-outlined">corporate_fare</span>
                     <p class="text-sm font-medium">Historial de pagos</p>
                 </a>
+
+                <!-- Otros -->
+                <a href="{{ route('admin.otros') }}"
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
+   text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+
+                    <span class="material-symbols-outlined">
+                        format_list_bulleted
+                    </span>
+
+                    <p class="text-sm font-medium">
+                        Otros
+                    </p>
+                </a>
+
 
                 <!-- Configuración -->
                 {{-- <a href="#"
@@ -120,7 +143,7 @@
         </div>
     </div>
     <div class="p-4 border-t border-[#cfd7e7] dark:border-gray-800">
-    <!-- Botón Cerrar Sesión -->
+        <!-- Botón Cerrar Sesión -->
         <form method="POST" action="{{ route('logout') }}">
             @csrf
             <button type="submit"
