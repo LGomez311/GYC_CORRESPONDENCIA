@@ -138,7 +138,7 @@
 
                 {{-- PAGINACIÓN --}}
                 <div class="flex gap-1">
-                    {{ $pagos->links() }}
+                    {{ $pagos->links('') }}
                 </div>
             </div>
         </div>

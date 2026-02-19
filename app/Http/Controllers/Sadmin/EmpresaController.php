@@ -19,10 +19,16 @@ class EmpresaController extends Controller
      */
     public function index()
     {
-        $empresas = Empresa::paginate(5);
+        $empresas = Empresa::with([
+            'representante.pagos.plan'
+        ])->paginate(1);
 
-        return view('sadmin.empresas', compact('empresas'));
+        $empleados = Empleado::all(); // 👈 agregamos esto
+
+        return view('sadmin.empresas', compact('empresas', 'empleados'));
     }
+
+
 
     /**
      * Crear empresa
@@ -30,93 +36,58 @@ class EmpresaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nit_empresa' => [
-                'required',
-                'string',
-                'max:25',
-                'unique:empresa,nit_empresa',
-            ],
-
-            'nomb_empresa' => [
-                'required',
-                'string',
-                'max:50',
-            ],
-
-            'doc_representante' => [
-                'required',
-                'numeric',
-            ],
-
-            'nomb_representante' => [
-                'required',
-                'string',
-                'max:100',
-            ],
-
-            'direccion' => [
-                'required',
-                'string',
-                'max:50',
-            ],
-
-            'contacto' => [
-                'required',
-                'string',
-                'max:100',
-            ],
-
-            'empresa_correo' => [
-                'required',
-                'email',
-                'max:100',
-            ],
+            'nit_empresa'      => 'required|unique:empresa,nit_empresa',
+            'nomb_empresa'     => 'required|string|max:255',
+            'direccion'        => 'required|string|max:255',
+            'contacto'         => 'required|string|max:50',
+            'empresa_correo'   => 'required|email|max:255',
+            'id_representante' => 'required|exists:empleado,emple_doc',
         ]);
+
 
         Empresa::create([
-            'nit_empresa'         => $request->nit_empresa,
-            'nomb_empresa'        => $request->nomb_empresa,
-            'doc_representante'  => $request->doc_representante,
-            'nomb_representante' => $request->nomb_representante,
-            'direccion'           => $request->direccion,
-            'contacto'            => $request->contacto,
-            'empresa_correo'      => $request->empresa_correo,
+            'nit_empresa'     => $request->nit_empresa,
+            'nomb_empresa'    => $request->nomb_empresa,
+            'direccion'       => $request->direccion,
+            'contacto'        => $request->contacto,
+            'empresa_correo'  => $request->empresa_correo,
+            'id_representante' => $request->id_representante,
         ]);
 
-        return redirect()->back()->with('success', 'Empresa registrada correctamente');
-    }
 
+        return redirect()->route('empresas')
+            ->with('success', 'Empresa creada correctamente');
+    }
 
     /**
      * Actualizar empresa (incluye edición de NIT)
      */
-public function update(Request $request, $nit)
-{
-    $empresa = Empresa::where('nit_empresa', $nit)->firstOrFail();
+    public function update(Request $request, $nit)
+    {
+        // Buscar por NIT original (URL)
+        $empresa = Empresa::where('nit_empresa', $nit)->firstOrFail();
 
-    $request->validate([
-        'nit_empresa'         => 'required',
-        'nomb_empresa'        => 'required|string|max:100',
-        'direccion'           => 'required|string|max:150',
-        'contacto'            => 'required|string|max:20',
-        'empresa_correo'      => 'required|email|max:100',
-        'doc_representante'   => 'required|string|max:20',
-        'nomb_representante'  => 'required|string|max:100',
-    ]);
+        // Validación (permite mantener o cambiar el NIT)
+        $request->validate([
+            'nit_empresa'    => 'required|unique:empresa,nit_empresa,' . $empresa->nit_empresa . ',nit_empresa',
+            'nomb_empresa'   => 'required|string|max:255',
+            'direccion'      => 'required|string|max:255',
+            'contacto'       => 'required|string|max:50',
+            'empresa_correo' => 'required|email|max:255',
+        ]);
 
-    $empresa->update([
-        'nit_empresa'        => $request->nit_empresa,
-        'nomb_empresa'       => $request->nomb_empresa,
-        'direccion'          => $request->direccion,
-        'contacto'           => $request->contacto,
-        'empresa_correo'     => $request->empresa_correo,
-        'doc_representante'  => $request->doc_representante,
-        'nomb_representante' => $request->nomb_representante,
-    ]);
+        // Actualizar datos
+        $empresa->update([
+            'nit_empresa'    => $request->nit_empresa,
+            'nomb_empresa'   => $request->nomb_empresa,
+            'direccion'      => $request->direccion,
+            'contacto'       => $request->contacto,
+            'empresa_correo' => $request->empresa_correo,
+        ]);
 
-    return redirect()->back()->with('success', 'Empresa actualizada correctamente');
-}
-
+        return redirect()->route('empresas')
+            ->with('success', 'Empresa actualizada correctamente');
+    }
 
     /**
      * Eliminar empresa
