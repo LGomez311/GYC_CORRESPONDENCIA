@@ -167,32 +167,7 @@
     </div>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const deleteForms = document.querySelectorAll('.delete-form');
 
-        deleteForms.forEach(form => {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault(); // Detiene el submit por defecto
-
-                Swal.fire({
-                    title: '¿Estás seguro?',
-                    text: "¡No podrás revertir esto!",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Sí, eliminar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        form.submit(); // Si confirma, se envía el formulario
-                    }
-                });
-            });
-        });
-    });
-</script>
 @if (session('success'))
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -207,29 +182,61 @@
 </script>
 @endif
 
+{{-- ===================== Bloque de errores Crear ===================== --}}
 @if ($errors->any())
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    Swal.fire({
-        icon: 'error',
-        title: 'Error al registrar',
-        html: `
+    document.addEventListener('DOMContentLoaded', function() {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error al registrar',
+            html: `
             <ul style="text-align:left;">
                 @foreach ($errors->all() as $error)
                     <li>• {{ $error }}</li>
                 @endforeach
             </ul>
         `,
-        confirmButtonColor: '#3085d6'
-    });
+            confirmButtonColor: '#3085d6'
+        });
 
-    // 🔥 Volver a abrir el modal automáticamente
-    document.getElementById('createModal').classList.remove('hidden');
-});
+        // Volver a abrir el modal automáticamente
+        document.getElementById('createModal').classList.remove('hidden');
+    });
 </script>
 @endif
 
+{{-- ===================== Bloque de errores Editar ===================== --}}
+@if ($errors->update->any())
+<script>
+document.addEventListener('DOMContentLoaded', function() {
 
+    Swal.fire({
+        icon: 'error',
+        title: 'Error al actualizar',
+        html: `
+        <ul style="text-align:left;">
+            @foreach ($errors->update->all() as $error)
+                <li>• {{ $error }}</li>
+            @endforeach
+        </ul>
+        `,
+        confirmButtonColor: '#3085d6'
+    });
+
+    //  Reabrir modal editar con los datos que quedaron
+    openEditModal(
+        "{{ old('nit_empresa') }}",
+        "{{ old('nomb_empresa') }}",
+        "{{ old('direccion') }}",
+        "{{ old('contacto') }}",
+        "{{ old('empresa_correo') }}",
+        "{{ old('doc_representante') }}",
+        "{{ old('nomb_representante') }}"
+    );
+
+});
+</script>
+@endif
 
 @endsection
 
@@ -247,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     Registrar Nueva Empresa
                 </h2>
                 <p class="text-sm text-gray-500">
-                    Complete los datos de la organización
+                    Complete los datos de la organización, los campos con (*) deben ser obligatorios.
                 </p>
             </div>
 
@@ -264,24 +271,39 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 <!-- Nombre -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Nombre Empresa</label>
-                    <input id="nomb_empresa" name="nomb_empresa" type="text"
+                    <label class="block text-sm font-medium text-gray-700">Nombre Empresa (*)</label>
+                    <input
+                        id="nomb_empresa"
+                        name="nomb_empresa"
+                        type="text"
+                        maxlength="50"
+                        placeholder="Ingrese nombre de empresa..."
                         class="mt-1 w-full rounded-lg border-gray-300">
                     <p class="text-sm text-red-600 hidden" id="error-nombre"></p>
                 </div>
 
                 <!-- NIT -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">NIT</label>
-                    <input id="nit_empresa" name="nit_empresa" type="text"
-                        class="mt-1 w-full rounded-lg border-gray-300" maxlength="10">
+                    <label class="block text-sm font-medium text-gray-700">NIT (*)</label>
+                    <input
+                        id="nit_empresa"
+                        name="nit_empresa"
+                        type="text"
+                        maxlength="10"
+                        placeholder="Ingrese Nit de empresa..."
+                        class="mt-1 w-full rounded-lg border-gray-300">
                     <p class="text-sm text-red-600 hidden" id="error-nit"></p>
                 </div>
 
                 <!-- Dirección -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Dirección</label>
-                    <input id="direccion" name="direccion" type="text"
+                    <input
+                        id="direccion"
+                        name="direccion"
+                        type="text"
+                        maxlength="150"
+                        placeholder="Ingrese dirección de empresa... (opcional)"
                         class="mt-1 w-full rounded-lg border-gray-300">
                     <p class="text-sm text-red-600 hidden" id="error-direccion"></p>
                 </div>
@@ -289,44 +311,59 @@ document.addEventListener('DOMContentLoaded', function() {
                 <!-- Teléfono -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Teléfono</label>
-                    <input id="contacto" name="contacto" type="text" class="mt-1 w-full rounded-lg border-gray-300" maxlength="12">
+                    <input
+                        id="contacto"
+                        name="contacto"
+                        type="text"
+                        maxlength="12"
+                        placeholder="Ingrese contacto de empresa... (opcional)"
+                        class="mt-1 w-full rounded-lg border-gray-300">
                     <p class="text-sm text-red-600 hidden" id="error-contacto"></p>
                 </div>
 
                 <!-- Correo -->
                 <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700">Correo</label>
-                    <input id="empresa_correo" name="empresa_correo" type="email"
+                    <label class="block text-sm font-medium text-gray-700">Correo (*)</label>
+                    <input
+                        id="empresa_correo"
+                        name="empresa_correo"
+                        type="email"
+                        maxlength="150"
+                        placeholder="Ingrese correo electrónico..."
                         class="mt-1 w-full rounded-lg border-gray-300">
                     <p class="text-sm text-red-600 hidden" id="error-correo"></p>
                 </div>
 
-                <!-- REPRESENTANTE -->
 
                 <!-- DOC REPRESENTANTE -->
                 <div>
-                    <label>Documento Representante</label>
+                    <label class="block text-sm font-medium text-gray-700">
+                        Documento Representante (*)
+                    </label>
                     <input
                         id="doc_representante"
                         name="doc_representante"
                         type="text"
                         maxlength="10"
+                        placeholder="Ingrese documento de representante"
                         class="mt-1 w-full rounded-lg border-gray-300">
                     <p class="text-sm text-red-600 hidden" id="error-doc"></p>
                 </div>
 
                 <!-- NOMBRE REPRESENTANTE -->
                 <div>
-                    <label>Nombre Representante</label>
+                    <label class="block text-sm font-medium text-gray-700">
+                        Nombre Representante (*)
+                    </label>
                     <input
                         id="nomb_representante"
                         name="nomb_representante"
+                        maxlength="100"
+                        placeholder="Ingrese nombre de representante"
                         type="text"
                         class="mt-1 w-full rounded-lg border-gray-300">
                     <p class="text-sm text-red-600 hidden" id="error-nombre-rep"></p>
                 </div>
-
-
 
             </div>
 
@@ -362,7 +399,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     Editar Empresa
                 </h2>
                 <p class="text-sm text-gray-500">
-                    Modifique la información de la empresa
+                    Modifique la información de la empresa, los campos con (*) son obligatorios.
                 </p>
             </div>
 
@@ -380,55 +417,98 @@ document.addEventListener('DOMContentLoaded', function() {
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                <!-- NIT EDITABLE -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">NIT</label>
-                    <input id="editNit" name="nit_empresa" type="text"
-                        class="mt-1 w-full rounded-lg border-gray-300">
-                </div>
-
                 <!-- NOMBRE -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Nombre Empresa</label>
-                    <input id="editNombre" name="nomb_empresa" class="mt-1 w-full rounded-lg border-gray-300">
+                    <label class="block text-sm font-medium text-gray-700">Nombre Empresa (*)</label>
+                    <input
+                        id="editNombre"
+                        name="nomb_empresa"
+                        maxlength="50"
+                        placeholder="Ingrese nombre de empresa..."
+                        class="mt-1 w-full rounded-lg border-gray-300">
+                    <p class="text-sm text-red-600 hidden" id="error-editNombre"></p>
+                </div>
+
+                <!-- NIT EDITABLE -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">NIT (*)</label>
+                    <input
+                        id="editNit"
+                        name="nit_empresa"
+                        type="text"
+                        maxlength="10"
+                        placeholder="Ingrese Nit de empresa..."
+                        class="mt-1 w-full rounded-lg border-gray-300">
+
+                    <p class="text-sm text-red-600 hidden" id="error-editNit"></p>
                 </div>
 
                 <!-- DIRECCIÓN -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Dirección</label>
-                    <input id="editDireccion" name="direccion" class="mt-1 w-full rounded-lg border-gray-300">
+                    <input
+                        id="editDireccion"
+                        name="direccion"
+                        maxlength="150"
+                        placeholder="Ingrese dirección de empresa... (opcional)"
+                        class="mt-1 w-full rounded-lg border-gray-300">
+                    <p class="text-sm text-red-600 hidden" id="error-editDireccion"></p>
                 </div>
 
                 <!-- TELÉFONO -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Teléfono</label>
-                    <input id="editContacto" name="contacto" class="mt-1 w-full rounded-lg border-gray-300">
+                    <input
+                        id="editContacto"
+                        name="contacto"
+                        type="text"
+                        maxlength="12"
+                        placeholder="Ingrese contacto de empresa... (opcional)"
+                        class="mt-1 w-full rounded-lg border-gray-300">
+                    <p class="text-sm text-red-600 hidden" id="error-editContacto"></p>
                 </div>
 
                 <!-- CORREO -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Correo</label>
-                    <input id="editCorreo" name="empresa_correo" type="email"
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700">
+                        Correo (*)
+                    </label>
+                    <input
+                        id="editCorreo"
+                        name="empresa_correo"
+                        type="email"
+                        maxlength="150"
+                        placeholder="Ingrese correo electrónico..."
                         class="mt-1 w-full rounded-lg border-gray-300">
+
+                    <p class="text-sm text-red-600 hidden mt-1" id="error-editCorreo"></p>
                 </div>
 
                 <!-- DOC REPRESENTANTE -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Documento Representante</label>
-                    <input id="editDocRepresentante"
+                    <label class="block text-sm font-medium text-gray-700">Documento Representante (*)</label>
+                    <input
+                        id="editDocRepresentante"
                         name="doc_representante"
                         type="text"
+                        maxlength="10"
+                        placeholder="Ingrese documento de representante"
                         class="mt-1 w-full rounded-lg border-gray-300">
+                    <p class="text-sm text-red-600 hidden" id="error-editDocRepresentante"></p>
                 </div>
 
 
                 <!-- NOMBRE REPRESENTANTE -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Nombre Representante</label>
-                    <input id="editNombRepresentante"
+                    <label class="block text-sm font-medium text-gray-700">Nombre Representante (*)</label>
+                    <input
+                        id="editNombRepresentante"
                         name="nomb_representante"
                         type="text"
+                        maxlength="100"
+                        placeholder="Ingrese nombre de representante"
                         class="mt-1 w-full rounded-lg border-gray-300">
+                    <p class="text-sm text-red-600 hidden" id="error-editNombRepresentante"></p>
                 </div>
 
 
@@ -472,7 +552,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     return 'No se permiten espacios';
 
                 if (!/^[0-9]+$/.test(v))
-                    return 'Solo números';
+                    return 'Solo números permitidos';
 
                 if (v.length < 9 || v.length > 10)
                     return 'Debe tener entre 9 y 10 dígitos';
@@ -527,7 +607,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     return 'No puede contener solo espacios';
 
                 if (!/^[0-9]+$/.test(v))
-                    return 'Solo números';
+                    return 'Solo números permitidos';
 
                 if (v.length < 7 || v.length > 12)
                     return 'Debe tener entre 7 y 12 dígitos';
@@ -541,7 +621,7 @@ document.addEventListener('DOMContentLoaded', function() {
             validate(v) {
 
                 if (!v)
-                    return 'Correo obligatorio';
+                    return 'El correo es obligatorio';
 
                 if (/\s/.test(v))
                     return 'No se permiten espacios';
@@ -550,7 +630,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     return 'Debe tener entre 8 y 150 caracteres';
 
                 if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v))
-                    return 'Correo inválido';
+                    return 'Formato inválido (ej: nombre@dominio.com)';
 
                 return null;
             }
@@ -560,8 +640,7 @@ document.addEventListener('DOMContentLoaded', function() {
             touched: false,
             validate(v) {
 
-                if (!v)
-                    return 'Documento obligatorio';
+                if (!v) return 'Documento obligatorio';
 
                 if (/\s/.test(v))
                     return 'No se permiten espacios';
@@ -583,30 +662,20 @@ document.addEventListener('DOMContentLoaded', function() {
             touched: false,
             validate(v) {
 
-if (!v.trim()) return 'El nombre es obligatorio';
-
-                if (v.length < 3 || v.length > 150)
-                    return 'Debe tener entre 3 y 150 caracteres';
-                
                 if (!v.trim())
-                    return 'El nombre es obligatorio';
+                    return 'Nombre obligatorio';
 
-                if (/^\s|\s$/.test(v))
-                    return 'No debe iniciar ni terminar con espacios';
+                const palabras = v.trim().split(/\s+/);
 
-                if (/\s{2,}/.test(v))
-                    return 'No se permiten espacios dobles';
+                if (palabras.length < 2 || palabras.length > 5)
+                    return 'Debe tener entre 2 y 5 palabras';
 
-                if (/^[0-9]+$/.test(v))
-                    return 'No puede ser solo números';
-
-                if (/^[^a-zA-ZÀ-ÿ0-9]+$/.test(v))
-                    return 'No puede ser solo caracteres especiales';
+                if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ\' ]+$/.test(v))
+                    return 'Solo letras, tildes, espacios y apostrofe';
 
                 return null;
             }
         }
-
     };
 
     /**
@@ -615,6 +684,7 @@ if (!v.trim()) return 'El nombre es obligatorio';
     function validateEditField(fieldId) {
         const field = editFields[fieldId];
         const input = document.getElementById(fieldId);
+        const errorEl = document.getElementById('error-' + fieldId);
         let value = input.value.trim();
 
         if (!field.touched) return true;
@@ -624,10 +694,21 @@ if (!v.trim()) return 'El nombre es obligatorio';
         if (error) {
             input.classList.add('border-red-500');
             input.classList.remove('border-green-500');
+
+            if (errorEl) {
+                errorEl.textContent = error;
+                errorEl.classList.remove('hidden');
+            }
+
             return false;
         } else {
             input.classList.remove('border-red-500');
             input.classList.add('border-green-500');
+
+            if (errorEl) {
+                errorEl.classList.add('hidden');
+            }
+
             return true;
         }
     }
@@ -743,7 +824,7 @@ if (!v.trim()) return 'El nombre es obligatorio';
                 //  Sanitizar según el tipo de campo
                 let value = input.value;
 
-                if (id === 'editNit' || id === 'editContacto' || id === 'doc_representante') {
+                if (id === 'editNit' || id === 'editContacto' || id === 'editDocRepresentante') {
                     input.value = value.replace(/[^0-9]/g, '');
                 }
 
@@ -928,6 +1009,15 @@ if (!v.trim()) return 'El nombre es obligatorio';
 
         // Mostrar modal
         document.getElementById('editModal').classList.remove('hidden');
+
+        // Limpiar mensajes de error
+        document.querySelectorAll('[id^="error-edit"]').forEach(el => {
+            el.classList.add('hidden');
+            el.textContent = '';
+        });
+
+        // Guardar datos originales
+        saveEditFormOriginalData();
     }
 </script>
 
@@ -949,7 +1039,7 @@ if (!v.trim()) return 'El nombre es obligatorio';
 
                 if (v.length < 3 || v.length > 150)
                     return 'Debe tener entre 3 y 150 caracteres';
-                
+
                 if (!v.trim())
                     return 'El nombre es obligatorio';
 

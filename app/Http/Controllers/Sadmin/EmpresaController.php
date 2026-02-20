@@ -77,22 +77,61 @@ class EmpresaController extends Controller
                 'max:150',
                 'unique:empresa,empresa_correo',
             ],
+
+        ], [
+
+            // NIT
+            'nit_empresa.required' => 'El NIT es obligatorio.',
+            'nit_empresa.digits_between' => 'El NIT debe tener entre 9 y 10 dígitos.',
+            'nit_empresa.regex' => 'El NIT solo puede contener números.',
+            'nit_empresa.unique' => 'Este NIT ya está registrado en el sistema.',
+
+            // Nombre empresa
+            'nomb_empresa.required' => 'El nombre de la empresa es obligatorio.',
+            'nomb_empresa.min' => 'El nombre debe tener mínimo 3 caracteres.',
+            'nomb_empresa.max' => 'El nombre no puede superar los 150 caracteres.',
+
+            // Documento representante
+            'doc_representante.required' => 'El documento del representante es obligatorio.',
+            'doc_representante.digits_between' => 'El documento debe tener entre 6 y 10 dígitos.',
+            'doc_representante.regex' => 'El documento solo puede contener números.',
+            'doc_representante.unique' => 'Este documento ya está registrado en el sistema.',
+
+            // Nombre representante
+            'nomb_representante.required' => 'El nombre del representante es obligatorio.',
+            'nomb_representante.max' => 'El nombre no puede superar los 100 caracteres.',
+            'nomb_representante.regex' => 'El nombre solo puede contener letras y espacios.',
+
+            // Dirección
+            'direccion.min' => 'La dirección debe tener mínimo 25 caracteres.',
+            'direccion.max' => 'La dirección no puede superar los 150 caracteres.',
+
+            // Contacto
+            'contacto.digits_between' => 'El contacto debe tener entre 7 y 12 dígitos.',
+            'contacto.regex' => 'El contacto solo puede contener números.',
+
+            // Correo
+            'empresa_correo.required' => 'El correo empresarial es obligatorio.',
+            'empresa_correo.email' => 'Debe ingresar un correo válido.',
+            'empresa_correo.max' => 'El correo no puede superar los 150 caracteres.',
+            'empresa_correo.unique' => 'Este correo ya está registrado en el sistema.',
         ]);
 
         Empresa::create($request->all());
 
         return redirect()->back()
             ->with('success', 'Empresa registrada correctamente');
-            
     }
 
 
     /**
      * Actualizar empresa (incluye edición de NIT)
      */
-    public function update(Request $request, $nit)
-    {
-        $empresa = Empresa::where('nit_empresa', $nit)->firstOrFail();
+public function update(Request $request, $nit)
+{
+    $empresa = Empresa::where('nit_empresa', $nit)->firstOrFail();
+
+    try {
 
         $request->validate([
 
@@ -147,13 +186,55 @@ class EmpresaController extends Controller
                 }
             ],
 
+        ], [
+
+            // NIT
+            'nit_empresa.required' => 'El NIT es obligatorio.',
+            'nit_empresa.digits_between' => 'El NIT debe tener entre 9 y 10 dígitos.',
+            'nit_empresa.unique' => 'Este NIT ya está registrado en el sistema.',
+
+            // Nombre empresa
+            'nomb_empresa.required' => 'El nombre de la empresa es obligatorio.',
+            'nomb_empresa.min' => 'El nombre debe tener mínimo 3 caracteres.',
+            'nomb_empresa.max' => 'El nombre no puede superar los 150 caracteres.',
+
+            // Documento representante
+            'doc_representante.required' => 'El documento del representante es obligatorio.',
+            'doc_representante.digits_between' => 'El documento debe tener entre 6 y 10 dígitos.',
+            'doc_representante.unique' => 'Este documento ya está registrado en el sistema.',
+
+            // Nombre representante
+            'nomb_representante.required' => 'El nombre del representante es obligatorio.',
+            'nomb_representante.max' => 'El nombre no puede superar los 100 caracteres.',
+            'nomb_representante.regex' => 'El nombre solo puede contener letras y espacios.',
+
+            // Dirección
+            'direccion.min' => 'La dirección debe tener mínimo 25 caracteres.',
+            'direccion.max' => 'La dirección no puede superar los 150 caracteres.',
+
+            // Contacto
+            'contacto.digits_between' => 'El contacto debe tener entre 7 y 12 dígitos.',
+
+            // Correo
+            'empresa_correo.required' => 'El correo empresarial es obligatorio.',
+            'empresa_correo.email' => 'Debe ingresar un correo válido.',
+            'empresa_correo.max' => 'El correo no puede superar los 150 caracteres.',
+            'empresa_correo.unique' => 'Este correo ya está registrado en el sistema.',
         ]);
 
-        $empresa->update($request->all());
+    } catch (\Illuminate\Validation\ValidationException $e) {
 
         return redirect()->back()
-            ->with('success', 'Empresa actualizada correctamente');
+            ->withErrors($e->validator, 'update')
+            ->withInput()
+            ->with('edit_nit', $nit); // guardamos cuál se estaba editando
     }
+
+    $empresa->update($request->all());
+
+    return redirect()->back()
+        ->with('success', 'Empresa actualizada correctamente');
+}
 
 
     // Exportar empresas a PDF y Excel
