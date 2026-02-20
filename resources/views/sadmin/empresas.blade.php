@@ -208,33 +208,33 @@
 {{-- ===================== Bloque de errores Editar ===================== --}}
 @if ($errors->update->any())
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function() {
 
-    Swal.fire({
-        icon: 'error',
-        title: 'Error al actualizar',
-        html: `
+        Swal.fire({
+            icon: 'error',
+            title: 'Error al actualizar',
+            html: `
         <ul style="text-align:left;">
             @foreach ($errors->update->all() as $error)
                 <li>• {{ $error }}</li>
             @endforeach
         </ul>
         `,
-        confirmButtonColor: '#3085d6'
+            confirmButtonColor: '#3085d6'
+        });
+
+        //  Reabrir modal editar con los datos que quedaron
+        openEditModal(
+            "{{ old('nit_empresa') }}",
+            "{{ old('nomb_empresa') }}",
+            "{{ old('direccion') }}",
+            "{{ old('contacto') }}",
+            "{{ old('empresa_correo') }}",
+            "{{ old('doc_representante') }}",
+            "{{ old('nomb_representante') }}"
+        );
+
     });
-
-    //  Reabrir modal editar con los datos que quedaron
-    openEditModal(
-        "{{ old('nit_empresa') }}",
-        "{{ old('nomb_empresa') }}",
-        "{{ old('direccion') }}",
-        "{{ old('contacto') }}",
-        "{{ old('empresa_correo') }}",
-        "{{ old('doc_representante') }}",
-        "{{ old('nomb_representante') }}"
-    );
-
-});
 </script>
 @endif
 
@@ -1088,6 +1088,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 if (!v.trim())
                     return 'No puede contener solo espacios';
+
+                if (/\s{2,}/.test(v))
+                    return 'No se permiten espacios dobles';
 
                 if (v.length < 25 || v.length > 150)
                     return 'Debe tener entre 25 y 150 caracteres';

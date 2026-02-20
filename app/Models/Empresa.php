@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Plan;
+use App\Models\Empleado;
 
 
 class Empresa extends Model
@@ -23,4 +24,10 @@ class Empresa extends Model
         'doc_representante',
         'nomb_representante'
     ];
+
+    // relacion de empleados con la empresa
+    public function empleados()
+    {
+        return $this->hasMany(Empleado::class, 'nit_empresa', 'nit_empresa');
+    }
 }
