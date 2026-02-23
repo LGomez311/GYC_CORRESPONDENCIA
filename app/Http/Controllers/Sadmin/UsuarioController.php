@@ -10,10 +10,11 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
-use SebastianBergmann\Timer\Timer;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\AdminsExport;
+use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Str;
 
 class UsuarioController extends Controller
 {
@@ -83,12 +84,13 @@ class UsuarioController extends Controller
             'password' => [
                 'required',
                 'string',
-                'min:10',
-                'regex:/[A-Z]/',
-                'regex:/[a-z]/',
-                'regex:/[0-9]/',
-                'regex:/[!"#$%&\/()=@]/',
-                'regex:/^\S+$/'
+                'max:64', // opcional, para limitar la longitud
+                Password::min(10)       // mínimo 10 caracteres
+                    ->letters()         // al menos una letra
+                    ->mixedCase()       // mayúscula y minúscula
+                    ->numbers()         // al menos un número
+                    ->symbols()         // al menos un símbolo
+                    ->uncompromised()   // revisa si la contraseña ha sido expuesta en filtraciones
             ],
 
             'emple_img' => [
@@ -134,7 +136,8 @@ class UsuarioController extends Controller
             // PASSWORD
             'password.required' => 'La contraseña es obligatoria.',
             'password.min' => 'La contraseña debe tener mínimo 10 caracteres.',
-            'password.regex' => 'La contraseña debe incluir mayúscula, minúscula, número y símbolo.',
+            'password' => 'La contraseña debe incluir mayúscula, minúscula, número y símbolo.',
+            'password.max' => 'La contraseña no puede superar los 64 caracteres.',
 
             // IMAGEN
             'emple_img.image' => 'El archivo debe ser una imagen válida.',
@@ -155,8 +158,8 @@ class UsuarioController extends Controller
         $empleado = new Empleado();
         $empleado->emple_doc = $request->emple_doc;
         $empleado->nit_empresa = $request->nit_empresa;
-        $empleado->emple_nombres = $request->emple_nombres;
-        $empleado->emple_apellidos = $request->emple_apellidos;
+        $empleado->emple_nombres = Str::title($request->emple_nombres);
+        $empleado->emple_apellidos = Str::title($request->emple_apellidos);
         $empleado->emple_tel = $request->emple_tel;
         $empleado->emple_correo = $request->emple_correo;
         $empleado->emple_estado = $request->emple_estado ?? 1;
@@ -275,15 +278,18 @@ class UsuarioController extends Controller
 
         $empleado->emple_doc = $request->emple_doc;
         $empleado->nit_empresa = $request->nit_empresa;
-        $empleado->emple_nombres = $request->emple_nombres;
-        $empleado->emple_apellidos = $request->emple_apellidos;
+        $empleado->emple_nombres = Str::title($request->emple_nombres);
+        $empleado->emple_apellidos = Str::title($request->emple_apellidos);
         $empleado->emple_tel = $request->emple_tel;
         $empleado->emple_correo = $request->emple_correo;
         $empleado->emple_estado = $request->emple_estado;
 
         // Manejo de imagen
         if ($request->hasFile('emple_img')) {
-            if ($empleado->emple_img) Storage::delete('public/' . $empleado->emple_img);
+            // Borrar imagen anterior si existe
+            if ($empleado->emple_img) {
+                Storage::disk('public')->delete($empleado->emple_img);
+            }
 
             $image = $request->file('emple_img');
             $filename = time() . '.' . $image->getClientOriginalExtension();

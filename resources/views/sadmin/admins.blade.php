@@ -100,7 +100,7 @@
                         </td>
                         <td class="px-6 py-4 text-sm dark:text-gray-300 align-middle text-center">
                             <span class="text-sm font-bold text-[#0d121b] dark:text-white">
-                                {{ $user->empresa->nomb_empresa }}
+                                {{ $user->empresa?->nomb_empresa ?? 'Sin empresa' }}
                             </span>
                         </td>
                         <td class="px-6 py-4">
@@ -153,27 +153,31 @@
 </div>
 
 {{-- MODAL CREAR --}}
-<div id="userModal" class="fixed inset-0 flex items-center justify-center hidden z-50">
-    <div class="bg-white w-full max-w-3xl rounded-xl shadow-xl p-6 relative">
-        <div class="flex justify-between items-center border-b pb-4 mb-6">
-            <div>
-                <h2 class="text-xl font-semibold text-gray-800">
-                    Registrar Nuevo Administrador
-                </h2>
-                <p class="text-sm text-gray-500">
-                    Complete los datos del administrador, los campos con (*) son obligatorios.
-                </p>
-            </div>
+<div id="userModal"
+    class="fixed inset-0 bg-black/40 flex items-center justify-center hidden z-50 p-4">
+    <div class="bg-white w-full max-w-3xl rounded-xl shadow-xl relative my-10 max-h-[90vh] flex flex-col overflow-hidden">
+        <div class="px-6 pt-6">
+            <div class="flex justify-between items-center border-b pb-4 mb-4">
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-800">
+                        Registrar Nuevo Administrador
+                    </h2>
+                    <p class="text-sm text-gray-500">
+                        Complete los datos del administrador, los campos con (*) son obligatorios.
+                    </p>
+                </div>
 
-            <button class="btn-close text-gray-500 hover:text-gray-800">
-                <span class="material-symbols-outlined">close</span>
-            </button>
+                <button class="btn-close text-gray-500 hover:text-gray-800">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
         </div>
 
-        <form method="POST" action="{{ route('sadmin.store') }}"
+        <form method="POST"
+            action="{{ route('sadmin.store') }}"
             id="userForm"
             enctype="multipart/form-data"
-            class="space-y-6">
+            class="flex-1 overflow-y-auto px-6 pb-6 space-y-6">
             @csrf
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -187,8 +191,12 @@
                         name="emple_doc"
                         id="documento"
                         type="text"
+                        inputmode="numeric"
+                        pattern="[0-9]*"
+                        oninput="this.value = this.value.replace(/[^0-9]/g, '')"
                         maxlength="10"
                         placeholder="Ingrese documento..."
+                        value="{{ old('emple_doc') }}"
                         class="mt-1 w-full rounded-lg border-gray-300">
                     <p id="error-documento" class="text-sm text-red-600 hidden"></p>
                 </div>
@@ -223,6 +231,7 @@
                         type="text"
                         maxlength="50"
                         placeholder="Ingrese nombres..."
+                        value="{{ old('emple_nombres') }}"
                         class="mt-1 w-full rounded-lg border-gray-300">
                     <p id="error-nombres" class="text-sm text-red-600 hidden"></p>
                 </div>
@@ -238,6 +247,7 @@
                         type="text"
                         maxlength="50"
                         placeholder="Ingrese apellidos..."
+                        value="{{ old('emple_apellidos') }}"
                         class="mt-1 w-full rounded-lg border-gray-300">
                     <p id="error-apellidos" class="text-sm text-red-600 hidden"></p>
                 </div>
@@ -251,8 +261,12 @@
                         name="emple_tel"
                         id="telefono"
                         type="text"
+                        inputmode="numeric"
+                        pattern="[0-9]*"
+                        oninput="this.value = this.value.replace(/[^0-9]/g, '')"
                         maxlength="12"
                         placeholder="Ingrese teléfono... "
+                        value="{{ old('emple_tel') }}"
                         class="mt-1 w-full rounded-lg border-gray-300">
                     <p id="error-telefono" class="text-sm text-red-600 hidden"></p>
                 </div>
@@ -268,6 +282,7 @@
                         type="email"
                         maxlength="150"
                         placeholder="Ingrese correo electrónico..."
+                        value="{{ old('emple_correo') }}"
                         class="mt-1 w-full rounded-lg border-gray-300">
                     <p id="error-correo" class="text-sm text-red-600 hidden"></p>
                 </div>
@@ -281,6 +296,8 @@
                         name="password"
                         id="password"
                         type="password"
+                        maxlength="64"
+                        oninput="this.value = this.value.replace(/\s/g, '')"
                         placeholder="Ingrese contraseña segura..."
                         class="mt-1 w-full rounded-lg border-gray-300">
                     <p id="error-password" class="text-sm text-red-600 hidden"></p>
@@ -381,6 +398,9 @@
                         name="emple_doc"
                         id="edit_documento"
                         maxlength="10"
+                        inputmode="numeric"
+                        pattern="[0-9]*"
+                        oninput="this.value = this.value.replace(/[^0-9]/g, '')"
                         placeholder="Ingrese documento..."
                         value="{{ old('emple_doc') }}"
                         readonly
@@ -450,6 +470,9 @@
                         name="emple_tel"
                         id="edit_telefono"
                         maxlength="12"
+                        inputmode="numeric"
+                        pattern="[0-9]*"
+                        oninput="this.value = this.value.replace(/[^0-9]/g, '')"
                         placeholder="Ingrese teléfono..."
                         value="{{ old('emple_tel') }}"
                         class="mt-1 w-full rounded-lg border-gray-300">
@@ -545,20 +568,45 @@
 <script>
     document.addEventListener("DOMContentLoaded", function() {
 
-        const modal = document.getElementById('userModalEdit');
-        const btn = document.getElementById('btnGuardarEdit');
+        // Determinar qué modal abrir: 'create' o 'edit'
+        const modalType = "{{ old('modal_type', 'create') }}"; // por defecto 'create'
 
-        modal.classList.remove('hidden');
+        if (modalType === 'create') {
+            const modalCrear = document.getElementById('userModal');
+            modalCrear.classList.remove('hidden');
 
-        const documento = "{{ old('emple_doc') }}";
+            // Llenar automáticamente los inputs con old()
+            modalCrear.querySelectorAll('input, select, textarea').forEach(input => {
+                const name = input.name;
+                if (!name) return;
 
-        if (documento) {
-            document.getElementById('formEdit').action =
-                "{{ url('sadmin/usuarios') }}/" + documento;
+                const valorOld = "{{ old('" + name + "') }}";
+                if (valorOld !== '') input.value = valorOld;
+            });
+
+            // Habilitar botón guardar
+            const btnGuardar = document.getElementById('btnGuardar');
+            btnGuardar.disabled = false;
+            btnGuardar.classList.remove('opacity-50', 'cursor-not-allowed');
+
+        } else if (modalType === 'edit') {
+            const modalEditar = document.getElementById('userModalEdit');
+            modalEditar.classList.remove('hidden');
+
+            // Llenar automáticamente los inputs con old()
+            modalEditar.querySelectorAll('input, select, textarea').forEach(input => {
+                const name = input.name;
+                if (!name) return;
+
+                const valorOld = "{{ old('" + name + "') }}";
+                if (valorOld !== '') input.value = valorOld;
+            });
+
+            // Habilitar botón guardar
+            const btnGuardarEdit = document.getElementById('btnGuardarEdit');
+            btnGuardarEdit.disabled = false;
+            btnGuardarEdit.classList.remove('opacity-50', 'cursor-not-allowed');
         }
-
-        // 🔥 LIMPIAR ESTADO VISUAL DEL BOTÓN
-        btn.classList.remove('opacity-50', 'cursor-not-allowed');
 
     });
 </script>
@@ -775,12 +823,14 @@
             password: {
                 required: true,
                 min: 10,
-                regex: null,
+                max: 64,
+                regex: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!"#$%&\/()=@])[^\s]{10,64}$/,
                 error: 'error-password',
                 mensajes: {
                     required: 'La contraseña es obligatoria.',
                     min: 'Debe tener mínimo 10 caracteres.',
-                    regex: 'Debe incluir: 1 mayúscula, 1 minúscula, 1 número y 1 carácter especial (!"#$%&/()=@).'
+                    max: 'No puede superar 64 caracteres.',
+                    regex: 'Debe incluir: 1 mayúscula, 1 minúscula, 1 número, 1 carácter especial y no contener espacios.'
                 }
             }
         };
@@ -866,10 +916,9 @@
             input.classList.remove('border-red-500', 'border-green-500');
             error.classList.add('hidden');
 
-            // 🔐 VALIDACIÓN ESPECIAL PASSWORD
+            //  VALIDACIÓN ESPECIAL PASSWORD
             if (id === 'password') {
 
-                // 🔴 Obligatorio
                 if (valor === '') {
                     input.classList.add('border-red-500');
                     error.textContent = regla.mensajes.required;
@@ -877,8 +926,14 @@
                     return;
                 }
 
-                // 🔴 Primero validar estructura (mayúscula, minúscula, número, especial)
-                const regexEstructura = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!"#$%&\/()=@])/;
+                if (valor.length > 64) {
+                    input.classList.add('border-red-500');
+                    error.textContent = regla.mensajes.max;
+                    error.classList.remove('hidden');
+                    return;
+                }
+
+                const regexEstructura = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!"#$%&\/()=@.,;:?~^_*+\-])[^\s]{10,64}$/;
 
                 if (!regexEstructura.test(valor)) {
                     input.classList.add('border-red-500');
@@ -887,7 +942,6 @@
                     return;
                 }
 
-                // 🔴 Luego validar mínimo 10 caracteres
                 if (valor.length < regla.min) {
                     input.classList.add('border-red-500');
                     error.textContent = regla.mensajes.min;
@@ -895,7 +949,6 @@
                     return;
                 }
 
-                // 🟢 Correcto
                 input.classList.add('border-green-500');
                 return;
             }
