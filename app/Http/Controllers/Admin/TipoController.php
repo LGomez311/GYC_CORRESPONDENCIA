@@ -1,0 +1,86 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Tipo;
+use App\Models\Prioridad;
+use Illuminate\Http\Request;
+use App\Exports\TiposExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
+
+class TipoController extends Controller
+{
+    public function index()
+    {
+        $tipos = Tipo::with('prioridad')->paginate(10);
+        $prioridades = Prioridad::all();
+        return view('admin.otros.tipo', compact('tipos', 'prioridades'));
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'tipo_nombre' => 'required|string|min:2|max:100|unique:tipo,tipo_nombre',
+            'id_prioridad' => 'required|integer|exists:prioridad,id_prioridad'
+        ], [
+            'tipo_nombre.required' => 'El nombre del tipo es obligatorio.',
+            'id_prioridad.required' => 'Seleccione una prioridad.'
+        ]);
+
+        $validated['tipo_nombre'] = ucfirst(strtolower(trim($validated['tipo_nombre'])));
+
+        Tipo::create($validated);
+
+        return redirect()->back()->with('success', 'Tipo creado correctamente.');
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'tipo_nombre' => 'required|string|max:100',
+            'id_prioridad' => 'required|integer|exists:prioridad,id_prioridad'
+        ]);
+
+        $t = Tipo::findOrFail($id);
+        $t->update([
+            'tipo_nombre' => $request->tipo_nombre,
+            'id_prioridad' => $request->id_prioridad
+        ]);
+
+        return redirect()->route('admin.tipo.index')->with('success', 'Tipo actualizado correctamente');
+    }
+
+    public function destroy($id)
+    {
+        $t = Tipo::findOrFail($id);
+        $t->delete();
+        return redirect()->route('admin.tipo.index')->with('success', 'Tipo eliminado correctamente');
+    }
+
+    public function exportExcel()
+    {
+        return Excel::download(new TiposExport, 'tipos.xlsx');
+    }
+
+    public function exportPdf()
+    {
+        $tipos = Tipo::with('prioridad')->get();
+        $pdf = Pdf::loadView('admin.pdf.tipo_pdf', compact('tipos'));
+        return $pdf->download('tipos.pdf');
+    }
+
+    public function check(Request $request)
+    {
+        $nombre = $request->query('nombre');
+        $actual = $request->query('actual');
+
+        $exists = Tipo::where('tipo_nombre', $nombre)
+            ->when($actual, function ($q) use ($actual) {
+                return $q->where('tipo_nombre', '!=', $actual);
+            })->exists();
+
+        return response()->json(['exists' => $exists]);
+    }
+}

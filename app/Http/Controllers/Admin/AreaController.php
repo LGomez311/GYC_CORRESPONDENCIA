@@ -5,6 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Area;
 use Illuminate\Http\Request;
+use App\Exports\AreasExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
+
 
 class AreaController extends Controller
 {
@@ -14,31 +18,31 @@ class AreaController extends Controller
         return view('admin.otros.area', compact('areas'));
     }
 
-   public function store(Request $request)
-{
-    $validated = $request->validate([
-        'area_nom' => [
-            'required',
-            'string',
-            'min:3',
-            'max:50',
-            'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$/',
-            'unique:area,area_nom'
-        ]
-    ], [
-        'area_nom.required' => 'El nombre del área es obligatorio.',
-        'area_nom.min' => 'Debe tener mínimo 3 caracteres.',
-        'area_nom.max' => 'No puede superar 50 caracteres.',
-        'area_nom.regex' => 'Solo se permiten letras y espacios.',
-        'area_nom.unique' => 'Esta área ya existe.'
-    ]);
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'area_nom' => [
+                'required',
+                'string',
+                'min:3',
+                'max:50',
+                'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$/',
+                'unique:area,area_nom'
+            ]
+        ], [
+            'area_nom.required' => 'El nombre del área es obligatorio.',
+            'area_nom.min' => 'Debe tener mínimo 3 caracteres.',
+            'area_nom.max' => 'No puede superar 50 caracteres.',
+            'area_nom.regex' => 'Solo se permiten letras y espacios.',
+            'area_nom.unique' => 'Esta área ya existe.'
+        ]);
 
-    $validated['area_nom'] = ucfirst(strtolower(trim($validated['area_nom'])));
+        $validated['area_nom'] = ucfirst(strtolower(trim($validated['area_nom'])));
 
-    Area::create($validated);
+        Area::create($validated);
 
-    return redirect()->back()->with('success', 'Área creada correctamente.');
-}
+        return redirect()->back()->with('success', 'Área creada correctamente.');
+    }
 
 
 
@@ -70,5 +74,18 @@ class AreaController extends Controller
 
         return redirect()->route('admin.area.index')
             ->with('success', 'Área eliminada correctamente');
+    }
+
+    public function exportExcel()
+    {
+        return Excel::download(new AreasExport, 'areas.xlsx');
+    }
+    public function exportPdf()
+    {
+        $areas = Area::all();
+
+        $pdf = Pdf::loadView('admin.pdf.area_pdf', compact('areas'));
+
+        return $pdf->download('areas.pdf');
     }
 }

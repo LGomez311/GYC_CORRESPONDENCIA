@@ -12,6 +12,9 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\Sadmin\PlanController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\Admin\AreaController;
+use App\Http\Controllers\Admin\PrioridadController;
+use App\Http\Controllers\Admin\TipoController;
+use App\Http\Controllers\Admin\EstadoController;
 
 
 
@@ -21,6 +24,7 @@ use App\Http\Controllers\Admin\PagoController as AdminPagoController;
 
 use App\Http\Controllers\Sadmin\PlanController as SadminPlanController;
 use App\Http\Controllers\Admin\PlanController as AdminPlanController;
+use App\Exports\PrioridadesExport;
 
 Route::get('/admin/historialp', [AdminPagoController::class, 'historial'])
     ->name('admin.historialp');
@@ -151,6 +155,36 @@ Route::prefix('admin')
         // Otros recursos del admin
         Route::get('/correspondencia', fn() => view('admin.correspondencia'))->name('admin.correspondencia');
         Route::get('/usuarios', fn() => view('admin.usuarios'))->name('admin.usuarios');
+        
+        // Prioridades (CRUD + export)
+        Route::get('/prioridad', [PrioridadController::class, 'index'])->name('admin.prioridad.index');
+        Route::post('/prioridad', [PrioridadController::class, 'store'])->name('admin.prioridad.store');
+        Route::put('/prioridad/{id}', [PrioridadController::class, 'update'])->name('admin.prioridad.update');
+        Route::delete('/prioridad/{id}', [PrioridadController::class, 'destroy'])->name('admin.prioridad.destroy');
+
+        Route::get('/prioridad/export/excel', [PrioridadController::class, 'exportExcel'])->name('admin.prioridad.export.excel');
+        Route::get('/prioridad/export/pdf', [PrioridadController::class, 'exportPdf'])->name('admin.prioridad.export.pdf');
+        Route::get('/prioridad/check', [PrioridadController::class, 'check'])->name('admin.prioridad.check');
+        
+        // Tipos (CRUD + export)
+        Route::get('/tipo', [TipoController::class, 'index'])->name('admin.tipo.index');
+        Route::post('/tipo', [TipoController::class, 'store'])->name('admin.tipo.store');
+        Route::put('/tipo/{id}', [TipoController::class, 'update'])->name('admin.tipo.update');
+        Route::delete('/tipo/{id}', [TipoController::class, 'destroy'])->name('admin.tipo.destroy');
+
+        Route::get('/tipo/export/excel', [TipoController::class, 'exportExcel'])->name('admin.tipo.export.excel');
+        Route::get('/tipo/export/pdf', [TipoController::class, 'exportPdf'])->name('admin.tipo.export.pdf');
+        Route::get('/tipo/check', [TipoController::class, 'check'])->name('admin.tipo.check');
+        
+        // Estados (mostrar desde id >= 6)
+        Route::get('/estado', [EstadoController::class, 'index'])->name('admin.estado.index');
+        Route::post('/estado', [EstadoController::class, 'store'])->name('admin.estado.store');
+        Route::put('/estado/{id}', [EstadoController::class, 'update'])->name('admin.estado.update');
+        Route::delete('/estado/{id}', [EstadoController::class, 'destroy'])->name('admin.estado.destroy');
+
+        Route::get('/estado/export/excel', [EstadoController::class, 'exportExcel'])->name('admin.estado.export.excel');
+        Route::get('/estado/export/pdf', [EstadoController::class, 'exportPdf'])->name('admin.estado.export.pdf');
+        Route::get('/estado/check', [EstadoController::class, 'check'])->name('admin.estado.check');
     });
 
 // Otros recursos del admin
@@ -260,23 +294,64 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/otros', function () {
         return view('admin.otros');
     })->name('otros');
-
 });
 
 //RUTAS CRUD DEPARTAMENTO - GOMEZ
 use App\Http\Controllers\Admin\DepartamentoController;
 
-Route::prefix('admin')->group(function () {
+Route::prefix('admin')->name('admin.')->group(function () {
 
     Route::get('/departamento', [DepartamentoController::class, 'index'])
-        ->name('admin.departamento.index');
+        ->name('departamento.index');
 
     Route::post('/departamento', [DepartamentoController::class, 'store'])
-        ->name('admin.departamento.store');
+        ->name('departamento.store');
 
     Route::put('/departamento/{id}', [DepartamentoController::class, 'update'])
-        ->name('admin.departamento.update');
+        ->name('departamento.update');
 
     Route::delete('/departamento/{id}', [DepartamentoController::class, 'destroy'])
-        ->name('admin.departamento.destroy');
+        ->name('departamento.destroy');
+
+    Route::get('/departamento/export/pdf', [DepartamentoController::class, 'exportPdf'])
+        ->name('departamento.export.pdf');
+
+    Route::get('/departamento/export/excel', [DepartamentoController::class, 'exportExcel'])
+        ->name('departamento.export.excel');
+
+    Route::get(
+        'departamento/check-codigo', [DepartamentoController::class, 'checkCodigo']
+    )->name('departamento.check');
 });
+
+// RUTAS PARA CRUD CIUDAD - GOMEZ
+use App\Http\Controllers\Admin\CiudadController;
+
+Route::get('/admin/ciudad', [CiudadController::class, 'index'])
+    ->name('admin.ciudad.index');
+
+Route::post('/admin/ciudad', [CiudadController::class, 'store'])
+    ->name('admin.ciudad.store');
+
+Route::put('/admin/ciudad/{id}', [CiudadController::class, 'update'])
+    ->name('admin.ciudad.update');
+
+Route::delete('/admin/ciudad/{id}', [CiudadController::class, 'destroy'])
+    ->name('admin.ciudad.destroy');
+
+Route::get('/admin/ciudad/export/pdf', [CiudadController::class, 'exportPDF'])
+    ->name('admin.ciudad.export.pdf');
+
+Route::get('/admin/ciudad/export/excel', [CiudadController::class, 'exportExcel'])
+    ->name('admin.ciudad.export.excel');
+
+Route::get('/admin/ciudad/check-codigo', [CiudadController::class, 'checkCodigo'])
+    ->name('admin.ciudad.check');
+
+
+// RUTAS PARA EXPORTAR AREAS - GOMEZ
+Route::get('/admin/areas/export/excel', [AreaController::class, 'exportExcel'])
+    ->name('admin.areas.export.excel');
+
+Route::get('/admin/areas/export/pdf', [AreaController::class, 'exportPdf'])
+    ->name('admin.areas.export.pdf');

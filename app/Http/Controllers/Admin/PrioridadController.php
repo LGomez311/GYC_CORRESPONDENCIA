@@ -1,0 +1,79 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Prioridad;
+use Illuminate\Http\Request;
+use App\Exports\PrioridadesExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
+
+class PrioridadController extends Controller
+{
+    public function index()
+    {
+        $prioridades = Prioridad::paginate(10);
+        return view('admin.otros.prioridad', compact('prioridades'));
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'prioridad_nombre' => 'required|string|min:2|max:100|unique:prioridad,prioridad_nombre'
+        ], [
+            'prioridad_nombre.required' => 'El nombre de la prioridad es obligatorio.'
+        ]);
+
+        $validated['prioridad_nombre'] = ucfirst(strtolower(trim($validated['prioridad_nombre'])));
+
+        Prioridad::create($validated);
+
+        return redirect()->back()->with('success', 'Prioridad creada correctamente.');
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'prioridad_nombre' => 'required|string|max:100'
+        ]);
+
+        $p = Prioridad::findOrFail($id);
+        $p->update(['prioridad_nombre' => $request->prioridad_nombre]);
+
+        return redirect()->route('admin.prioridad.index')->with('success', 'Prioridad actualizada correctamente');
+    }
+
+    public function destroy($id)
+    {
+        $p = Prioridad::findOrFail($id);
+        $p->delete();
+        return redirect()->route('admin.prioridad.index')->with('success', 'Prioridad eliminada correctamente');
+    }
+
+    public function exportExcel()
+    {
+        return Excel::download(new PrioridadesExport, 'prioridades.xlsx');
+    }
+
+    public function exportPdf()
+    {
+        $prioridades = Prioridad::all();
+        $pdf = Pdf::loadView('admin.pdf.prioridad_pdf', compact('prioridades'));
+        return $pdf->download('prioridades.pdf');
+    }
+
+    // Optional AJAX check for duplicates
+    public function check(Request $request)
+    {
+        $nombre = $request->query('nombre');
+        $actual = $request->query('actual');
+
+        $exists = Prioridad::where('prioridad_nombre', $nombre)
+            ->when($actual, function ($q) use ($actual) {
+                return $q->where('prioridad_nombre', '!=', $actual);
+            })->exists();
+
+        return response()->json(['exists' => $exists]);
+    }
+}

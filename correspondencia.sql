@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 16-02-2026 a las 21:41:36
+-- Tiempo de generación: 23-02-2026 a las 06:38:01
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -31,6 +31,13 @@ CREATE TABLE `area` (
   `id_area` int(20) NOT NULL,
   `area_nom` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `area`
+--
+
+INSERT INTO `area` (`id_area`, `area_nom`) VALUES
+(1, 'Administrativa');
 
 -- --------------------------------------------------------
 
@@ -63,49 +70,10 @@ CREATE TABLE `cache_locks` (
 --
 
 CREATE TABLE `ciudad` (
-  `id_ciudad` int(20) NOT NULL,
+  `ciudad_cod_post` varchar(10) NOT NULL,
   `ciudad_nom` varchar(100) DEFAULT NULL,
-  `ciudad_cod_post` varchar(10) DEFAULT NULL,
-  `ciudad_id_dpto` int(20) DEFAULT NULL
+  `ciudad_id_dpto` varchar(10) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `ciudad`
---
-
-INSERT INTO `ciudad` (`id_ciudad`, `ciudad_nom`, `ciudad_cod_post`, `ciudad_id_dpto`) VALUES
-(1, 'Leticia', '910001', 1),
-(2, 'Medellín', '050001', 2),
-(3, 'Arauca', '810001', 3),
-(4, 'Barranquilla', '080001', 4),
-(5, 'Cartagena', '130001', 5),
-(6, 'Tunja', '150001', 6),
-(7, 'Manizales', '170001', 7),
-(8, 'Florencia', '180001', 8),
-(9, 'Yopal', '850001', 9),
-(10, 'Popayán', '190001', 10),
-(11, 'Valledupar', '200001', 11),
-(12, 'Quibdó', '270001', 12),
-(13, 'Montería', '230001', 13),
-(14, 'Bogotá', '110111', 14),
-(15, 'Inírida', '940001', 15),
-(16, 'San José del Guaviare', '950001', 16),
-(17, 'Neiva', '410001', 17),
-(18, 'Riohacha', '440001', 18),
-(19, 'Santa Marta', '470001', 19),
-(20, 'Villavicencio', '500001', 20),
-(21, 'Pasto', '520001', 21),
-(22, 'Cúcuta', '540001', 22),
-(23, 'Mocoa', '860001', 23),
-(24, 'Armenia', '630001', 24),
-(25, 'Pereira', '660001', 25),
-(26, 'San Andrés', '880001', 26),
-(27, 'Bucaramanga', '680001', 27),
-(28, 'Sincelejo', '700001', 28),
-(29, 'Ibagué', '730001', 29),
-(30, 'Cali', '760001', 30),
-(31, 'Mitú', '970001', 31),
-(32, 'Puerto Carreño', '990001', 32);
 
 -- --------------------------------------------------------
 
@@ -114,48 +82,9 @@ INSERT INTO `ciudad` (`id_ciudad`, `ciudad_nom`, `ciudad_cod_post`, `ciudad_id_d
 --
 
 CREATE TABLE `departamento` (
-  `id_departamento` int(20) NOT NULL,
-  `dpto_nombre` varchar(100) DEFAULT NULL,
-  `dpto_codigo_postal` varchar(10) DEFAULT NULL
+  `dpto_codigo_postal` varchar(10) NOT NULL,
+  `dpto_nombre` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `departamento`
---
-
-INSERT INTO `departamento` (`id_departamento`, `dpto_nombre`, `dpto_codigo_postal`) VALUES
-(1, 'Amazonas', '910001'),
-(2, 'Antioquia', '050001'),
-(3, 'Arauca', '810001'),
-(4, 'Atlántico', '080001'),
-(5, 'Bolívar', '130001'),
-(6, 'Boyacá', '150001'),
-(7, 'Caldas', '170001'),
-(8, 'Caquetá', '180001'),
-(9, 'Casanare', '850001'),
-(10, 'Cauca', '190001'),
-(11, 'Cesar', '200001'),
-(12, 'Chocó', '270001'),
-(13, 'Córdoba', '230001'),
-(14, 'Cundinamarca', '250001'),
-(15, 'Guainía', '940001'),
-(16, 'Guaviare', '950001'),
-(17, 'Huila', '410001'),
-(18, 'La Guajira', '440001'),
-(19, 'Magdalena', '470001'),
-(20, 'Meta', '500001'),
-(21, 'Nariño', '520001'),
-(22, 'Norte de Santander', '540001'),
-(23, 'Putumayo', '860001'),
-(24, 'Quindío', '630001'),
-(25, 'Risaralda', '660001'),
-(26, 'San Andrés y Providencia', '880001'),
-(27, 'Santander', '680001'),
-(28, 'Sucre', '700001'),
-(29, 'Tolima', '730001'),
-(30, 'Valle del Cauca', '760001'),
-(31, 'Vaupés', '970001'),
-(32, 'Vichada', '990001');
 
 -- --------------------------------------------------------
 
@@ -165,8 +94,8 @@ INSERT INTO `departamento` (`id_departamento`, `dpto_nombre`, `dpto_codigo_posta
 
 CREATE TABLE `detalle_envio` (
   `id_detalle` int(10) NOT NULL,
-  `id_quien_envie` int(15) NOT NULL,
-  `id_quien_recibe` int(15) NOT NULL,
+  `id_quien_envie` varchar(20) NOT NULL,
+  `id_quien_recibe` varchar(20) NOT NULL,
   `id_envio` int(15) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -177,16 +106,16 @@ CREATE TABLE `detalle_envio` (
 --
 
 CREATE TABLE `empleado` (
-  `emple_doc` int(20) NOT NULL,
-  `nit_empresa` varchar(25) DEFAULT NULL,
-  `password` varchar(255) DEFAULT NULL,
-  `emple_nombres` varchar(25) DEFAULT NULL,
-  `emple_apellidos` varchar(25) DEFAULT NULL,
-  `emple_tel` varchar(25) DEFAULT NULL,
-  `emple_correo` varchar(255) DEFAULT NULL,
+  `emple_doc` varchar(20) NOT NULL,
+  `nit_empresa` varchar(25) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `emple_nombres` varchar(50) NOT NULL,
+  `emple_apellidos` varchar(50) NOT NULL,
+  `emple_tel` varchar(25) NOT NULL,
+  `emple_correo` varchar(255) NOT NULL,
   `emple_img` varchar(500) DEFAULT NULL,
-  `emple_estado` int(20) DEFAULT NULL,
-  `emple_rol` int(20) DEFAULT NULL,
+  `emple_estado` int(20) NOT NULL,
+  `emple_rol` int(20) NOT NULL,
   `emple_area` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -195,10 +124,9 @@ CREATE TABLE `empleado` (
 --
 
 INSERT INTO `empleado` (`emple_doc`, `nit_empresa`, `password`, `emple_nombres`, `emple_apellidos`, `emple_tel`, `emple_correo`, `emple_img`, `emple_estado`, `emple_rol`, `emple_area`) VALUES
-(1001, '3241234', '$2y$12$ipkGIRI86WapHF7i9cT6meu.6aVgg.qox1Y7t1Ek5hCE8ISDIb/c2', 'Kevin', 'Villafrade', NULL, 'kevin@gmail.com', NULL, 1, 1, NULL),
-(1002, '3241234', '$2y$12$LWO14So.uSotCedN4ZOsbedPxbXwu1Fer2DwScs0Rz1gybCkV2xBO', 'Luis', 'Gomez', NULL, 'luis@gmail.com', 'empleado/G3Nd4kFx4CZEWNXYj7PupotVAEtIJ80xXHFnsVOC.jpg', 1, 2, NULL),
-(1003, '3241234', '$2y$12$D/IFN/RIgdO.pfvfZql2WulD8j8abFaYrOdKC/JqJHTDheJ.avaOO', 'Yuber', 'Paez', NULL, 'yuber@gmail.com', NULL, 1, 3, NULL),
-(2323, '3241234', '$2y$12$yzH/FluEwl5o27OLFhpt/eCQiiQvkAuzdjQ7fbeGNnePJjnPwpYIm', 'Asdas', 'Asdasd', '4232343435', 'asdas@gmail.com', NULL, 1, 2, NULL);
+('1001', '', '$2y$12$0h212HqFlz9vFCBQIR/MI.TM.MGKGNBo5gpPEhH/nPYd6DpADKWDS', 'Kevin', 'Villafrade', '', 'kevin@gmail.com', NULL, 1, 1, NULL),
+('1002', '', '$2y$12$L85caJ5fobG4IbL0bIxpKuCm84wir.UCBhGIQcxUs9c3R.QDpz6gG', 'Luis', 'Gomez', '', 'luis@gmail.com', NULL, 1, 2, NULL),
+('1003', '', '$2y$12$HDQLkTRh5EtL924ayRX4BOh4Sjy.BB/TWBUblKHj0JYfLJRF1zrom', 'Yuber', 'Paez', '', 'yuber@gmail.com', NULL, 1, 3, NULL);
 
 -- --------------------------------------------------------
 
@@ -209,18 +137,19 @@ INSERT INTO `empleado` (`emple_doc`, `nit_empresa`, `password`, `emple_nombres`,
 CREATE TABLE `empresa` (
   `nit_empresa` varchar(25) NOT NULL,
   `nomb_empresa` varchar(50) NOT NULL,
-  `id_representante` int(20) NOT NULL,
-  `direccion` varchar(50) NOT NULL,
-  `contacto` varchar(100) NOT NULL,
-  `empresa_correo` varchar(100) NOT NULL
+  `doc_representante` varchar(20) NOT NULL,
+  `nomb_representante` varchar(100) NOT NULL,
+  `direccion` varchar(150) DEFAULT NULL,
+  `contacto` varchar(15) DEFAULT NULL,
+  `empresa_correo` varchar(150) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `empresa`
 --
 
-INSERT INTO `empresa` (`nit_empresa`, `nomb_empresa`, `id_representante`, `direccion`, `contacto`, `empresa_correo`) VALUES
-('3241234', 'Soluciones Tecnológicas Andinas S.A.S.', 1002, 'Cra 545 N54-6 ', '3154764785', 'andinasas@gmail.com');
+INSERT INTO `empresa` (`nit_empresa`, `nomb_empresa`, `doc_representante`, `nomb_representante`, `direccion`, `contacto`, `empresa_correo`) VALUES
+('3241234', 'Soluciones Tecnológicas Andinas S.A.S.', '1002', '0', 'Cra 545 N54-622', '3154764785', 'andinasas@gmail.com');
 
 -- --------------------------------------------------------
 
@@ -233,7 +162,7 @@ CREATE TABLE `envio` (
   `num_radicado_int` int(20) DEFAULT NULL,
   `asunto` varchar(100) DEFAULT NULL,
   `doc_quien_dirigido` int(15) DEFAULT NULL,
-  `doc_quien_envia` int(15) DEFAULT NULL,
+  `doc_quien_envia` varchar(20) DEFAULT NULL,
   `fecha` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `destino` varchar(200) DEFAULT NULL,
   `anexo` varchar(500) NOT NULL,
@@ -331,6 +260,13 @@ CREATE TABLE `licencia` (
   `licencia_origen` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Volcado de datos para la tabla `licencia`
+--
+
+INSERT INTO `licencia` (`id_licencia`, `id_estado`, `id_pago`, `fecha_inicio`, `fecha_fin`, `tipo_licencia`, `licencia_origen`) VALUES
+(11, 1, 45, '2026-02-21 23:05:51', '2026-03-23 23:05:51', 'ACTIVACION', NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -350,7 +286,8 @@ CREATE TABLE `migrations` (
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (1, '0001_01_01_000000_create_users_table', 1),
 (2, '0001_01_01_000001_create_cache_table', 1),
-(3, '0001_01_01_000002_create_jobs_table', 1);
+(3, '0001_01_01_000002_create_jobs_table', 1),
+(4, '2026_02_16_162424_create_password_codes_table', 2);
 
 -- --------------------------------------------------------
 
@@ -362,12 +299,34 @@ CREATE TABLE `pagos` (
   `id_pago` int(10) NOT NULL,
   `id_plan` int(10) DEFAULT NULL,
   `comprobante` varchar(500) DEFAULT NULL,
-  `id_admin` int(11) NOT NULL,
+  `id_admin` varchar(20) NOT NULL,
   `moneda` varchar(10) DEFAULT NULL,
   `id_est_pago` int(10) DEFAULT NULL,
   `fecha_pago` datetime DEFAULT NULL,
   `fecha_inicio` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `pagos`
+--
+
+INSERT INTO `pagos` (`id_pago`, `id_plan`, `comprobante`, `id_admin`, `moneda`, `id_est_pago`, `fecha_pago`, `fecha_inicio`) VALUES
+(45, 4, NULL, '1002', 'COP', 4, '2026-02-21 18:05:37', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `password_codes`
+--
+
+CREATE TABLE `password_codes` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `emple_correo` varchar(255) NOT NULL,
+  `code` varchar(255) NOT NULL,
+  `expires_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -403,7 +362,7 @@ INSERT INTO `plan` (`id_plan`, `nomb_plan`, `valor`, `descripcion`, `duracion`) 
 (4, 'Mensual', 200000, '[\"Acceso completo al sistema.\",\"Soporte básico.\",\"Garantía 7 días.\"]', 30),
 (5, 'Trimestral', 540000, '[\"Acceso completo al sistema.\",\"Soporte prioritario.\",\"Garantía 14 días.\", \"Incluye 1 capacitación.\"]', 90),
 (6, 'Semestral', 1040000, '[\"Acceso completo al sistema.\",\"Soporte prioritario extendido.\",\"Garantía 30 días.\", \"Incluye 2 capacitaciones.\"]\r\n', 180),
-(7, 'Anual', 1920000, '[\"Acceso completo al sistema.\",\"Soporte premium.\",\"Garantía 60 días.\", \"Incluye 4 capacitaciones.\"]', 365);
+(7, 'Anuall', 1920000, '[]', 365);
 
 -- --------------------------------------------------------
 
@@ -441,12 +400,12 @@ CREATE TABLE `recibido` (
   `asunto` varchar(100) DEFAULT NULL,
   `fecha_hora_recib` datetime DEFAULT NULL,
   `nom_institucion` varchar(150) NOT NULL,
-  `ciudad_proveniente` int(20) NOT NULL,
+  `ciudad_proveniente` varchar(20) NOT NULL,
   `folio` int(20) NOT NULL,
   `anexo` varchar(500) DEFAULT NULL,
   `observaciones` varchar(250) DEFAULT NULL,
   `doc_quien_registra` int(20) DEFAULT NULL,
-  `doc_quien_dirige` int(20) DEFAULT NULL,
+  `doc_quien_dirige` varchar(20) DEFAULT NULL,
   `id_tipo` int(20) DEFAULT NULL,
   `id_estado_rec` int(10) DEFAULT NULL,
   `archivo` varchar(500) DEFAULT NULL
@@ -466,16 +425,9 @@ CREATE TABLE `remitente` (
   `rem_correo` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
   `rem_tel` varchar(20) NOT NULL,
-  `rem_ciudad` int(10) NOT NULL,
+  `rem_ciudad` varchar(10) NOT NULL,
   `rem_estado` int(10) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `remitente`
---
-
-INSERT INTO `remitente` (`rem_doc`, `nit_empresa`, `rem_nombres`, `rem_apellidos`, `rem_correo`, `password`, `rem_tel`, `rem_ciudad`, `rem_estado`) VALUES
-(1004, '3241234', 'Kevin', 'Daniel', 'kevin.daniel@gmail.com', '$2y$12$cMl6MnO.LIOxjU0wZ01BneS7u9gUx950MDFAxEthnGfZEdn9fhZOS', '3001234567', 1, 1);
 
 -- --------------------------------------------------------
 
@@ -517,8 +469,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('oNhpBM2MHR0blHLYEKQDP4t4sBx1I9GbrheeyLZY', 1001, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiVkk5M1hhRzB2dFhnRUJ2MklsVGZJbndZUVZjS0k3SmZvcEtYd1hieiI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzg6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zYWRtaW4vbGljZW5jaWFzIjtzOjU6InJvdXRlIjtzOjE2OiJzYWRtaW4ubGljZW5jaWFzIjt9czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MTAwMTt9', 1771005585),
-('r7kKm5Z5RZWLGSGGY57UpYNoljwgDn6k4CdFPGOo', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoidHppSnBvOWNlRk5tNVZYMnlwM2ZLUDJOMGlZczVGcERXWkFWMkVVNCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9yZW1pdGVudGUiO3M6NToicm91dGUiO3M6MTU6InJlbWl0ZW50ZS5pbmRleCI7fXM6NTY6ImxvZ2luX3JlbWl0ZW50ZV81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjEwMDQ7fQ==', 1771011115);
+('FnR2oc9CT46eUqFj74ZgI0D71NZX73aibql90Ukw', 1001, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiUXVKZnRNTDhLbFZ6R3c5RElkTWRudnhvZ0RuOUs5RUh0cExDWEJOSiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzU6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zYWRtaW4vYWRtaW5zIjtzOjU6InJvdXRlIjtzOjY6ImFkbWlucyI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtzOjQ6IjEwMDEiO30=', 1771824843);
 
 -- --------------------------------------------------------
 
@@ -584,14 +535,14 @@ ALTER TABLE `cache_locks`
 -- Indices de la tabla `ciudad`
 --
 ALTER TABLE `ciudad`
-  ADD PRIMARY KEY (`id_ciudad`),
+  ADD PRIMARY KEY (`ciudad_cod_post`),
   ADD KEY `ciudad_id_dpto` (`ciudad_id_dpto`);
 
 --
 -- Indices de la tabla `departamento`
 --
 ALTER TABLE `departamento`
-  ADD PRIMARY KEY (`id_departamento`);
+  ADD PRIMARY KEY (`dpto_codigo_postal`);
 
 --
 -- Indices de la tabla `detalle_envio`
@@ -617,7 +568,7 @@ ALTER TABLE `empleado`
 --
 ALTER TABLE `empresa`
   ADD PRIMARY KEY (`nit_empresa`),
-  ADD KEY `id_representante` (`id_representante`);
+  ADD KEY `id_representante` (`doc_representante`);
 
 --
 -- Indices de la tabla `envio`
@@ -678,6 +629,12 @@ ALTER TABLE `pagos`
   ADD KEY `id_plan` (`id_plan`),
   ADD KEY `id_est_pago` (`id_est_pago`),
   ADD KEY `id_admin` (`id_admin`);
+
+--
+-- Indices de la tabla `password_codes`
+--
+ALTER TABLE `password_codes`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indices de la tabla `password_reset_tokens`
@@ -758,6 +715,12 @@ ALTER TABLE `users`
 --
 
 --
+-- AUTO_INCREMENT de la tabla `area`
+--
+ALTER TABLE `area`
+  MODIFY `id_area` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
 -- AUTO_INCREMENT de la tabla `detalle_envio`
 --
 ALTER TABLE `detalle_envio`
@@ -779,19 +742,25 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT de la tabla `licencia`
 --
 ALTER TABLE `licencia`
-  MODIFY `id_licencia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id_licencia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT de la tabla `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `pagos`
 --
 ALTER TABLE `pagos`
-  MODIFY `id_pago` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
+  MODIFY `id_pago` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
+
+--
+-- AUTO_INCREMENT de la tabla `password_codes`
+--
+ALTER TABLE `password_codes`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `plan`
@@ -819,7 +788,7 @@ ALTER TABLE `users`
 -- Filtros para la tabla `ciudad`
 --
 ALTER TABLE `ciudad`
-  ADD CONSTRAINT `ciudad_ibfk_1` FOREIGN KEY (`ciudad_id_dpto`) REFERENCES `departamento` (`id_departamento`);
+  ADD CONSTRAINT `ciudad_ibfk_1` FOREIGN KEY (`ciudad_id_dpto`) REFERENCES `departamento` (`dpto_codigo_postal`);
 
 --
 -- Filtros para la tabla `detalle_envio`
@@ -837,12 +806,6 @@ ALTER TABLE `empleado`
   ADD CONSTRAINT `empleado_ibfk_2` FOREIGN KEY (`emple_rol`) REFERENCES `rol` (`id_rol`),
   ADD CONSTRAINT `empleado_ibfk_3` FOREIGN KEY (`emple_area`) REFERENCES `area` (`id_area`),
   ADD CONSTRAINT `empleado_ibfk_4` FOREIGN KEY (`nit_empresa`) REFERENCES `empresa` (`nit_empresa`);
-
---
--- Filtros para la tabla `empresa`
---
-ALTER TABLE `empresa`
-  ADD CONSTRAINT `empresa_ibfk_1` FOREIGN KEY (`id_representante`) REFERENCES `empleado` (`emple_doc`);
 
 --
 -- Filtros para la tabla `envio`
@@ -884,15 +847,15 @@ ALTER TABLE `recibido`
   ADD CONSTRAINT `recibido_ibfk_4` FOREIGN KEY (`id_estado_rec`) REFERENCES `estado` (`id_estado`),
   ADD CONSTRAINT `recibido_ibfk_5` FOREIGN KEY (`doc_quien_registra`) REFERENCES `remitente` (`rem_doc`),
   ADD CONSTRAINT `recibido_ibfk_7` FOREIGN KEY (`num_radicado_int`) REFERENCES `radicados` (`id_radicado`),
-  ADD CONSTRAINT `recibido_ibfk_8` FOREIGN KEY (`ciudad_proveniente`) REFERENCES `ciudad` (`id_ciudad`);
+  ADD CONSTRAINT `recibido_ibfk_8` FOREIGN KEY (`ciudad_proveniente`) REFERENCES `ciudad` (`ciudad_cod_post`);
 
 --
 -- Filtros para la tabla `remitente`
 --
 ALTER TABLE `remitente`
-  ADD CONSTRAINT `remitente_ibfk_1` FOREIGN KEY (`rem_ciudad`) REFERENCES `ciudad` (`id_ciudad`),
   ADD CONSTRAINT `remitente_ibfk_2` FOREIGN KEY (`rem_estado`) REFERENCES `estado` (`id_estado`),
-  ADD CONSTRAINT `remitente_ibfk_3` FOREIGN KEY (`nit_empresa`) REFERENCES `empresa` (`nit_empresa`);
+  ADD CONSTRAINT `remitente_ibfk_3` FOREIGN KEY (`nit_empresa`) REFERENCES `empresa` (`nit_empresa`),
+  ADD CONSTRAINT `remitente_ibfk_4` FOREIGN KEY (`rem_ciudad`) REFERENCES `ciudad` (`ciudad_cod_post`);
 
 --
 -- Filtros para la tabla `tipo`

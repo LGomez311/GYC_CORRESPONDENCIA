@@ -6,18 +6,23 @@ use Illuminate\Database\Eloquent\Model;
 
 class Departamento extends Model
 {
-    protected $table = 'departamento'; // tu nombre real de tabla
+    protected $table = 'departamento';
 
-    protected $primaryKey = 'id_departamento';
+    protected $primaryKey = 'dpto_codigo_postal';
 
-    public $incrementing = true;
+    public $incrementing = false;
 
-    protected $keyType = 'int';
+    protected $keyType = 'string';
+
+    public $timestamps = false;
 
     protected $fillable = [
-        'dpto_nombre',
-        'dpto_codigo_postal'
+        'dpto_codigo_postal',
+        'dpto_nombre'
     ];
 
-    public $timestamps = false; // si tu tabla no tiene created_at y updated_at
+    public function ciudades()
+    {
+        return $this->hasMany(\App\Models\Ciudad::class, 'ciudad_id_dpto', 'dpto_codigo_postal');
+    }
 }

@@ -1,0 +1,115 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Models\Ciudad;
+use App\Models\Departamento;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\CiudadExport;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+
+class CiudadController extends Controller
+{
+    public function index()
+    {
+        $ciudades = Ciudad::with('departamento')
+            ->orderByRaw('CAST(ciudad_cod_post AS UNSIGNED) ASC')
+            ->paginate(10);
+
+        $departamentos = Departamento::orderBy('dpto_nombre', 'asc')->get();
+
+        return view('admin.otros.ciudad', compact('ciudades', 'departamentos'));
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'ciudad_nom' => 'required|min:3|max:100',
+            'ciudad_cod_post' => 'required|max:10|unique:ciudad,ciudad_cod_post',
+            'ciudad_id_dpto' => 'required|exists:departamento,dpto_codigo_postal'
+        ]);
+
+        Ciudad::create([
+            'ciudad_cod_post' => $request->ciudad_cod_post,
+            'ciudad_nom'      => $request->ciudad_nom,
+            'ciudad_id_dpto'  => $request->ciudad_id_dpto,
+        ]);
+
+        return redirect()->back()->with('success', 'Ciudad creada correctamente');
+    }
+
+    public function update(Request $request, $id)
+    {
+        // $id = ciudad_cod_post (porque es tu PK)
+        $ciudad = Ciudad::findOrFail($id);
+
+        $request->validate([
+            'ciudad_nom' => 'required|min:3|max:100',
+            'ciudad_cod_post' => 'required|max:10|unique:ciudad,ciudad_cod_post,' . $id . ',ciudad_cod_post',
+            'ciudad_id_dpto' => 'required|exists:departamento,dpto_codigo_postal'
+        ]);
+
+        // ⚠ Si cambian el código postal (PK), hay que actualizar manualmente
+        if ($request->ciudad_cod_post !== $id) {
+
+            $ciudad->delete();
+
+            Ciudad::create([
+                'ciudad_cod_post' => $request->ciudad_cod_post,
+                'ciudad_nom'      => $request->ciudad_nom,
+                'ciudad_id_dpto'  => $request->ciudad_id_dpto,
+            ]);
+        } else {
+
+            $ciudad->update([
+                'ciudad_nom'     => $request->ciudad_nom,
+                'ciudad_id_dpto' => $request->ciudad_id_dpto,
+            ]);
+        }
+
+        return redirect()->route('admin.ciudad.index')
+            ->with('success', 'Ciudad actualizada correctamente');
+    }
+
+    public function destroy($id)
+    {
+        $ciudad = Ciudad::findOrFail($id);
+        $ciudad->delete();
+
+        return redirect()->back()->with('success', 'Ciudad eliminada correctamente');
+    }
+
+    public function exportPDF()
+    {
+        $ciudades = Ciudad::with('departamento')
+            ->orderByRaw('CAST(ciudad_cod_post AS UNSIGNED) ASC')
+            ->get();
+
+        $pdf = Pdf::loadView('admin.pdf.ciudad_pdf', compact('ciudades'));
+
+        return $pdf->download('ciudades.pdf');
+    }
+
+    public function exportExcel()
+    {
+        return Excel::download(new CiudadExport, 'ciudades.xlsx');
+    }
+
+    public function checkCodigo(Request $request)
+    {
+        $codigo = $request->codigo;
+        $actual = $request->actual; // código actual si está editando
+
+        $query = \App\Models\Ciudad::where('ciudad_cod_post', $codigo);
+
+        if ($actual) {
+            $query->where('ciudad_cod_post', '!=', $actual);
+        }
+
+        return response()->json([
+            'exists' => $query->exists()
+        ]);
+    }
+}
