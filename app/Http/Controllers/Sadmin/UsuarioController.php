@@ -10,6 +10,10 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
+use SebastianBergmann\Timer\Timer;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\AdminsExport;
 
 class UsuarioController extends Controller
 {
@@ -194,11 +198,25 @@ class UsuarioController extends Controller
 
             'nit_empresa' => 'required|exists:empresa,nit_empresa',
 
-            'emple_nombres' => 'required|string|max:50|regex:/^[A-Za-zÁÉÍÓÚáéíóúñÑ\' ]+$/',
+            'emple_nombres' => [
+                'required',
+                'string',
+                'max:50',
+                'regex:/^[A-Za-zÁÉÍÓÚáéíóúñÑ\' ]+$/'
+            ],
 
-            'emple_apellidos' => 'required|string|max:50|regex:/^[A-Za-zÁÉÍÓÚáéíóúñÑ\' ]+$/',
+            'emple_apellidos' => [
+                'required',
+                'string',
+                'max:50',
+                'regex:/^[A-Za-zÁÉÍÓÚáéíóúñÑ\' ]+$/'
+            ],
 
-            'emple_tel' => 'nullable|digits_between:7,12|regex:/^[0-9]+$/',
+            'emple_tel' => [
+                'nullable',
+                'digits_between:7,12',
+                'regex:/^[0-9]+$/'
+            ],
 
             'emple_correo' => [
                 'required',
@@ -212,12 +230,47 @@ class UsuarioController extends Controller
 
         ], [
 
-            'emple_doc.unique' => 'Este documento ya está registrado.',
-            'emple_correo.unique' => 'Este correo ya está registrado.',
+            // DOCUMENTO
+            'emple_doc.required' => 'El documento es obligatorio.',
+            'emple_doc.numeric' => 'El documento solo puede contener números.',
+            'emple_doc.digits_between' => 'El documento debe tener entre 6 y 10 dígitos.',
+            'emple_doc.unique' => '• Este documento ya está registrado en el sistema.',
+
+            // EMPRESA
+            'nit_empresa.required' => '• Debe seleccionar una empresa.',
+            'nit_empresa.exists' => 'La empresa seleccionada no es válida.',
+
+            // NOMBRES
+            'emple_nombres.required' => 'El nombre es obligatorio.',
+            'emple_nombres.regex' => 'El nombre solo puede contener letras.',
+            'emple_nombres.max' => 'El nombre no puede superar los 50 caracteres.',
+
+            // APELLIDOS
+            'emple_apellidos.required' => 'El apellido es obligatorio.',
+            'emple_apellidos.regex' => 'El apellido solo puede contener letras.',
+            'emple_apellidos.max' => 'El apellido no puede superar los 50 caracteres.',
+
+            // TELÉFONO
+            'emple_tel.digits_between' => 'El teléfono debe tener entre 7 y 12 dígitos.',
+            'emple_tel.regex' => 'El teléfono solo puede contener números.',
+
+            // CORREO
+            'emple_correo.required' => 'El correo electrónico es obligatorio.',
             'emple_correo.email' => 'El correo no tiene un formato válido.',
-            'emple_estado.required' => 'Debe seleccionar un estado.',
+            'emple_correo.unique' => '• Este correo ya está registrado en el sistema.',
+
+            // ESTADO
+            'emple_estado.required' => '• Debe seleccionar un estado.',
             'emple_estado.exists' => 'El estado seleccionado no es válido.',
 
+        ], [
+
+            // Nombres amigables
+            'emple_doc' => 'documento',
+            'emple_nombres' => 'nombre',
+            'emple_apellidos' => 'apellido',
+            'emple_correo' => 'correo electrónico',
+            'emple_tel' => 'teléfono',
         ]);
 
         $empleado->emple_doc = $request->emple_doc;
@@ -246,5 +299,23 @@ class UsuarioController extends Controller
         $empleado->save();
 
         return redirect()->back()->with('success', 'Administrador actualizado correctamente');
+    }
+
+    public function exportPdf()
+    {
+        $admins = Empleado::with(['empresa', 'estado', 'rol'])
+            ->where('emple_rol', 2)
+            ->whereHas('empresa')
+            ->get();
+
+        $pdf = Pdf::loadView('sadmin.pdf.admins_pdf', compact('admins'))
+            ->setPaper('A4', 'landscape');
+
+        return $pdf->download('administradores.pdf');
+    }
+
+    public function exportExcel()
+    {
+        return Excel::download(new AdminsExport, 'administradores.xlsx');
     }
 }

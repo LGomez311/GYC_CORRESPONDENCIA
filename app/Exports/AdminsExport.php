@@ -5,16 +5,27 @@ namespace App\Exports;
 use App\Models\Empleado;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithMapping;
 
-class AdminsExport implements FromCollection, WithHeadings, WithMapping
+class AdminsExport implements FromCollection, WithHeadings
 {
     public function collection()
     {
-        // Solo rol 2 = AdminEmpresa
-        return Empleado::with(['empresa', 'estado', 'rol', 'area'])
+        return Empleado::with(['empresa','estado','rol'])
             ->where('emple_rol', 2)
-            ->get();
+            ->whereHas('empresa')
+            ->get()
+            ->map(function ($admin) {
+                return [
+                    $admin->emple_doc,
+                    $admin->emple_nombres,
+                    $admin->emple_apellidos,
+                    $admin->empresa->nomb_empresa ?? '',
+                    $admin->emple_correo,
+                    $admin->emple_tel,
+                    $admin->estado->estado_nomb ?? '',
+                    $admin->rol->rol_nom ?? '',
+                ];
+            });
     }
 
     public function headings(): array
@@ -27,23 +38,7 @@ class AdminsExport implements FromCollection, WithHeadings, WithMapping
             'Correo',
             'Teléfono',
             'Estado',
-            'Rol',
-            'Área'
-        ];
-    }
-
-    public function map($empleado): array
-    {
-        return [
-            $empleado->emple_doc,
-            $empleado->emple_nombres,
-            $empleado->emple_apellidos,
-            $empleado->empresa->nomb_empresa ?? '',
-            $empleado->emple_correo,
-            $empleado->emple_tel,
-            $empleado->estado->estado_nomb ?? '',
-            $empleado->rol->rol_nom ?? '',
-            $empleado->area->area_nom ?? '',
+            'Rol'
         ];
     }
 }

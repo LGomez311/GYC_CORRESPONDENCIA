@@ -209,13 +209,6 @@ Route::get('/sadmin/admins/export/pdf', [UsuarioController::class, 'exportPdf'])
 Route::get('/sadmin/admins/export/excel', [UsuarioController::class, 'exportExcel'])
     ->name('sadmin.export.excel');
 
-// EXPORTAR ADMINS
-Route::get('/sadmin/admins/export/pdf', [UsuarioController::class, 'exportPdf'])
-    ->name('sadmin.export.pdf');
-
-Route::get('/sadmin/admins/export/excel', [UsuarioController::class, 'exportExcel'])
-    ->name('sadmin.export.excel');
-
 
 // EXPORTAR PLANES
 

@@ -36,6 +36,40 @@
             </button>
         </div>
 
+        {{-- MODAL EXPORTAR ADMINISTRADORES --}}
+        <div id="exportModal" class="fixed inset-0 bg-black/40 hidden flex items-center justify-center z-50">
+            <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg w-72 p-5">
+
+                <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-4">
+                    Exportar Administradores
+                </h3>
+
+                <div class="flex flex-col gap-3">
+
+                    <!-- PDF -->
+                    <a href="{{ route('sadmin.export.pdf') }}"
+                        class="flex items-center gap-2 px-4 py-2 text-sm font-semibold border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                        <span class="material-symbols-outlined text-red-600">picture_as_pdf</span>
+                        PDF
+                    </a>
+
+                    <!-- Excel -->
+                    <a href="{{ route('sadmin.export.excel') }}"
+                        class="flex items-center gap-2 px-4 py-2 text-sm font-semibold border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                        <span class="material-symbols-outlined text-green-600">grid_on</span>
+                        Excel
+                    </a>
+
+                </div>
+
+                <button onclick="closeExportModal()"
+                    class="mt-4 w-full text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                    Cancelar
+                </button>
+
+            </div>
+        </div>
+
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead class="bg-background-light dark:bg-background-dark/50">
@@ -255,9 +289,8 @@
                 <!-- FOTO -->
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700">
-                        Foto de perfil
+                        Foto de perfil (Solo formato JPEG, PNG, WEBP)
                     </label>
-                    <p class="block text-sm font-medium text-gray-700"> No se permite más de 1024 * 1024 MB, solo formato (JPEG, PNG, WEBP) </p>
                     <input
                         name="emple_img"
                         type="file"
@@ -314,8 +347,17 @@
 {{-- MODAL EDITAR --}}
 <div id="userModalEdit" class="fixed inset-0 flex items-center justify-center hidden z-50">
     <div class="bg-white w-full max-w-3xl rounded-xl shadow-xl p-6 relative">
+
         <div class="flex justify-between items-center border-b pb-4 mb-6">
-            <h2 class="text-xl font-semibold text-gray-800">Editar Admin</h2>
+            <div>
+                <h2 class="text-xl font-semibold text-gray-800">
+                    Editar Administrador
+                </h2>
+                <p class="text-sm text-gray-500">
+                    Modifique los datos del administrador, los campos con (*) son obligatorios.
+                </p>
+            </div>
+
             <button class="btn-close text-gray-500 hover:text-gray-800">
                 <span class="material-symbols-outlined">close</span>
             </button>
@@ -326,87 +368,202 @@
             @method('PUT')
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input type="hidden" id="edit_id" name="emple_doc">
 
-                {{-- DOCUMENTO --}}
+                <input type="hidden" name="modal_type" value="edit">
+
+                <!-- DOCUMENTO -->
                 <div>
-                    <label>Documento</label>
-                    <input type="text" name="emple_doc" id="edit_documento" class="mt-1 w-full rounded-lg border border-gray-300 transition-all duration-200">
-                    <p id="edit-error-documento" class="text-red-500 hidden">Solo números, 6-10 dígitos</p>
+                    <label class="block text-sm font-medium text-gray-700">
+                        Documento (*)
+                    </label>
+                    <input
+                        type="text"
+                        name="emple_doc"
+                        id="edit_documento"
+                        maxlength="10"
+                        placeholder="Ingrese documento..."
+                        value="{{ old('emple_doc') }}"
+                        readonly
+                        class="mt-1 w-full rounded-lg border-gray-300">
+                    <p id="edit-error-documento" class="text-sm text-red-600 hidden"></p>
                 </div>
 
-                {{-- NIT EMPRESA --}}
+                <!-- EMPRESA -->
                 <div>
-                    <label>Empresa (NIT)</label>
-                    <select name="nit_empresa" id="edit_nit" class="mt-1 w-full rounded-lg border border-gray-300 transition-all duration-200">
+                    <label class="block text-sm font-medium text-gray-700">
+                        Empresa (NIT) (*)
+                    </label>
+                    <select
+                        name="nit_empresa"
+                        id="edit_nit"
+                        class="mt-1 w-full rounded-lg border-gray-300">
                         <option value="">Seleccionar empresa...</option>
                         @foreach($empresas as $empresa)
-                        <option value="{{ $empresa->nit_empresa }}">{{ $empresa->nomb_empresa }}</option>
+                        <option value="{{ $empresa->nit_empresa }}"
+                            {{ old('nit_empresa') == $empresa->nit_empresa ? 'selected' : '' }}>
+                            {{ $empresa->nit_empresa }} - {{ $empresa->nomb_empresa }}
+                        </option>
                         @endforeach
                     </select>
+                    <p id="edit-error-nit" class="text-sm text-red-600 hidden"></p>
                 </div>
 
-                {{-- NOMBRES --}}
+                <!-- NOMBRES -->
                 <div>
-                    <label>Nombres</label>
-                    <input type="text" name="emple_nombres" id="edit_nombres" class="mt-1 w-full rounded-lg border border-gray-300 transition-all duration-200">
-                    <p id="edit-error-nombres" class="text-red-500 hidden">Solo letras, máximo 2 palabras</p>
+                    <label class="block text-sm font-medium text-gray-700">
+                        Nombres (*)
+                    </label>
+                    <input
+                        type="text"
+                        name="emple_nombres"
+                        id="edit_nombres"
+                        maxlength="50"
+                        placeholder="Ingrese nombres..."
+                        value="{{ old('emple_nombres') }}"
+                        class="mt-1 w-full rounded-lg border-gray-300">
+                    <p id="edit-error-nombres" class="text-sm text-red-600 hidden"></p>
                 </div>
 
-                {{-- APELLIDOS --}}
+                <!-- APELLIDOS -->
                 <div>
-                    <label>Apellidos</label>
-                    <input type="text" name="emple_apellidos" id="edit_apellidos" class="mt-1 w-full rounded-lg border border-gray-300 transition-all duration-200">
-                    <p id="edit-error-apellidos" class="text-red-500 hidden">Solo letras, máximo 2 palabras</p>
+                    <label class="block text-sm font-medium text-gray-700">
+                        Apellidos (*)
+                    </label>
+                    <input
+                        type="text"
+                        name="emple_apellidos"
+                        id="edit_apellidos"
+                        maxlength="50"
+                        placeholder="Ingrese apellidos..."
+                        value="{{ old('emple_apellidos') }}"
+                        class="mt-1 w-full rounded-lg border-gray-300">
+                    <p id="edit-error-apellidos" class="text-sm text-red-600 hidden"></p>
                 </div>
 
-                {{-- TELÉFONO --}}
+                <!-- TELÉFONO -->
                 <div>
-                    <label>Teléfono</label>
-                    <input type="text" name="emple_tel" id="edit_telefono" class="mt-1 w-full rounded-lg border border-gray-300 transition-all duration-200">
-                    <p id="edit-error-telefono" class="text-red-500 hidden">Solo números, 7-12 dígitos</p>
+                    <label class="block text-sm font-medium text-gray-700">
+                        Teléfono (*)
+                    </label>
+                    <input
+                        type="text"
+                        name="emple_tel"
+                        id="edit_telefono"
+                        maxlength="12"
+                        placeholder="Ingrese teléfono..."
+                        value="{{ old('emple_tel') }}"
+                        class="mt-1 w-full rounded-lg border-gray-300">
+                    <p id="edit-error-telefono" class="text-sm text-red-600 hidden"></p>
                 </div>
 
-                {{-- CORREO --}}
+                <!-- CORREO -->
                 <div>
-                    <label>Correo</label>
-                    <input type="email" name="emple_correo" id="edit_correo" class="mt-1 w-full rounded-lg border border-gray-300 transition-all duration-200">
-                    <p id="edit-error-correo" class="text-red-500 hidden">Correo inválido</p>
+                    <label class="block text-sm font-medium text-gray-700">
+                        Correo (*)
+                    </label>
+                    <input
+                        type="email"
+                        name="emple_correo"
+                        id="edit_correo"
+                        maxlength="150"
+                        placeholder="Ingrese correo electrónico..."
+                        value="{{ old('emple_correo') }}"
+                        class="mt-1 w-full rounded-lg border-gray-300">
+                    <p id="edit-error-correo" class="text-sm text-red-600 hidden"></p>
                 </div>
 
-                {{-- FOTO --}}
-                <div>
-                    <label>Foto</label>
-                    <input type="file" name="emple_img" class="mt-1 w-full rounded-lg border-gray-300" accept=".jpg,.jpeg,.png,.webp">
+                <!-- FOTO -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700">
+                        Foto de perfil (Solo formato JPEG, PNG, WEBP)
+                    </label>
+                    <input
+                        type="file"
+                        name="emple_img"
+                        id="edit_imagen"
+                        accept=".jpg,.jpeg,.png,.webp"
+                        class="mt-1 w-full rounded-lg border-gray-300">
+                    <p id="edit-error-imagen" class="text-sm text-red-600 hidden"></p>
                 </div>
 
-                {{-- ESTADO --}}
+                <!-- ESTADO -->
                 <div>
-                    <label>Estado</label>
-                    <select name="emple_estado" id="edit_estado" class="mt-1 w-full rounded-lg border-gray-300">
+                    <label class="block text-sm font-medium text-gray-700">
+                        Estado
+                    </label>
+                    <select
+                        name="emple_estado"
+                        id="edit_estado"
+                        class="mt-1 w-full rounded-lg border-gray-300">
                         <option value="">Seleccionar estado...</option>
                         @foreach($estados as $estado)
-                        <option value="{{ $estado->id_estado }}">{{ $estado->estado_nomb }}</option>
+                        @if(in_array($estado->id_estado, [1, 2]))
+                        <option value="{{ $estado->id_estado }}"
+                            {{ old('emple_estado') == $estado->id_estado ? 'selected' : '' }}>
+                            {{ $estado->estado_nomb }}
+                        </option>
+                        @endif
                         @endforeach
                     </select>
+                </div>
+
+                <!-- ROL (Solo visual) -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">
+                        Rol
+                    </label>
+                    <input
+                        type="text"
+                        value="Administrador"
+                        readonly
+                        class="mt-1 w-full rounded-lg bg-gray-100 border-gray-300 cursor-not-allowed">
                 </div>
 
             </div>
 
+            <!-- BOTONES -->
             <div class="flex justify-end gap-3 pt-6 border-t">
-                <button type="button" class="btn-close px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100">Cancelar</button>
+                <button type="button"
+                    class="btn-close px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100">
+                    Cancelar
+                </button>
+
                 <button
                     id="btnGuardarEdit"
                     type="submit"
-                    disabled
                     class="px-6 py-2 rounded-lg bg-blue-600 text-white flex items-center gap-2 opacity-50 cursor-not-allowed">
                     <span class="material-symbols-outlined">save</span>
                     Guardar Cambios
                 </button>
             </div>
+
         </form>
     </div>
 </div>
+
+@if ($errors->any())
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const modal = document.getElementById('userModalEdit');
+        const btn = document.getElementById('btnGuardarEdit');
+
+        modal.classList.remove('hidden');
+
+        const documento = "{{ old('emple_doc') }}";
+
+        if (documento) {
+            document.getElementById('formEdit').action =
+                "{{ url('sadmin/usuarios') }}/" + documento;
+        }
+
+        // 🔥 LIMPIAR ESTADO VISUAL DEL BOTÓN
+        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+    });
+</script>
+@endif
+
 @endsection
 
 @section('scripts')
@@ -513,7 +670,13 @@
                 document.getElementById('formEdit').action =
                     "{{ url('sadmin/usuarios') }}/" + data.documento;
 
-                updateEditButton();
+                Object.keys(reglasEditar).forEach(id => {
+                    validarCampoEditar(id);
+                });
+
+                btnGuardarEdit.disabled = false;
+                btnGuardarEdit.classList.remove('opacity-50', 'cursor-not-allowed');
+
                 modalEditar.classList.remove('hidden');
             });
         });
@@ -821,38 +984,283 @@
            VALIDACIÓN EDITAR
         ============================*/
 
-        const editInputs = [
-            'edit_documento', 'edit_nombres',
-            'edit_apellidos', 'edit_telefono', 'edit_correo'
-        ];
+        function validarImagenEdit() {
 
-        editInputs.forEach(id => {
-            document.getElementById(id)?.addEventListener('input', updateEditButton);
+            const inputImagenEdit = document.getElementById('edit_imagen');
+            const errorImagenEdit = document.getElementById('edit-error-imagen');
+
+            const archivo = inputImagenEdit.files[0];
+
+            if (!archivo) return true;
+
+            const tamañoMaximo = 2 * 1024 * 1024;
+            const tiposPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
+
+            if (archivo.size > tamañoMaximo) {
+
+                errorImagenEdit.textContent = "La imagen no puede superar los 2MB";
+                errorImagenEdit.classList.remove('hidden');
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Archivo demasiado grande',
+                    text: 'La imagen no puede superar los 2MB',
+                    confirmButtonText: 'OK'
+                });
+
+                return false;
+            }
+
+            if (!tiposPermitidos.includes(archivo.type)) {
+
+                errorImagenEdit.textContent = "Formato inválido. Solo JPG, PNG o WEBP.";
+                errorImagenEdit.classList.remove('hidden');
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Formato inválido',
+                    text: 'Solo se permiten imágenes JPG, PNG o WEBP.',
+                    confirmButtonText: 'OK'
+                });
+
+                return false;
+            }
+
+            errorImagenEdit.classList.add('hidden');
+            return true;
+        }
+
+        let ultimoEnvio = 0;
+
+        document.getElementById('formEdit').addEventListener('submit', function(e) {
+
+            const ahora = Date.now();
+            const diferencia = ahora - ultimoEnvio;
+
+            // ⛔ Si intenta enviar antes de 2 segundos
+            if (diferencia < 2000) {
+                e.preventDefault();
+
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Espera un momento',
+                    text: 'Por favor espera antes de enviar nuevamente.',
+                    timer: 1500,
+                    confirmButtonText: 'OK'
+                });
+
+                return;
+            }
+
+            // Guardamos el momento del envío
+            ultimoEnvio = ahora;
+
+            //  Validar campos
+            if (!validarEditar()) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Errores de Validación',
+                    text: 'Por favor, verifica los campos resaltados',
+                    timer: 2000,
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
+            //  Validar imagen
+            if (!validarImagenEdit()) {
+                e.preventDefault();
+                return;
+            }
+
+            //  Validar cambios
+            if (!huboCambios()) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Sin cambios',
+                    text: 'No hay cambios que guardar.',
+                    timer: 2000,
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
+        });
+
+        const reglasEditar = {
+
+            edit_documento: {
+                required: true,
+                min: 6,
+                max: 10,
+                regex: /^[0-9]+$/,
+                custom: function(valor) {
+                    return !/^(\d)\1+$/.test(valor);
+                },
+                error: 'edit-error-documento',
+                mensajes: {
+                    required: 'El documento es obligatorio.',
+                    min: 'Debe tener mínimo 6 dígitos.',
+                    max: 'No puede superar 10 dígitos.',
+                    regex: 'Solo números sin espacios.',
+                    custom: 'No se permiten números repetidos.'
+                }
+            },
+
+            edit_nombres: {
+                required: true,
+                min: 3,
+                max: 60,
+                regex: /^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3,}( [A-Za-zÁÉÍÓÚáéíóúÑñ]{3,})?$/,
+                custom: function(valor) {
+                    return valor.trim().split(/\s+/).length <= 2;
+                },
+                error: 'edit-error-nombres',
+                mensajes: {
+                    required: 'El nombre es obligatorio.',
+                    min: 'Debe tener mínimo 3 letras.',
+                    max: 'No puede superar 60 caracteres.',
+                    regex: 'Solo letras, mínimo 3.',
+                    custom: 'Máximo 2 palabras.'
+                }
+            },
+
+            edit_apellidos: {
+                required: true,
+                min: 3,
+                max: 60,
+                regex: /^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3,}( [A-Za-zÁÉÍÓÚáéíóúÑñ]{3,})?$/,
+                custom: function(valor) {
+                    return valor.trim().split(/\s+/).length <= 2;
+                },
+                error: 'edit-error-apellidos',
+                mensajes: {
+                    required: 'Los apellidos son obligatorios.',
+                    min: 'Debe tener mínimo 3 letras.',
+                    max: 'No puede superar 60 caracteres.',
+                    regex: 'Solo letras, mínimo 3.',
+                    custom: 'Máximo 2 palabras.'
+                }
+            },
+
+            edit_telefono: {
+                required: true,
+                min: 7,
+                max: 12,
+                regex: /^[0-9]+$/,
+                error: 'edit-error-telefono',
+                mensajes: {
+                    required: 'El teléfono es obligatorio.',
+                    min: 'Mínimo 7 dígitos.',
+                    max: 'Máximo 12 dígitos.',
+                    regex: 'Solo números.'
+                }
+            },
+
+            edit_correo: {
+                required: true,
+                min: 8,
+                max: 150,
+                regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                error: 'edit-error-correo',
+                mensajes: {
+                    required: 'El correo es obligatorio.',
+                    min: 'Debe tener mínimo 8 caracteres.',
+                    max: 'No puede superar 150 caracteres.',
+                    regex: 'Formato inválido.'
+                }
+            }
+        };
+
+        function validarCampoEditar(id) {
+
+            const input = document.getElementById(id);
+            const regla = reglasEditar[id];
+            const error = document.getElementById(regla.error);
+            const valor = input.value.trim();
+
+            input.classList.remove('border-red-500', 'border-green-500');
+            error.classList.add('hidden');
+
+            if (regla.required && valor === '') {
+                input.classList.add('border-red-500');
+                error.textContent = regla.mensajes.required;
+                error.classList.remove('hidden');
+                return false;
+            }
+
+            if (regla.min && valor.length < regla.min) {
+                input.classList.add('border-red-500');
+                error.textContent = regla.mensajes.min;
+                error.classList.remove('hidden');
+                return false;
+            }
+
+            if (regla.max && valor.length > regla.max) {
+                input.classList.add('border-red-500');
+                error.textContent = regla.mensajes.max;
+                error.classList.remove('hidden');
+                return false;
+            }
+
+            if (regla.custom && !regla.custom(valor)) {
+                input.classList.add('border-red-500');
+                error.textContent = regla.mensajes.custom;
+                error.classList.remove('hidden');
+                return false;
+            }
+
+            if (regla.regex && !regla.regex.test(valor)) {
+                input.classList.add('border-red-500');
+                error.textContent = regla.mensajes.regex;
+                error.classList.remove('hidden');
+                return false;
+            }
+
+            input.classList.add('border-green-500');
+            return true;
+        }
+
+
+        Object.keys(reglasEditar).forEach(id => {
+
+            const input = document.getElementById(id);
+
+            if (!input) return; // ← protección
+
+            input.addEventListener('input', () => {
+                validarCampoEditar(id);
+            });
+
+        });
+
+        // Activar botón cuando cambian los selects
+        ['edit_nit', 'edit_estado'].forEach(id => {
+            const input = document.getElementById(id);
+            if (!input) return;
+
+            input.addEventListener('change', () => {});
         });
 
         function validarEditar() {
 
-            const doc = document.getElementById('edit_documento').value.trim();
-            const nom = document.getElementById('edit_nombres').value.trim();
-            const ape = document.getElementById('edit_apellidos').value.trim();
-            const tel = document.getElementById('edit_telefono').value.trim();
-            const cor = document.getElementById('edit_correo').value.trim();
+            let todoValido = true;
 
-            const regexDoc = /^[0-9]{6,10}$/;
-            const regexTxt = /^[A-Za-zÁÉÍÓÚáéíóúñÑ\s]{2,50}$/;
-            const regexTel = /^[0-9]{7,12}$/;
-            const regexCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            Object.keys(reglasEditar).forEach(id => {
+                if (!validarCampoEditar(id)) {
+                    todoValido = false;
+                }
+            });
 
-            return (
-                regexDoc.test(doc) &&
-                regexTxt.test(nom) &&
-                regexTxt.test(ape) &&
-                regexTel.test(tel) &&
-                regexCorreo.test(cor)
-            );
+            return todoValido;
         }
 
         function huboCambios() {
+
+
+            const fotoInput = document.querySelector('#userModalEdit input[name="emple_img"]');
 
             return (
                 originalEditData.documento !== document.getElementById('edit_documento').value.trim() ||
@@ -861,20 +1269,17 @@
                 originalEditData.telefono !== document.getElementById('edit_telefono').value.trim() ||
                 originalEditData.correo !== document.getElementById('edit_correo').value.trim() ||
                 originalEditData.nit !== document.getElementById('edit_nit').value ||
-                originalEditData.estado !== document.getElementById('edit_estado').value
+                originalEditData.estado !== document.getElementById('edit_estado').value ||
+                (fotoInput && fotoInput.files.length > 0)
             );
         }
 
-        function updateEditButton() {
+        window.openExportModal = function() {
+            document.getElementById('exportModal').classList.remove('hidden');
+        }
 
-            const valido = validarEditar();
-            const cambiado = huboCambios();
-
-            const activar = valido && cambiado;
-
-            btnGuardarEdit.disabled = !activar;
-            btnGuardarEdit.classList.toggle('opacity-50', !activar);
-            btnGuardarEdit.classList.toggle('cursor-not-allowed', !activar);
+        window.closeExportModal = function() {
+            document.getElementById('exportModal').classList.add('hidden');
         }
 
     });
