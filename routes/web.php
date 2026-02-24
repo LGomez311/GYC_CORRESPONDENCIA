@@ -99,8 +99,8 @@ Route::prefix('sadmin')
 
         // Usuarios
         Route::get('/admins', [UsuarioController::class, 'index'])->name('admins');
-        Route::post('/usuarios', [UsuarioController::class, 'store'])->name('sadmin.store');
-        Route::put('/usuarios/{emple_doc}', [UsuarioController::class, 'update'])->name('sadmin.update'); // <-- UPDATE
+        Route::post('/admins', [UsuarioController::class, 'store'])->name('admins.store');
+        Route::put('/admins/{emple_doc}', [UsuarioController::class, 'update'])->name('admins.update');
 
         // export - excel - pdf - kevin
 

@@ -109,8 +109,8 @@
                         <td class="px-6 py-4">
                             <span class="text-sm text-[#4c669a] dark:text-gray-400 underline decoration-primary/30">{{ $user->emple_correo }}</span>
                         </td>
-                        <td class="px-6 py-4">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                        <td class="px-6 py-4 text-sm dark:text-gray-300 align-middle text-center">
+                            <span class="text-sm font-bold text-[#0d121b] dark:text-white">
                                 {{ $user->estado->estado_nomb }}
                             </span>
                         </td>
@@ -174,7 +174,7 @@
         </div>
 
         <form method="POST"
-            action="{{ route('sadmin.store') }}"
+            action="{{ route('admins.store') }}"
             id="userForm"
             enctype="multipart/form-data"
             class="flex-1 overflow-y-auto px-6 pb-6 space-y-6">
@@ -380,7 +380,9 @@
             </button>
         </div>
 
-        <form method="POST" id="formEdit" enctype="multipart/form-data" class="space-y-6">
+        <form method="POST"
+            id="formEdit"
+            enctype="multipart/form-data">
             @csrf
             @method('PUT')
 
@@ -593,6 +595,13 @@
             const modalEditar = document.getElementById('userModalEdit');
             modalEditar.classList.remove('hidden');
 
+            const documento = "{{ old('emple_doc') }}";
+
+            if (documento) {
+                document.getElementById('formEdit').action =
+                    "{{ route('admins.update', ':id') }}".replace(':id', documento);
+            }
+
             // Llenar automáticamente los inputs con old()
             modalEditar.querySelectorAll('input, select, textarea').forEach(input => {
                 const name = input.name;
@@ -714,9 +723,8 @@
                 document.getElementById('edit_telefono').value = data.telefono;
                 document.getElementById('edit_correo').value = data.correo;
                 document.getElementById('edit_estado').value = data.estado;
-
                 document.getElementById('formEdit').action =
-                    "{{ url('sadmin/usuarios') }}/" + data.documento;
+                    "{{ route('admins.update', ':id') }}".replace(':id', data.documento);
 
                 Object.keys(reglasEditar).forEach(id => {
                     validarCampoEditar(id);
@@ -768,7 +776,7 @@
                     required: 'El nombre es obligatorio.',
                     min: 'Debe tener al menos una palabra.',
                     max: 'No puede superar 60 caracteres.',
-                    regex: 'Solo se permiten mínimo 3 letras',
+                    regex: 'Solo letras, tildes, sin espacios.',
                     custom: 'No puede superar 2 palabras.'
                 }
             },
@@ -787,7 +795,7 @@
                     required: 'Los apellidos son obligatorios.',
                     min: 'Debe tener al menos una palabra.',
                     max: 'No puede superar 60 caracteres.',
-                    regex: 'Solo se permiten mínimo 3 letras',
+                    regex: 'Solo letras, tildes, sin espacios.',
                     custom: 'No puede superar 2 palabras.'
                 }
             },
@@ -816,7 +824,7 @@
                     required: 'El correo es obligatorio.',
                     min: 'El correo debe tener mínimo 8 caracteres.',
                     max: 'El correo no puede superar 150 caracteres.',
-                    regex: 'Debe tener un formato válido ejemplo: nombre@dominio.com'
+                    regex: 'Debe tener un formato válido ejemplo: texto@texto.dominio'
                 }
             },
 
@@ -827,7 +835,7 @@
                 regex: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!"#$%&\/()=@])[^\s]{10,64}$/,
                 error: 'error-password',
                 mensajes: {
-                    required: 'La contraseña es obligatoria.',
+                    required: '• La contraseña es obligatoria.',
                     min: 'Debe tener mínimo 10 caracteres.',
                     max: 'No puede superar 64 caracteres.',
                     regex: 'Debe incluir: 1 mayúscula, 1 minúscula, 1 número, 1 carácter especial y no contener espacios.'
@@ -1175,7 +1183,7 @@
                     required: 'El nombre es obligatorio.',
                     min: 'Debe tener mínimo 3 letras.',
                     max: 'No puede superar 60 caracteres.',
-                    regex: 'Solo letras, mínimo 3.',
+                    regex: 'Solo letras, tildes, sin espacios.',
                     custom: 'Máximo 2 palabras.'
                 }
             },
@@ -1193,7 +1201,7 @@
                     required: 'Los apellidos son obligatorios.',
                     min: 'Debe tener mínimo 3 letras.',
                     max: 'No puede superar 60 caracteres.',
-                    regex: 'Solo letras, mínimo 3.',
+                    regex: 'Solo letras, tildes, sin espacios.',
                     custom: 'Máximo 2 palabras.'
                 }
             },
