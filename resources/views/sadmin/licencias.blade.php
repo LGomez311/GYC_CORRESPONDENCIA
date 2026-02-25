@@ -24,8 +24,7 @@
         <div class="p-6 border-b border-[#cfd7e7] dark:border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <h2 class="text-[#0d121b] dark:text-white text-lg font-bold leading-tight">Listado de Licencias</h2>
             {{-- Botón Exportar --}}
-            <button onclick="openExportModal()"
-                class="px-3 py-1.5 text-xs font-bold border border-[#cfd7e7] dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-1 dark:text-white">
+            <button onclick="openExportModal()" class="px-3 py-2 border border-[#cfd7e7] dark:border-gray-700 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors dark:text-white">
                 <span class="material-symbols-outlined text-sm">download</span>
                 Exportar
             </button>
@@ -62,7 +61,7 @@
 
         </div>
 
-         {{-- TABLA --}}
+        {{-- TABLA --}}
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead class="bg-background-light dark:bg-background-dark/50">
@@ -107,11 +106,14 @@
                             {{ $licencia->tipo_licencia }}
                         </td>
                         <td class="px-6 py-4 text-center">
-                            <form action="{{ route('sadmin.licencias.toggle', $licencia->id_licencia) }}" method="POST">
+                            <form action="{{ route('sadmin.licencias.toggle', $licencia->id_licencia) }}"
+                                method="POST"
+                                class="form-toggle">
                                 @csrf
-                                <button type="submit"
-                                    class="px-3 py-1.5 rounded text-xs font-bold text-white
-                            {{ $licencia->id_estado == 1 ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700' }}">
+                                <button type="button"
+                                    class="btn-toggle px-3 py-1.5 rounded text-xs font-bold text-white
+                                    {{ $licencia->id_estado == 1 ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700' }}">
+
                                     {{ $licencia->id_estado == 1 ? 'Desactivar' : 'Activar' }}
                                 </button>
                             </form>
@@ -129,13 +131,13 @@
 
         </div>
 
-            {{-- PAGINACIÓN --}}
-            <div class="px-6 py-4 border-t border-[#cfd7e7] dark:border-gray-800 flex justify-center">
-                {{ $licencias->links() }}
-            </div>
-
+        {{-- PAGINACIÓN --}}
+        <div class="flex gap-1">
+            {{ $licencias->links() }}
         </div>
+
     </div>
+</div>
 
 </div>
 @endsection
@@ -161,5 +163,38 @@
                 closeExportModal();
             }
         });
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        document.querySelectorAll('.btn-toggle').forEach(button => {
+
+            button.addEventListener('click', function() {
+
+                const form = this.closest('form');
+                const isActive = this.textContent.trim() === 'Desactivar';
+
+                Swal.fire({
+                    title: isActive ? '¿Desactivar licencia?' : '¿Activar licencia?',
+                    text: isActive ?
+                        "La empresa perderá acceso al sistema." : "La empresa podrá acceder nuevamente al sistema.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: isActive ? '#dc2626' : '#16a34a',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: isActive ? 'Sí, desactivar' : 'Sí, activar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+
+            });
+
+        });
+
     });
 </script>

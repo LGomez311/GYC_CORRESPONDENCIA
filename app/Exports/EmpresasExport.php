@@ -10,22 +10,16 @@ class EmpresasExport implements FromCollection, WithHeadings
 {
     public function collection()
     {
-        return Empresa::with([
-            'representante.pagos.plan'
-        ])->get()->map(function ($empresa) {
-
-            $plan = optional(
-                $empresa->representante?->pagos->last()?->plan
-            );
+        return Empresa::all()->map(function ($empresa) {
 
             return [
                 'Empresa'        => (string) $empresa->nomb_empresa,
                 'NIT'            => (string) $empresa->nit_empresa,
-                'Plan Actual'    => $plan->nomb_plan ?? 'Sin plan',
                 'Dirección'      => (string) $empresa->direccion,
                 'Teléfono'       => (string) $empresa->contacto,
                 'Correo'         => (string) $empresa->empresa_correo,
-                'Representante'  => $empresa->representante->emple_nombres ?? 'Sin asignar',
+                'Documento Rep.' => (string) $empresa->doc_representante,
+                'Representante'  => (string) $empresa->nomb_representante,
             ];
         });
     }
@@ -35,10 +29,10 @@ class EmpresasExport implements FromCollection, WithHeadings
         return [
             'Empresa',
             'NIT',
-            'Plan Actual',
             'Dirección',
             'Teléfono',
             'Correo',
+            'Documento Rep.',
             'Representante',
         ];
     }
