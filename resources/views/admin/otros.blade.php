@@ -111,7 +111,8 @@
                     class="size-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform">
                     <span class="material-symbols-outlined text-3xl">category</span>
                 </div>
-                <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Tipo</h3>
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Tipo correspondencia
+                </h3>
                 <p class="text-slate-500 dark:text-slate-400 text-sm mb-6 flex-1">
                     Crea tipos de correspondencia (Interna, Externa, Oficio, etc.).
                 </p>
@@ -151,7 +152,7 @@
                 <p class="text-slate-500 dark:text-slate-400 text-sm mb-6 flex-1">
                     Administrar los roles de usuarios del sistema.
                 </p>
-                <a href=""
+                <a href="{{ route('admin.rol.index') }}"
                     class="w-full py-3 bg-primary hover:bg-primary/90 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2">
                     <span>Administrar</span>
                     <span class="material-symbols-outlined text-sm">arrow_forward</span>

@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\AreaController;
 use App\Http\Controllers\Admin\PrioridadController;
 use App\Http\Controllers\Admin\TipoController;
 use App\Http\Controllers\Admin\EstadoController;
+use App\Http\Controllers\Admin\RolController;
 
 
 
@@ -141,6 +142,7 @@ Route::prefix('admin')
 
         // Dashboard
         Route::get('/', fn() => view('admin.usuarios'))->name('admin.index');
+        Route::get('/home', fn() => view('admin.home'))->name('admin.home');
 
         // Planes
         Route::get('/planes', [AdminPlanController::class, 'index'])->name('admin.planes');
@@ -185,6 +187,16 @@ Route::prefix('admin')
         Route::get('/estado/export/excel', [EstadoController::class, 'exportExcel'])->name('admin.estado.export.excel');
         Route::get('/estado/export/pdf', [EstadoController::class, 'exportPdf'])->name('admin.estado.export.pdf');
         Route::get('/estado/check', [EstadoController::class, 'check'])->name('admin.estado.check');
+
+        // Roles (CRUD + export)
+        Route::get('/rol', [RolController::class, 'index'])->name('admin.rol.index');
+        Route::post('/rol', [RolController::class, 'store'])->name('admin.rol.store');
+        Route::put('/rol/{id}', [RolController::class, 'update'])->name('admin.rol.update');
+        Route::delete('/rol/{id}', [RolController::class, 'destroy'])->name('admin.rol.destroy');
+
+        Route::get('/rol/export/excel', [RolController::class, 'exportExcel'])->name('admin.rol.export.excel');
+        Route::get('/rol/export/pdf', [RolController::class, 'exportPdf'])->name('admin.rol.export.pdf');
+        Route::get('/rol/check', [RolController::class, 'check'])->name('admin.rol.check');
     });
 
 // Otros recursos del admin

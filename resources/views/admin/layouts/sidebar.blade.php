@@ -76,6 +76,14 @@
 
 
                 <!-- Usuarios -->
+                <a href="{{ route('admin.home') }}"
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
+            text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                    <span class="material-symbols-outlined">home</span>
+                    <p class="text-sm font-medium">Home</p>
+                </a>
+
+                <!-- Usuarios -->
                 <a href="{{ route('admin.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
             text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
