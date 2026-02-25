@@ -35,11 +35,20 @@
                 </p>
             </div>
 
-            <button onclick="openCreateModal()"
-                class="px-4 py-2 bg-primary text-white rounded-lg font-bold text-sm flex items-center gap-2 shadow-lg hover:bg-primary/90">
-                <span class="material-symbols-outlined text-sm">add</span>
-                Crear Nuevo Plan
+            <button type="button" onclick="openCreatePlanModal()" aria-haspopup="dialog" aria-controls="planModal"
+                class="group inline-flex items-center gap-2
+           rounded-xl bg-primary px-6 py-3
+           text-sm font-bold text-white
+           shadow-lg
+           hover:bg-primary/90 hover:scale-[1.02]
+           focus:outline-none focus:ring-2 focus:ring-primary/50
+           transition">
+                <span class="material-symbols-outlined text-base group-hover:rotate-90 transition">
+                    add
+                </span>
+                Crear nuevo plan
             </button>
+
         </div>
 
         {{-- CARD --}}
@@ -86,8 +95,13 @@
                                     </td>
 
                                     <td class="px-6 py-4 text-sm text-[#4c669a] dark:text-gray-400">
-                                        <pre>{!! print_r($plan->descripcion, true) !!}</pre>
+                                        <ul class="list-disc pl-5 space-y-1">
+                                            @foreach ($plan->descripcion as $item)
+                                                <li>{{ $item }}</li>
+                                            @endforeach
+                                        </ul>
                                     </td>
+
 
 
 
@@ -102,9 +116,7 @@
 
                                     <td class="px-6 py-4 text-right">
                                         <div class="flex justify-end gap-1">
-                                            <button data-id="{{ $plan->id_plan }}" data-nombre="{{ $plan->nomb_plan }}"
-                                                data-valor="{{ $plan->valor }}" data-duracion="{{ $plan->duracion }}"
-                                                data-descripcion="{!! print_r($plan->descripcion, true) !!}"
+                                            <button type="button" onclick='openEditPlanModal(@json($plan))'
                                                 class="btn-edit p-2 text-[#4c669a] hover:text-primary">
                                                 <span class="material-symbols-outlined text-[20px]">edit</span>
                                             </button>
@@ -131,539 +143,328 @@
 
                         </tbody>
                     </table>
-                </div>
-
-                <!-- Overlay Crear -->
-                <div id="overlayCreatePlan" class="fixed inset-0 bg-black/50 hidden z-40"></div>
-
-                <!-- MODAL CREAR -->
-                <div id="createModal" class="fixed inset-0 hidden z-50 flex items-center justify-center">
-                    <div class="bg-white dark:bg-[#161d2b] w-full max-w-md rounded-xl shadow-xl p-6 relative">
-
-                        <!-- Header -->
-                        <div class="flex justify-between items-center border-b pb-4 mb-4">
-                            <h3 class="text-lg font-bold dark:text-white">Crear Plan</h3>
-                            <button onclick="closeCreateModal()" class="text-gray-400 hover:text-gray-700">
-                                <span class="material-symbols-outlined">close</span>
-                            </button>
-                        </div>
-
-                        <!-- Body -->
-                        <form action="{{ route('planes.store') }}" method="POST" class="space-y-4">
-                            @csrf
-
-                            <!-- Nombre -->
-                            <div>
-                                <input id="create_nomb_plan" name="nomb_plan" value="{{ old('nomb_plan') }}" required
-                                    placeholder="Nombre del plan"
-                                    class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white
-                        @error('nomb_plan') border-red-500 @enderror"
-                                    oninput="validateCreatePlan()">
-                                <p id="error_create_nomb_plan" class="text-xs text-red-500 mt-1 hidden"></p>
-                                @error('nomb_plan')
-                                    <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <!-- Valor -->
-                            <div>
-                                <input id="create_valor" name="valor" type="number" value="{{ old('valor') }}" required
-                                    placeholder="Valor"
-                                    class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white
-                        @error('valor') border-red-500 @enderror"
-                                    oninput="validateCreatePlan()">
-                                <p id="error_create_valor" class="text-xs text-red-500 mt-1 hidden"></p>
-                                @error('valor')
-                                    <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <!-- Duración -->
-                            <div>
-                                <input id="create_duracion" name="duracion" type="number" value="{{ old('duracion') }}"
-                                    required placeholder="Duración (meses)"
-                                    class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white
-                        @error('duracion') border-red-500 @enderror"
-                                    oninput="validateCreatePlan()">
-                                <p id="error_create_duracion" class="text-xs text-red-500 mt-1 hidden"></p>
-                                @error('duracion')
-                                    <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <!-- Descripción -->
-                            <div>
-                                <textarea id="create_descripcion" name="descripcion" required placeholder="Descripción del plan"
-                                    class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white
-                        @error('descripcion') border-red-500 @enderror"
-                                    oninput="validateCreatePlan()">{{ old('descripcion') }}</textarea>
-                                <p id="error_create_descripcion" class="text-xs text-red-500 mt-1 hidden"></p>
-                                @error('descripcion')
-                                    <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <!-- Footer -->
-                            <div class="flex justify-end gap-2 pt-4 border-t">
-                                <button type="button" onclick="closeCreateModal()"
-                                    class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors">
-                                    Cancelar
-                                </button>
-
-                                <button id="btnCreatePlan" disabled
-                                    class="px-4 py-2 rounded-lg bg-primary text-white font-bold opacity-50 cursor-not-allowed">
-                                    Crear
-                                </button>
-                            </div>
-                        </form>
+                    {{-- PAGINACIÓN --}}
+                    <div class="flex gap-1">
+                        {{ $planes->links('') }}
                     </div>
                 </div>
-
-
-
-                {{-- MODAL EDITAR --}}
-                <div id="editModal" class="fixed inset-0 hidden z-50 flex items-center justify-center">
-                    <div class="bg-white dark:bg-[#161d2b] w-full max-w-md rounded-xl shadow-xl p-6 relative">
-
-                        <!-- Header -->
-                        <div class="flex justify-between items-center border-b pb-4 mb-4">
-                            <h3 class="text-lg font-bold dark:text-white">Editar Plan</h3>
-                            <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-700">
-                                <span class="material-symbols-outlined">close</span>
-                            </button>
-                        </div>
-
-                        <!-- Body -->
-                        <form id="editForm" method="POST" class="space-y-4">
-                            @csrf
-                            @method('PUT')
-
-                            {{-- Nombre --}}
-                            <div>
-                                <input id="edit_nomb_plan" name="nomb_plan" required placeholder="Nombre del plan"
-                                    class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white">
-
-                                <p id="error_edit_nomb_plan" class="text-xs text-red-500 mt-1 hidden"></p>
-                            </div>
-
-                            {{-- Valor --}}
-                            <div>
-                                <input id="edit_valor" name="valor" type="number" required placeholder="Valor"
-                                    class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white">
-
-                                <p id="error_edit_valor" class="text-xs text-red-500 mt-1 hidden"></p>
-                            </div>
-
-                            {{-- Duración --}}
-                            <div>
-                                <input id="edit_duracion" name="duracion" type="number" required
-                                    placeholder="Duración (meses)"
-                                    class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white">
-
-                                <p id="error_edit_duracion" class="text-xs text-red-500 mt-1 hidden"></p>
-                            </div>
-
-                            {{-- Descripción --}}
-                            <div>
-                                <textarea id="edit_descripcion" name="descripcion" required placeholder="Descripción del plan"
-                                    class="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white"></textarea>
-
-                                <p id="error_edit_descripcion" class="text-xs text-red-500 mt-1 hidden"></p>
-                            </div>
-
-                            <!-- Footer -->
-                            <div class="flex justify-end gap-2 pt-4 border-t">
-                                <button type="button" onclick="closeEditModal()"
-                                    class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors">
-                                    Cancelar
-                                </button>
-
-                                <button id="btnEditPlan" type="submit" disabled
-                                    class="px-4 py-2 rounded-lg bg-primary text-white font-bold opacity-50 cursor-not-allowed">
-                                    Actualizar
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-
-
 
 
                 <form id="deleteForm" method="POST">
                     @csrf
                     @method('DELETE')
                 </form>
-
-                {{-- PAGINACIÓN --}}
-                @if ($planes->hasPages())
-                    <div id="paginationInfo"
-                        class="px-6 py-4 border-t border-[#cfd7e7] dark:border-gray-800 flex flex-wrap gap-3 items-center justify-between">
-
-                        <p class="text-xs text-[#4c669a] dark:text-gray-400">
-                            Mostrando {{ $planes->firstItem() }} - {{ $planes->lastItem() }} de {{ $planes->total() }}
-                            planes registrados
-                        </p>
-
-                        <div class="flex gap-1">
-                            <a href="{{ $planes->previousPageUrl() }}"
-                                class="size-8 flex items-center justify-center rounded border {{ $planes->onFirstPage() ? 'pointer-events-none opacity-50' : '' }}">
-                                <span class="material-symbols-outlined text-sm">chevron_left</span>
-                            </a>
-
-                            @foreach ($planes->getUrlRange(1, $planes->lastPage()) as $page => $url)
-                                <a href="{{ $url }}"
-                                    class="size-8 flex items-center justify-center rounded text-xs font-bold
-                        {{ $planes->currentPage() == $page ? 'bg-primary text-white' : 'border' }}">
-                                    {{ $page }}
-                                </a>
-                            @endforeach
-
-                            <a href="{{ $planes->nextPageUrl() }}"
-                                class="size-8 flex items-center justify-center rounded border {{ !$planes->hasMorePages() ? 'pointer-events-none opacity-50' : '' }}">
-                                <span class="material-symbols-outlined text-sm">chevron_right</span>
-                            </a>
-                        </div>
-                    </div>
-                @endif
-
             </div>
         </div>
     </div>
 
     <script>
-        /* =========================
-                               REFERENCIAS
-                            ========================= */
-        const createModal = document.getElementById('createModal')
-        const editModal = document.getElementById('editModal')
-        const editForm = document.getElementById('editForm')
-        const wrapper = document.getElementById('plansWrapper')
-        const searchInput = document.getElementById('searchPlan')
+        function openDeleteModal(planId, planNombre) {
 
-        /* =========================
-           ESTADO (TOUCHED)
-        ========================= */
-        const touchedCreate = {
-            nombre: false,
-            valor: false,
-            duracion: false,
-            descripcion: false
-        }
-        const touchedEdit = {
-            nombre: false,
-            valor: false,
-            duracion: false,
-            descripcion: false
-        }
-
-        /* =========================
-           MODALES
-        ========================= */
-        function openCreateModal() {
-            createModal.classList.remove('hidden')
-            document.getElementById('overlayCreatePlan').classList.remove('hidden')
-
-            // Reinicia formulario y estado
-            resetCreateForm()
-        }
-
-
-        function closeCreateModal() {
-            createModal.classList.add('hidden')
-            document.getElementById('overlayCreatePlan').classList.add('hidden')
-            resetCreateForm()
-        }
-
-        function openEditModal(id, nombre, valor, duracion, descripcion) {
-            editForm.action = `/sadmin/planes/${id}`
-            document.getElementById('edit_nomb_plan').value = nombre
-            document.getElementById('edit_valor').value = valor
-            document.getElementById('edit_duracion').value = duracion
-            document.getElementById('edit_descripcion').value = descripcion ?? ''
-
-            // Marcar todos los inputs como touched y validar para habilitar el botón
-            Object.keys(touchedEdit).forEach(k => touchedEdit[k] = true)
-            validateEditPlan()
-
-            editModal.classList.remove('hidden')
-            document.getElementById('overlayEditPlan')?.classList.remove('hidden')
-        }
-
-        function closeEditModal() {
-            editModal.classList.add('hidden')
-            document.getElementById('overlayEditPlan')?.classList.add('hidden')
-        }
-
-        /* =========================
-           ELIMINAR
-        ========================= */
-        function openDeleteModal(id, name) {
             Swal.fire({
-                title: '¿Eliminar plan?',
-                text: `Se eliminará el plan "${name}". Esta acción no se puede deshacer.`,
+                title: '¿Estás seguro?',
+                text: `El plan "${planNombre}" será eliminado y esta acción no se podrá deshacer.`,
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#dc2626',
+                confirmButtonColor: '#e3342f',
                 cancelButtonColor: '#6b7280',
                 confirmButtonText: 'Sí, eliminar',
                 cancelButtonText: 'Cancelar'
-            }).then(result => {
+            }).then((result) => {
                 if (result.isConfirmed) {
-                    const form = document.getElementById('deleteForm')
-                    form.action = `/sadmin/planes/${id}`
-                    form.submit()
+
+
+                    const form = document.getElementById('deleteForm');
+
+                    form.action = "{{ route('planes.destroy', ':id') }}".replace(':id', planId);
+
+                    form.submit();
+
                 }
-            })
+            });
+        }
+    </script>
+
+    <script>
+        let planOriginal = null;
+
+        function openModal() {
+            const modal = document.getElementById('planModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closePlanCreateModal() {
+            const modal = document.getElementById('planModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
         }
 
         /* =========================
-           BUSCADOR + PAGINACIÓN AJAX
+           CREAR PLAN
         ========================= */
-        let debounce = null
-        let currentSearch = ''
+        function openCreatePlanModal() {
+            openModal();
 
-        function loadPlans(url) {
-            fetch(url, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(res => res.text())
-                .then(html => {
-                    const doc = new DOMParser().parseFromString(html, 'text/html')
-                    const newWrapper = doc.getElementById('plansWrapper')
-                    if (newWrapper) {
-                        wrapper.innerHTML = newWrapper.innerHTML
-                        bindPaginationLinks() // 🔥 MUY IMPORTANTE
-                    }
-                })
-        }
+            const form = document.getElementById('planForm');
+            form.action = "{{ route('planes.store') }}";
 
+            document.getElementById('planFormMethod').value = "POST";
+            document.getElementById('planModalTitle').innerText = 'Crear nuevo plan';
 
-        function bindPaginationLinks() {
-            document.querySelectorAll('#plansWrapper a').forEach(link => {
-                if (!link.href) return
-                link.addEventListener('click', e => {
-                    e.preventDefault()
-                    const url = new URL(link.href)
-                    if (currentSearch) url.searchParams.set('search', currentSearch)
-                    loadPlans(url.toString())
-                })
-            })
-        }
+            form.reset();
 
-        if (searchInput) {
-            searchInput.addEventListener('input', function() {
-                clearTimeout(debounce)
-                currentSearch = this.value.trim()
-                debounce = setTimeout(() => {
-                    const url = new URL(`{{ route('cplanes') }}`)
-                    if (currentSearch) url.searchParams.set('search', currentSearch)
-                    loadPlans(url.toString())
-                }, 300)
-            })
+            const container = document.getElementById('beneficios-container');
+            container.innerHTML = '';
+            agregarBeneficio();
         }
 
         /* =========================
-           DELEGACIÓN DE EVENTOS PARA BOTONES DINÁMICOS
+           EDITAR PLAN
         ========================= */
-        wrapper.addEventListener('click', function(e) {
-            const editBtn = e.target.closest('.btn-edit')
-            const deleteBtn = e.target.closest('.btn-delete')
+        function openEditPlanModal(plan) {
+            openModal();
 
-            if (editBtn) {
-                const data = editBtn.dataset
-                openEditModal(data.id, data.nombre, data.valor, data.duracion, data.descripcion)
-            }
-            if (deleteBtn) {
-                const data = deleteBtn.dataset
-                openDeleteModal(data.id, data.nombre)
-            }
-        })
+            const form = document.getElementById('planForm');
+            form.action = `/sadmin/planes/${plan.id_plan}`;
 
-        document.getElementById('btnOpenCreateModal')?.addEventListener('click', openCreateModal)
+            document.getElementById('planFormMethod').value = "PUT";
+            document.getElementById('planModalTitle').innerText = 'Editar plan';
 
-        /* =========================
-           VALIDACIONES
-        ========================= */
-        function validateCreatePlan() {
-            const nombre = document.getElementById('create_nomb_plan')
-            const valor = document.getElementById('create_valor')
-            const duracion = document.getElementById('create_duracion')
-            const descripcion = document.getElementById('create_descripcion')
-            const btn = document.getElementById('btnCreatePlan')
-            let valid = true
+            document.getElementById('nomb_plan').value = plan.nomb_plan;
+            document.getElementById('valor').value = plan.valor;
+            document.getElementById('duracion').value = plan.duracion;
+            document.getElementById('es_destacado').checked = !!plan.es_destacado;
 
-            // Solo mostramos errores si el campo fue tocado
-            if (touchedCreate.nombre && nombre.value.trim().length < 3) {
-                showError('error_create_nomb_plan', 'El nombre debe tener al menos 3 caracteres')
-                nombre.classList.add('border-red-500')
-                valid = false
-            } else {
-                hideError('error_create_nomb_plan')
-                nombre.classList.remove('border-red-500')
-            }
-
-            const valorNum = Number(valor.value) || 0
-            if (touchedCreate.valor && valorNum <= 0) {
-                showError('error_create_valor', 'El valor debe ser mayor a 0')
-                valor.classList.add('border-red-500')
-                valid = false
-            } else {
-                hideError('error_create_valor')
-                valor.classList.remove('border-red-500')
-            }
-
-            const duracionNum = Number(duracion.value) || 0
-            if (touchedCreate.duracion && duracionNum <= 0) {
-                showError('error_create_duracion', 'La duración debe ser mayor a 0')
-                duracion.classList.add('border-red-500')
-                valid = false
-            } else {
-                hideError('error_create_duracion')
-                duracion.classList.remove('border-red-500')
-            }
-
-            if (touchedCreate.descripcion && descripcion.value.trim().length < 5) {
-                showError('error_create_descripcion', 'La descripción debe tener al menos 5 caracteres')
-                descripcion.classList.add('border-red-500')
-                valid = false
-            } else {
-                hideError('error_create_descripcion')
-                descripcion.classList.remove('border-red-500')
-            }
-
-            // Para habilitar el botón, validamos todos los campos independientemente de touched
-            const allValid = nombre.value.trim().length >= 3 &&
-                valorNum > 0 &&
-                duracionNum > 0 &&
-                descripcion.value.trim().length >= 5
-
-            btn.disabled = !allValid
-            btn.classList.toggle('opacity-50', !allValid)
-            btn.classList.toggle('cursor-not-allowed', !allValid)
-        }
+            const container = document.getElementById('beneficios-container');
+            container.innerHTML = '';
 
 
-        function validateEditPlan() {
-            const nombre = document.getElementById('edit_nomb_plan')
-            const valor = document.getElementById('edit_valor')
-            const duracion = document.getElementById('edit_duracion')
-            const descripcion = document.getElementById('edit_descripcion')
-            const btn = document.getElementById('btnEditPlan')
-            let valid = true
 
-            if (touchedEdit.nombre) {
-                if (nombre.value.trim().length < 3) {
-                    showError('error_edit_nomb_plan', 'Debe tener al menos 3 caracteres');
-                    nombre.classList.add('border-red-500');
-                    valid = false
-                } else {
-                    hideError('error_edit_nomb_plan');
-                    nombre.classList.remove('border-red-500')
+            // 🔥 NORMALIZACIÓN CLAVE
+            let beneficios = plan.descripcion;
+
+            if (typeof beneficios === 'string') {
+                try {
+                    beneficios = JSON.parse(beneficios);
+                } catch (e) {
+                    beneficios = [];
                 }
-            } else valid = false
+            }
 
-            const valorNum = Number(valor.value) || 0
-            if (touchedEdit.valor) {
-                if (valorNum <= 0) {
-                    showError('error_edit_valor', 'Debe ser mayor a 0');
-                    valor.classList.add('border-red-500');
-                    valid = false
-                } else {
-                    hideError('error_edit_valor');
-                    valor.classList.remove('border-red-500')
-                }
-            } else valid = false
+            if (!Array.isArray(beneficios)) {
+                beneficios = [];
+            }
 
-            const duracionNum = Number(duracion.value) || 0
-            if (touchedEdit.duracion) {
-                if (duracionNum <= 0) {
-                    showError('error_edit_duracion', 'Debe ser mayor a 0');
-                    duracion.classList.add('border-red-500');
-                    valid = false
-                } else {
-                    hideError('error_edit_duracion');
-                    duracion.classList.remove('border-red-500')
-                }
-            } else valid = false
+            // Si no hay beneficios, deja uno vacío
+            if (beneficios.length === 0) {
+                agregarBeneficio();
+                return;
+            }
 
-            if (touchedEdit.descripcion) {
-                if (descripcion.value.trim().length < 5) {
-                    showError('error_edit_descripcion', 'Debe tener al menos 5 caracteres');
-                    descripcion.classList.add('border-red-500');
-                    valid = false
-                } else {
-                    hideError('error_edit_descripcion');
-                    descripcion.classList.remove('border-red-500')
-                }
-            } else valid = false
+            // Si no hay beneficios, deja uno vacío
+            if (beneficios.length === 0) {
+                agregarBeneficio();
+                return;
+            }
 
-            btn.disabled = !valid
-            btn.classList.toggle('opacity-50', !valid)
-            btn.classList.toggle('cursor-not-allowed', !valid)
+            // 🔥 USAR LA MISMA FUNCIÓN QUE EN CREAR
+            beneficios.forEach(desc => {
+                agregarBeneficio(desc);
+            });
+
+            // =========================
+            // GUARDAR ESTADO ORIGINAL (SEGURO)
+            // =========================
+            setTimeout(() => {
+                planOriginal = {
+                    nomb_plan: document.getElementById('nomb_plan').value.trim(),
+                    valor: String(plan.valor),
+                    duracion: String(plan.duracion),
+                    es_destacado: !!plan.es_destacado,
+                    descripcion: Array.from(
+                        document.querySelectorAll('input[name="descripcion[]"]')
+                    ).map(i => i.value.trim())
+                };
+            }, 0);
         }
 
         /* =========================
-           EVENTOS INPUTS
+           CONFIGURACIÓN
         ========================= */
-        ['create_nomb_plan', 'create_valor', 'create_duracion', 'create_descripcion'].forEach(id => {
-            document.getElementById(id)?.addEventListener('input', () => {
-                touchedCreate[id.replace('create_', '').replace('_plan', '')] = true
-                validateCreatePlan()
-            })
-        })['edit_nomb_plan', 'edit_valor', 'edit_duracion', 'edit_descripcion'].forEach(id => {
-            document.getElementById(id)?.addEventListener('input', () => {
-                touchedEdit[id.replace('edit_', '').replace('_plan', '')] = true
-                validateEditPlan()
-            })
-        })
+        const MIN_CHARS = 10;
+        const MAX_CHARS = 120;
 
         /* =========================
-           RESET FORMULARIOS
+           AGREGAR BENEFICIO
         ========================= */
-        function resetCreateForm() {
-            Object.keys(touchedCreate).forEach(k => touchedCreate[k] = false)['error_create_nomb_plan',
-                'error_create_valor', 'error_create_duracion', 'error_create_descripcion'].forEach(hideError)
-            const btn = document.getElementById('btnCreatePlan')
-            btn.disabled = true
-            btn.classList.add('opacity-50', 'cursor-not-allowed')['create_nomb_plan', 'create_valor', 'create_duracion',
-                'create_descripcion'].forEach(id => document.getElementById(id)?.classList.remove('border-red-500'))
+        function agregarBeneficio(valor = '') {
+            const container = document.getElementById('beneficios-container');
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'space-y-1';
+
+            wrapper.innerHTML = `
+        <div class="flex gap-2">
+            <input type="text"
+                name="descripcion[]"
+                value="${valor}"
+                maxlength="${MAX_CHARS}"
+                placeholder="Ej: Soporte prioritario"
+                class="flex-1 rounded-xl border border-gray-300 px-4 py-3
+                       focus:ring-2 focus:ring-primary focus:outline-none"
+                oninput="limitarYValidar(this)"
+                onblur="validarBeneficio(this)">
+            <button type="button" onclick="eliminarBeneficio(this)"
+                class="px-3 text-red-500 hover:text-red-700">✕</button>
+        </div>
+        <p class="text-sm text-red-500 hidden"></p>
+    `;
+
+            container.appendChild(wrapper);
         }
 
-        function resetEditForm() {
-            Object.keys(touchedEdit).forEach(k => touchedEdit[k] = false)['error_edit_nomb_plan', 'error_edit_valor',
-                'error_edit_duracion', 'error_edit_descripcion'].forEach(hideError)
-            const btn = document.getElementById('btnEditPlan')
-            btn.disabled = true
-            btn.classList.add('opacity-50', 'cursor-not-allowed')['edit_nomb_plan', 'edit_valor', 'edit_duracion',
-                'edit_descripcion'].forEach(id => document.getElementById(id)?.classList.remove('border-red-500'))
+        /* =========================
+           ELIMINAR BENEFICIO
+        ========================= */
+        function eliminarBeneficio(btn) {
+            const container = document.getElementById('beneficios-container');
+
+            if (container.children.length <= 1) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Atención',
+                    text: 'Debe existir al menos un beneficio.',
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#3085d6'
+                });
+                return;
+            }
+
+            btn.closest('.space-y-1').remove();
+        }
+
+        /* =========================
+           LIMITAR + VALIDAR EN TIEMPO REAL
+        ========================= */
+        function limitarYValidar(input) {
+            if (input.value.length > MAX_CHARS) {
+                input.value = input.value.slice(0, MAX_CHARS);
+            }
+            validarBeneficio(input);
+        }
+
+        /* =========================
+           VALIDACIÓN DE BENEFICIO
+        ========================= */
+        function validarBeneficio(input) {
+            const error = input.closest('div').nextElementSibling;
+            const value = input.value.trim();
+
+            limpiarError(input, error);
+
+            // Obligatorio
+            if (!value) {
+                return mostrarError(input, error, 'El beneficio es obligatorio.');
+            }
+
+            // Mínimo
+            if (value.length < MIN_CHARS) {
+                return mostrarError(
+                    input,
+                    error,
+                    `Debe tener al menos ${MIN_CHARS} caracteres.`
+                );
+            }
+
+            // Máximo (seguridad extra)
+            if (value.length > MAX_CHARS) {
+                return mostrarError(
+                    input,
+                    error,
+                    `No puede superar los ${MAX_CHARS} caracteres.`
+                );
+            }
+
+            // Texto repetitivo (aaaaaa, dddddd)
+            if (/^(.)\1+$/.test(value.replace(/\s/g, ''))) {
+                return mostrarError(input, error, 'El texto no puede ser repetitivo.');
+            }
+
+            // Debe contener letras reales
+            if (!/[a-zA-ZáéíóúÁÉÍÓÚñÑ]/.test(value)) {
+                return mostrarError(input, error, 'Debe contener texto válido.');
+            }
+
+            return true;
         }
 
         /* =========================
            HELPERS
         ========================= */
-        function showError(id, message) {
-            const el = document.getElementById(id)
-            if (!el) return
-            el.textContent = message
-            el.classList.remove('hidden')
+        function mostrarError(input, error, mensaje) {
+            error.textContent = mensaje;
+            error.classList.remove('hidden');
+            input.classList.add('border-red-500');
+            return false;
         }
 
-        function hideError(id) {
-            const el = document.getElementById(id)
-            if (!el) return
-            el.textContent = ''
-            el.classList.add('hidden')
+        function limpiarError(input, error) {
+            error.textContent = '';
+            error.classList.add('hidden');
+            input.classList.remove('border-red-500');
         }
 
-        /* =========================
-           INICIALIZACIÓN
-        ========================= */
-        bindPaginationLinks()
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('planForm');
+
+            form.addEventListener('submit', (e) => {
+
+                // 🔹 Solo aplica en UPDATE
+                const method = document.getElementById('planFormMethod')?.value;
+                if (method !== 'PUT') return;
+
+                if (!planOriginal) return;
+
+                // 🔍 Estado actual del formulario
+                const current = {
+                    nomb_plan: document.getElementById('nomb_plan').value.trim(),
+                    valor: document.getElementById('valor').value.replace(/\D/g, ''),
+                    duracion: document.getElementById('duracion').value.replace(/\D/g, ''),
+                    es_destacado: document.getElementById('es_destacado').checked,
+                    descripcion: Array.from(
+                        document.querySelectorAll('input[name="descripcion[]"]')
+                    ).map(i => i.value.trim())
+                };
+
+                // 🔄 Comparación profunda
+                const sinCambios =
+                    planOriginal.nomb_plan === current.nomb_plan &&
+                    planOriginal.valor === current.valor &&
+                    planOriginal.duracion === current.duracion &&
+                    planOriginal.es_destacado === current.es_destacado &&
+                    JSON.stringify(planOriginal.descripcion) === JSON.stringify(current.descripcion);
+
+                if (sinCambios) {
+                    e.preventDefault();
+
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Sin cambios',
+                        text: 'Debes modificar al menos un campo para actualizar el plan.',
+                        confirmButtonText: 'Entendido',
+                        confirmButtonColor: '#3085d6'
+                    });
+                }
+            });
+        });
     </script>
+
+
+
+
 
     {{-- ALERTAS --}}
     @if (session('success'))
@@ -692,18 +493,606 @@
         </script>
     @endif
 
-    @if ($errors->any())
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Errores de validación',
-                    html: `{!! implode('<br>', $errors->all()) !!}`,
-                    confirmButtonColor: '#dc2626'
-                })
-            })
-        </script>
-    @endif
+    <script>
+        function openExportModal() {
+            document.getElementById('exportModal').classList.remove('hidden');
+            document.getElementById('exportModal').classList.add('flex');
+        }
+
+        function closeExportModal() {
+            document.getElementById('exportModal').classList.add('hidden');
+            document.getElementById('exportModal').classList.remove('flex');
+        }
+    </script>
+
+    <script>
+        function mostrarErrorSwal(titulo, mensaje) {
+            Swal.fire({
+                icon: 'error',
+                title: titulo,
+                text: mensaje,
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: '#dc2626'
+            });
+        }
+    </script>
+@endsection
+
+@section('modals')
+
+    {{-- MODAL --}}
+    <div id="planModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm">
+
+        <div
+            class="relative w-full max-w-3xl mx-4
+           bg-white dark:bg-[#161d2b]
+           rounded-2xl shadow-xl border border-[#cfd7e7] dark:border-gray-800
+           max-h-[90vh] overflow-y-auto">
+
+            {{-- HEADER --}}
+            <div class="flex items-center justify-between p-6 border-b border-[#cfd7e7] dark:border-gray-800">
+                <div>
+                    <h2 id="planModalTitle" class="text-xl font-black text-[#0d121b] dark:text-white">
+                        Crear nuevo plan
+                    </h2>
+                    <p class="text-sm text-[#4c669a] dark:text-gray-400">
+                        Los campos con (*) son obligatorios.
+                    </p>
+                </div>
+
+                <button onclick="closePlanCreateModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">
+                    &times;
+                </button>
+            </div>
+
+            {{-- BODY --}}
+            <form id="planForm" method="POST" class="p-6 space-y-8">
+                @csrf
+                <input type="hidden" name="_method" id="planFormMethod" value="POST">
+
+                {{-- NOMBRE --}}
+                <div>
+                    <label class="block text-sm font-bold text-[#0d121b] dark:text-white mb-2">
+                        Nombre del plan (*)
+                    </label>
+                    <input id="nomb_plan" type="text" name="nomb_plan" placeholder="Ej: Plan Profesional"
+                        class="w-full rounded-xl border border-gray-300 dark:border-gray-700 px-4 py-3
+                       focus:ring-2 focus:ring-primary focus:outline-none">
+                </div>
+                <p id="nomb_plan_error" class="mt-1 text-sm text-red-600 hidden"></p>
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        const input = document.getElementById('nomb_plan');
+                        const error = document.getElementById('nomb_plan_error');
+                        const form = input.closest('form');
+
+                        const allowedRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9._\- ]+$/;
+
+                        function showError(message) {
+                            error.textContent = message;
+                            error.classList.remove('hidden');
+                            input.classList.add('border-red-500');
+                        }
+
+                        function clearError() {
+                            error.textContent = '';
+                            error.classList.add('hidden');
+                            input.classList.remove('border-red-500');
+                        }
+
+                        /**
+                         * @returns {string|null}  null = válido | string = mensaje de error
+                         */
+                        function validatePlanName(value) {
+                            const trimmed = value.trim();
+
+                            if (trimmed.length === 0) {
+                                const msg = 'El nombre del plan es obligatorio.';
+                                showError(msg);
+                                return msg;
+                            }
+
+                            if (trimmed.length < 3) {
+                                const msg = 'Debe tener al menos 3 caracteres.';
+                                showError(msg);
+                                return msg;
+                            }
+
+                            if (trimmed.length > 50) {
+                                const msg = 'No puede superar los 50 caracteres.';
+                                showError(msg);
+                                return msg;
+                            }
+
+                            // ❗ NO permitir espacios al inicio o final
+                            if (value.startsWith(' ') || value.endsWith(' ')) {
+                                const msg = 'No debe comenzar ni terminar con espacios.';
+                                showError(msg);
+                                return msg;
+                            }
+
+                            if (/\s{2,}/.test(value)) {
+                                const msg = 'No se permiten múltiples espacios seguidos.';
+                                showError(msg);
+                                return msg;
+                            }
+
+                            if (!allowedRegex.test(value)) {
+                                const msg =
+                                    'Solo se permiten letras, números, espacios, guion (-), guion bajo (_), punto (.)';
+                                showError(msg);
+                                return msg;
+                            }
+
+                            clearError();
+                            return null; // ✅ válido
+                        }
+
+                        // Validación en tiempo real
+                        input.addEventListener('input', () => {
+                            validatePlanName(input.value);
+                        });
+
+                        input.addEventListener('blur', () => {
+                            validatePlanName(input.value);
+                        });
+
+                        // 🔥 VALIDACIÓN FINAL + SWEETALERT
+                        form.addEventListener('submit', (e) => {
+                            let errores = [];
+
+                            const nombreError = validatePlanName(input.value);
+                            if (nombreError) {
+                                errores.push(` <b>Nombre del plan</b>: ${nombreError}`);
+                            }
+
+                            if (errores.length > 0) {
+                                e.preventDefault();
+                                input.focus();
+
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Formulario inválido',
+                                    html: `
+                    <div style="text-align:left">
+                        <ul style="padding-left:18px">
+                            ${errores.map(err => `<li>${err}</li>`).join('')}
+                        </ul>
+                    </div>
+                `,
+                                    confirmButtonColor: '#dc2626'
+                                });
+                            }
+                        });
+                    });
+                </script>
+
+                {{-- VALOR + DURACIÓN --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-bold text-[#0d121b] dark:text-white mb-2">
+                            Valor del plan (*)
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+                            <input id="valor" type="text" name="valor" placeholder="50000"
+                                class="w-full pl-10 rounded-xl border border-gray-300 dark:border-gray-700 px-4 py-3
+           focus:ring-2 focus:ring-primary focus:outline-none">
+
+                            <p id="valor_error" class="mt-1 text-sm text-red-600 hidden"></p>
+                        </div>
+                    </div>
+
+                    <script>
+                        document.addEventListener('DOMContentLoaded', () => {
+                            const input = document.getElementById('valor');
+                            const error = document.getElementById('valor_error');
+
+                            const MIN_VALUE = 0;
+                            const MAX_VALUE = 99999999;
+                            const MAX_DIGITS = 8;
+
+                            function showError(message) {
+                                error.textContent = message;
+                                error.classList.remove('hidden');
+                                input.classList.add('border-red-500');
+                            }
+
+                            function clearError() {
+                                error.textContent = '';
+                                error.classList.add('hidden');
+                                input.classList.remove('border-red-500');
+                            }
+
+                            function sanitize(value) {
+                                return value.replace(/\D/g, '');
+                            }
+
+                            function formatNumber(value) {
+                                return new Intl.NumberFormat('es-CO').format(value);
+                            }
+
+                            function validateValor(rawValue) {
+                                if (rawValue.length === 0) {
+                                    showError('El valor del plan es obligatorio.');
+                                    return false;
+                                }
+
+                                if (rawValue.length > MAX_DIGITS) {
+                                    showError('El valor no puede tener más de 8 dígitos.');
+                                    return false;
+                                }
+
+                                const number = Number(rawValue);
+
+                                if (Number.isNaN(number)) {
+                                    showError('El valor ingresado no es válido.');
+                                    return false;
+                                }
+
+                                if (number < MIN_VALUE) {
+                                    showError(`El valor mínimo permitido es ${MIN_VALUE}.`);
+                                    return false;
+                                }
+
+                                if (number > MAX_VALUE) {
+                                    showError('El valor máximo permitido es 99.999.999 COP.');
+                                    return false;
+                                }
+
+                                clearError();
+                                return true;
+                            }
+
+                            // ⛔ Bloquear teclas inválidas
+                            input.addEventListener('keydown', (e) => {
+                                if (['e', 'E', '+', '-', '.', ',', ' '].includes(e.key)) {
+                                    e.preventDefault();
+                                }
+                            });
+
+                            // 🔒 Escritura y pegado con formato
+                            input.addEventListener('input', () => {
+                                const raw = sanitize(input.value);
+
+                                if (raw.length > MAX_DIGITS) {
+                                    input.value = formatNumber(raw.slice(0, MAX_DIGITS));
+                                    validateValor(raw.slice(0, MAX_DIGITS));
+                                } else {
+                                    input.value = raw ? formatNumber(raw) : '';
+                                    validateValor(raw);
+                                }
+                            });
+
+                            // 🔍 Validación final
+                            input.addEventListener('blur', () => {
+                                const raw = sanitize(input.value);
+                                validateValor(raw);
+                                input.value = raw ? formatNumber(raw) : '';
+                            });
+                        });
+                    </script>
+
+                    <div>
+                        <label class="block text-sm font-bold text-[#0d121b] dark:text-white mb-2">
+                            Duración (días)
+                        </label>
+
+                        <input id="duracion" type="text" name="duracion" placeholder="60"
+                            class="w-full rounded-xl border border-gray-300 dark:border-gray-700 px-4 py-3
+                            focus:ring-2 focus:ring-primary focus:outline-none">
+
+                        <p id="duracion_error" class="mt-1 text-sm text-red-600 hidden"></p>
+                    </div>
+                </div>
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        const input = document.getElementById('duracion');
+                        const error = document.getElementById('duracion_error');
+
+                        const MIN_VALUE = 0; // 👈 ahora permite 0 (ilimitado)
+                        const MAX_VALUE = 9999;
+                        const MAX_DIGITS = 4;
+
+                        function showError(message) {
+                            error.textContent = message;
+                            error.classList.remove('hidden');
+                            input.classList.add('border-red-500');
+                        }
+
+                        function clearError() {
+                            error.textContent = '';
+                            error.classList.add('hidden');
+                            input.classList.remove('border-red-500');
+                        }
+
+                        function sanitize(value) {
+                            // quitar todo excepto números
+                            return value.replace(/\D/g, '');
+                        }
+
+                        function formatNumber(value) {
+                            // formatear con separador de miles (es-CO usa punto)
+                            return Number(value).toLocaleString('es-CO');
+                        }
+
+                        function validateDuracion(rawValue) {
+                            if (rawValue.length === 0) {
+                                showError('La duración del plan es obligatoria.');
+                                return false;
+                            }
+
+                            const number = Number(rawValue);
+
+                            if (Number.isNaN(number)) {
+                                showError('La duración ingresada no es válida.');
+                                return false;
+                            }
+
+                            if (number < MIN_VALUE) {
+                                showError('La duración no puede ser negativa.');
+                                return false;
+                            }
+
+                            if (number > MAX_VALUE) {
+                                showError('La duración máxima es 9999 días.');
+                                return false;
+                            }
+
+                            clearError();
+                            return true;
+                        }
+
+                        // ⛔ Bloquear teclas inválidas
+                        input.addEventListener('keydown', (e) => {
+                            if (['e', 'E', '+', '-', '.', ',', ' '].includes(e.key)) {
+                                e.preventDefault();
+                            }
+                        });
+
+                        // 🔒 Control total + formato visual
+                        input.addEventListener('input', () => {
+                            const raw = sanitize(input.value);
+
+                            if (raw.length > MAX_DIGITS) {
+                                input.value = formatNumber(raw.slice(0, MAX_DIGITS));
+                            } else if (raw.length > 0) {
+                                input.value = formatNumber(raw);
+                            } else {
+                                input.value = '';
+                            }
+
+                            validateDuracion(raw);
+                        });
+
+                        // 🔍 Al salir, validar
+                        input.addEventListener('blur', () => {
+                            const raw = sanitize(input.value);
+                            validateDuracion(raw);
+                        });
+
+                        // 🧼 Antes de enviar el form → enviar valor limpio
+                        input.closest('form')?.addEventListener('submit', () => {
+                            input.value = sanitize(input.value);
+                        });
+                    });
+                </script>
+
+                {{-- BENEFICIOS --}}
+                <div>
+                    <label class="block text-sm font-bold text-[#0d121b] dark:text-white mb-3">
+                        Beneficios del plan (*)
+                    </label>
+
+                    <div id="beneficios-container" class="space-y-3"></div>
+
+                    <button type="button" onclick="agregarBeneficio()"
+                        class="mt-3 text-sm font-semibold text-primary hover:underline">
+                        + Agregar beneficio
+                    </button>
+                    <p class="text-sm mt-1 hidden"></p>
+                </div>
+
+
+
+
+                {{-- DESTACADO --}}
+                <div class="flex items-center justify-between rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+                    <div>
+                        <p class="font-bold text-[#0d121b] dark:text-white">
+                            Plan recomendado
+                        </p>
+                        <p class="text-sm text-[#4c669a] dark:text-gray-400">
+                            Se mostrará como destacado
+                        </p>
+                    </div>
+
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input id="es_destacado" type="checkbox" name="es_destacado" value="1"
+                            class="sr-only peer">
+                        <div
+                            class="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-primary
+                            after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                            after:bg-white after:rounded-full after:h-5 after:w-5
+                            after:transition-all peer-checked:after:translate-x-full">
+                        </div>
+                    </label>
+                </div>
+
+                {{-- FOOTER --}}
+                <div class="flex justify-end gap-3 pt-4 border-t border-[#cfd7e7] dark:border-gray-800">
+                    <button type="button" onclick="closePlanCreateModal()"
+                        class="px-6 py-2 rounded-xl border border-gray-300 dark:border-gray-700
+                       text-[#4c669a] hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                        Cancelar
+                    </button>
+
+                    <button type="submit"
+                        class="px-8 py-2 rounded-xl bg-primary font-bold text-white
+                       hover:bg-primary/90 transition">
+                        Guardar plan
+                    </button>
+                </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        const form = document.getElementById('planForm');
+
+                        form.addEventListener('submit', (e) => {
+                            let valido = true;
+                            let errores = [];
+
+                            // =========================
+                            // OBTENER CAMPOS
+                            // =========================
+                            const nombre = document.getElementById('nomb_plan');
+                            const valor = document.getElementById('valor');
+                            const duracion = document.getElementById('duracion');
+                            const beneficios = document.querySelectorAll('input[name="descripcion[]"]');
+
+                            const valorRaw = valor.value.replace(/\D/g, '');
+                            const duracionRaw = duracion.value.replace(/\D/g, '');
+
+                            // =========================
+                            // NOMBRE
+                            // =========================
+                            // =========================
+                            // NOMBRE
+                            // =========================
+                            const nombreValue = nombre.value;
+
+                            if (!nombreValue.trim()) {
+                                valido = false;
+                                errores.push(' <b>Nombre del plan</b>: es obligatorio.');
+                            }
+
+                            if (nombreValue.trim() && nombreValue.trim().length < 3) {
+                                valido = false;
+                                errores.push(' <b>Nombre del plan</b>: mínimo 3 caracteres.');
+                            }
+
+                            if (nombreValue.startsWith(' ') || nombreValue.endsWith(' ')) {
+                                valido = false;
+                                errores.push(' <b>Nombre del plan</b>: no debe comenzar ni terminar con espacios.');
+                            }
+
+                            if (/\s{2,}/.test(nombreValue)) {
+                                valido = false;
+                                errores.push(' <b>Nombre del plan</b>: no se permiten múltiples espacios seguidos.');
+                            }
+
+                            // =========================
+                            // VALOR (🔥 SOLO SE AGREGA LO VISUAL)
+                            // =========================
+                            const valorError = document.getElementById('valor_error');
+
+                            if (!valorRaw) {
+                                valido = false;
+                                errores.push(' <b>Valor</b>: es obligatorio.');
+
+                                valor.classList.add('border-red-500');
+                                valorError.textContent = 'El valor es obligatorio.';
+                                valorError.classList.remove('hidden');
+                            }
+
+                            // =========================
+                            // DURACIÓN (🔥 SOLO SE AGREGA LO VISUAL)
+                            // =========================
+                            const duracionError = document.getElementById('duracion_error');
+
+                            if (!duracionRaw) {
+                                valido = false;
+                                errores.push(' <b>Duración</b>: es obligatoria.');
+
+                                duracion.classList.add('border-red-500');
+                                duracionError.textContent = 'La duración es obligatoria.';
+                                duracionError.classList.remove('hidden');
+                            }
+
+
+                            // =========================
+                            // BENEFICIOS
+                            // =========================
+                            if (beneficios.length === 0) {
+                                valido = false;
+                                errores.push(' <b>Beneficios</b>: debes agregar al menos uno.');
+                            }
+
+                            beneficios.forEach((input, index) => {
+                                if (!validarBeneficio(input)) {
+                                    valido = false;
+
+                                    const mensaje = input
+                                        .closest('.space-y-1')
+                                        .querySelector('p')
+                                        .textContent;
+
+                                    errores.push(` <b>Beneficio #${index + 1}</b>: ${mensaje}`);
+                                }
+                            });
+
+                            // =========================
+                            // UPDATE SIN CAMBIOS
+                            // =========================
+                            const method = document.getElementById('planFormMethod').value;
+
+                            if (method === 'PUT' && planOriginal) {
+                                const current = {
+                                    nomb_plan: nombre.value.trim(),
+                                    valor: valorRaw,
+                                    duracion: duracionRaw,
+                                    es_destacado: document.getElementById('es_destacado').checked,
+                                    descripcion: Array.from(beneficios).map(b => b.value.trim())
+                                };
+
+                                const sinCambios =
+                                    planOriginal.nomb_plan === current.nomb_plan &&
+                                    planOriginal.valor === current.valor &&
+                                    planOriginal.duracion === current.duracion &&
+                                    planOriginal.es_destacado === current.es_destacado &&
+                                    JSON.stringify(planOriginal.descripcion) === JSON.stringify(current.descripcion);
+
+                                if (sinCambios) {
+                                    e.preventDefault();
+                                    Swal.fire({
+                                        icon: 'info',
+                                        title: 'Sin cambios',
+                                        text: 'Debes modificar al menos un campo para actualizar el plan.',
+                                        confirmButtonColor: '#3085d6'
+                                    });
+                                    return;
+                                }
+                            }
+
+                            // =========================
+                            // BLOQUEAR ENVÍO
+                            // =========================
+                            if (!valido) {
+                                e.preventDefault();
+
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Formulario inválido',
+                                    html: `
+                    <div style="text-align:left">
+                        <ul style="padding-left:18px">
+                            ${errores.map(e => `<li>${e}</li>`).join('')}
+                        </ul>
+                    </div>
+                `,
+                                    confirmButtonColor: '#dc2626'
+                                });
+                            }
+                        });
+                    });
+                </script>
+            </form>
+        </div>
+    </div>
+
+
+
+
 
     {{-- MODAL EXPORTAR --}}
     <div id="exportModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
@@ -738,20 +1127,4 @@
 
         </div>
     </div>
-
-    <script>
-        function openExportModal() {
-            document.getElementById('exportModal').classList.remove('hidden');
-            document.getElementById('exportModal').classList.add('flex');
-        }
-
-        function closeExportModal() {
-            document.getElementById('exportModal').classList.add('hidden');
-            document.getElementById('exportModal').classList.remove('flex');
-        }
-    </script>
-
-
-
-
 @endsection

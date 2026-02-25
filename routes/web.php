@@ -217,7 +217,7 @@ Route::get('/sadmin/admins/export/pdf', [UsuarioController::class, 'exportPdf'])
 Route::get('/sadmin/admins/export/excel', [UsuarioController::class, 'exportExcel'])
     ->name('sadmin.export.excel');
 
-    
+
 // EXPORTAR PLANES
 
 Route::get('/sadmin/planes/export/pdf', [PlanController::class, 'exportPdf'])
@@ -227,7 +227,7 @@ Route::get('/sadmin/planes/export/pdf', [PlanController::class, 'exportPdf'])
 Route::get('/sadmin/planes/export/excel', [PlanController::class, 'exportExcel'])
     ->name('planes.export.excel');
 
-    // EXPORTAR EMPRESAS
+// EXPORTAR EMPRESAS
 
 
 Route::get('/sadmin/empresas/export/pdf', [EmpresaController::class, 'exportPdf'])
