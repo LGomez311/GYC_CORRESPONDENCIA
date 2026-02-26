@@ -144,7 +144,6 @@
     </div>
 </div>
 
-
 @if (session('success'))
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -352,7 +351,10 @@
                 </button>
 
                 <button id="btnGuardar" type="submit"
-                    class="px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"><span class="material-symbols-outlined">save</span> Guardar
+                    class="px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2">
+                    <span class="material-symbols-outlined">save</span>
+                    Guardar
+                </button>
             </div>
         </form>
     </div>
@@ -1267,6 +1269,7 @@
                 input.value = value.replace(/[^0-9]/g, '');
             }
 
+            validateField(input);
         });
 
         input.addEventListener('blur', () => {
@@ -1293,16 +1296,6 @@
             }
         });
     });
-
-    //  Validar que el representante sea seleccionado
-    const selectRepresentante = document.querySelector('select[name="id_representante"]');
-    if (selectRepresentante) {
-        selectRepresentante.addEventListener('change', () => {
-            btnGuardar.disabled = !isFormValid();
-            btnGuardar.classList.toggle('opacity-50', btnGuardar.disabled);
-            btnGuardar.classList.toggle('cursor-not-allowed', btnGuardar.disabled);
-        });
-    }
 </script>
 
 {{-- MODAL EXPORTAR --}}
