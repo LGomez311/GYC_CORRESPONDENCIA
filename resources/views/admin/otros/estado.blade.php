@@ -27,7 +27,7 @@
                 </h1>
 
                 <p class="text-[#4c669a] dark:text-gray-400 text-sm sm:text-base">
-                    Administre los estados personalizados (a partir del registro #6 en adelante).
+                    Administre los estados personalizados.
                 </p>
             </div>
 

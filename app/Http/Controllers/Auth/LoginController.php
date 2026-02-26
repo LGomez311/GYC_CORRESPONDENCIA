@@ -53,7 +53,7 @@ class LoginController extends Controller
              * 🔒 Restricciones se manejan en el sidebar
              */
             if ($empleado->emple_rol == 2) {
-                return redirect()->route('admin.index');
+                return redirect()->route('admin.home');
             }
 
             /**

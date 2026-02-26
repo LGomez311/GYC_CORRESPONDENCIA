@@ -79,5 +79,23 @@ class Empleado extends Authenticatable
             'emple_doc'   // PK en empleado
         );
     }
+
+    public function enviosEnviados()
+    {
+        return $this->hasMany(
+            \App\Models\Envio::class,
+            'doc_quien_envia',   // FK en envio
+            'emple_doc'          // PK en empleado
+        );
+    }
+
+    public function enviosRecibidos()
+    {
+        return $this->hasMany(
+            \App\Models\Envio::class,
+            'doc_quien_dirigido',  // FK en envio
+            'emple_doc'            // PK en empleado
+        );
+    }
     
 }

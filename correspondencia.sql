@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 23-02-2026 a las 06:38:01
+-- Tiempo de generación: 26-02-2026 a las 06:41:44
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -107,11 +107,11 @@ CREATE TABLE `detalle_envio` (
 
 CREATE TABLE `empleado` (
   `emple_doc` varchar(20) NOT NULL,
-  `nit_empresa` varchar(25) NOT NULL,
+  `nit_empresa` varchar(25) DEFAULT NULL,
   `password` varchar(255) NOT NULL,
   `emple_nombres` varchar(50) NOT NULL,
   `emple_apellidos` varchar(50) NOT NULL,
-  `emple_tel` varchar(25) NOT NULL,
+  `emple_tel` varchar(25) DEFAULT NULL,
   `emple_correo` varchar(255) NOT NULL,
   `emple_img` varchar(500) DEFAULT NULL,
   `emple_estado` int(20) NOT NULL,
@@ -124,9 +124,10 @@ CREATE TABLE `empleado` (
 --
 
 INSERT INTO `empleado` (`emple_doc`, `nit_empresa`, `password`, `emple_nombres`, `emple_apellidos`, `emple_tel`, `emple_correo`, `emple_img`, `emple_estado`, `emple_rol`, `emple_area`) VALUES
-('1001', '', '$2y$12$0h212HqFlz9vFCBQIR/MI.TM.MGKGNBo5gpPEhH/nPYd6DpADKWDS', 'Kevin', 'Villafrade', '', 'kevin@gmail.com', NULL, 1, 1, NULL),
-('1002', '', '$2y$12$L85caJ5fobG4IbL0bIxpKuCm84wir.UCBhGIQcxUs9c3R.QDpz6gG', 'Luis', 'Gomez', '', 'luis@gmail.com', NULL, 1, 2, NULL),
-('1003', '', '$2y$12$HDQLkTRh5EtL924ayRX4BOh4Sjy.BB/TWBUblKHj0JYfLJRF1zrom', 'Yuber', 'Paez', '', 'yuber@gmail.com', NULL, 1, 3, NULL);
+('1001', NULL, '$2y$12$h2K09eO/8SzeJQgNASdo3OYDxn0o4Po7TmlsjAgFpz.p1rea4rrku', 'Kevin', 'Villafrade', NULL, 'kevin@gmail.com', NULL, 1, 1, NULL),
+('1002', NULL, '$2y$12$LnlHo.YRNtS13.rTT9XSd.0HtAYC2vJ.qVxEP3.AXqLKuP0e15Xva', 'Luis', 'Gomez', NULL, 'luis@gmail.com', NULL, 1, 2, NULL),
+('1003', NULL, '$2y$12$MC/IFZFcwBFCEH.U8JDcke63ZJFiD9OT.U9B80fFv6PS5zmlTXzGS', 'Yuber', 'Paez', NULL, 'yuber@gmail.com', NULL, 1, 3, NULL),
+('2005914095', NULL, '$2y$12$Q2D86tKv7pyD07L2WSZf3Oz9itYl59mY/s//gskgBdNPBc.j/g/eG', 'SUPER', 'ADMIN', NULL, 'kevinreal2209@gmail.com', NULL, 1, 1, NULL);
 
 -- --------------------------------------------------------
 
@@ -143,13 +144,6 @@ CREATE TABLE `empresa` (
   `contacto` varchar(15) DEFAULT NULL,
   `empresa_correo` varchar(150) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `empresa`
---
-
-INSERT INTO `empresa` (`nit_empresa`, `nomb_empresa`, `doc_representante`, `nomb_representante`, `direccion`, `contacto`, `empresa_correo`) VALUES
-('3241234', 'Soluciones Tecnológicas Andinas S.A.S.', '1002', '0', 'Cra 545 N54-622', '3154764785', 'andinasas@gmail.com');
 
 -- --------------------------------------------------------
 
@@ -260,13 +254,6 @@ CREATE TABLE `licencia` (
   `licencia_origen` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Volcado de datos para la tabla `licencia`
---
-
-INSERT INTO `licencia` (`id_licencia`, `id_estado`, `id_pago`, `fecha_inicio`, `fecha_fin`, `tipo_licencia`, `licencia_origen`) VALUES
-(11, 1, 45, '2026-02-21 23:05:51', '2026-03-23 23:05:51', 'ACTIVACION', NULL);
-
 -- --------------------------------------------------------
 
 --
@@ -306,13 +293,6 @@ CREATE TABLE `pagos` (
   `fecha_inicio` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Volcado de datos para la tabla `pagos`
---
-
-INSERT INTO `pagos` (`id_pago`, `id_plan`, `comprobante`, `id_admin`, `moneda`, `id_est_pago`, `fecha_pago`, `fecha_inicio`) VALUES
-(45, 4, NULL, '1002', 'COP', 4, '2026-02-21 18:05:37', NULL);
-
 -- --------------------------------------------------------
 
 --
@@ -327,6 +307,13 @@ CREATE TABLE `password_codes` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `password_codes`
+--
+
+INSERT INTO `password_codes` (`id`, `emple_correo`, `code`, `expires_at`, `created_at`, `updated_at`) VALUES
+(8, 'nikolas1993838@gmail.com', '941212', '2026-02-26 10:12:33', '2026-02-26 10:02:33', '2026-02-26 10:02:33');
 
 -- --------------------------------------------------------
 
@@ -351,18 +338,19 @@ CREATE TABLE `plan` (
   `nomb_plan` varchar(50) NOT NULL,
   `valor` int(12) NOT NULL,
   `descripcion` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`descripcion`)),
-  `duracion` int(10) NOT NULL
+  `duracion` int(10) NOT NULL,
+  `es_destacado` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `plan`
 --
 
-INSERT INTO `plan` (`id_plan`, `nomb_plan`, `valor`, `descripcion`, `duracion`) VALUES
-(4, 'Mensual', 200000, '[\"Acceso completo al sistema.\",\"Soporte básico.\",\"Garantía 7 días.\"]', 30),
-(5, 'Trimestral', 540000, '[\"Acceso completo al sistema.\",\"Soporte prioritario.\",\"Garantía 14 días.\", \"Incluye 1 capacitación.\"]', 90),
-(6, 'Semestral', 1040000, '[\"Acceso completo al sistema.\",\"Soporte prioritario extendido.\",\"Garantía 30 días.\", \"Incluye 2 capacitaciones.\"]\r\n', 180),
-(7, 'Anuall', 1920000, '[]', 365);
+INSERT INTO `plan` (`id_plan`, `nomb_plan`, `valor`, `descripcion`, `duracion`, `es_destacado`) VALUES
+(4, 'Mensual', 200000, '[\"Acceso completo al sistema.\",\"Soporte básico.\",\"Garantía 7 días.\"]', 30, 0),
+(5, 'Trimestral', 540000, '[\"Acceso completo al sistema.\",\"Soporte prioritario.\",\"Garantía 14 días.\", \"Incluye 1 capacitación.\"]', 90, 0),
+(6, 'Semestral', 1040000, '[\"Acceso completo al sistema.\",\"Soporte prioritario extendido.\",\"Garantía 30 días.\", \"Incluye 2 capacitaciones.\"]\r\n', 180, 0),
+(10, 'Anual', 1950000, '[\"Acceso completo al sistema.\",\"Soporte prioritario exclusivo.\",\"Garant\\u00eda 60 d\\u00edas.\",\"Incluye 6 capacitaciones.\"]', 365, 0);
 
 -- --------------------------------------------------------
 
@@ -469,7 +457,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('FnR2oc9CT46eUqFj74ZgI0D71NZX73aibql90Ukw', 1001, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiUXVKZnRNTDhLbFZ6R3c5RElkTWRudnhvZ0RuOUs5RUh0cExDWEJOSiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzU6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zYWRtaW4vYWRtaW5zIjtzOjU6InJvdXRlIjtzOjY6ImFkbWlucyI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtzOjQ6IjEwMDEiO30=', 1771824843);
+('IPCiOapeDNkFGXHGDovLIdgkdS49BkxyCiq3f67U', 1001, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiRzlwc2J1UUdiamJJUUNUVTJOamlzTWdHUXNIaURXN1dKeFNzQTgwbCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zYWRtaW4vZW1wcmVzYXMiO3M6NToicm91dGUiO3M6ODoiZW1wcmVzYXMiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7czo0OiIxMDAxIjt9', 1772084495);
 
 -- --------------------------------------------------------
 
@@ -742,7 +730,7 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT de la tabla `licencia`
 --
 ALTER TABLE `licencia`
-  MODIFY `id_licencia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id_licencia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT de la tabla `migrations`
@@ -754,19 +742,19 @@ ALTER TABLE `migrations`
 -- AUTO_INCREMENT de la tabla `pagos`
 --
 ALTER TABLE `pagos`
-  MODIFY `id_pago` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
+  MODIFY `id_pago` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
 
 --
 -- AUTO_INCREMENT de la tabla `password_codes`
 --
 ALTER TABLE `password_codes`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT de la tabla `plan`
 --
 ALTER TABLE `plan`
-  MODIFY `id_plan` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id_plan` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT de la tabla `radicados`

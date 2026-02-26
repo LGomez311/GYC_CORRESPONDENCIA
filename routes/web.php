@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\PrioridadController;
 use App\Http\Controllers\Admin\TipoController;
 use App\Http\Controllers\Admin\EstadoController;
 use App\Http\Controllers\Admin\RolController;
+use App\Http\Controllers\Admin\HomeController as AdminHomeController;
 
 
 
@@ -142,7 +143,7 @@ Route::prefix('admin')
 
         // Dashboard
         Route::get('/', fn() => view('admin.usuarios'))->name('admin.index');
-        Route::get('/home', fn() => view('admin.home'))->name('admin.home');
+        Route::get('/home', [AdminHomeController::class, 'index'])->name('admin.home');
 
         // Planes
         Route::get('/planes', [AdminPlanController::class, 'index'])->name('admin.planes');
