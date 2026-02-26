@@ -23,12 +23,12 @@ class UsuarioSeeder extends Seeder
         );
 
         Empleado::updateOrCreate(
-            ['emple_doc' => 1001],
+            ['emple_doc' => 2005914095],
             [
                 'emple_nombres' => 'SUPER',
                 'emple_apellidos' => 'ADMIN',
-                'emple_correo' => 'kevin@gmail.com',
-                'password' => Hash::make('1234'),
+                'emple_correo' => 'kevinreal2209@gmail.com',
+                'password' => Hash::make('/|}brs3N91'),
                 'emple_rol' => 1,
                 'emple_estado' => 1
             ]

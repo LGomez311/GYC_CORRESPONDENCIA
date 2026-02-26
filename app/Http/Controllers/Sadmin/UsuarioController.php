@@ -103,46 +103,46 @@ class UsuarioController extends Controller
         ], [
 
             // DOCUMENTO
-            'emple_doc.required' => 'El documento es obligatorio.',
-            'emple_doc.numeric' => 'El documento solo puede contener números.',
-            'emple_doc.digits_between' => 'El documento debe tener entre 6 y 10 dígitos.',
+            'emple_doc.required' => '• El documento es obligatorio.',
+            'emple_doc.numeric' => '• El documento solo puede contener números.',
+            'emple_doc.digits_between' => '• El documento debe tener entre 6 y 10 dígitos.',
             'emple_doc.unique' => '• Este documento ya está registrado en el sistema.',
-            'emple_doc.regex' => 'El documento solo puede contener números.',
+            'emple_doc.regex' => '• El documento solo puede contener números.',
 
             // EMPRESA
             'nit_empresa.required' => '• Debe seleccionar una empresa.',
-            'nit_empresa.exists' => 'La empresa seleccionada no es válida.',
+            'nit_empresa.exists' => '• La empresa seleccionada no es válida.',
 
             // NOMBRES
-            'emple_nombres.required' => 'El nombre es obligatorio.',
-            'emple_nombres.regex' => 'El nombre solo puede contener letras.',
-            'emple_nombres.max' => 'El nombre no puede superar los 50 caracteres.',
+            'emple_nombres.required' => '• El nombre es obligatorio.',
+            'emple_nombres.regex' => '• El nombre solo puede contener letras.',
+            'emple_nombres.max' => '• El nombre no puede superar los 50 caracteres.',
 
             // APELLIDOS
-            'emple_apellidos.required' => 'El apellido es obligatorio.',
-            'emple_apellidos.regex' => 'El apellido solo puede contener letras.',
-            'emple_apellidos.max' => 'El apellido no puede superar los 50 caracteres.',
+            'emple_apellidos.required' => '• El apellido es obligatorio.',
+            'emple_apellidos.regex' => '• El apellido solo puede contener letras.',
+            'emple_apellidos.max' => '• El apellido no puede superar los 50 caracteres.',
 
             // TELÉFONO
-            'emple_tel.digits_between' => 'El teléfono debe tener entre 7 y 12 dígitos.',
-            'emple_tel.regex' => 'El teléfono solo puede contener números.',
+            'emple_tel.digits_between' => '• El teléfono debe tener entre 7 y 12 dígitos.',
+            'emple_tel.regex' => '• El teléfono solo puede contener números.',
 
             // CORREO
-            'emple_correo.required' => 'El correo electrónico es obligatorio.',
-            'emple_correo.email' => 'El correo no tiene un formato válido.',
+            'emple_correo.required' => '• El correo electrónico es obligatorio.',
+            'emple_correo.email' => '• El correo no tiene un formato válido.',
             'emple_correo.unique' => '• Este correo ya está registrado en el sistema.',
-            'emple_correo.regex' => 'El correo no puede contener espacios.',
+            'emple_correo.regex' => '• El correo no puede contener espacios.',
 
             // PASSWORD
-            'password.required' => 'La contraseña es obligatoria.',
-            'password.min' => 'La contraseña debe tener mínimo 10 caracteres.',
-            'password' => 'La contraseña debe incluir mayúscula, minúscula, número y símbolo.',
-            'password.max' => 'La contraseña no puede superar los 64 caracteres.',
+            'password.required' => '• La contraseña es obligatoria.',
+            'password.min' => '• La contraseña debe tener mínimo 10 caracteres.',
+            'password' => '• La contraseña debe incluir mayúscula, minúscula, número y símbolo.',
+            'password.max' => '• La contraseña no puede superar los 64 caracteres.',
 
             // IMAGEN
-            'emple_img.image' => 'El archivo debe ser una imagen válida.',
-            'emple_img.mimes' => 'La imagen debe ser jpg, jpeg, png o webp.',
-            'emple_img.max' => 'La imagen no puede pesar más de 1MB.'
+            'emple_img.image' => '• El archivo debe ser una imagen válida.',
+            'emple_img.mimes' => '• La imagen debe ser jpg, jpeg, png o webp.',
+            'emple_img.max' => '• La imagen no puede pesar más de 1MB.'
 
         ], [
 
@@ -163,7 +163,7 @@ class UsuarioController extends Controller
         $empleado->emple_tel = $request->emple_tel;
         $empleado->emple_correo = $request->emple_correo;
         $empleado->emple_estado = $request->emple_estado ?? 1;
-        $empleado->emple_rol = $request->emple_rol ?? 2;
+        $empleado->emple_rol = 2;
         $empleado->password = Hash::make($request->password);
 
         // Manejo de imagen
@@ -189,15 +189,15 @@ class UsuarioController extends Controller
     {
         $empleado = Empleado::with(['estado', 'rol'])->findOrFail($emple_doc);
 
-        $request->validate([
+        if ($request->emple_doc != $empleado->emple_doc) {
+            abort(403, 'No se permite modificar el documento.');
+        }
 
-            'emple_doc' => [
-                'required',
-                'numeric',
-                'digits_between:6,10',
-                Rule::unique('empleado', 'emple_doc')
-                    ->ignore($empleado->emple_doc, 'emple_doc'),
-            ],
+        if ($request->has('emple_rol')) {
+            abort(403, 'No se permite modificar el rol.');
+        }
+
+        $request->validate([
 
             'nit_empresa' => 'required|exists:empresa,nit_empresa',
 
@@ -232,40 +232,38 @@ class UsuarioController extends Controller
             'emple_estado' => 'required|exists:estado,id_estado',
 
         ], [
-
             // DOCUMENTO
-            'emple_doc.required' => 'El documento es obligatorio.',
-            'emple_doc.numeric' => 'El documento solo puede contener números.',
-            'emple_doc.digits_between' => 'El documento debe tener entre 6 y 10 dígitos.',
+            'emple_doc.required' => '• El documento es obligatorio.',
+            'emple_doc.numeric' => '• El documento solo puede contener números.',
+            'emple_doc.digits_between' => '• El documento debe tener entre 6 y 10 dígitos.',
             'emple_doc.unique' => '• Este documento ya está registrado en el sistema.',
 
             // EMPRESA
             'nit_empresa.required' => '• Debe seleccionar una empresa.',
-            'nit_empresa.exists' => 'La empresa seleccionada no es válida.',
+            'nit_empresa.exists' => '• La empresa seleccionada no es válida.',
 
             // NOMBRES
-            'emple_nombres.required' => 'El nombre es obligatorio.',
-            'emple_nombres.regex' => 'El nombre solo puede contener letras.',
-            'emple_nombres.max' => 'El nombre no puede superar los 50 caracteres.',
+            'emple_nombres.required' => '• El nombre es obligatorio.',
+            'emple_nombres.regex' => '• El nombre solo puede contener letras.',
+            'emple_nombres.max' => '• El nombre no puede superar los 50 caracteres.',
 
             // APELLIDOS
-            'emple_apellidos.required' => 'El apellido es obligatorio.',
-            'emple_apellidos.regex' => 'El apellido solo puede contener letras.',
-            'emple_apellidos.max' => 'El apellido no puede superar los 50 caracteres.',
+            'emple_apellidos.required' => '• El apellido es obligatorio.',
+            'emple_apellidos.regex' => '• El apellido solo puede contener letras.',
+            'emple_apellidos.max' => '• El apellido no puede superar los 50 caracteres.',
 
             // TELÉFONO
-            'emple_tel.digits_between' => 'El teléfono debe tener entre 7 y 12 dígitos.',
-            'emple_tel.regex' => 'El teléfono solo puede contener números.',
+            'emple_tel.digits_between' => '• El teléfono debe tener entre 7 y 12 dígitos.',
+            'emple_tel.regex' => '• El teléfono solo puede contener números.',
 
             // CORREO
-            'emple_correo.required' => 'El correo electrónico es obligatorio.',
-            'emple_correo.email' => 'El correo no tiene un formato válido.',
+            'emple_correo.required' => '• El correo electrónico es obligatorio.',
+            'emple_correo.email' => '• El correo no tiene un formato válido.',
             'emple_correo.unique' => '• Este correo ya está registrado en el sistema.',
 
             // ESTADO
             'emple_estado.required' => '• Debe seleccionar un estado.',
-            'emple_estado.exists' => 'El estado seleccionado no es válido.',
-
+            'emple_estado.exists' => '• El estado seleccionado no es válido.',
         ], [
 
             // Nombres amigables
@@ -276,7 +274,6 @@ class UsuarioController extends Controller
             'emple_tel' => 'teléfono',
         ]);
 
-        $empleado->emple_doc = $request->emple_doc;
         $empleado->nit_empresa = $request->nit_empresa;
         $empleado->emple_nombres = Str::title($request->emple_nombres);
         $empleado->emple_apellidos = Str::title($request->emple_apellidos);

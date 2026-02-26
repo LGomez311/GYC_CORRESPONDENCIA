@@ -57,6 +57,8 @@
                 </div>
             </div>
 
+
+
             {{-- Formulario de login --}}
             <div class="w-full lg:w-1/2 p-8 sm:p-12 md:p-16">
 
@@ -71,6 +73,26 @@
                 <p class="text-base text-[#4c669a] dark:text-gray-400 mb-6">Ingresa tus credenciales para acceder al
                     sistema.</p>
 
+                @if (session('success'))
+                <div id="success-alert"
+                    class="bg-green-50 border-l-4 border-green-500 text-green-700 px-4 py-2 rounded mb-4 shadow-sm text-sm">
+                    {{ session('success') }}
+                </div>
+
+                <script>
+                    document.addEventListener("DOMContentLoaded", function() {
+                        const alert = document.getElementById('success-alert');
+                        if (alert) {
+                            setTimeout(() => {
+                                alert.style.opacity = 0;
+                                alert.style.transition = "opacity 0.5s ease";
+                                setTimeout(() => alert.remove(), 500); // elimina del DOM después de la transición
+                            }, 3000); // desaparece después de 3 segundos
+                        }
+                    });
+                </script>
+                @endif
+
                 <form method="POST" action="{{ route('login') }}" class="flex flex-col gap-4">
                     @csrf
 
@@ -81,7 +103,7 @@
                             value="{{ old('number') }}"
                             class="form-input w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-background-light dark:bg-background-dark text-[#0d121b] dark:text-gray-100 p-3 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary" />
                         @error('number')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </label>
 
@@ -91,15 +113,15 @@
                         <input name="password" type="password" placeholder="Ingresa tu contraseña"
                             class="form-input w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-background-light dark:bg-background-dark text-[#0d121b] dark:text-gray-100 p-3 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary" />
                         @error('password')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
                     </label>
 
-                    
+
 
                     {{-- Errores de login --}}
                     @if ($errors->has('login'))
-                        <p class="text-red-500 text-sm">{{ $errors->first('login') }}</p>
+                    <p class="text-red-500 text-sm">{{ $errors->first('login') }}</p>
                     @endif
 
                     {{-- Botón --}}
@@ -114,13 +136,13 @@
                         ¿Olvidaste tu contraseña?
                     </a>
 
-                    
-                    </form>
+
+                </form>
             </div>
         </div>
     </div>
 
-    
+
 </body>
 
 </html>

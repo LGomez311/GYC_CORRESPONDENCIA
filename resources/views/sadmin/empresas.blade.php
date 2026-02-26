@@ -56,41 +56,20 @@
             <table class="w-full text-left border-collapse">
                 <thead class="bg-background-light dark:bg-background-dark/50">
                     <tr>
-                        <th
-                            class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider align-middle text-center">
-                            Empresa</th>
-                        <th
-                            class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider align-middle text-center">
-                            NIT</th>
-                        <th
-                            class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider align-middle text-center">
-                            Dirección</th>
-                        <th
-                            class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider align-middle text-center">
-                            Teléfono</th>
-                        <th
-                            class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider align-middle text-center">
-                            Correo</th>
-                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase text-center">
-                            Representante
-                        </th>
-                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase text-center">
-                            Documento Representante
-                        </th>
-                        <th
-                            class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider align-middle text-center">
-                            Acciones</th>
-
-
-
+                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider align-middle text-center">Empresa</th>
+                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider align-middle text-center">NIT</th>
+                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider align-middle text-center">Dirección</th>
+                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider align-middle text-center">Teléfono</th>
+                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider align-middle text-center">Correo</th>
+                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase text-center">Representante</th>
+                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase text-center">Documento Representante</th>
+                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider align-middle text-center">Acciones</th>
                     </tr>
                 </thead>
 
                 <tbody class="divide-y divide-[#cfd7e7] dark:divide-gray-800">
-
-                    @foreach ($empresas as $empresa)
+                    @forelse ($empresas as $empresa)
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-
                         <!-- EMPRESA -->
                         <td class="px-6 py-4 text-sm dark:text-gray-300 align-middle text-center">
                             <span class="text-sm font-bold text-[#0d121b] dark:text-white">
@@ -116,27 +95,23 @@
                         <!-- CORREO -->
                         <td class="px-6 py-4 text-sm dark:text-gray-300 align-middle text-center">
                             <span class="text-sm text-[#4c669a] dark:text-gray-400 underline decoration-primary/30">
-                                {{ $empresa->empresa_correo }}</span>
+                                {{ $empresa->empresa_correo }}
+                            </span>
                         </td>
 
                         <!-- NOMBRE REPRESENTANTE -->
-
                         <td class="px-6 py-4 text-sm text-center">
                             {{ $empresa->nomb_representante }}
                         </td>
 
                         <!-- DOCUMENTO REPRESENTANTE -->
-
                         <td class="px-6 py-4 text-sm text-center">
                             {{ $empresa->doc_representante }}
                         </td>
 
-
                         <!-- ACCIONES -->
                         <td class="px-6 py-4 text-sm dark:text-gray-300 align-middle text-center">
                             <div class="flex items-center justify-end gap-1">
-
-                                <!-- EDITAR -->
                                 <button
                                     onclick="openEditModal(
                                     '{{ $empresa->nit_empresa }}',
@@ -152,16 +127,18 @@
                                 </button>
                             </div>
                         </td>
-
                     </tr>
-                    @endforeach
-
+                    @empty
+                    <tr>
+                        <td colspan="8" class="text-center py-6 text-gray-400">No hay empresas registradas</td>
+                    </tr>
+                    @endforelse
                 </tbody>
             </table>
-            <div class="flex gap-1">
+
+            <div class="flex gap-1 mt-2">
                 {{ $empresas->links() }}
             </div>
-
         </div>
 
     </div>
@@ -374,11 +351,8 @@
                     Cancelar
                 </button>
 
-                <button id="btnGuardar" type="submit" disabled
-                    class="px-6 py-2 rounded-lg bg-blue-600 text-white flex items-center gap-2 opacity-50 cursor-not-allowed">
-                    <span class="material-symbols-outlined">save</span>
-                    Guardar
-                </button>
+                <button id="btnGuardar" type="submit"
+                    class="px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"><span class="material-symbols-outlined">save</span> Guardar
             </div>
         </form>
     </div>
@@ -1267,7 +1241,6 @@
 
         if (!valid) {
             e.preventDefault();
-            btnGuardar.disabled = true;
             Swal.fire({
                 icon: 'warning',
                 title: 'Errores de validación',
@@ -1294,10 +1267,6 @@
                 input.value = value.replace(/[^0-9]/g, '');
             }
 
-            validateField(input);
-            btnGuardar.disabled = !isFormValid();
-            btnGuardar.classList.toggle('opacity-50', btnGuardar.disabled);
-            btnGuardar.classList.toggle('cursor-not-allowed', btnGuardar.disabled);
         });
 
         input.addEventListener('blur', () => {

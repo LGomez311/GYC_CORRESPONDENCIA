@@ -61,9 +61,16 @@
                 </h1>
 
                 @if ($errors->any())
-                    <div class="bg-red-100 text-red-600 p-3 rounded-lg mb-4 text-sm">
-                        {{ $errors->first() }}
-                    </div>
+                <div class="bg-red-100 text-red-600 p-3 rounded-lg mb-4 text-sm">
+                    {{ $errors->first() }}
+                </div>
+                @endif
+
+                @if (session('success'))
+                <div id="success-alert"
+                    class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                    {{ session('success') }}
+                </div>
                 @endif
 
                 <form method="POST" action="{{ route('empleado.password.reset') }}" class="flex flex-col gap-4">
@@ -78,16 +85,24 @@
                         class="w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 
                     bg-background-light dark:bg-background-dark p-3"
                         required>
-
                     <input type="password" name="password" placeholder="Nueva contraseña"
                         class="w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 
-                    bg-background-light dark:bg-background-dark p-3"
+                        bg-background-light dark:bg-background-dark p-3"
                         required>
 
                     <input type="password" name="password_confirmation" placeholder="Confirmar contraseña"
                         class="w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 
                     bg-background-light dark:bg-background-dark p-3"
                         required>
+
+                    <!-- ALERTAS DINÁMICAS -->
+                    <div class="mt-0 space-y-1 text-sm">
+                        <div id="alert-length" class="hidden text-red-500">La contraseña debe tener al menos 10 caracteres</div>
+                        <div id="alert-upper" class="hidden text-red-500">Debe contener al menos una letra mayúscula</div>
+                        <div id="alert-lower" class="hidden text-red-500">Debe contener al menos una letra minúscula</div>
+                        <div id="alert-number" class="hidden text-red-500">Debe contener al menos un número</div>
+                        <div id="alert-symbol" class="hidden text-red-500">Debe contener al menos un símbolo</div>
+                    </div>
 
                     <button type="submit"
                         class="w-full rounded-lg bg-primary text-white font-bold py-3 
@@ -104,6 +119,40 @@
             </div>
         </div>
     </div>
+
+    <script>
+        const passwordInput = document.querySelector('input[name="password"]');
+
+        passwordInput.addEventListener('input', function() {
+            const value = this.value;
+
+            toggleAlert('alert-length', value.length >= 10);
+            toggleAlert('alert-upper', /[A-Z]/.test(value));
+            toggleAlert('alert-lower', /[a-z]/.test(value));
+            toggleAlert('alert-number', /[0-9]/.test(value));
+            toggleAlert('alert-symbol', /[^A-Za-z0-9]/.test(value));
+        });
+
+        function toggleAlert(id, valid) {
+            const element = document.getElementById(id);
+            if (valid) {
+                element.classList.add('hidden'); // Oculta la alerta si cumple
+            } else {
+                element.classList.remove('hidden'); // Muestra la alerta si no cumple
+            }
+        }
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const alert = document.getElementById('success-alert');
+            if (alert) {
+                setTimeout(() => {
+                    alert.style.display = 'none';
+                }, 5000); // desaparece después de 5 segundos
+            }
+        });
+    </script>
 </body>
 
 </html>

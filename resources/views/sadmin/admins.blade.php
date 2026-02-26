@@ -83,37 +83,49 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-[#cfd7e7] dark:divide-gray-800">
-                    @foreach ($users as $user)
+                    @forelse ($users as $user)
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
                                 <div class="size-10 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center overflow-hidden">
-                                    <img alt="Avatar" class="w-full h-full object-cover" src="{{ asset('storage/' . $user->emple_img) }}">
+                                    <img alt="Avatar" class="w-full h-full object-cover"
+                                        src="{{ asset('storage/' . $user->emple_img) }}">
                                 </div>
                                 <div class="flex flex-col">
                                     <span class="text-sm font-bold text-[#0d121b] dark:text-white">
                                         {{ $user->emple_nombres }} {{ $user->emple_apellidos }}
                                     </span>
-                                    <span class="text-xs text-[#4c669a] dark:text-gray-400">DOCUMENTO: {{ $user->emple_doc }}</span>
+                                    <span class="text-xs text-[#4c669a] dark:text-gray-400">
+                                        DOCUMENTO: {{ $user->emple_doc }}
+                                    </span>
                                 </div>
                             </div>
                         </td>
+
                         <td class="px-6 py-4 text-sm dark:text-gray-300 align-middle text-center">
                             <span class="text-sm font-bold text-[#0d121b] dark:text-white">
                                 {{ $user->empresa?->nomb_empresa ?? 'Sin empresa' }}
                             </span>
                         </td>
+
                         <td class="px-6 py-4">
-                            <span class="text-sm text-[#4c669a] dark:text-gray-400 underline decoration-primary/30">{{ $user->emple_tel }}</span>
+                            <span class="text-sm text-[#4c669a] dark:text-gray-400 underline decoration-primary/30">
+                                {{ $user->emple_tel }}
+                            </span>
                         </td>
+
                         <td class="px-6 py-4">
-                            <span class="text-sm text-[#4c669a] dark:text-gray-400 underline decoration-primary/30">{{ $user->emple_correo }}</span>
+                            <span class="text-sm text-[#4c669a] dark:text-gray-400 underline decoration-primary/30">
+                                {{ $user->emple_correo }}
+                            </span>
                         </td>
+
                         <td class="px-6 py-4 text-sm dark:text-gray-300 align-middle text-center">
                             <span class="text-sm font-bold text-[#0d121b] dark:text-white">
                                 {{ $user->estado->estado_nomb }}
                             </span>
                         </td>
+
                         <td class="px-6 py-4 text-right">
                             <div class="flex justify-end gap-1">
                                 <button class="p-2 text-[#4c669a] hover:text-primary transition-colors btn-open-edit"
@@ -131,17 +143,12 @@
                             </div>
                         </td>
                     </tr>
-                    @endforeach
-                    @if ($users->count() == 0)
+
+                    @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-10 text-center">
-                            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-sm">
-                                <span class="material-symbols-outlined text-[18px]">info</span>
-                                No hay registros disponibles
-                            </div>
-                        </td>
+                        <td colspan="8" class="text-center py-6 text-gray-400">No hay administradores registrados</td>
                     </tr>
-                    @endif
+                    @endforelse
                 </tbody>
             </table>
 
@@ -203,8 +210,8 @@
 
                 <!-- EMPRESA -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">
-                        Empresa (NIT) (*)
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Empresa NIT (*)
                     </label>
                     <select
                         name="nit_empresa"
@@ -218,20 +225,20 @@
                         @endforeach
 
                         @if ($users->count() == 0)
-                            <tr>
-                                <td colspan="6" class="px-6 py-10 text-center">
-                                    <div
-                                        class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-sm">
-                                        <span class="material-symbols-outlined text-[18px]">info</span>
-                                        No hay registros disponibles
-                                    </div>
-                                </td>
-                            </tr>
+                        <tr>
+                            <td colspan="6" class="px-6 py-10 text-center">
+                                <div
+                                    class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-sm">
+                                    <span class="material-symbols-outlined text-[18px]">info</span>
+                                    No hay registros disponibles
+                                </div>
+                            </td>
+                        </tr>
                         @endif
-                    </tbody>
-                </table>
-                <div class="p-4 border-t border-[#cfd7e7] dark:border-gray-800">
-                    {{ $users->links() }}
+                        </tbody>
+                        </table>
+                        <div class="p-4 border-t border-[#cfd7e7] dark:border-gray-800">
+                            {{ $users->links() }}
                     </select>
                     <p id="error-nit" class="text-sm text-red-600 hidden"></p>
                 </div>
@@ -366,8 +373,7 @@
 
                 <button id="btnGuardar"
                     type="submit"
-                    disabled
-                    class="px-6 py-2 rounded-lg bg-blue-600 text-white flex items-center gap-2 opacity-50 cursor-not-allowed">
+                    class="px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2">
                     <span class="material-symbols-outlined">save</span>
                     Guardar
                 </button>
@@ -733,7 +739,7 @@
                 };
 
                 document.getElementById('edit_documento').value = data.documento;
-                document.getElementById('edit_nit').value = data.nit;
+                $('#edit_nit').val(data.nit).trigger('change');
                 document.getElementById('edit_nombres').value = data.nombres;
                 document.getElementById('edit_apellidos').value = data.apellidos;
                 document.getElementById('edit_telefono').value = data.telefono;
@@ -851,7 +857,7 @@
                 regex: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!"#$%&\/()=@])[^\s]{10,64}$/,
                 error: 'error-password',
                 mensajes: {
-                    required: '• La contraseña es obligatoria.',
+                    required: 'La contraseña es obligatoria.',
                     min: 'Debe tener mínimo 10 caracteres.',
                     max: 'No puede superar 64 caracteres.',
                     regex: 'Debe incluir: 1 mayúscula, 1 minúscula, 1 número, 1 carácter especial y no contener espacios.'
@@ -874,7 +880,6 @@
                 }
 
                 validarCampoIndividual(id);
-                validarFormularioCrear();
             });
 
             //  Cuando sale del campo
@@ -1039,23 +1044,7 @@
             return true;
         }
 
-        function validarFormularioCrear() {
 
-            let todoValido = true;
-
-            Object.keys(reglasCrear).forEach(id => {
-
-                if (!validarCampo(id)) {
-                    todoValido = false;
-                }
-
-            });
-
-            btnGuardar.disabled = !todoValido;
-
-            btnGuardar.classList.toggle('opacity-50', !todoValido);
-            btnGuardar.classList.toggle('cursor-not-allowed', !todoValido);
-        }
 
         /* ===========================
            VALIDACIÓN EDITAR
@@ -1358,6 +1347,26 @@
         window.closeExportModal = function() {
             document.getElementById('exportModal').classList.add('hidden');
         }
+
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        $('#nit_empresa').select2({
+            placeholder: "Buscar por NIT o nombre...",
+            allowClear: true,
+            width: '100%',
+            dropdownParent: $('#userModal')
+        });
+
+        $('#edit_nit').select2({
+            placeholder: "Buscar por NIT o nombre...",
+            allowClear: true,
+            width: '100%',
+            dropdownParent: $('#userModalEdit')
+        });
 
     });
 </script>

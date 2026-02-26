@@ -60,11 +60,6 @@
                     Recuperar Contraseña
                 </h1>
 
-
-                <h1 class="text-4xl font-black text-[#0d121b] dark:text-gray-100 pb-2">
-                    Recuperar Contraseña
-                </h1>
-
                 <p class="text-base text-[#4c669a] dark:text-gray-400 mb-6">
                     Ingresa tu correo electrónico registrado en el sistema.
                 </p>
@@ -104,5 +99,15 @@
         </div>
     </div>
 </body>
+
+@if ($errors->any())
+<script>
+    Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        html: `{!! implode('<br>', $errors->all()) !!}`
+    });
+</script>
+@endif
 
 </html>

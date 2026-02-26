@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Models\Empleado;
 use App\Models\Remitente;
+use Illuminate\Validation\Rules\Password;
 
 class EmpleadoPasswordController extends Controller
 {
@@ -20,21 +21,41 @@ class EmpleadoPasswordController extends Controller
 
     public function sendCode(Request $request)
     {
-        // ✅ Validar que el correo exista en empleado o remitente
         $request->validate([
-            'email' => ['required', 'email', function ($attribute, $value, $fail) {
-                $existsEmpleado = Empleado::where('emple_correo', $value)->exists();
-                $existsRemitente = Remitente::where('rem_correo', $value)->exists();
 
-                if (!$existsEmpleado && !$existsRemitente) {
-                    $fail('El correo no se encuentra registrado.');
+            'email' => [
+                'required',
+                'email',
+                'min:8',
+                'max:150',
+                'regex:/^\S+$/',
+                function ($attribute, $value, $fail) {
+
+                    $existsEmpleado = Empleado::where('emple_correo', $value)->exists();
+                    $existsRemitente = Remitente::where('rem_correo', $value)->exists();
+
+                    if (!$existsEmpleado && !$existsRemitente) {
+                        $fail('• El correo no se encuentra registrado en el sistema.');
+                    }
                 }
-            }]
+            ]
+
+        ], [
+
+            'email.required' => '• El correo electrónico es obligatorio.',
+            'email.email' => '• El correo no tiene un formato válido.',
+            'email.min' => '• El correo es demasiado corto.',
+            'email.max' => '• El correo no puede superar los 150 caracteres.',
+            'email.regex' => '• El correo no puede contener espacios.',
+
+        ], [
+
+            'email' => 'correo electrónico',
+
         ]);
 
         $code = rand(100000, 999999);
 
-        // ✅ Guardar o actualizar el código
         DB::table('password_codes')->updateOrInsert(
             ['emple_correo' => $request->email],
             [
@@ -155,34 +176,72 @@ class EmpleadoPasswordController extends Controller
     public function resetPassword(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
-            'code' => 'required',
-            'password' => 'required|min:6|confirmed'
+            'email' => [
+                'required',
+                'email',
+                'max:150',
+                'regex:/^\S+$/'
+            ],
+            'code' => [
+                'required',
+                'digits:6',
+                'regex:/^[0-9]+$/',
+                function ($attribute, $value, $fail) {
+                    if (preg_match('/^(\d)\1+$/', $value)) {
+                        $fail('• El código no puede contener números repetidos como 000000.');
+                    }
+                }
+            ],
+            'password' => [
+                'required',
+                'string',
+                'max:64',
+                'confirmed',
+                Password::min(10)
+                    ->letters()
+                    ->mixedCase()
+                    ->numbers()
+                    ->symbols()
+                    ->uncompromised()
+            ],
         ]);
 
-        // ✅ Validar código
+        // 🔎 Buscar registro por correo
         $record = DB::table('password_codes')
             ->where('emple_correo', $request->email)
-            ->where('code', $request->code)
             ->first();
 
         if (!$record) {
-            return back()->withErrors(['code' => 'Código inválido']);
+            return back()->withErrors([
+                'email' => '• No existe una solicitud de recuperación para este correo.'
+            ]);
         }
 
+        // 🔐 Validar expiración
         if (Carbon::now()->greaterThan($record->expires_at)) {
-            return back()->withErrors(['code' => 'Código expirado']);
+            return back()->withErrors([
+                'code' => '• El código ha expirado. Solicita uno nuevo.'
+            ]);
         }
 
-        // ✅ Buscar usuario en ambas tablas
+        // 🔐 Validar código
+        if ($record->code != $request->code) {
+            return back()->withErrors([
+                'code' => '• El código ingresado no es válido.'
+            ]);
+        }
+
+        // 🔎 Buscar usuario
         $empleado = Empleado::where('emple_correo', $request->email)->first();
         $remitente = Remitente::where('rem_correo', $request->email)->first();
 
         if (!$empleado && !$remitente) {
-            return back()->withErrors(['email' => 'Usuario no encontrado']);
+            return back()->withErrors([
+                'email' => '• Usuario no encontrado.'
+            ]);
         }
 
-        // ✅ Actualizar contraseña según tipo de usuario
+        // 🔄 Actualizar contraseña
         if ($empleado) {
             $empleado->password = Hash::make($request->password);
             $empleado->save();
@@ -193,7 +252,27 @@ class EmpleadoPasswordController extends Controller
             $remitente->save();
         }
 
-        // ✅ Eliminar código usado
+        // 📩 Enviar correo de confirmación
+        Mail::send([], [], function ($message) use ($request) {
+            $message->to($request->email)
+                ->subject('Tu contraseña fue cambiada')
+                ->html("
+                <div style='font-family: Arial; padding:20px;'>
+                    <h2 style='color:#0d121b;'>Cambio de contraseña exitoso</h2>
+                    <p>Tu contraseña fue actualizada correctamente.</p>
+                    <p><strong>Fecha:</strong> " . now() . "</p>
+                    <p style='color:#dc2626;'>
+                        Si no realizaste este cambio, contacta inmediatamente al administrador del sistema.
+                    </p>
+                    <hr>
+                    <p style='font-size:12px; color:#6b7280;'>
+                        © " . date('Y') . " IncolDev
+                    </p>
+                </div>
+            ");
+        });
+
+        // 🗑 Eliminar código usado
         DB::table('password_codes')
             ->where('emple_correo', $request->email)
             ->delete();

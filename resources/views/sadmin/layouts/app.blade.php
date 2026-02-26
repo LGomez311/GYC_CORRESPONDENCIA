@@ -48,6 +48,7 @@
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
     </style>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 </head>
 
 <body class="bg-background-light dark:bg-background-dark text-[#0d121b] dark:text-white antialiased">
@@ -79,6 +80,41 @@
             }
         });
     </script>
+
+    <style>
+        /* Contenedor principal */
+        .select2-container .select2-selection--single {
+            height: 41px !important;
+            border: 1.5px solid #d1d5db !important;
+            /* gris tailwind */
+            border-radius: 0.5rem !important;
+            /* rounded-lg */
+            display: flex !important;
+            align-items: center !important;
+            padding: 0 12px !important;
+            font-size: 14px;
+        }
+
+        /* Texto seleccionado */
+        .select2-selection__rendered {
+            line-height: normal !important;
+            padding-left: 0 !important;
+        }
+
+        /* Flecha */
+        .select2-selection__arrow {
+            height: 100% !important;
+        }
+
+        /* Cuando está enfocado */
+        .select2-container--default.select2-container--focus .select2-selection--single {
+            border-color: #135bec !important;
+            box-shadow: 0 0 0 2px rgba(19, 91, 236, 0.2) !important;
+        }
+    </style>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 </body>
 @yield('scripts')
 

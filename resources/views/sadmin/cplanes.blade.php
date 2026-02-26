@@ -775,7 +775,7 @@
 
                     <div>
                         <label class="block text-sm font-bold text-[#0d121b] dark:text-white mb-2">
-                            Duración (días)
+                            Duración (días) (*)
                         </label>
 
                         <input id="duracion" type="text" name="duracion" placeholder="60"
