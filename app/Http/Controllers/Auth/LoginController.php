@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Licencia;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
 
 class LoginController extends Controller
 {
@@ -27,9 +30,34 @@ class LoginController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'number'   => 'required|numeric',
-            'password' => 'required|string',
+            'number' => [
+                'required',
+                'digits_between:6,10',
+                'regex:/^(?!([0-9])\1+$)[0-9]+$/'
+            ],
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'max:64'
+            ],
         ]);
+
+
+        // 🚫 Verificar si está bloqueado
+        if (RateLimiter::tooManyAttempts(
+            $this->throttleKey($request),
+            $this->maxAttempts()
+        )) {
+
+            $seconds = RateLimiter::availableIn(
+                $this->throttleKey($request)
+            );
+
+            throw ValidationException::withMessages([
+                'login' => "Demasiados intentos. Intenta nuevamente en {$seconds} segundos."
+            ]);
+        }
 
         /**
          * 🔹 LOGIN EMPLEADOS (SuperAdmin / Admin Empresa / Empleado)
@@ -38,6 +66,8 @@ class LoginController extends Controller
             'emple_doc' => $request->number,
             'password'  => $request->password
         ])) {
+
+            RateLimiter::clear($this->throttleKey($request));
 
             $empleado = Auth::guard('web')->user();
 
@@ -79,6 +109,8 @@ class LoginController extends Controller
             'password' => $request->password
         ])) {
 
+            RateLimiter::clear($this->throttleKey($request));
+
             if (!$this->licenciaActiva()) {
 
                 Auth::guard('remitente')->logout();
@@ -91,11 +123,18 @@ class LoginController extends Controller
             return redirect()->route('remitente.index');
         }
 
-        /**
-         * ❌ Credenciales inválidas
-         */
-        return back()->withErrors([
-            'login' => 'Credenciales incorrectas'
+        RateLimiter::hit(
+            $this->throttleKey($request),
+            $this->decayMinutes() * 60
+        );
+
+        $seconds = RateLimiter::availableIn($this->throttleKey($request));
+
+        session(['lockout_seconds' => $seconds]);
+
+
+        throw ValidationException::withMessages([
+            'login' => 'Credenciales incorrectas.'
         ]);
     }
 
@@ -108,5 +147,19 @@ class LoginController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login');
+    }
+    protected function throttleKey(Request $request)
+    {
+        return 'login|' . $request->ip();
+    }
+
+    protected function maxAttempts()
+    {
+        return 5; // intentos
+    }
+
+    protected function decayMinutes()
+    {
+        return 5; // minutos bloqueado
     }
 }

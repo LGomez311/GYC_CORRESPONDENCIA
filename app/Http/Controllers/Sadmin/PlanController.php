@@ -82,7 +82,7 @@ class PlanController extends Controller
         $request->validate([
             'nomb_plan' => 'required|string|max:50',
             'valor' => 'required|integer|min:0',
-            'duracion' => 'required|integer|min:1',
+            'duracion' => 'nullable',
             'descripcion' => 'required|array|min:1',
             'descripcion.*' => 'required|string|max:255',
         ]);

@@ -185,9 +185,42 @@
         }
     </script>
 
+    {{-- ALERTAS --}}
+    @if (session('success'))
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: "{{ session('success') }}",
+                    confirmButtonColor: '#16a34a'
+                })
+            })
+        </script>
+    @endif
+
+    @if (session('error'))
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: "{{ session('error') }}",
+                    confirmButtonColor: '#dc2626'
+                })
+            })
+        </script>
+    @endif
+
+
+
+
     <script>
         let planOriginal = null;
 
+        /* =========================
+           MODAL CONTROL
+        ========================= */
         function openModal() {
             const modal = document.getElementById('planModal');
             modal.classList.remove('hidden');
@@ -217,6 +250,8 @@
             const container = document.getElementById('beneficios-container');
             container.innerHTML = '';
             agregarBeneficio();
+
+            planOriginal = null; // importante
         }
 
         /* =========================
@@ -227,61 +262,78 @@
 
             const form = document.getElementById('planForm');
             form.action = `/sadmin/planes/${plan.id_plan}`;
-
             document.getElementById('planFormMethod').value = "PUT";
             document.getElementById('planModalTitle').innerText = 'Editar plan';
 
-            document.getElementById('nomb_plan').value = plan.nomb_plan;
-            document.getElementById('valor').value = plan.valor;
-            document.getElementById('duracion').value = plan.duracion;
+            // Básicos
+            document.getElementById('nomb_plan').value = plan.nomb_plan ?? '';
+            document.getElementById('valor_real').value = plan.valor ?? '0';
+            document.getElementById('duracion_real').value = plan.duracion ?? '';
+
+            // Valor
+            const valorVisual = document.getElementById('valor_visual');
+            const planGratuito = document.getElementById('plan_gratuito');
+
+            if (Number(plan.valor) === 0) {
+                planGratuito.checked = true;
+                valorVisual.value = '0';
+                valorVisual.disabled = true;
+            } else {
+                planGratuito.checked = false;
+                valorVisual.disabled = false;
+                valorVisual.value = Number(plan.valor).toLocaleString('es-CO');
+            }
+
+            // Duración
+            const duracionVisual = document.getElementById('duracion_visual');
+            const planInfinito = document.getElementById('plan_infinito');
+
+            const isInfinito = !plan.duracion || plan.duracion === 0;
+
+            planInfinito.checked = isInfinito;
+
+            if (isInfinito) {
+                duracionVisual.value = '';
+                duracionVisual.disabled = true;
+                duracionVisual.placeholder = 'Este plan es infinito';
+            } else {
+                duracionVisual.disabled = false;
+                duracionVisual.value = plan.duracion;
+                duracionVisual.placeholder = '60';
+            }
+
+            // Destacado
             document.getElementById('es_destacado').checked = !!plan.es_destacado;
 
+            // Beneficios
             const container = document.getElementById('beneficios-container');
             container.innerHTML = '';
 
-
-
-            // 🔥 NORMALIZACIÓN CLAVE
             let beneficios = plan.descripcion;
 
             if (typeof beneficios === 'string') {
                 try {
                     beneficios = JSON.parse(beneficios);
-                } catch (e) {
+                } catch {
                     beneficios = [];
                 }
             }
 
-            if (!Array.isArray(beneficios)) {
-                beneficios = [];
-            }
-
-            // Si no hay beneficios, deja uno vacío
-            if (beneficios.length === 0) {
+            if (!Array.isArray(beneficios) || beneficios.length === 0) {
                 agregarBeneficio();
-                return;
+            } else {
+                beneficios.forEach(b => agregarBeneficio(b));
             }
 
-            // Si no hay beneficios, deja uno vacío
-            if (beneficios.length === 0) {
-                agregarBeneficio();
-                return;
-            }
-
-            // 🔥 USAR LA MISMA FUNCIÓN QUE EN CREAR
-            beneficios.forEach(desc => {
-                agregarBeneficio(desc);
-            });
-
-            // =========================
-            // GUARDAR ESTADO ORIGINAL (SEGURO)
-            // =========================
+            // Guardar estado original NORMALIZADO
             setTimeout(() => {
                 planOriginal = {
                     nomb_plan: document.getElementById('nomb_plan').value.trim(),
-                    valor: String(plan.valor),
-                    duracion: String(plan.duracion),
-                    es_destacado: !!plan.es_destacado,
+                    valor: document.getElementById('valor_real').value || '0',
+                    duracion: document.getElementById('duracion_real').value || '',
+                    es_destacado: document.getElementById('es_destacado').checked,
+                    plan_gratuito: document.getElementById('plan_gratuito').checked,
+                    plan_infinito: document.getElementById('plan_infinito').checked,
                     descripcion: Array.from(
                         document.querySelectorAll('input[name="descripcion[]"]')
                     ).map(i => i.value.trim())
@@ -290,14 +342,11 @@
         }
 
         /* =========================
-           CONFIGURACIÓN
+           VALIDACIÓN BENEFICIOS
         ========================= */
         const MIN_CHARS = 10;
         const MAX_CHARS = 120;
 
-        /* =========================
-           AGREGAR BENEFICIO
-        ========================= */
         function agregarBeneficio(valor = '') {
             const container = document.getElementById('beneficios-container');
 
@@ -310,13 +359,11 @@
                 name="descripcion[]"
                 value="${valor}"
                 maxlength="${MAX_CHARS}"
-                placeholder="Ej: Soporte prioritario"
-                class="flex-1 rounded-xl border border-gray-300 px-4 py-3
-                       focus:ring-2 focus:ring-primary focus:outline-none"
+                class="flex-1 rounded-xl border border-gray-300 px-4 py-3"
                 oninput="limitarYValidar(this)"
                 onblur="validarBeneficio(this)">
             <button type="button" onclick="eliminarBeneficio(this)"
-                class="px-3 text-red-500 hover:text-red-700">✕</button>
+                class="px-3 text-red-500">✕</button>
         </div>
         <p class="text-sm text-red-500 hidden"></p>
     `;
@@ -324,29 +371,12 @@
             container.appendChild(wrapper);
         }
 
-        /* =========================
-           ELIMINAR BENEFICIO
-        ========================= */
         function eliminarBeneficio(btn) {
             const container = document.getElementById('beneficios-container');
-
-            if (container.children.length <= 1) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Atención',
-                    text: 'Debe existir al menos un beneficio.',
-                    confirmButtonText: 'Entendido',
-                    confirmButtonColor: '#3085d6'
-                });
-                return;
-            }
-
+            if (container.children.length <= 1) return;
             btn.closest('.space-y-1').remove();
         }
 
-        /* =========================
-           LIMITAR + VALIDAR EN TIEMPO REAL
-        ========================= */
         function limitarYValidar(input) {
             if (input.value.length > MAX_CHARS) {
                 input.value = input.value.slice(0, MAX_CHARS);
@@ -354,54 +384,23 @@
             validarBeneficio(input);
         }
 
-        /* =========================
-           VALIDACIÓN DE BENEFICIO
-        ========================= */
         function validarBeneficio(input) {
             const error = input.closest('div').nextElementSibling;
             const value = input.value.trim();
 
             limpiarError(input, error);
 
-            // Obligatorio
-            if (!value) {
-                return mostrarError(input, error, 'El beneficio es obligatorio.');
-            }
-
-            // Mínimo
-            if (value.length < MIN_CHARS) {
-                return mostrarError(
-                    input,
-                    error,
-                    `Debe tener al menos ${MIN_CHARS} caracteres.`
-                );
-            }
-
-            // Máximo (seguridad extra)
-            if (value.length > MAX_CHARS) {
-                return mostrarError(
-                    input,
-                    error,
-                    `No puede superar los ${MAX_CHARS} caracteres.`
-                );
-            }
-
-            // Texto repetitivo (aaaaaa, dddddd)
-            if (/^(.)\1+$/.test(value.replace(/\s/g, ''))) {
+            if (!value) return mostrarError(input, error, 'El beneficio es obligatorio.');
+            if (value.length < MIN_CHARS)
+                return mostrarError(input, error, `Debe tener al menos ${MIN_CHARS} caracteres.`);
+            if (/^(.)\1+$/.test(value.replace(/\s/g, '')))
                 return mostrarError(input, error, 'El texto no puede ser repetitivo.');
-            }
-
-            // Debe contener letras reales
-            if (!/[a-zA-ZáéíóúÁÉÍÓÚñÑ]/.test(value)) {
+            if (!/[a-zA-ZáéíóúÁÉÍÓÚñÑ]/.test(value))
                 return mostrarError(input, error, 'Debe contener texto válido.');
-            }
 
             return true;
         }
 
-        /* =========================
-           HELPERS
-        ========================= */
         function mostrarError(input, error, mensaje) {
             error.textContent = mensaje;
             error.classList.remove('hidden');
@@ -414,84 +413,7 @@
             error.classList.add('hidden');
             input.classList.remove('border-red-500');
         }
-
-
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const form = document.getElementById('planForm');
-
-            form.addEventListener('submit', (e) => {
-
-                // 🔹 Solo aplica en UPDATE
-                const method = document.getElementById('planFormMethod')?.value;
-                if (method !== 'PUT') return;
-
-                if (!planOriginal) return;
-
-                // 🔍 Estado actual del formulario
-                const current = {
-                    nomb_plan: document.getElementById('nomb_plan').value.trim(),
-                    valor: document.getElementById('valor').value.replace(/\D/g, ''),
-                    duracion: document.getElementById('duracion').value.replace(/\D/g, ''),
-                    es_destacado: document.getElementById('es_destacado').checked,
-                    descripcion: Array.from(
-                        document.querySelectorAll('input[name="descripcion[]"]')
-                    ).map(i => i.value.trim())
-                };
-
-                // 🔄 Comparación profunda
-                const sinCambios =
-                    planOriginal.nomb_plan === current.nomb_plan &&
-                    planOriginal.valor === current.valor &&
-                    planOriginal.duracion === current.duracion &&
-                    planOriginal.es_destacado === current.es_destacado &&
-                    JSON.stringify(planOriginal.descripcion) === JSON.stringify(current.descripcion);
-
-                if (sinCambios) {
-                    e.preventDefault();
-
-                    Swal.fire({
-                        icon: 'info',
-                        title: 'Sin cambios',
-                        text: 'Debes modificar al menos un campo para actualizar el plan.',
-                        confirmButtonText: 'Entendido',
-                        confirmButtonColor: '#3085d6'
-                    });
-                }
-            });
-        });
     </script>
-
-
-
-
-
-    {{-- ALERTAS --}}
-    @if (session('success'))
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                Swal.fire({
-                    icon: 'success',
-                    title: '¡Éxito!',
-                    text: "{{ session('success') }}",
-                    confirmButtonColor: '#16a34a'
-                })
-            })
-        </script>
-    @endif
-
-    @if (session('error'))
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: "{{ session('error') }}",
-                    confirmButtonColor: '#dc2626'
-                })
-            })
-        </script>
-    @endif
 
     <script>
         function openExportModal() {
@@ -550,6 +472,9 @@
                 @csrf
                 <input type="hidden" name="_method" id="planFormMethod" value="POST">
 
+
+                <input type="hidden" id="valor_real" name="valor" value="0">
+                <input type="hidden" id="duracion_real" name="duracion" value="">
                 {{-- NOMBRE --}}
                 <div>
                     <label class="block text-sm font-bold text-[#0d121b] dark:text-white mb-2">
@@ -667,41 +592,57 @@
                     });
                 </script>
 
-                {{-- VALOR + DURACIÓN --}}
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
+                    {{-- VALOR --}}
+                    <div class="space-y-4">
                         <label class="block text-sm font-bold text-[#0d121b] dark:text-white mb-2">
                             Valor del plan (*)
                         </label>
+
                         <div class="relative">
                             <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">$</span>
-                            <input id="valor" type="text" name="valor" placeholder="50000"
-                                class="w-full pl-10 rounded-xl border border-gray-300 dark:border-gray-700 px-4 py-3
-           focus:ring-2 focus:ring-primary focus:outline-none">
 
-                            <p id="valor_error" class="mt-1 text-sm text-red-600 hidden"></p>
+                            <input id="valor_visual" type="text" placeholder="50000"
+                                class="w-full pl-10 rounded-xl border border-gray-300 dark:border-gray-700 px-4 py-3
+            focus:ring-2 focus:ring-primary focus:outline-none">
                         </div>
+
+                        <p id="valor_error" class="mt-1 text-sm text-red-600 hidden"></p>
+
+                        {{-- CHECKBOX PLAN GRATUITO --}}
+                        <label class="flex items-center gap-3 text-sm font-semibold text-[#0d121b] dark:text-white">
+                            <input type="checkbox" id="plan_gratuito"
+                                class="rounded border-gray-300 dark:border-gray-700 text-primary focus:ring-primary">
+                            ¿Plan gratuito?
+                        </label>
+
+                        <p class="text-xs text-gray-500 dark:text-gray-400 ml-7">
+                            Al seleccionar esta opción, el plan será gratuito y no podrás asignar un precio.
+                        </p>
                     </div>
 
                     <script>
                         document.addEventListener('DOMContentLoaded', () => {
-                            const input = document.getElementById('valor');
+                            const inputVisual = document.getElementById('valor_visual');
+                            const inputReal = document.getElementById('valor_real');
                             const error = document.getElementById('valor_error');
+                            const checkbox = document.getElementById('plan_gratuito');
 
-                            const MIN_VALUE = 0;
+                            const MIN_VALUE = 100000;
                             const MAX_VALUE = 99999999;
                             const MAX_DIGITS = 8;
 
                             function showError(message) {
                                 error.textContent = message;
                                 error.classList.remove('hidden');
-                                input.classList.add('border-red-500');
+                                inputVisual.classList.add('border-red-500');
                             }
 
                             function clearError() {
                                 error.textContent = '';
                                 error.classList.add('hidden');
-                                input.classList.remove('border-red-500');
+                                inputVisual.classList.remove('border-red-500');
                             }
 
                             function sanitize(value) {
@@ -713,6 +654,13 @@
                             }
 
                             function validateValor(rawValue) {
+
+                                // ⛔ Si es plan gratuito, no validar
+                                if (checkbox.checked) {
+                                    clearError();
+                                    return true;
+                                }
+
                                 if (rawValue.length === 0) {
                                     showError('El valor del plan es obligatorio.');
                                     return false;
@@ -745,79 +693,123 @@
                             }
 
                             // ⛔ Bloquear teclas inválidas
-                            input.addEventListener('keydown', (e) => {
+                            inputVisual.addEventListener('keydown', (e) => {
                                 if (['e', 'E', '+', '-', '.', ',', ' '].includes(e.key)) {
                                     e.preventDefault();
                                 }
                             });
 
-                            // 🔒 Escritura y pegado con formato
-                            input.addEventListener('input', () => {
-                                const raw = sanitize(input.value);
+                            // 🔒 Escritura y pegado
+                            inputVisual.addEventListener('input', () => {
+                                if (checkbox.checked) return;
+
+                                const raw = sanitize(inputVisual.value);
 
                                 if (raw.length > MAX_DIGITS) {
-                                    input.value = formatNumber(raw.slice(0, MAX_DIGITS));
+                                    inputVisual.value = formatNumber(raw.slice(0, MAX_DIGITS));
+                                    inputReal.value = raw.slice(0, MAX_DIGITS);
                                     validateValor(raw.slice(0, MAX_DIGITS));
                                 } else {
-                                    input.value = raw ? formatNumber(raw) : '';
+                                    inputVisual.value = raw ? formatNumber(raw) : '';
+                                    inputReal.value = raw;
                                     validateValor(raw);
                                 }
                             });
 
                             // 🔍 Validación final
-                            input.addEventListener('blur', () => {
-                                const raw = sanitize(input.value);
+                            inputVisual.addEventListener('blur', () => {
+                                if (checkbox.checked) return;
+
+                                const raw = sanitize(inputVisual.value);
                                 validateValor(raw);
-                                input.value = raw ? formatNumber(raw) : '';
+                                inputVisual.value = raw ? formatNumber(raw) : '';
+                                inputReal.value = raw;
+                            });
+
+                            // ✅ PLAN GRATUITO
+                            checkbox.addEventListener('change', () => {
+                                if (checkbox.checked) {
+                                    clearError();
+
+                                    inputVisual.value = '';
+                                    inputVisual.disabled = true;
+                                    inputVisual.placeholder = 'Este plan se enviará con duración infinita';
+                                    inputReal.value = ''; // 🔥 AQUÍ EL CAMBIO
+
+                                    error.classList.add('hidden');
+                                } else {
+                                    inputVisual.disabled = false;
+                                    inputVisual.placeholder = '60';
+                                    inputVisual.value = '';
+                                    inputReal.value = '';
+                                }
                             });
                         });
                     </script>
 
-                    <div>
+                    {{-- DURACIÓN --}}
+                    <div class="space-y-2">
                         <label class="block text-sm font-bold text-[#0d121b] dark:text-white mb-2">
                             Duración (días) (*)
                         </label>
 
-                        <input id="duracion" type="text" name="duracion" placeholder="60"
+                        <input id="duracion_visual" type="text" placeholder="60"
                             class="w-full rounded-xl border border-gray-300 dark:border-gray-700 px-4 py-3
-                            focus:ring-2 focus:ring-primary focus:outline-none">
+        focus:ring-2 focus:ring-primary focus:outline-none">
 
                         <p id="duracion_error" class="mt-1 text-sm text-red-600 hidden"></p>
+
+                        {{-- CHECKBOX PLAN INFINITO --}}
+                        <label class="flex items-center gap-3 text-sm font-semibold text-[#0d121b] dark:text-white mt-2">
+                            <input type="checkbox" id="plan_infinito"
+                                class="rounded border-gray-300 dark:border-gray-700 text-primary focus:ring-primary">
+                            ¿Plan infinito?
+                        </label>
+
+                        <p class="text-xs text-gray-500 dark:text-gray-400 ml-7">
+                            Al seleccionar esta opción, el plan no tendrá fecha de vencimiento.
+                        </p>
                     </div>
                 </div>
-
                 <script>
                     document.addEventListener('DOMContentLoaded', () => {
-                        const input = document.getElementById('duracion');
+                        const inputVisual = document.getElementById('duracion_visual');
+                        const inputReal = document.getElementById('duracion_real');
                         const error = document.getElementById('duracion_error');
+                        const checkbox = document.getElementById('plan_infinito');
 
-                        const MIN_VALUE = 0; // 👈 ahora permite 0 (ilimitado)
+                        const MIN_VALUE = 7; // 👈 se mantiene
                         const MAX_VALUE = 9999;
                         const MAX_DIGITS = 4;
 
                         function showError(message) {
                             error.textContent = message;
                             error.classList.remove('hidden');
-                            input.classList.add('border-red-500');
+                            inputVisual.classList.add('border-red-500');
                         }
 
                         function clearError() {
                             error.textContent = '';
                             error.classList.add('hidden');
-                            input.classList.remove('border-red-500');
+                            inputVisual.classList.remove('border-red-500');
                         }
 
                         function sanitize(value) {
-                            // quitar todo excepto números
                             return value.replace(/\D/g, '');
                         }
 
                         function formatNumber(value) {
-                            // formatear con separador de miles (es-CO usa punto)
                             return Number(value).toLocaleString('es-CO');
                         }
 
                         function validateDuracion(rawValue) {
+
+                            // ⛔ Si es plan infinito, no validar
+                            if (checkbox.checked) {
+                                clearError();
+                                return true;
+                            }
+
                             if (rawValue.length === 0) {
                                 showError('La duración del plan es obligatoria.');
                                 return false;
@@ -830,8 +822,13 @@
                                 return false;
                             }
 
-                            if (number < MIN_VALUE) {
+                            if (number < 0) {
                                 showError('La duración no puede ser negativa.');
+                                return false;
+                            }
+
+                            if (number < MIN_VALUE) {
+                                showError(`El valor mínimo permitido es ${MIN_VALUE}.`);
                                 return false;
                             }
 
@@ -845,36 +842,65 @@
                         }
 
                         // ⛔ Bloquear teclas inválidas
-                        input.addEventListener('keydown', (e) => {
+                        inputVisual.addEventListener('keydown', (e) => {
                             if (['e', 'E', '+', '-', '.', ',', ' '].includes(e.key)) {
                                 e.preventDefault();
                             }
                         });
 
-                        // 🔒 Control total + formato visual
-                        input.addEventListener('input', () => {
-                            const raw = sanitize(input.value);
+                        // 🔒 Escritura + formato
+                        inputVisual.addEventListener('input', () => {
+                            if (checkbox.checked) return;
+
+                            const raw = sanitize(inputVisual.value);
 
                             if (raw.length > MAX_DIGITS) {
-                                input.value = formatNumber(raw.slice(0, MAX_DIGITS));
+                                inputVisual.value = formatNumber(raw.slice(0, MAX_DIGITS));
+                                inputReal.value = raw.slice(0, MAX_DIGITS);
                             } else if (raw.length > 0) {
-                                input.value = formatNumber(raw);
+                                inputVisual.value = formatNumber(raw);
+                                inputReal.value = raw;
                             } else {
-                                input.value = '';
+                                inputVisual.value = '';
+                                inputReal.value = '';
                             }
 
                             validateDuracion(raw);
                         });
 
-                        // 🔍 Al salir, validar
-                        input.addEventListener('blur', () => {
-                            const raw = sanitize(input.value);
+                        // 🔍 Al salir
+                        inputVisual.addEventListener('blur', () => {
+                            if (checkbox.checked) return;
+
+                            const raw = sanitize(inputVisual.value);
                             validateDuracion(raw);
+                            inputReal.value = raw;
                         });
 
-                        // 🧼 Antes de enviar el form → enviar valor limpio
-                        input.closest('form')?.addEventListener('submit', () => {
-                            input.value = sanitize(input.value);
+                        // ✅ PLAN INFINITO
+                        checkbox.addEventListener('change', () => {
+                            if (checkbox.checked) {
+                                clearError(); // 👈 fuerza ocultar el mensaje SIEMPRE
+
+                                inputVisual.value = '';
+                                inputVisual.disabled = true;
+                                inputVisual.placeholder = 'Este plan se enviará con duración infinita';
+                                inputReal.value = '0'; // ✅ plan gratuito
+
+                                error.classList.add('hidden'); // 👈 refuerzo visual
+                            } else {
+                                inputVisual.disabled = false;
+                                inputVisual.placeholder = '60'; // placeholder original
+                                inputVisual.value = '';
+                                inputReal.value = '';
+                            }
+                        });
+
+                        // 🧼 Antes de enviar → asegurar valor limpio o null
+                        inputVisual.closest('form')?.addEventListener('submit', () => {
+                            if (!checkbox.checked) {
+                                inputReal.value = sanitize(inputVisual.value);
+                            }
                         });
                     });
                 </script>
@@ -946,13 +972,13 @@
                             // OBTENER CAMPOS
                             // =========================
                             const nombre = document.getElementById('nomb_plan');
-                            const valor = document.getElementById('valor');
-                            const duracion = document.getElementById('duracion');
+                            const valor = document.getElementById('valor_visual');
+                            const duracion = document.getElementById('duracion_visual');
                             const beneficios = document.querySelectorAll('input[name="descripcion[]"]');
+                            const planInfinito = document.getElementById('plan_infinito');
 
-                            const valorRaw = valor.value.replace(/\D/g, '');
-                            const duracionRaw = duracion.value.replace(/\D/g, '');
-
+                            const valorRaw = document.getElementById('valor_real')?.value || '0';
+                            const duracionRaw = document.getElementById('duracion_real')?.value || '';
                             // =========================
                             // NOMBRE
                             // =========================
@@ -1000,14 +1026,17 @@
                             // =========================
                             const duracionError = document.getElementById('duracion_error');
 
-                            if (!duracionRaw) {
-                                valido = false;
-                                errores.push(' <b>Duración</b>: es obligatoria.');
+                            if (!planInfinito.checked) {
+                                if (!duracionRaw) {
+                                    valido = false;
+                                    errores.push(' <b>Duración</b>: es obligatoria.');
 
-                                duracion.classList.add('border-red-500');
-                                duracionError.textContent = 'La duración es obligatoria.';
-                                duracionError.classList.remove('hidden');
+                                    duracion.classList.add('border-red-500');
+                                    duracionError.textContent = 'La duración es obligatoria.';
+                                    duracionError.classList.remove('hidden');
+                                }
                             }
+
 
 
                             // =========================
