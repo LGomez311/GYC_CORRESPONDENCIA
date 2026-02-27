@@ -750,7 +750,7 @@
 
                                     inputVisual.value = '';
                                     inputVisual.disabled = true;
-                                    inputVisual.placeholder = 'Este plan se enviará con duración infinita';
+                                    inputVisual.placeholder = 'Este plan se enviará con valor 0';
                                     inputReal.value = '0'; // 🔥 AQUÍ EL CAMBIO
 
                                     error.classList.add('hidden');
