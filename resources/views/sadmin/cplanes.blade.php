@@ -474,7 +474,7 @@
 
 
                 <input type="hidden" id="valor_real" name="valor" value="0">
-                <input type="hidden" id="duracion_real" name="duracion" value="">
+                <input type="hidden" id="duracion_real" name="duracion" value="0">
                 {{-- NOMBRE --}}
                 <div>
                     <label class="block text-sm font-bold text-[#0d121b] dark:text-white mb-2">
@@ -579,12 +579,12 @@
                                     icon: 'error',
                                     title: 'Formulario inválido',
                                     html: `
-                    <div style="text-align:left">
-                        <ul style="padding-left:18px">
-                            ${errores.map(err => `<li>${err}</li>`).join('')}
-                        </ul>
-                    </div>
-                `,
+                                            <div style="text-align:left">
+                                                <ul style="padding-left:18px">
+                                                ${errores.map(err => `<li>${err}</li>`).join('')}
+                                                </ul>
+                                            </div>
+                                            `,
                                     confirmButtonColor: '#dc2626'
                                 });
                             }
@@ -734,14 +734,14 @@
                                     inputVisual.value = '';
                                     inputVisual.disabled = true;
                                     inputVisual.placeholder = 'Este plan se enviará con duración infinita';
-                                    inputReal.value = ''; // 🔥 AQUÍ EL CAMBIO
+                                    inputReal.value = '0'; // 🔥 AQUÍ EL CAMBIO
 
                                     error.classList.add('hidden');
                                 } else {
                                     inputVisual.disabled = false;
                                     inputVisual.placeholder = '60';
                                     inputVisual.value = '';
-                                    inputReal.value = '';
+                                    inputReal.value = '0';
                                 }
                             });
                         });
@@ -892,7 +892,7 @@
                                 inputVisual.disabled = false;
                                 inputVisual.placeholder = '60'; // placeholder original
                                 inputVisual.value = '';
-                                inputReal.value = '';
+                                inputReal.value = '0';
                             }
                         });
 
@@ -965,8 +965,15 @@
                         const form = document.getElementById('planForm');
 
                         form.addEventListener('submit', (e) => {
+
                             let valido = true;
                             let errores = [];
+
+                            document.getElementById('valor_real').value =
+                                document.getElementById('valor_real').value || '0';
+
+                            document.getElementById('duracion_real').value =
+                                document.getElementById('duracion_real').value || '0';
 
                             // =========================
                             // OBTENER CAMPOS
