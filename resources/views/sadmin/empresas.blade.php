@@ -3,7 +3,7 @@
 @section('title', 'Panel de Licencias')
 
 @section('content')
-<div class="p-8 max-w-7xl mx-auto w-full">
+<div class="p-4 md:p-8 max-w-7xl mx-auto w-full">
 
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">

@@ -3,11 +3,11 @@
 @section('title', 'Panel de Admin de empresa')
 
 @section('content')
-    <div class="layout-content-container flex flex-col max-w-[1200px] flex-1 py-10 px-6">
+    <div class="layout-content-container flex flex-col max-w-[1200px] flex-1 py-6 md:py-10 px-4 md:px-6">
 
         <!-- Page Heading -->
         <div class="flex flex-wrap justify-between gap-3 p-4 mb-8">
-            <div class="flex min-w-72 flex-col gap-3">
+            <div class="flex flex-col gap-3">
                 <h1 class="text-[#0d121b] dark:text-[#f8f9fc] text-4xl font-black tracking-tight">
                     Planes y Pago de Licencia
                 </h1>

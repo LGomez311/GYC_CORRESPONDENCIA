@@ -4,7 +4,7 @@
 
 @section('content')
 
-    <div class="flex flex-col min-h-screen p-8 lg:p-8">
+    <div class="flex flex-col min-h-screen p-4 md:p-8 lg:p-8">
 
         <!-- ================= HEADER ================= -->
         <header class="mb-1">

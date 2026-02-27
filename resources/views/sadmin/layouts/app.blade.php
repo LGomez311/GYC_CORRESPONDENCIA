@@ -52,7 +52,9 @@
 </head>
 
 <body class="bg-background-light dark:bg-background-dark text-[#0d121b] dark:text-white antialiased">
-    <div class="flex h-screen overflow-hidden">
+    <div class="flex h-screen overflow-hidden relative">
+        {{-- Overlay móvil --}}
+        <div id="sidebarOverlay" class="fixed inset-0 bg-black/40 z-40 hidden md:hidden" onclick="toggleSidebar()"></div>
 
         {{-- Sidebar --}}
         @include('sadmin.layouts.sidebar')
@@ -60,20 +62,37 @@
         {{-- Content --}}
         <main class="flex-1 flex flex-col overflow-y-auto">
 
-            {{-- Header --}}
+            {{-- Header móvil --}}
+            <div class="md:hidden flex items-center justify-between p-4 border-b dark:border-gray-800 bg-white dark:bg-[#161d2b]">
+                <button onclick="toggleSidebar()" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
+                <h2 class="font-bold dark:text-white text-sm truncate">Super Admin Portal</h2>
+            </div>
+
+            {{-- Header (Desktop/Optional) --}}
             @include('sadmin.layouts.header')
 
             {{-- Page content --}}
-            @yield('content')
+            <div class="p-4 md:p-6 lg:p-8">
+                @yield('content')
+            </div>
 
         </main>
 
         @yield('modals')
 
-        @yield('modals')
-
     </div>
+
     <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
         window.addEventListener("pageshow", function(event) {
             if (event.persisted) {
                 window.location.reload();

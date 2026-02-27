@@ -28,8 +28,7 @@ use App\Http\Controllers\Sadmin\PlanController as SadminPlanController;
 use App\Http\Controllers\Admin\PlanController as AdminPlanController;
 use App\Exports\PrioridadesExport;
 
-Route::get('/admin/historialp', [AdminPagoController::class, 'historial'])
-    ->name('admin.historialp');
+
 
 Route::get('/', [LandingController::class, 'index'])->name('web.index');
 
@@ -38,7 +37,7 @@ Route::get('/', [LandingController::class, 'index'])->name('web.index');
 // Ruta de exportar excel con datos
 Route::get('/admin/pagos/export/excel', function () {
     return Excel::download(new PagosExport, 'pagos.xlsx');
-})->name('pagos.export.excel');
+})->name('pagos.export.excel')->middleware(['auth:web', 'licencia.activa', 'role:2']);
 
 // Ruta para exportar pdf con datos
 Route::get('/admin/pagos/export/pdf', function () {
@@ -49,7 +48,7 @@ Route::get('/admin/pagos/export/pdf', function () {
         ->setPaper('A4', 'landscape');
 
     return $pdf->download('pagos.pdf');
-})->name('pagos.export.pdf');
+})->name('pagos.export.pdf')->middleware(['auth:web', 'licencia.activa', 'role:2']);
 // RUTA PARA LICENCIAS - KEVIN
 use App\Http\Controllers\Sadmin\LicenciaController;
 
@@ -76,7 +75,7 @@ Route::middleware(['auth:web', 'licencia.activa'])->group(function () {
 
 
 Route::prefix('sadmin')
-    ->middleware('auth:web')
+    ->middleware(['auth:web', 'role:1'])
     ->group(function () {
 
         // Dashboard
@@ -137,7 +136,7 @@ Route::prefix('sadmin')
 
 // ================= ADMIN =================
 Route::prefix('admin')
-    ->middleware(['auth:web', 'licencia.activa'])
+    ->middleware(['auth:web', 'licencia.activa', 'role:2'])
     ->group(function () {
 
         // Dashboard
@@ -199,14 +198,12 @@ Route::prefix('admin')
         Route::get('/rol/check', [RolController::class, 'check'])->name('admin.rol.check');
     });
 
-// Otros recursos del admin
-Route::get('/correspondencia', fn() => view('admin.correspondencia'))->name('admin.correspondencia');
-Route::get('/usuarios', fn() => view('admin.usuarios'))->name('admin.usuarios');
+// Otros recursos del admin (duplicados eliminados)
 
 
 // ruta para creacion de licencias - Kevin
 
-Route::prefix('sadmin')->name('sadmin.')->group(function () {
+Route::prefix('sadmin')->name('sadmin.')->middleware(['auth:web', 'role:1'])->group(function () {
 
     Route::get('/licencias', [LicenciaController::class, 'index'])
         ->name('licencias');
@@ -229,7 +226,7 @@ Route::middleware(['auth:remitente', 'licencia.activa'])->group(function () {
 Route::get(
     '/sadmin/empresas/export-csv',
     [EmpresaController::class, 'exportCsv']
-)->name('empresas.export.csv');
+)->name('empresas.export.csv')->middleware(['auth:web', 'role:1']);
 
 // ================= RECUPERACIÓN DE CONTRASEÑA =================-Gomez
 
@@ -251,35 +248,27 @@ Route::prefix('empleado')->group(function () {
 });
 
 // Exportar pagos a PDF y Excel - Gomez
-Route::get('/sadmin/admins/export/pdf', [UsuarioController::class, 'exportPdf'])
-    ->name('sadmin.export.pdf');
+Route::middleware(['auth:web', 'role:1'])->group(function () {
+    Route::get('/sadmin/admins/export/pdf', [UsuarioController::class, 'exportPdf'])
+        ->name('sadmin.export.pdf');
 
-Route::get('/sadmin/admins/export/excel', [UsuarioController::class, 'exportExcel'])
-    ->name('sadmin.export.excel');
+    Route::get('/sadmin/admins/export/excel', [UsuarioController::class, 'exportExcel'])
+        ->name('sadmin.export.excel');
 
+    // EXPORTAR PLANES
+    Route::get('/sadmin/planes/export/pdf', [PlanController::class, 'exportPdf'])
+        ->name('planes.export.pdf');
 
+    Route::get('/sadmin/planes/export/excel', [PlanController::class, 'exportExcel'])
+        ->name('planes.export.excel');
 
-Route::get('/sadmin/admins/export/excel', [UsuarioController::class, 'exportExcel'])
-    ->name('sadmin.export.excel');
+    // EXPORTAR EMPRESAS
+    Route::get('/sadmin/empresas/export/pdf', [EmpresaController::class, 'exportPdf'])
+        ->name('empresas.export.pdf');
 
-    
-// EXPORTAR PLANES
-
-Route::get('/sadmin/planes/export/pdf', [PlanController::class, 'exportPdf'])
-    ->name('planes.export.pdf');
-
-
-Route::get('/sadmin/planes/export/excel', [PlanController::class, 'exportExcel'])
-    ->name('planes.export.excel');
-
-// EXPORTAR EMPRESAS
-
-
-Route::get('/sadmin/empresas/export/pdf', [EmpresaController::class, 'exportPdf'])
-    ->name('empresas.export.pdf');
-
-Route::get('/sadmin/empresas/export/excel', [EmpresaController::class, 'exportExcel'])
-    ->name('empresas.export.excel');
+    Route::get('/sadmin/empresas/export/excel', [EmpresaController::class, 'exportExcel'])
+        ->name('empresas.export.excel');
+});
 
 use App\Http\Controllers\HomeController;
 
@@ -288,18 +277,18 @@ Route::get('/', [HomeController::class, 'index'])->name('web.index');
 
 //Rutas para otros recursos del admin-Gomez 
 Route::get('/admin/otros', [UsuarioController::class, 'otros'])
-    ->name('admin.otros');
+    ->name('admin.otros')->middleware(['auth:web', 'licencia.activa', 'role:2']);
 
 //RUTAS CRUD AREA - GOMEZ
 
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth:web', 'licencia.activa', 'role:2'])->group(function () {
     Route::get('/areas', [AreaController::class, 'index'])->name('area.index');
     Route::post('/areas', [AreaController::class, 'store'])->name('area.store');
     Route::put('/areas/{id}', [AreaController::class, 'update'])->name('area.update');
     Route::delete('/areas/{id}', [AreaController::class, 'destroy'])->name('area.destroy');
 });
 
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth:web', 'licencia.activa', 'role:2'])->group(function () {
 
     Route::get('/otros', function () {
         return view('admin.otros');
@@ -309,7 +298,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 //RUTAS CRUD DEPARTAMENTO - GOMEZ
 use App\Http\Controllers\Admin\DepartamentoController;
 
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth:web', 'licencia.activa', 'role:2'])->group(function () {
 
     Route::get('/departamento', [DepartamentoController::class, 'index'])
         ->name('departamento.index');
@@ -337,31 +326,17 @@ Route::prefix('admin')->name('admin.')->group(function () {
 // RUTAS PARA CRUD CIUDAD - GOMEZ
 use App\Http\Controllers\Admin\CiudadController;
 
-Route::get('/admin/ciudad', [CiudadController::class, 'index'])
-    ->name('admin.ciudad.index');
+// RUTAS PARA EXPORTAR CIUDAD Y AREAS - GOMEZ
+Route::middleware(['auth:web', 'licencia.activa', 'role:2'])->group(function () {
+    Route::get('/admin/ciudad', [CiudadController::class, 'index'])->name('admin.ciudad.index');
+    Route::post('/admin/ciudad', [CiudadController::class, 'store'])->name('admin.ciudad.store');
+    Route::put('/admin/ciudad/{id}', [CiudadController::class, 'update'])->name('admin.ciudad.update');
+    Route::delete('/admin/ciudad/{id}', [CiudadController::class, 'destroy'])->name('admin.ciudad.destroy');
 
-Route::post('/admin/ciudad', [CiudadController::class, 'store'])
-    ->name('admin.ciudad.store');
+    Route::get('/admin/ciudad/export/pdf', [CiudadController::class, 'exportPDF'])->name('admin.ciudad.export.pdf');
+    Route::get('/admin/ciudad/export/excel', [CiudadController::class, 'exportExcel'])->name('admin.ciudad.export.excel');
+    Route::get('/admin/ciudad/check-codigo', [CiudadController::class, 'checkCodigo'])->name('admin.ciudad.check');
 
-Route::put('/admin/ciudad/{id}', [CiudadController::class, 'update'])
-    ->name('admin.ciudad.update');
-
-Route::delete('/admin/ciudad/{id}', [CiudadController::class, 'destroy'])
-    ->name('admin.ciudad.destroy');
-
-Route::get('/admin/ciudad/export/pdf', [CiudadController::class, 'exportPDF'])
-    ->name('admin.ciudad.export.pdf');
-
-Route::get('/admin/ciudad/export/excel', [CiudadController::class, 'exportExcel'])
-    ->name('admin.ciudad.export.excel');
-
-Route::get('/admin/ciudad/check-codigo', [CiudadController::class, 'checkCodigo'])
-    ->name('admin.ciudad.check');
-
-
-// RUTAS PARA EXPORTAR AREAS - GOMEZ
-Route::get('/admin/areas/export/excel', [AreaController::class, 'exportExcel'])
-    ->name('admin.areas.export.excel');
-
-Route::get('/admin/areas/export/pdf', [AreaController::class, 'exportPdf'])
-    ->name('admin.areas.export.pdf');
+    Route::get('/admin/areas/export/excel', [AreaController::class, 'exportExcel'])->name('admin.areas.export.excel');
+    Route::get('/admin/areas/export/pdf', [AreaController::class, 'exportPdf'])->name('admin.areas.export.pdf');
+});

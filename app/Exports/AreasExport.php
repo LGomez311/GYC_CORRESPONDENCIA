@@ -10,15 +10,14 @@ class AreasExport implements FromCollection, WithHeadings
 {
     public function collection()
     {
-        return Area::select('id', 'area_nom', 'created_at')->get();
+        return Area::select('id_area', 'area_nom')->get();
     }
 
     public function headings(): array
     {
         return [
             'ID',
-            'Nombre del Área',
-            'Fecha de Creación'
+            'Nombre del Área'        
         ];
     }
 }

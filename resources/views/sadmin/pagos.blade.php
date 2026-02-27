@@ -3,7 +3,7 @@
 @section('title', 'Panel de Pagos')
 
 @section('content')
-<div class="p-8 max-w-7xl mx-auto w-full">
+<div class="p-4 md:p-8 max-w-7xl mx-auto w-full">
 
     {{-- HEADER --}}
     <div class="flex flex-wrap justify-between items-end gap-3 mb-8">

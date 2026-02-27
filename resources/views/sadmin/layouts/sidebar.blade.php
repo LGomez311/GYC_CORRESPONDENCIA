@@ -23,8 +23,8 @@
     }
 </script>
 
-<aside
-    class="w-64 flex-shrink-0 border-r border-[#cfd7e7] dark:border-gray-800 bg-white dark:bg-[#161d2b] flex flex-col">
+<aside id="sidebar"
+    class="fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-[#161d2b] border-r border-[#cfd7e7] dark:border-gray-800 transform -translate-x-full transition-transform duration-300 ease-in-out md:relative md:translate-x-0 flex flex-col">
 
     <div class="p-6 flex items-center gap-3">
         <div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
