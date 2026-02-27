@@ -118,16 +118,31 @@
             <form id="createForm" action="{{ route('admin.departamento.store') }}" method="POST">
                 @csrf
 
+                <input type="hidden" name="form_type" value="create">
+
                 <div class="mb-4">
                     <label class="block text-sm font-medium mb-1">Nombre</label>
                     <input type="text" id="dpto_nombre" name="dpto_nombre"
-                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary">
+                        value="{{ old('form_type') == 'create' ? old('dpto_nombre') : '' }}"
+                        class="w-full px-3 py-2 border rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 focus:ring-2 focus:ring-primary {{ (old('form_type') == 'create' && $errors->has('dpto_nombre')) ? 'border-red-500' : '' }}" required minlength="3" maxlength="100" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$" title="Debe iniciar con al menos 3 letras continuas sin espacios">
+                    @if(old('form_type') == 'create')
+                        @error('dpto_nombre')
+                            <p class="error-msg server-error text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    @endif
                 </div>
 
                 <div class="mb-4">
                     <label class="block text-sm font-medium mb-1">Código Postal</label>
                     <input type="text" id="dpto_codigo_postal" name="dpto_codigo_postal"
-                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary">
+                        value="{{ old('form_type') == 'create' ? old('dpto_codigo_postal') : '' }}"
+                        class="w-full px-3 py-2 border rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 focus:ring-2 focus:ring-primary {{ (old('form_type') == 'create' && $errors->has('dpto_codigo_postal')) ? 'border-red-500' : '' }}" required minlength="2" maxlength="10" pattern="^[0-9]+$" title="Solo se permiten números">
+                    <small id="dptoCodStatus" class="block text-xs mt-1"></small>
+                    @if(old('form_type') == 'create')
+                        @error('dpto_codigo_postal')
+                            <p class="error-msg server-error text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    @endif
                 </div>
 
                 <div class="flex flex-col sm:flex-row justify-end gap-3">
@@ -157,16 +172,31 @@
                 @csrf
                 @method('PUT')
 
+                <input type="hidden" name="form_type" value="edit">
+
                 <div class="mb-4">
                     <label class="block text-sm font-medium mb-1">Código Postal</label>
                     <input type="text" id="edit_dpto_codigo_postal" name="dpto_codigo_postal" maxlength="10"
-                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary">
+                        value="{{ old('form_type') == 'edit' ? old('dpto_codigo_postal') : '' }}"
+                        class="w-full px-3 py-2 border rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 focus:ring-2 focus:ring-primary {{ (old('form_type') == 'edit' && $errors->has('dpto_codigo_postal')) ? 'border-red-500' : '' }}" required minlength="2" pattern="^[0-9]+$" title="Solo se permiten números">
+                    <small id="editDptoCodStatus" class="block text-xs mt-1"></small>
+                    @if(old('form_type') == 'edit')
+                        @error('dpto_codigo_postal')
+                            <p class="error-msg server-error text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    @endif
                 </div>
 
-                <div class="mb-4">
+                <div class="mb-4 pt-2">
                     <label class="block text-sm font-medium mb-1">Nombre</label>
                     <input type="text" id="editNombre" name="dpto_nombre"
-                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary">
+                        value="{{ old('form_type') == 'edit' ? old('dpto_nombre') : '' }}"
+                        class="w-full px-3 py-2 border rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 focus:ring-2 focus:ring-primary {{ (old('form_type') == 'edit' && $errors->has('dpto_nombre')) ? 'border-red-500' : '' }}" required minlength="3" maxlength="100" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$" title="Debe iniciar con al menos 3 letras continuas sin espacios">
+                    @if(old('form_type') == 'edit')
+                        @error('dpto_nombre')
+                            <p class="error-msg server-error text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    @endif
                 </div>
 
                 <div class="flex flex-col sm:flex-row justify-end gap-3">
@@ -228,36 +258,200 @@
     </div>
 @endsection
 @section('scripts')
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         // ============================
-        // CONTROL GENERAL DE MODALES
+        // VARIABLES GLOBALES DE VALIDACION
         // ============================
+        let debounceTimer;
+        let codigoActual = "";
+        let codigoValidoCreate = false;
+        let codigoValidoEdit = true; // Por defecto true al editar si no se toca
 
+        document.addEventListener('DOMContentLoaded', function() {
+
+            // ================= ALERTS DE SESIÓN Y ERRORES =================
+            @if(session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: '{{ session("success") }}',
+                    timer: 3000,
+                    showConfirmButton: false,
+                    position: 'center'
+                });
+            @endif
+
+            @if(session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: '{{ session("error") }}',
+                    timer: 4000,
+                    showConfirmButton: false,
+                    position: 'center'
+                });
+            @endif
+
+            @if($errors->any())
+                let errorMessages = "";
+                @foreach ($errors->all() as $error)
+                    errorMessages += "• {{ $error }}\n";
+                @endforeach
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de validación',
+                    text: errorMessages,
+                    timer: 5000,
+                    showConfirmButton: true,
+                    position: 'center'
+                });
+
+                @if(old('form_type') == 'create')
+                    openCreateModal();
+                @elseif(old('form_type') == 'edit')
+                    let id = "{{ old('dpto_codigo_postal') }}";
+                    let url = "{{ route('admin.departamento.update', ['id' => '__ID__']) }}";
+                    url = url.replace('__ID__', id);
+                    document.getElementById('editForm').action = url;
+                    codigoActual = id;
+                    document.getElementById('editModal').classList.remove('hidden');
+                    document.getElementById('editModal').classList.add('flex');
+                    document.body.classList.add('overflow-hidden');
+                @endif
+            @endif
+
+
+            // ============================
+            // ELEMENTOS CREAR Y EDITAR
+            // ============================
+
+            const nombre = document.getElementById('dpto_nombre');
+            const codigo = document.getElementById('dpto_codigo_postal');
+            const btnCreate = document.querySelector('#createModal button[type="submit"]');
+
+            const editNombre = document.getElementById('editNombre');
+            const editCodigo = document.getElementById('edit_dpto_codigo_postal');
+            const btnEdit = document.querySelector('#editModal button[type="submit"]');
+            
+
+            // ============================
+            // EVENTOS CREAR
+            // ============================
+
+            if(nombre) {
+                function validateNombreEv() {
+                    nombre.dataset.dirty = 'true';
+                    nombre.value = nombre.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ ]/g, '');
+                    actualizarBoton(btnCreate, false, nombre, codigo);
+                }
+                nombre.addEventListener('input', validateNombreEv);
+                if(nombre.value) validateNombreEv();
+            }
+            
+            if(codigo) {
+                function validateCodigoEv() {
+                    codigo.dataset.dirty = 'true';
+                    validarCodigo(codigo, false, btnCreate, nombre);
+                }
+                codigo.addEventListener('input', validateCodigoEv);
+                if(codigo.value) validateCodigoEv();
+            }
+
+            // ============================
+            // EVENTOS EDITAR
+            // ============================
+
+            if(editNombre) {
+                function validateEditNombreEv() {
+                    editNombre.dataset.dirty = 'true';
+                    editNombre.value = editNombre.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ ]/g, '');
+                    actualizarBoton(btnEdit, true, editNombre, editCodigo);
+                }
+                editNombre.addEventListener('input', validateEditNombreEv);
+            }
+
+            if(editCodigo) {
+                function validateEditCodigoEv() {
+                    editCodigo.dataset.dirty = 'true';
+                    validarCodigo(editCodigo, true, btnEdit, editNombre);
+                }
+                editCodigo.addEventListener('input', validateEditCodigoEv);
+            }
+
+        }); // END DOMContentLoaded
+
+        // ============================
+        // MODALS
+        // ============================
+            
         function openCreateModal() {
+            const form = document.querySelector('#createForm');
+            if(form && "{{ old('form_type') }}" !== "create") form.reset();
+            
+            const inputs = ['dpto_nombre', 'dpto_codigo_postal'];
+            inputs.forEach(id => {
+                const el = document.getElementById(id);
+                if(el && "{{ old('form_type') }}" !== "create") {
+                    el.dataset.dirty = '';
+                    limpiarError(el);
+                }
+            });
+
+            if("{{ old('form_type') }}" !== "create") {
+                const btn = document.querySelector('#createModal button[type="submit"]');
+                if(btn) {
+                    btn.disabled = true;
+                    btn.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+                const status = document.getElementById('dptoCodStatus');
+                if(status) {
+                    status.textContent = "";
+                    status.classList.remove('text-green-600', 'text-red-500');
+                }
+            }
+
             const modal = document.getElementById('createModal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
             document.body.classList.add('overflow-hidden');
         }
 
-        function openEditModal(codigo, nombre) {
+        window.openEditModal = function(codigo, nombre_val) {
+            codigoActual = codigo;
 
             let url = "{{ route('admin.departamento.update', ['id' => '__ID__']) }}";
-            url = url.replace('__ID__', id);
+            url = url.replace('__ID__', codigo);
 
-            document.getElementById('editForm').action = url;
-            document.getElementById('editNombre').value = nombre;
+            const editForm = document.getElementById('editForm');
+            const editNombre = document.getElementById('editNombre');
+            const editCodigo = document.getElementById('edit_dpto_codigo_postal');
+            const editStatusCod = document.getElementById('editDptoCodStatus');
 
-            const codigoInput = document.getElementById('edit_dpto_codigo_postal');
-            codigoInput.value = codigo;
-            codigoInput.dataset.actual = codigo;
+            editForm.action = url;
+            editNombre.value = nombre_val;
+            editCodigo.value = codigo;
+
+            editNombre.dataset.dirty = '';
+            editCodigo.dataset.dirty = '';
+
+            limpiarError(editNombre);
+            limpiarError(editCodigo);
+            
+            if(editStatusCod) {
+                editStatusCod.textContent = "";
+                editStatusCod.classList.remove('text-green-600', 'text-red-500');
+            }
+
+            codigoValidoEdit = true;
 
             const modal = document.getElementById('editModal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
-
             document.body.classList.add('overflow-hidden');
+            
+            if(editNombre) editNombre.dispatchEvent(new Event('input'));
         }
 
         function closeModals() {
@@ -270,16 +464,7 @@
             document.body.classList.remove('overflow-hidden');
         }
 
-        // Cerrar al hacer clic fuera
-        document.addEventListener('click', function(e) {
-            if (
-                e.target.id === 'createModal' ||
-                e.target.id === 'editModal' ||
-                e.target.id === 'exportModal'
-            ) {
-                closeModals();
-            }
-        });
+        // Cerrar al hacer clic fuera eliminado por requerimiento
 
         // Cerrar con ESC
         document.addEventListener('keydown', function(e) {
@@ -287,213 +472,173 @@
                 closeModals();
             }
         });
-    </script>
 
-    <script>
-        // ============================
-        // VALIDACIONES PROFESIONALES
-        // ============================
-
-        function setError(input, message) {
-            input.classList.add('border-red-500');
-            input.classList.remove('border-green-500');
-
-            let small = input.parentNode.querySelector('.error-text');
-            if (!small) {
-                small = document.createElement('small');
-                small.classList.add('error-text', 'text-red-500', 'block', 'mt-1');
-                input.parentNode.appendChild(small);
-            }
-            small.innerText = message;
+        function openExportModal() {
+            const modal = document.getElementById('exportModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
         }
 
-        function setSuccess(input) {
+        function closeExportModal() {
+            const modal = document.getElementById('exportModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // ============================
+        // UTILIDADES Y VALIDACIONES
+        // ============================
+        
+        function mostrarError(input, mensaje) {
+            input.classList.remove('border-green-500');
+            input.classList.add('border-red-500');
+
+            let error = input.parentNode.querySelector('.error-msg');
+            if (!error) {
+                error = document.createElement('p');
+                error.classList.add('error-msg', 'text-red-500', 'text-sm', 'mt-1');
+                input.parentNode.appendChild(error);
+            }
+            error.textContent = mensaje;
+            error.classList.remove('server-error');
+        }
+
+        function limpiarError(input) {
+            if(!input) return;
+            let error = input.parentNode.querySelector('.error-msg');
+            if (error && error.classList.contains('server-error') && !input.dataset.dirty) {
+                return;
+            }
+
             input.classList.remove('border-red-500');
+            input.classList.add('border-gray-300', 'dark:border-gray-700');
             input.classList.add('border-green-500');
 
-            let small = input.parentNode.querySelector('.error-text');
-            if (small) small.remove();
+            if (error) error.remove();
         }
 
-        // ============================
-        // ELEMENTOS
-        // ============================
-
-        const nombre = document.getElementById('dpto_nombre');
-        const codigo = document.getElementById('dpto_codigo_postal');
-        const form = document.getElementById('createForm');
-
-        const editNombre = document.getElementById('editNombre');
-        const editCodigo = document.getElementById('editCodigo');
-        const editForm = document.getElementById('editForm');
-
-        let codigoValido = false;
-        let editCodigoValido = true;
-
-        // ============================
-        // VALIDAR NOMBRE
-        // ============================
-
         function validarNombre(input) {
+            if(!input) return false;
+            let valor = input.value.trim();
+            
+            let serverError = input.parentNode.querySelector('.server-error');
+            if (serverError && !input.dataset.dirty) {
+                input.classList.remove('border-green-500', 'border-gray-300');
+                input.classList.add('border-red-500');
+                return false; 
+            }
 
-            let value = input.value;
-
-            value = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
-            value = value.replace(/\s{2,}/g, ' ');
-            value = value.toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
-
-            input.value = value;
-
-            const regex = /^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)*$/;
-
-            if (value.length < 3) {
-                setError(input, "Debe tener mínimo 3 caracteres");
+            if (valor.length < 3) {
+                mostrarError(input, "Debe tener mínimo 3 caracteres.");
                 return false;
             }
 
-            if (!regex.test(value)) {
-                setError(input, "Solo letras y cada palabra debe iniciar en mayúscula");
+            if (valor.length > 100) {
+                mostrarError(input, "No puede superar 100 caracteres.");
                 return false;
             }
 
-            setSuccess(input);
+            if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/.test(valor)) {
+                mostrarError(input, "Debe iniciar con al menos 3 letras continuas sin espacios.");
+                return false;
+            }
+
+            if (valor.includes("  ")) {
+                mostrarError(input, "No se permiten espacios dobles.");
+                return false;
+            }
+
+            limpiarError(input);
             return true;
         }
 
-        // ============================
-        // VALIDAR CÓDIGO POSTAL
-        // ============================
-
-        function validarCodigo(input, esEditar = false) {
-
-            input.value = input.value.replace(/[^0-9]/g, '');
-
-            const value = input.value;
-
-            if (value.length === 0) {
-                setError(input, "El código postal es obligatorio");
-                return Promise.resolve(false);
+        function validarCodigo(input, isEdit = false, btnToUpdate, inputNom) {
+            let valor = input.value.replace(/\D/g, ''); 
+            input.value = valor;
+            
+            const statusLabel = isEdit ? document.getElementById('editDptoCodStatus') : document.getElementById('dptoCodStatus');
+            
+            let serverError = input.parentNode.querySelector('.server-error');
+            if (serverError && !input.dataset.dirty) {
+                input.classList.remove('border-green-500', 'border-gray-300');
+                input.classList.add('border-red-500');
+                if(isEdit) codigoValidoEdit = false; else codigoValidoCreate = false;
+                actualizarBoton(btnToUpdate, isEdit, inputNom);
+                return;
             }
 
-            if (!/^[0-9]+$/.test(value)) {
-                setError(input, "Solo se permiten números");
-                return Promise.resolve(false);
+            if (valor.length === 0) {
+                mostrarError(input, "El código postal es obligatorio.");
+                if(isEdit) codigoValidoEdit = false; else codigoValidoCreate = false;
+                if(statusLabel) statusLabel.textContent = "";
+                actualizarBoton(btnToUpdate, isEdit, inputNom);
+                return;
             }
 
-            if (value.length < 2) {
-                setError(input, "Debe tener mínimo 2 dígitos");
-                return Promise.resolve(false);
+            if (valor.length < 2 || valor.length > 10) {
+                mostrarError(input, "Debe tener de 2 a 10 dígitos.");
+                if(isEdit) codigoValidoEdit = false; else codigoValidoCreate = false;
+                if(statusLabel) statusLabel.textContent = "";
+                actualizarBoton(btnToUpdate, isEdit, inputNom);
+                return;
             }
 
-            if (value.length > 10) {
-                setError(input, "Máximo 10 dígitos");
-                return Promise.resolve(false);
+            if (isEdit && valor === codigoActual) {
+                limpiarError(input);
+                if(statusLabel) statusLabel.textContent = "";
+                codigoValidoEdit = true;
+                actualizarBoton(btnToUpdate, isEdit, inputNom);
+                return;
             }
 
-            // VALIDACIÓN AJAX ANTI DUPLICADOS
-            return fetch("{{ route('admin.departamento.check') }}?codigo=" +
-                    value +
-                    "&actual=" + (esEditar ? input.dataset.actual || "" : ""))
-                .then(response => response.json())
-                .then(data => {
+            // AJAX validation
+            if(statusLabel) {
+                statusLabel.textContent = "Verificando disponibilidad...";
+                statusLabel.classList.remove("text-red-500", "text-green-600");
+                statusLabel.classList.add("text-gray-500");
+            }
 
-                    if (data.exists) {
-                        setError(input, "Este código ya está registrado");
-
-                        if (esEditar) editCodigoValido = false;
-                        else codigoValido = false;
-
-                        return false;
-
-                    } else {
-                        setSuccess(input);
-
-                        if (esEditar) editCodigoValido = true;
-                        else codigoValido = true;
-
-                        return true;
-                    }
-                })
-                .catch(() => {
-                    setError(input, "Error al validar el código");
-                    return false;
-                });
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                fetch(`{{ route('admin.departamento.check') }}?codigo=${valor}&actual=${isEdit ? codigoActual : ''}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.exists) {
+                            mostrarError(input, "Este código postal ya está registrado.");
+                            if(statusLabel) {
+                                statusLabel.textContent = "No disponible";
+                                statusLabel.classList.remove("text-gray-500", "text-green-600");
+                                statusLabel.classList.add("text-red-500");
+                            }
+                            if(isEdit) codigoValidoEdit = false; else codigoValidoCreate = false;
+                        } else {
+                            limpiarError(input);
+                            if(statusLabel) {
+                                statusLabel.textContent = "Disponible";
+                                statusLabel.classList.remove("text-gray-500", "text-red-500");
+                                statusLabel.classList.add("text-green-600", "font-medium");
+                            }
+                            if(isEdit) codigoValidoEdit = true; else codigoValidoCreate = true;
+                        }
+                        actualizarBoton(btnToUpdate, isEdit, inputNom);
+                    })
+                    .catch(error => {
+                        console.error("Error al validar código postal", error);
+                    });
+            }, 500);
         }
 
-        // ============================
-        // EVENTOS CREAR
-        // ============================
+        function actualizarBoton(btn, isEdit, inputNom) {
+            if(!btn) return;
+            const okNombre = validarNombre(inputNom);
+            const okCodigo = isEdit ? codigoValidoEdit : codigoValidoCreate;
 
-        if (nombre) {
-            nombre.addEventListener('input', function() {
-                validarNombre(this);
-            });
+            const ok = okNombre && okCodigo;
+            
+            btn.disabled = !ok;
+            btn.classList.toggle('opacity-50', btn.disabled);
+            btn.classList.toggle('cursor-not-allowed', btn.disabled);
         }
 
-        if (codigo) {
-            codigo.addEventListener('input', function() {
-                validarCodigo(this);
-            });
-        }
-
-        if (form) {
-    form.addEventListener('submit', async function(e) {
-
-        let nombreOk = validarNombre(nombre);
-        let codigoOk = await validarCodigo(codigo);
-
-        if (!nombreOk || !codigoOk) {
-            e.preventDefault();
-
-            Swal.fire({
-                icon: 'error',
-                title: 'Formulario inválido',
-                text: 'Corrige los errores antes de continuar'
-            });
-
-            return false;
-        }
-
-        // Si todo está bien, NO bloqueamos el submit
-    });
-}
-
-        // ============================
-        // EVENTOS EDITAR
-        // ============================
-
-        if (editNombre) {
-            editNombre.addEventListener('input', function() {
-                validarNombre(this);
-            });
-        }
-
-        if (editCodigo) {
-            editCodigo.addEventListener('input', function() {
-                validarCodigo(this, true);
-            });
-        }
-
-        if (editForm) {
-    editForm.addEventListener('submit', async function(e) {
-
-        let nombreOk = validarNombre(editNombre);
-        let codigoOk = await validarCodigo(editCodigo, true);
-
-        if (!nombreOk || !codigoOk) {
-            e.preventDefault();
-
-            Swal.fire({
-                icon: 'error',
-                title: 'Formulario inválido',
-                text: 'Corrige los errores antes de continuar'
-            });
-
-            return false;
-        }
-
-    });
-}
     </script>
-
 @endsection

@@ -27,8 +27,10 @@ class DepartamentoController extends Controller
     $request->validate([
         'dpto_nombre' => [
             'required',
-            'regex:/^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)*$/',
-            'max:100'
+            'string',
+            'min:3',
+            'max:100',
+            'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/'
         ],
         'dpto_codigo_postal' => [
             'required',
@@ -39,12 +41,15 @@ class DepartamentoController extends Controller
             'unique:departamento,dpto_codigo_postal'
         ],
     ], [
+        'dpto_nombre.required' => 'El nombre del departamento es obligatorio.',
+        'dpto_nombre.min' => 'Debe tener mínimo 3 caracteres.',
+        'dpto_nombre.max' => 'No puede superar 100 caracteres.',
+        'dpto_nombre.regex' => 'Debe iniciar con al menos 3 letras continuas sin espacios.',
         'dpto_codigo_postal.required' => 'El código postal es obligatorio.',
         'dpto_codigo_postal.regex' => 'Solo se permiten números.',
         'dpto_codigo_postal.min' => 'Debe tener mínimo 2 dígitos.',
         'dpto_codigo_postal.max' => 'Máximo 10 dígitos.',
-        'dpto_codigo_postal.unique' => 'El código postal ya está registrado.',
-        'dpto_nombre.regex' => 'Cada palabra debe iniciar con mayúscula y solo contener letras.'
+        'dpto_codigo_postal.unique' => 'El código postal ya está registrado.'
     ]);
 
     Departamento::create($request->all());
@@ -57,17 +62,30 @@ class DepartamentoController extends Controller
     $request->validate([
         'dpto_nombre' => [
             'required',
-            'regex:/^[A-ZÁÉÍÓÚÑ][a-záéíóúñ\s]*$/',
-            'max:100'
+            'string',
+            'min:3',
+            'max:100',
+            'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/'
         ],
         'dpto_codigo_postal' => [
             'required',
-            'integer',
-            'min:1',
-            'digits_between:1,10',
+            'string',
+            'regex:/^[0-9]+$/',
+            'min:2',
+            'max:10',
             Rule::unique('departamento', 'dpto_codigo_postal')
                 ->ignore($codigo, 'dpto_codigo_postal')
         ],
+    ], [
+        'dpto_nombre.required' => 'El nombre del departamento es obligatorio.',
+        'dpto_nombre.min' => 'Debe tener mínimo 3 caracteres.',
+        'dpto_nombre.max' => 'No puede superar 100 caracteres.',
+        'dpto_nombre.regex' => 'Debe iniciar con al menos 3 letras continuas sin espacios.',
+        'dpto_codigo_postal.required' => 'El código postal es obligatorio.',
+        'dpto_codigo_postal.regex' => 'Solo se permiten números.',
+        'dpto_codigo_postal.min' => 'Debe tener mínimo 2 dígitos.',
+        'dpto_codigo_postal.max' => 'Máximo 10 dígitos.',
+        'dpto_codigo_postal.unique' => 'El código postal ya está registrado.'
     ]);
 
     $departamento = Departamento::findOrFail($codigo);

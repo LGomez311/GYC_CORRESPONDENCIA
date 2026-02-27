@@ -22,11 +22,23 @@ class TipoController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'tipo_nombre' => 'required|string|min:2|max:100|unique:tipo,tipo_nombre',
+            'tipo_nombre' => [
+                'required',
+                'string',
+                'min:3',
+                'max:100',
+                'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/',
+                'unique:tipo,tipo_nombre'
+            ],
             'id_prioridad' => 'required|integer|exists:prioridad,id_prioridad'
         ], [
             'tipo_nombre.required' => 'El nombre del tipo es obligatorio.',
-            'id_prioridad.required' => 'Seleccione una prioridad.'
+            'tipo_nombre.min' => 'Debe tener mínimo 3 caracteres.',
+            'tipo_nombre.max' => 'No puede superar 100 caracteres.',
+            'tipo_nombre.regex' => 'Debe iniciar con al menos 3 letras continuas sin espacios.',
+            'tipo_nombre.unique' => 'Este tipo ya existe.',
+            'id_prioridad.required' => 'Seleccione una prioridad.',
+            'id_prioridad.exists' => 'La prioridad seleccionada no es válida.'
         ]);
 
         $validated['tipo_nombre'] = ucfirst(strtolower(trim($validated['tipo_nombre'])));
@@ -39,8 +51,23 @@ class TipoController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'tipo_nombre' => 'required|string|max:100',
+            'tipo_nombre' => [
+                'required',
+                'string',
+                'min:3',
+                'max:100',
+                'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/',
+                'unique:tipo,tipo_nombre,' . $id . ',id_tipo'
+            ],
             'id_prioridad' => 'required|integer|exists:prioridad,id_prioridad'
+        ], [
+            'tipo_nombre.required' => 'El nombre del tipo es obligatorio.',
+            'tipo_nombre.min' => 'Debe tener mínimo 3 caracteres.',
+            'tipo_nombre.max' => 'No puede superar 100 caracteres.',
+            'tipo_nombre.regex' => 'Debe iniciar con al menos 3 letras continuas sin espacios.',
+            'tipo_nombre.unique' => 'Este tipo ya existe.',
+            'id_prioridad.required' => 'Seleccione una prioridad.',
+            'id_prioridad.exists' => 'La prioridad seleccionada no es válida.'
         ]);
 
         $t = Tipo::findOrFail($id);

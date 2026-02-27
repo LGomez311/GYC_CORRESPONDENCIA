@@ -20,9 +20,20 @@ class PrioridadController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'prioridad_nombre' => 'required|string|min:2|max:100|unique:prioridad,prioridad_nombre'
+            'prioridad_nombre' => [
+                'required',
+                'string',
+                'min:3',
+                'max:100',
+                'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/',
+                'unique:prioridad,prioridad_nombre'
+            ]
         ], [
-            'prioridad_nombre.required' => 'El nombre de la prioridad es obligatorio.'
+            'prioridad_nombre.required' => 'El nombre de la prioridad es obligatorio.',
+            'prioridad_nombre.min' => 'Debe tener mínimo 3 caracteres.',
+            'prioridad_nombre.max' => 'No puede superar 100 caracteres.',
+            'prioridad_nombre.regex' => 'Debe iniciar con al menos 3 letras continuas sin espacios.',
+            'prioridad_nombre.unique' => 'Esta prioridad ya existe.'
         ]);
 
         $validated['prioridad_nombre'] = ucfirst(strtolower(trim($validated['prioridad_nombre'])));
@@ -35,7 +46,20 @@ class PrioridadController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'prioridad_nombre' => 'required|string|max:100'
+            'prioridad_nombre' => [
+                'required',
+                'string',
+                'min:3',
+                'max:100',
+                'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/',
+                'unique:prioridad,prioridad_nombre,' . $id . ',id_prioridad'
+            ]
+        ], [
+            'prioridad_nombre.required' => 'El nombre de la prioridad es obligatorio.',
+            'prioridad_nombre.min' => 'Debe tener mínimo 3 caracteres.',
+            'prioridad_nombre.max' => 'No puede superar 100 caracteres.',
+            'prioridad_nombre.regex' => 'Debe iniciar con al menos 3 letras continuas sin espacios.',
+            'prioridad_nombre.unique' => 'Esta prioridad ya existe.'
         ]);
 
         $p = Prioridad::findOrFail($id);

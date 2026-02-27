@@ -134,29 +134,50 @@
             <form action="{{ route('admin.ciudad.store') }}" method="POST" id="createForm">
                 @csrf
 
+                <input type="hidden" name="form_type" value="create">
+
                 <div class="mb-4">
                     <label class="block text-sm font-medium mb-1">Nombre</label>
                     <input type="text" id="ciudad_nom" name="ciudad_nom"
-                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary">
+                        value="{{ old('form_type') == 'create' ? old('ciudad_nom') : '' }}"
+                        class="w-full px-3 py-2 border rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 focus:ring-2 focus:ring-primary {{ (old('form_type') == 'create' && $errors->has('ciudad_nom')) ? 'border-red-500' : '' }}" required minlength="3" maxlength="100" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$" title="Debe iniciar con al menos 3 letras continuas sin espacios">
+                    
+                    @if(old('form_type') == 'create')
+                        @error('ciudad_nom')
+                            <p class="error-msg server-error text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    @endif
                 </div>
 
                 <div class="mb-4">
                     <label class="block text-sm font-medium mb-1">Código Postal</label>
                     <input type="text" id="ciudad_cod_post" name="ciudad_cod_post"
-                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary">
+                        value="{{ old('form_type') == 'create' ? old('ciudad_cod_post') : '' }}"
+                        class="w-full px-3 py-2 border rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 focus:ring-2 focus:ring-primary {{ (old('form_type') == 'create' && $errors->has('ciudad_cod_post')) ? 'border-red-500' : '' }}" required maxlength="10">
+                    <small id="ciudadCodStatus" class="block text-xs mt-1"></small>
+                    @if(old('form_type') == 'create')
+                        @error('ciudad_cod_post')
+                            <p class="error-msg server-error text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    @endif
                 </div>
 
-                <div class="mb-4">
+                <div class="mb-4 pt-2">
                     <label class="block text-sm font-medium mb-1">Departamento</label>
-                    <select name="ciudad_id_dpto" required
-                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary">
+                    <select name="ciudad_id_dpto" id="ciudad_id_dpto" required
+                        class="w-full px-3 py-2 border rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 focus:ring-2 focus:ring-primary {{ (old('form_type') == 'create' && $errors->has('ciudad_id_dpto')) ? 'border-red-500' : '' }}">
                         <option value="">Seleccione un departamento</option>
                         @foreach ($departamentos as $dpto)
-                            <option value="{{ $dpto->dpto_codigo_postal }}">
+                            <option value="{{ $dpto->dpto_codigo_postal }}" {{ (old('form_type') == 'create' && old('ciudad_id_dpto') == $dpto->dpto_codigo_postal) ? 'selected' : '' }}>
                                 {{ $dpto->dpto_nombre }}
                             </option>
                         @endforeach
                     </select>
+                    @if(old('form_type') == 'create')
+                        @error('ciudad_id_dpto')
+                            <p class="error-msg server-error text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    @endif
                 </div>
 
                 <div class="flex justify-end gap-3">
@@ -181,26 +202,48 @@
                 @csrf
                 @method('PUT')
 
+                <input type="hidden" name="form_type" value="edit">
+
                 <div class="mb-4">
                     <label class="block text-sm font-medium mb-1">Nombre</label>
-                    <input type="text" id="edit_ciudad_nom" name="ciudad_nom" class="w-full px-3 py-2 border rounded-lg">
+                    <input type="text" id="edit_ciudad_nom" name="ciudad_nom" 
+                        value="{{ old('form_type') == 'edit' ? old('ciudad_nom') : '' }}"
+                        class="w-full px-3 py-2 border rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 focus:ring-2 focus:ring-primary {{ (old('form_type') == 'edit' && $errors->has('ciudad_nom')) ? 'border-red-500' : '' }}" required minlength="3" maxlength="100" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$" title="Debe iniciar con al menos 3 letras continuas sin espacios">
+                    @if(old('form_type') == 'edit')
+                        @error('ciudad_nom')
+                            <p class="error-msg server-error text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    @endif
                 </div>
 
                 <div class="mb-4">
                     <label class="block text-sm font-medium mb-1">Código Postal</label>
                     <input type="text" id="edit_ciudad_cod_post" name="ciudad_cod_post"
-                        class="w-full px-3 py-2 border rounded-lg">
+                        value="{{ old('form_type') == 'edit' ? old('ciudad_cod_post') : '' }}"
+                        class="w-full px-3 py-2 border rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 focus:ring-2 focus:ring-primary {{ (old('form_type') == 'edit' && $errors->has('ciudad_cod_post')) ? 'border-red-500' : '' }}" required maxlength="10">
+                    <small id="editCiudadCodStatus" class="block text-xs mt-1"></small>
+                    @if(old('form_type') == 'edit')
+                        @error('ciudad_cod_post')
+                            <p class="error-msg server-error text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    @endif
                 </div>
 
-                <div class="mb-4">
+                <div class="mb-4 pt-2">
                     <label class="block text-sm font-medium mb-1">Departamento</label>
-                    <select id="edit_ciudad_id_dpto" name="ciudad_id_dpto" class="w-full px-3 py-2 border rounded-lg">
+                    <select id="edit_ciudad_id_dpto" name="ciudad_id_dpto" required class="w-full px-3 py-2 border rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 focus:ring-2 focus:ring-primary {{ (old('form_type') == 'edit' && $errors->has('ciudad_id_dpto')) ? 'border-red-500' : '' }}">
+                        <option value="">Seleccione un departamento</option>
                         @foreach ($departamentos as $dpto)
-                            <option value="{{ $dpto->dpto_codigo_postal }}">
+                            <option value="{{ $dpto->dpto_codigo_postal }}" {{ (old('form_type') == 'edit' && old('ciudad_id_dpto') == $dpto->dpto_codigo_postal) ? 'selected' : '' }}>
                                 {{ $dpto->dpto_nombre }}
                             </option>
                         @endforeach
                     </select>
+                    @if(old('form_type') == 'edit')
+                        @error('ciudad_id_dpto')
+                            <p class="error-msg server-error text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    @endif
                 </div>
 
                 <div class="flex justify-end gap-3">
@@ -248,15 +291,225 @@
 @endsection
 
 @section('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        // ============================
+        // VARIABLES GLOBALES DE VALIDACION
+        // ============================
+        let debounceTimer;
+        let codigoActual = "";
+        let codigoValidoCreate = false;
+        let codigoValidoEdit = true; // Por defecto true al editar si no se toca
+
+        document.addEventListener('DOMContentLoaded', function() {
+
+            // ================= ALERTS DE SESIÓN Y ERRORES =================
+            @if(session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: '{{ session("success") }}',
+                    timer: 3000,
+                    showConfirmButton: false,
+                    position: 'center'
+                });
+            @endif
+
+            @if(session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: '{{ session("error") }}',
+                    timer: 4000,
+                    showConfirmButton: false,
+                    position: 'center'
+                });
+            @endif
+
+            @if($errors->any())
+                let errorMessages = "";
+                @foreach ($errors->all() as $error)
+                    errorMessages += "• {{ $error }}\n";
+                @endforeach
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de validación',
+                    text: errorMessages,
+                    timer: 5000,
+                    showConfirmButton: true,
+                    position: 'center'
+                });
+
+                @if(old('form_type') == 'create')
+                    openCreateModal();
+                @elseif(old('form_type') == 'edit')
+                    let id = "{{ old('ciudad_cod_post') }}";
+                    let url = "{{ route('admin.ciudad.update', ['id' => '__ID__']) }}";
+                    url = url.replace('__ID__', id);
+                    document.getElementById('editForm').action = url;
+                    codigoActual = id;
+                    document.getElementById('editModal').classList.remove('hidden');
+                    document.getElementById('editModal').classList.add('flex');
+                @endif
+            @endif
+
+
+            // ============================
+            // ELEMENTOS CREAR Y EDITAR
+            // ============================
+
+            const nombre = document.getElementById('ciudad_nom');
+            const codigo = document.getElementById('ciudad_cod_post');
+            const departamento = document.getElementById('ciudad_id_dpto');
+            const btnCreate = document.querySelector('#createModal button[type="submit"]');
+
+            const editNombre = document.getElementById('edit_ciudad_nom');
+            const editCodigo = document.getElementById('edit_ciudad_cod_post');
+            const editDepartamento = document.getElementById('edit_ciudad_id_dpto');
+            const btnEdit = document.querySelector('#editModal button[type="submit"]');
+            
+
+            // ============================
+            // EVENTOS CREAR
+            // ============================
+
+            if(nombre) {
+                function validateNombreEv() {
+                    nombre.dataset.dirty = 'true';
+                    nombre.value = nombre.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ ]/g, '');
+                    actualizarBoton(btnCreate, false, nombre, codigo, departamento);
+                }
+                nombre.addEventListener('input', validateNombreEv);
+                if(nombre.value) validateNombreEv();
+            }
+            
+            if(codigo) {
+                function validateCodigoEv() {
+                    codigo.dataset.dirty = 'true';
+                    validarCodigo(codigo, false, btnCreate, nombre, departamento);
+                }
+                codigo.addEventListener('input', validateCodigoEv);
+                if(codigo.value) validateCodigoEv();
+            }
+            
+            if(departamento) {
+                function validateDeptoEv() {
+                    departamento.dataset.dirty = 'true';
+                    actualizarBoton(btnCreate, false, nombre, codigo, departamento);
+                }
+                departamento.addEventListener('change', validateDeptoEv);
+                if(departamento.value) validateDeptoEv();
+            }
+
+            // ============================
+            // EVENTOS EDITAR
+            // ============================
+
+            if(editNombre) {
+                function validateEditNombreEv() {
+                    editNombre.dataset.dirty = 'true';
+                    editNombre.value = editNombre.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ ]/g, '');
+                    actualizarBoton(btnEdit, true, editNombre, editCodigo, editDepartamento);
+                }
+                editNombre.addEventListener('input', validateEditNombreEv);
+            }
+
+            if(editCodigo) {
+                function validateEditCodigoEv() {
+                    editCodigo.dataset.dirty = 'true';
+                    validarCodigo(editCodigo, true, btnEdit, editNombre, editDepartamento);
+                }
+                editCodigo.addEventListener('input', validateEditCodigoEv);
+            }
+
+            if(editDepartamento) {
+                function validateEditDeptoEv() {
+                    editDepartamento.dataset.dirty = 'true';
+                    actualizarBoton(btnEdit, true, editNombre, editCodigo, editDepartamento);
+                }
+                editDepartamento.addEventListener('change', validateEditDeptoEv);
+            }
+
+        }); // END DOMContentLoaded
+
+        // ============================
+        // MODALS
+        // ============================
+            
         function openCreateModal() {
+            const form = document.querySelector('#createForm');
+            if(form && "{{ old('form_type') }}" !== "create") form.reset();
+            
+            const inputs = ['ciudad_nom', 'ciudad_cod_post', 'ciudad_id_dpto'];
+            inputs.forEach(id => {
+                const el = document.getElementById(id);
+                if(el && "{{ old('form_type') }}" !== "create") {
+                    el.dataset.dirty = '';
+                    limpiarError(el);
+                }
+            });
+
+            if("{{ old('form_type') }}" !== "create") {
+                const btn = document.querySelector('#createModal button[type="submit"]');
+                if(btn) {
+                    btn.disabled = true;
+                    btn.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+                const status = document.getElementById('ciudadCodStatus');
+                if(status) {
+                    status.textContent = "";
+                    status.classList.remove('text-green-600', 'text-red-500');
+                }
+            }
+
             document.getElementById('createModal').classList.remove('hidden');
             document.getElementById('createModal').classList.add('flex');
         }
 
+        window.openEditModal = function(id, nombre_val, dpto) {
+            codigoActual = id; 
+
+            let url = "{{ route('admin.ciudad.update', ['id' => '__ID__']) }}";
+            url = url.replace('__ID__', id);
+
+            const editForm = document.getElementById('editForm');
+            const editNombre = document.getElementById('edit_ciudad_nom');
+            const editCodigo = document.getElementById('edit_ciudad_cod_post');
+            const editDepartamento = document.getElementById('edit_ciudad_id_dpto');
+            const editStatusCod = document.getElementById('editCiudadCodStatus');
+
+            editForm.action = url;
+            editNombre.value = nombre_val;
+            editCodigo.value = id;
+            editDepartamento.value = dpto;
+
+            editNombre.dataset.dirty = '';
+            editCodigo.dataset.dirty = '';
+            editDepartamento.dataset.dirty = '';
+
+            limpiarError(editNombre);
+            limpiarError(editCodigo);
+            limpiarError(editDepartamento);
+            
+            if(editStatusCod) {
+                editStatusCod.textContent = "";
+                editStatusCod.classList.remove('text-green-600', 'text-red-500');
+            }
+
+            codigoValidoEdit = true;
+
+            document.getElementById('editModal').classList.remove('hidden');
+            document.getElementById('editModal').classList.add('flex');
+            
+            if(editNombre) editNombre.dispatchEvent(new Event('input'));
+        }
+
         function closeModals() {
             document.getElementById('createModal').classList.add('hidden');
+            document.getElementById('createModal').classList.remove('flex');
             document.getElementById('editModal').classList.add('hidden');
+            document.getElementById('editModal').classList.remove('flex');
         }
 
         function openExportModal() {
@@ -268,254 +521,182 @@
             document.getElementById('exportModal').classList.add('hidden');
             document.getElementById('exportModal').classList.remove('flex');
         }
-    </script>
 
-    <script>
         // ============================
-        // UTILIDADES
+        // UTILIDADES Y VALIDACIONES
         // ============================
-
-        function setError(input, message) {
-            input.classList.add('border-red-500');
+        
+        function mostrarError(input, mensaje) {
             input.classList.remove('border-green-500');
+            input.classList.add('border-red-500');
 
-            let small = input.parentNode.querySelector('.error-text');
-            if (!small) {
-                small = document.createElement('small');
-                small.classList.add('error-text', 'text-red-500', 'block', 'mt-1');
-                input.parentNode.appendChild(small);
+            let error = input.parentNode.querySelector('.error-msg');
+            if (!error) {
+                error = document.createElement('p');
+                error.classList.add('error-msg', 'text-red-500', 'text-sm', 'mt-1');
+                input.parentNode.appendChild(error);
             }
-            small.innerText = message;
+            error.textContent = mensaje;
+            error.classList.remove('server-error');
         }
 
-        function setSuccess(input) {
+        function limpiarError(input) {
+            if(!input) return;
+            let error = input.parentNode.querySelector('.error-msg');
+            if (error && error.classList.contains('server-error') && !input.dataset.dirty) {
+                return;
+            }
+
             input.classList.remove('border-red-500');
+            input.classList.add('border-gray-300', 'dark:border-gray-700');
             input.classList.add('border-green-500');
 
-            let small = input.parentNode.querySelector('.error-text');
-            if (small) small.remove();
+            if (error) error.remove();
         }
 
-        // ============================
-        // ELEMENTOS CREAR
-        // ============================
-
-        const nombre = document.getElementById('ciudad_nom');
-        const codigo = document.getElementById('ciudad_cod_post');
-        const departamento = document.querySelector('#createForm select[name="ciudad_id_dpto"]');
-        const form = document.getElementById('createForm');
-
-        let codigoValido = false;
-
-
-        // ============================
-        // ELEMENTOS EDITAR
-        // ============================
-
-        const editNombre = document.getElementById('edit_ciudad_nom');
-        const editCodigo = document.getElementById('edit_ciudad_cod_post');
-        const editDepartamento = document.getElementById('edit_ciudad_id_dpto');
-        const editForm = document.getElementById('editForm');
-
-        let editCodigoValido = true;
-        let codigoActual = "";
-
-
-        // ============================
-        // CAPITALIZAR FUNCIÓN
-        // ============================
 
         function validarNombre(input) {
+            if(!input) return false;
+            let valor = input.value.trim();
+            
+            let serverError = input.parentNode.querySelector('.server-error');
+            if (serverError && !input.dataset.dirty) {
+                input.classList.remove('border-green-500', 'border-gray-300');
+                input.classList.add('border-red-500');
+                return false; 
+            }
 
-            let value = input.value.trim();
-
-            value = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
-            value = value.replace(/\s{2,}/g, ' ');
-            value = value.toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
-
-            input.value = value;
-
-            if (value.length < 3) {
-                setError(input, "Debe tener mínimo 3 caracteres");
+            if (valor.length < 3) {
+                mostrarError(input, "Debe tener mínimo 3 caracteres.");
                 return false;
             }
 
-            if (value.length > 60) {
-                setError(input, "Máximo 60 caracteres");
+            if (valor.length > 100) {
+                mostrarError(input, "No puede superar 100 caracteres.");
                 return false;
             }
 
-            const regex = /^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)*$/;
-
-            if (!regex.test(value)) {
-                setError(input, "Solo letras y cada palabra debe iniciar en mayúscula");
+            if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/.test(valor)) {
+                mostrarError(input, "Debe iniciar con al menos 3 letras continuas sin espacios.");
                 return false;
             }
 
-            setSuccess(input);
+            if (valor.includes("  ")) {
+                mostrarError(input, "No se permiten espacios dobles.");
+                return false;
+            }
+
+            limpiarError(input);
+            return true;
+        }
+
+        function validarSelect(input) {
+            if(!input) return false;
+            let valor = input.value;
+            let serverError = input.parentNode.querySelector('.server-error');
+            if (serverError && !input.dataset.dirty) {
+                input.classList.remove('border-green-500', 'border-gray-300');
+                input.classList.add('border-red-500');
+                return false; 
+            }
+            
+            if (valor === "") {
+                mostrarError(input, "Seleccione un departamento.");
+                return false;
+            }
+            limpiarError(input);
             return true;
         }
 
 
-        // ============================
-        // VALIDAR CÓDIGO POSTAL
-        // ============================
-
-        function validarCodigo(input, esEditar = false) {
-
-            let value = input.value.trim();
-
-            // Eliminar cualquier cosa que no sea número
-            value = value.replace(/\D/g, '');
-            input.value = value;
-
-            // Obligatorio
-            if (value.length === 0) {
-                setError(input, "El código postal es obligatorio");
-                return false;
+        function validarCodigo(input, isEdit = false, btnToUpdate, inputNom, inputSelect) {
+            let valor = input.value.replace(/\D/g, ''); 
+            input.value = valor;
+            
+            const statusLabel = isEdit ? document.getElementById('editCiudadCodStatus') : document.getElementById('ciudadCodStatus');
+            
+            let serverError = input.parentNode.querySelector('.server-error');
+            if (serverError && !input.dataset.dirty) {
+                input.classList.remove('border-green-500', 'border-gray-300');
+                input.classList.add('border-red-500');
+                if(isEdit) codigoValidoEdit = false; else codigoValidoCreate = false;
+                actualizarBoton(btnToUpdate, isEdit, inputNom, input, inputSelect);
+                return;
             }
 
-            // Debe ser exactamente 5 dígitos (estándar Colombia)
-            if (!/^\d{5}$/.test(value)) {
-                setError(input, "Debe contener exactamente 5 dígitos");
-                return false;
+            if (valor.length === 0) {
+                mostrarError(input, "El código postal es obligatorio.");
+                if(isEdit) codigoValidoEdit = false; else codigoValidoCreate = false;
+                if(statusLabel) statusLabel.textContent = "";
+                actualizarBoton(btnToUpdate, isEdit, inputNom, input, inputSelect);
+                return;
             }
 
-            // Si estamos editando y no cambió el código, no validar duplicado
-            if (esEditar && value === codigoActual) {
-                setSuccess(input);
-                editCodigoValido = true;
-                return true;
+            if (valor.length < 4 || valor.length > 10) {
+                mostrarError(input, "Debe tener de 4 a 10 dígitos.");
+                if(isEdit) codigoValidoEdit = false; else codigoValidoCreate = false;
+                if(statusLabel) statusLabel.textContent = "";
+                actualizarBoton(btnToUpdate, isEdit, inputNom, input, inputSelect);
+                return;
             }
 
-            // ============================
-            // VALIDACIÓN AJAX (ANTI DUPLICADO)
-            // ============================
+            if (isEdit && valor === codigoActual) {
+                limpiarError(input);
+                if(statusLabel) statusLabel.textContent = "";
+                codigoValidoEdit = true;
+                actualizarBoton(btnToUpdate, isEdit, inputNom, input, inputSelect);
+                return;
+            }
 
-            fetch("{{ route('admin.ciudad.check') }}?codigo=" +
-                    value + "&actual=" + (esEditar ? codigoActual : ""))
-                .then(response => response.json())
-                .then(data => {
+            // AJAX validation
+            if(statusLabel) {
+                statusLabel.textContent = "Verificando disponibilidad...";
+                statusLabel.classList.remove("text-red-500", "text-green-600");
+                statusLabel.classList.add("text-gray-500");
+            }
 
-                    if (data.exists) {
-                        setError(input, "Este código postal ya está registrado");
-                        if (esEditar) editCodigoValido = false;
-                        else codigoValido = false;
-                    } else {
-                        setSuccess(input);
-                        if (esEditar) editCodigoValido = true;
-                        else codigoValido = true;
-                    }
-
-                })
-                .catch(() => {
-                    setError(input, "Error verificando el código");
-                });
-
-            return true;
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                fetch(`{{ route('admin.ciudad.check') }}?codigo=${valor}&actual=${isEdit ? codigoActual : ''}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.exists) {
+                            mostrarError(input, "Este código postal ya está registrado.");
+                            if(statusLabel) {
+                                statusLabel.textContent = "No disponible";
+                                statusLabel.classList.remove("text-gray-500", "text-green-600");
+                                statusLabel.classList.add("text-red-500");
+                            }
+                            if(isEdit) codigoValidoEdit = false; else codigoValidoCreate = false;
+                        } else {
+                            limpiarError(input);
+                            if(statusLabel) {
+                                statusLabel.textContent = "Disponible";
+                                statusLabel.classList.remove("text-gray-500", "text-red-500");
+                                statusLabel.classList.add("text-green-600", "font-medium");
+                            }
+                            if(isEdit) codigoValidoEdit = true; else codigoValidoCreate = true;
+                        }
+                        actualizarBoton(btnToUpdate, isEdit, inputNom, input, inputSelect);
+                    })
+                    .catch(error => {
+                        console.error("Error al validar código postal", error);
+                    });
+            }, 500);
         }
 
+        function actualizarBoton(btn, isEdit, inputNom, inputCod, inputSelect) {
+            if(!btn) return;
+            const okNombre = validarNombre(inputNom);
+            const okDepto = validarSelect(inputSelect);
+            const okCodigo = isEdit ? codigoValidoEdit : codigoValidoCreate;
 
-        // ============================
-        // EVENTOS CREAR
-        // ============================
-
-        nombre.addEventListener('input', function() {
-            validarNombre(this);
-        });
-
-        codigo.addEventListener('input', function() {
-            validarCodigo(this);
-        });
-
-        departamento.addEventListener('change', function() {
-            if (!this.value) setError(this, "Seleccione un departamento");
-            else setSuccess(this);
-        });
-
-        form.addEventListener('submit', function(e) {
-
-            let nombreOk = validarNombre(nombre);
-            let codigoOk = validarCodigo(codigo);
-            let departamentoOk = departamento.value !== "";
-
-            if (!departamentoOk) {
-                setError(departamento, "Seleccione un departamento");
-            }
-
-            if (!nombreOk || !codigoOk || !departamentoOk || !codigoValido) {
-                e.preventDefault();
-
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Formulario inválido',
-                    text: 'Corrige los errores antes de continuar'
-                });
-            }
-
-        });
-
-
-        // ============================
-        // EVENTOS EDITAR
-        // ============================
-
-        editNombre.addEventListener('input', function() {
-            validarNombre(this);
-        });
-
-        editCodigo.addEventListener('input', function() {
-            validarCodigo(this, true);
-        });
-
-        editDepartamento.addEventListener('change', function() {
-            if (!this.value) setError(this, "Seleccione un departamento");
-            else setSuccess(this);
-        });
-
-        editForm.addEventListener('submit', function(e) {
-
-            let nombreOk = validarNombre(editNombre);
-            let codigoOk = validarCodigo(editCodigo, true);
-            let departamentoOk = editDepartamento.value !== "";
-
-            if (!departamentoOk) {
-                setError(editDepartamento, "Seleccione un departamento");
-            }
-
-            if (!nombreOk || !codigoOk || !departamentoOk || !editCodigoValido) {
-                e.preventDefault();
-
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Formulario inválido',
-                    text: 'Corrige los errores antes de continuar'
-                });
-            }
-
-        });
-
-
-        // ============================
-        // CUANDO ABRE MODAL EDITAR
-        // ============================
-
-        function openEditModal(id, nombre, cod, dpto) {
-
-            codigoActual = cod; // Guardamos código actual
-
-            let url = "{{ route('admin.ciudad.update', ['id' => '__ID__']) }}";
-            url = url.replace('__ID__', id);
-
-            editForm.action = url;
-            editNombre.value = nombre;
-            editCodigo.value = cod;
-            editDepartamento.value = dpto;
-
-            editCodigoValido = true;
-
-            document.getElementById('editModal').classList.remove('hidden');
-            document.getElementById('editModal').classList.add('flex');
+            const ok = okNombre && okDepto && okCodigo;
+            
+            btn.disabled = !ok;
+            btn.classList.toggle('opacity-50', btn.disabled);
+            btn.classList.toggle('cursor-not-allowed', btn.disabled);
         }
+
     </script>
 @endsection

@@ -10,7 +10,9 @@ class EstadosExport implements FromCollection, WithHeadings
 {
     public function collection()
     {
-        return Estado::where('id_estado', '>=', 6)->select('id_estado', 'estado_nomb')->get();
+        return Estado::whereIn('id_estado', [1, 2])
+            ->orWhere('id_estado', '>', 5)
+            ->select('id_estado', 'estado_nomb')->get();
     }
 
     public function headings(): array

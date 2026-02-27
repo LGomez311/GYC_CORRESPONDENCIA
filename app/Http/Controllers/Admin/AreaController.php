@@ -14,7 +14,7 @@ class AreaController extends Controller
 {
     public function index()
     {
-        $areas = Area::paginate(2);
+        $areas = Area::paginate(5);
         return view('admin.otros.area', compact('areas'));
     }
 
@@ -26,14 +26,14 @@ class AreaController extends Controller
                 'string',
                 'min:3',
                 'max:50',
-                'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$/',
+                'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/',
                 'unique:area,area_nom'
             ]
         ], [
             'area_nom.required' => 'El nombre del área es obligatorio.',
             'area_nom.min' => 'Debe tener mínimo 3 caracteres.',
             'area_nom.max' => 'No puede superar 50 caracteres.',
-            'area_nom.regex' => 'Solo se permiten letras y espacios.',
+            'area_nom.regex' => 'Debe iniciar con al menos 3 letras continuas sin espacios.',
             'area_nom.unique' => 'Esta área ya existe.'
         ]);
 
@@ -49,7 +49,20 @@ class AreaController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'area_nom' => 'required|string|max:100'
+            'area_nom' => [
+                'required',
+                'string',
+                'min:3',
+                'max:50',
+                'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/',
+                'unique:area,area_nom,' . $id . ',id_area'
+            ]
+        ], [
+            'area_nom.required' => 'El nombre del área es obligatorio.',
+            'area_nom.min' => 'Debe tener mínimo 3 caracteres.',
+            'area_nom.max' => 'No puede superar 50 caracteres.',
+            'area_nom.regex' => 'Debe iniciar con al menos 3 letras continuas sin espacios.',
+            'area_nom.unique' => 'Esta área ya existe.'
         ]);
 
         $area = Area::findOrFail($id);

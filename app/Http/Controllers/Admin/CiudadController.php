@@ -26,9 +26,23 @@ class CiudadController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'ciudad_nom' => 'required|min:3|max:100',
+            'ciudad_nom' => [
+                'required',
+                'string',
+                'min:3',
+                'max:100',
+                'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/'
+            ],
             'ciudad_cod_post' => 'required|max:10|unique:ciudad,ciudad_cod_post',
             'ciudad_id_dpto' => 'required|exists:departamento,dpto_codigo_postal'
+        ], [
+            'ciudad_nom.required' => 'El nombre de la ciudad es obligatorio.',
+            'ciudad_nom.min' => 'Debe tener mínimo 3 caracteres.',
+            'ciudad_nom.max' => 'No puede superar 100 caracteres.',
+            'ciudad_nom.regex' => 'Debe iniciar con al menos 3 letras continuas sin espacios.',
+            'ciudad_cod_post.required' => 'El código postal es obligatorio.',
+            'ciudad_cod_post.unique' => 'Este código postal ya existe.',
+            'ciudad_id_dpto.required' => 'Debe seleccionar un departamento.'
         ]);
 
         Ciudad::create([
@@ -46,9 +60,23 @@ class CiudadController extends Controller
         $ciudad = Ciudad::findOrFail($id);
 
         $request->validate([
-            'ciudad_nom' => 'required|min:3|max:100',
+            'ciudad_nom' => [
+                'required',
+                'string',
+                'min:3',
+                'max:100',
+                'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/'
+            ],
             'ciudad_cod_post' => 'required|max:10|unique:ciudad,ciudad_cod_post,' . $id . ',ciudad_cod_post',
             'ciudad_id_dpto' => 'required|exists:departamento,dpto_codigo_postal'
+        ], [
+            'ciudad_nom.required' => 'El nombre de la ciudad es obligatorio.',
+            'ciudad_nom.min' => 'Debe tener mínimo 3 caracteres.',
+            'ciudad_nom.max' => 'No puede superar 100 caracteres.',
+            'ciudad_nom.regex' => 'Debe iniciar con al menos 3 letras continuas sin espacios.',
+            'ciudad_cod_post.required' => 'El código postal es obligatorio.',
+            'ciudad_cod_post.unique' => 'Este código postal ya existe.',
+            'ciudad_id_dpto.required' => 'Debe seleccionar un departamento.'
         ]);
 
         // ⚠ Si cambian el código postal (PK), hay que actualizar manualmente

@@ -10,7 +10,10 @@ class RolesExport implements FromCollection, WithHeadings
 {
     public function collection()
     {
-        return Rol::select('id_rol', 'rol_nom')->get();
+        $firstTwoIds = Rol::orderBy('id_rol')->limit(2)->pluck('id_rol');
+        return Rol::select('id_rol', 'rol_nom')
+            ->whereNotIn('id_rol', $firstTwoIds)
+            ->get();
     }
 
     public function headings(): array

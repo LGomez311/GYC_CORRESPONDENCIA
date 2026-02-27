@@ -131,12 +131,22 @@
                 </button>
             </div>
 
-            <form action="{{ route('admin.area.store') }}" method="POST">
+            <form action="{{ route('admin.area.store') }}" method="POST" id="createForm">
                 @csrf
+                <input type="hidden" name="form_type" value="create">
 
-                <input type="text" name="area_nom" id="area_nom"
-                    class="w-full rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 mb-4"
-                    placeholder="Nombre del área">
+                <div class="mb-4">
+                    <input type="text" name="area_nom" id="area_nom"
+                        value="{{ old('form_type') == 'create' ? old('area_nom') : '' }}"
+                        class="w-full rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 focus:ring-primary focus:border-primary {{ (old('form_type') == 'create' && $errors->has('area_nom')) ? 'border-red-500' : '' }}"
+                        placeholder="Nombre del área" required minlength="3" maxlength="50" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$" title="Debe iniciar con al menos 3 letras continuas sin espacios">
+                    
+                    @if(old('form_type') == 'create')
+                        @error('area_nom')
+                            <p class="error-msg server-error text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    @endif
+                </div>
 
                 <div class="flex flex-col sm:flex-row justify-end gap-3">
                     <button type="button" onclick="closeModals()" class="px-4 py-2 border rounded-lg w-full sm:w-auto">
@@ -166,9 +176,20 @@
             <form id="editForm" method="POST">
                 @csrf
                 @method('PUT')
+                <input type="hidden" name="form_type" value="edit">
+                <input type="hidden" id="edit_id_area" name="id_area" value="{{ old('id_area') }}">
 
-                <input type="text" id="editNombre" name="area_nom"
-                    class="w-full rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 mb-4" required>
+                <div class="mb-4">
+                    <input type="text" id="editNombre" name="area_nom"
+                        value="{{ old('form_type') == 'edit' ? old('area_nom') : '' }}"
+                        class="w-full rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 focus:ring-primary focus:border-primary {{ (old('form_type') == 'edit' && $errors->has('area_nom')) ? 'border-red-500' : '' }}" required minlength="3" maxlength="50" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$" title="Debe iniciar con al menos 3 letras continuas sin espacios">
+                    
+                    @if(old('form_type') == 'edit')
+                        @error('area_nom')
+                            <p class="error-msg server-error text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    @endif
+                </div>
 
                 <div class="flex flex-col sm:flex-row justify-end gap-3">
                     <button type="button" onclick="closeModals()" class="px-4 py-2 border rounded-lg w-full sm:w-auto">
@@ -188,18 +209,92 @@
 
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
 
+    // ================= ALERTS DE SESIÓN Y ERRORES =================
+    @if(session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: '¡Éxito!',
+            text: '{{ session("success") }}',
+            timer: 3000,
+            showConfirmButton: false,
+            position: 'center'
+        });
+    @endif
+
+    @if(session('error'))
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: '{{ session("error") }}',
+            timer: 4000,
+            showConfirmButton: false,
+            position: 'center'
+        });
+    @endif
+
+    @if($errors->any())
+        let errorMessages = "";
+        @foreach ($errors->all() as $error)
+            errorMessages += "• {{ $error }}\n";
+        @endforeach
+
+        Swal.fire({
+            icon: 'error',
+            title: 'Error de validación',
+            text: errorMessages,
+            timer: 5000,
+            showConfirmButton: true,
+            position: 'center'
+        });
+
+        // Reabrir modal correspondiente si hubo error
+        @if(old('form_type') == 'create')
+            toggleModal('createModal', true);
+        @elseif(old('form_type') == 'edit')
+            let editFormAction = `{{ url('/admin/areas') }}/{{ old('id_area') }}`;
+            document.getElementById('editForm').action = editFormAction;
+            toggleModal('editModal', true);
+        @endif
+    @endif
+
     // ================= MODALES =================
     window.openCreateModal = function() {
+        // Limpiar el form por si quedó algo de antes usando reset y disparando input
+        const form = document.querySelector('#createForm');
+        if(form) form.reset();
+        
+        const input = document.getElementById('area_nom');
+        if(input) {
+            input.dataset.dirty = '';
+            // Forzar limpeza visual
+            limpiarError(input);
+            const btn = document.querySelector('#createModal button[type="submit"]');
+            if(btn) {
+                btn.disabled = true;
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+        
         toggleModal('createModal', true);
     }
 
     window.openEditModal = function(id, nombre) {
         document.getElementById('editForm').action = `/admin/areas/${id}`;
+        document.getElementById('edit_id_area').value = id;
         document.getElementById('editNombre').value = nombre;
+        document.getElementById('editNombre').dataset.dirty = ''; // Reset dirty
+        
+        // Trigger validate so the button isn't immediately disabled erroneously
+        const input = document.getElementById('editNombre');
+        limpiarError(input);
+        
         toggleModal('editModal', true);
+        // Despues de abrir reevaluamos validacion básica
+        if(input) input.dispatchEvent(new Event('input'));
     }
 
     window.closeModals = function() {
@@ -215,7 +310,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ================= FUNCIONES DE ERROR =================
     function mostrarError(input, mensaje) {
-
         input.classList.remove('border-green-500');
         input.classList.add('border-red-500');
 
@@ -228,21 +322,35 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         error.textContent = mensaje;
+        error.classList.remove('server-error');
     }
 
     function limpiarError(input) {
+        let error = input.parentNode.querySelector('.error-msg');
+        
+        // Si hay un error del servidor, no lo limpiamos a menos que el input haya sido modificado
+        if (error && error.classList.contains('server-error') && !input.dataset.dirty) {
+            return;
+        }
 
         input.classList.remove('border-red-500');
+        input.classList.add('border-gray-300', 'dark:border-gray-700'); 
         input.classList.add('border-green-500');
 
-        let error = input.parentNode.querySelector('.error-msg');
         if (error) error.remove();
     }
 
     // ================= VALIDACIÓN NOMBRE =================
     function validarNombre(input) {
-
         let valor = input.value.trim();
+
+        // Si es carga inicial y el backend dejó un error server-error
+        let serverError = input.parentNode.querySelector('.server-error');
+        if (serverError && !input.dataset.dirty) {
+            input.classList.remove('border-green-500', 'border-gray-300');
+            input.classList.add('border-red-500');
+            return false; 
+        }
 
         if (valor === "") {
             mostrarError(input, "El nombre del área es obligatorio.");
@@ -259,8 +367,8 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         }
 
-        if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$/.test(valor)) {
-            mostrarError(input, "Solo se permiten letras y espacios.");
+        if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/.test(valor)) {
+            mostrarError(input, "Debe iniciar con al menos 3 letras continuas sin espacios.");
             return false;
         }
 
@@ -285,11 +393,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         input.addEventListener('input', function() {
-
+            this.dataset.dirty = 'true';
             this.value = this.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ ]/g, '');
             validarTodo();
         });
 
+        // Trigger validación inicial
         validarTodo();
     }
 

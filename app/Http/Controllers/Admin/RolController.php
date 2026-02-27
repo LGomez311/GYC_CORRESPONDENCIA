@@ -13,16 +13,28 @@ class RolController extends Controller
 {
     public function index()
     {
-        $roles = Rol::paginate(10);
+        $firstTwoIds = Rol::orderBy('id_rol')->limit(2)->pluck('id_rol');
+        $roles = Rol::whereNotIn('id_rol', $firstTwoIds)->paginate(10);
         return view('admin.otros.rol', compact('roles'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'rol_nom' => 'required|string|min:2|max:100|unique:rol,rol_nom'
+            'rol_nom' => [
+                'required',
+                'string',
+                'min:3',
+                'max:100',
+                'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/',
+                'unique:rol,rol_nom'
+            ]
         ], [
-            'rol_nom.required' => 'El nombre del rol es obligatorio.'
+            'rol_nom.required' => 'El nombre del rol es obligatorio.',
+            'rol_nom.min' => 'Debe tener mínimo 3 caracteres.',
+            'rol_nom.max' => 'No puede superar 100 caracteres.',
+            'rol_nom.regex' => 'Debe iniciar con al menos 3 letras continuas sin espacios.',
+            'rol_nom.unique' => 'Este rol ya existe.'
         ]);
 
         $validated['rol_nom'] = ucfirst(strtolower(trim($validated['rol_nom'])));
@@ -35,7 +47,20 @@ class RolController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'rol_nom' => 'required|string|max:100'
+            'rol_nom' => [
+                'required',
+                'string',
+                'min:3',
+                'max:100',
+                'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/',
+                'unique:rol,rol_nom,' . $id . ',id_rol'
+            ]
+        ], [
+            'rol_nom.required' => 'El nombre del rol es obligatorio.',
+            'rol_nom.min' => 'Debe tener mínimo 3 caracteres.',
+            'rol_nom.max' => 'No puede superar 100 caracteres.',
+            'rol_nom.regex' => 'Debe iniciar con al menos 3 letras continuas sin espacios.',
+            'rol_nom.unique' => 'Este rol ya existe.'
         ]);
 
         $r = Rol::findOrFail($id);
@@ -58,7 +83,8 @@ class RolController extends Controller
 
     public function exportPdf()
     {
-        $roles = Rol::all();
+        $firstTwoIds = Rol::orderBy('id_rol')->limit(2)->pluck('id_rol');
+        $roles = Rol::whereNotIn('id_rol', $firstTwoIds)->get();
         $pdf = Pdf::loadView('admin.pdf.rol_pdf', compact('roles'));
         return $pdf->download('roles.pdf');
     }

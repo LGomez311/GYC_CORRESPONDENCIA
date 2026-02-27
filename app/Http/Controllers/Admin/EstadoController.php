@@ -13,17 +13,29 @@ class EstadoController extends Controller
 {
     public function index()
     {
-        // Mostrar solo registros con id_estado >= 6
-        $estados = Estado::where('id_estado', '>=', 6)->paginate(10);
+        $estados = Estado::whereIn('id_estado', [1, 2])
+                        ->orWhere('id_estado', '>', 5)
+                        ->paginate(10);
         return view('admin.otros.estado', compact('estados'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'estado_nomb' => 'required|string|min:2|max:100|unique:estado,estado_nomb'
+            'estado_nomb' => [
+                'required',
+                'string',
+                'min:3',
+                'max:100',
+                'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/',
+                'unique:estado,estado_nomb'
+            ]
         ], [
-            'estado_nomb.required' => 'El nombre del estado es obligatorio.'
+            'estado_nomb.required' => 'El nombre del estado es obligatorio.',
+            'estado_nomb.min' => 'Debe tener mínimo 3 caracteres.',
+            'estado_nomb.max' => 'No puede superar 100 caracteres.',
+            'estado_nomb.regex' => 'Debe iniciar con al menos 3 letras continuas sin espacios.',
+            'estado_nomb.unique' => 'Este estado ya existe.'
         ]);
 
         $validated['estado_nomb'] = ucfirst(strtolower(trim($validated['estado_nomb'])));
@@ -36,7 +48,20 @@ class EstadoController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'estado_nomb' => 'required|string|max:100'
+            'estado_nomb' => [
+                'required',
+                'string',
+                'min:3',
+                'max:100',
+                'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/',
+                'unique:estado,estado_nomb,' . $id . ',id_estado'
+            ]
+        ], [
+            'estado_nomb.required' => 'El nombre del estado es obligatorio.',
+            'estado_nomb.min' => 'Debe tener mínimo 3 caracteres.',
+            'estado_nomb.max' => 'No puede superar 100 caracteres.',
+            'estado_nomb.regex' => 'Debe iniciar con al menos 3 letras continuas sin espacios.',
+            'estado_nomb.unique' => 'Este estado ya existe.'
         ]);
 
         $e = Estado::findOrFail($id);
@@ -59,7 +84,9 @@ class EstadoController extends Controller
 
     public function exportPdf()
     {
-        $estados = Estado::where('id_estado', '>=', 6)->get();
+        $estados = Estado::whereIn('id_estado', [1, 2])
+                        ->orWhere('id_estado', '>', 5)
+                        ->get();
         $pdf = Pdf::loadView('admin.pdf.estado_pdf', compact('estados'));
         return $pdf->download('estados.pdf');
     }
