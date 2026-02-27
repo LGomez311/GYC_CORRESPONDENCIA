@@ -41,7 +41,7 @@ class UsuarioSeeder extends Seeder
                 'emple_apellidos' => 'Gomez',
                 'emple_correo' => 'lucho3112007@gmail.com',
                 'password' => Hash::make('Luisgomez11@'),
-                'emple_rol' => 2,
+                'emple_rol' => 1,
                 'emple_estado' => 1
             ]
         );
@@ -53,7 +53,7 @@ class UsuarioSeeder extends Seeder
                 'emple_apellidos' => 'Paez',
                 'emple_correo' => 'santiagopc333@gmail.com',
                 'password' => Hash::make('Yuber1234!'),
-                'emple_rol' => 3,
+                'emple_rol' => 1,
                 'emple_estado' => 1
             ]
         );

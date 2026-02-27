@@ -256,17 +256,7 @@
                         <p class="text-red-500 text-sm">{{ $errors->first('login') }}</p>
                     @endif
 
-                    @if (session('lockout_seconds'))
-                        <div id="lockoutMessage"
-                            class="mb-4 rounded-lg bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-3 text-sm">
-                            Demasiados intentos. Intenta nuevamente en
-                            <strong><span id="lockoutCounter">{{ session('lockout_seconds') }}</span></strong>
-                            segundos.
-                        </div>
-                    @endif
-
-                    
-
+                
 
                     {{-- Botón --}}
                     <button id="submitBtn" type="submit"

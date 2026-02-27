@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 27, 2026 at 04:36 AM
+-- Generation Time: Feb 27, 2026 at 07:23 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -203,13 +203,11 @@ CREATE TABLE `empleado` (
 --
 
 INSERT INTO `empleado` (`emple_doc`, `nit_empresa`, `password`, `emple_nombres`, `emple_apellidos`, `emple_tel`, `emple_correo`, `emple_img`, `emple_estado`, `emple_rol`, `emple_area`) VALUES
-('1001', NULL, '$2y$12$h2K09eO/8SzeJQgNASdo3OYDxn0o4Po7TmlsjAgFpz.p1rea4rrku', 'Kevin', 'Villafrade', NULL, 'kevin@gmail.com', NULL, 1, 1, NULL),
-('1002', NULL, '$2y$12$LnlHo.YRNtS13.rTT9XSd.0HtAYC2vJ.qVxEP3.AXqLKuP0e15Xva', 'Luis', 'Gomez', NULL, 'luis@gmail.com', NULL, 1, 2, NULL),
-('1003', NULL, '$2y$12$MC/IFZFcwBFCEH.U8JDcke63ZJFiD9OT.U9B80fFv6PS5zmlTXzGS', 'Yuber', 'Paez', NULL, 'yuber@gmail.com', NULL, 1, 3, NULL),
-('1005912004', NULL, '$2y$12$cwyEeZs4/n2MmdoJpqaqgueZIM0zJ64XrIZsNVY5TnRMRQgFqbcf6', 'Kevin', 'Villafrade', NULL, 'kevindany2209@gmail.com', NULL, 1, 1, NULL),
-('1070730214', NULL, '$2y$12$BEWNzmNgwWUuhWfmML/fg.zWmqtySQRAjyjv9yJUEca0sUn2PthaO', 'Yuber', 'Paez', NULL, 'santiagopc333@gmail.com', NULL, 1, 3, NULL),
-('1106394865', NULL, '$2y$12$.ms2qjkEjzHXtMYrFhZjEexcU1oht00gMrKXJrCWY6pKPnyp0tbkK', 'Luis', 'Gomez', NULL, 'lucho3112007@gmail.com', NULL, 1, 2, NULL),
-('2005914095', NULL, '$2y$12$oHEcg2Oa5YA7EKuT62UaqeRz6fKwP9Rt6VaNHcNCv.HVdJ3wZ1hXm', 'SUPER', 'ADMIN', NULL, 'kevinreal2209@gmail.com', NULL, 1, 1, NULL);
+('1005912004', NULL, '$2y$12$9PqwoUdBiin5OBpTJt70xO6iHr/BtY78G2Co.W8b1O2KyE9Oh2gr.', 'Kevin', 'Villafrade', NULL, 'kevindany2209@gmail.com', NULL, 1, 1, NULL),
+('1070730214', NULL, '$2y$12$qk/ky/QNhy3Yx2fg1TZqf.Ppqg1j8WTYgkA.JtTseooT/kLQKm4Ha', 'Yuber', 'Paez', NULL, 'santiagopc333@gmail.com', NULL, 1, 1, NULL),
+('1106394865', NULL, '$2y$12$1C771qhrFK7Q5ZlljvmFOuPd0.Tt66FiiYsSi0ctFtAdgryCd/oSW', 'Luis', 'Gomez', NULL, 'lucho3112007@gmail.com', NULL, 1, 1, NULL),
+('1234567890', NULL, '$2y$12$vvTluBDjmUMUTmJFDmasuO3ntmSgP4be7mr7QViuMveJzQ6ZJWHlS', 'Yuber', 'Paez', NULL, 'santiagouber333@gmail.com', NULL, 1, 1, NULL),
+('2005914095', NULL, '$2y$12$.DJlZQ94Fqg/XR1Wb386R.FikANGCWnqNQcAYZTQHCc.1.PpXqE7y', 'SUPER', 'ADMIN', NULL, 'kevinreal2209@gmail.com', NULL, 1, 1, NULL);
 
 -- --------------------------------------------------------
 
@@ -226,13 +224,6 @@ CREATE TABLE `empresa` (
   `contacto` varchar(15) DEFAULT NULL,
   `empresa_correo` varchar(150) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `empresa`
---
-
-INSERT INTO `empresa` (`nit_empresa`, `nomb_empresa`, `doc_representante`, `nomb_representante`, `direccion`, `contacto`, `empresa_correo`) VALUES
-('3241234', 'sena', '1242343313', 'aaaaa', 'aaaaaaaaaaa', '3153524586', 'aaaaaa');
 
 -- --------------------------------------------------------
 
@@ -343,13 +334,6 @@ CREATE TABLE `licencia` (
   `licencia_origen` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `licencia`
---
-
-INSERT INTO `licencia` (`id_licencia`, `id_estado`, `id_pago`, `fecha_inicio`, `fecha_fin`, `tipo_licencia`, `licencia_origen`) VALUES
-(15, 1, 49, '2026-02-26 18:58:43', '2027-02-26 18:58:43', 'ACTIVACION', NULL);
-
 -- --------------------------------------------------------
 
 --
@@ -388,13 +372,6 @@ CREATE TABLE `pagos` (
   `fecha_pago` datetime DEFAULT NULL,
   `fecha_inicio` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `pagos`
---
-
-INSERT INTO `pagos` (`id_pago`, `id_plan`, `comprobante`, `id_admin`, `moneda`, `id_est_pago`, `fecha_pago`, `fecha_inicio`) VALUES
-(49, 10, NULL, '1002', 'COP', 4, '2026-02-26 13:58:36', NULL);
 
 -- --------------------------------------------------------
 
@@ -510,7 +487,7 @@ CREATE TABLE `recibido` (
 
 CREATE TABLE `remitente` (
   `rem_doc` int(20) NOT NULL,
-  `nit_empresa` varchar(25) NOT NULL,
+  `nit_empresa` varchar(25) DEFAULT NULL,
   `rem_nombres` varchar(50) NOT NULL,
   `rem_apellidos` varchar(50) NOT NULL,
   `rem_correo` varchar(255) NOT NULL,
@@ -519,6 +496,13 @@ CREATE TABLE `remitente` (
   `rem_ciudad` varchar(10) NOT NULL,
   `rem_estado` int(10) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `remitente`
+--
+
+INSERT INTO `remitente` (`rem_doc`, `nit_empresa`, `rem_nombres`, `rem_apellidos`, `rem_correo`, `password`, `rem_tel`, `rem_ciudad`, `rem_estado`) VALUES
+(1234567888, NULL, 'Kevin', 'Daniel', 'kevin.daniel@gmail.com', '$2y$12$V/kBOsNQ33fJEcmod3oG.e2F/VDOtKa3dzc6TQjvpuTBb4WXy6DPe', '3001234567', '11001', 1);
 
 -- --------------------------------------------------------
 
@@ -560,8 +544,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('fmSN2qSVKNPQeVfY4dzh9kYVPqECHbG5kzUzm9Lw', 1002, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiekF2Nll2Q3YyTlNwWXZXdU5pV05rd0k2YTBlTzliOWpNdnRYZlZLSSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hZG1pbi9vdHJvcyI7czo1OiJyb3V0ZSI7czoxMToiYWRtaW4ub3Ryb3MiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7czo0OiIxMDAyIjt9', 1772132586),
-('IPCiOapeDNkFGXHGDovLIdgkdS49BkxyCiq3f67U', 1001, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiRzlwc2J1UUdiamJJUUNUVTJOamlzTWdHUXNIaURXN1dKeFNzQTgwbCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zYWRtaW4vZW1wcmVzYXMiO3M6NToicm91dGUiO3M6ODoiZW1wcmVzYXMiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7czo0OiIxMDAxIjt9', 1772084495);
+('etT1CDsPGrT3PeqoGjE82h4vtz6YUeL1NGpUTLWM', 1070730214, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiMXAzZ2tIam1YelFrQXAyNVRBNHNmNWtVZExPQ1BDUGMyaDNkeWdUciI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDI6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zYWRtaW4vcGxhbmVzP3BhZ2U9MiI7czo1OiJyb3V0ZSI7czo3OiJjcGxhbmVzIjt9czoxNToibG9ja291dF9zZWNvbmRzIjtpOjMwMDtzOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7czoxMDoiMTA3MDczMDIxNCI7fQ==', 1772173362);
 
 -- --------------------------------------------------------
 
@@ -840,7 +823,7 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT for table `licencia`
 --
 ALTER TABLE `licencia`
-  MODIFY `id_licencia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id_licencia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT for table `migrations`
@@ -852,19 +835,19 @@ ALTER TABLE `migrations`
 -- AUTO_INCREMENT for table `pagos`
 --
 ALTER TABLE `pagos`
-  MODIFY `id_pago` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
+  MODIFY `id_pago` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=54;
 
 --
 -- AUTO_INCREMENT for table `password_codes`
 --
 ALTER TABLE `password_codes`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `plan`
 --
 ALTER TABLE `plan`
-  MODIFY `id_plan` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id_plan` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `prioridad`
