@@ -271,35 +271,40 @@
             document.getElementById('duracion_real').value = plan.duracion ?? '';
 
             // Valor
+            // Valor
             const valorVisual = document.getElementById('valor_visual');
             const planGratuito = document.getElementById('plan_gratuito');
 
-            if (Number(plan.valor) === 0) {
+            if (!plan.valor || Number(plan.valor) === 0) {
                 planGratuito.checked = true;
-                valorVisual.value = '0';
+                valorVisual.value = '';
                 valorVisual.disabled = true;
+                document.getElementById('valor_real').value = '0';
             } else {
                 planGratuito.checked = false;
                 valorVisual.disabled = false;
-                valorVisual.value = Number(plan.valor).toLocaleString('es-CO');
+                valorVisual.value = new Intl.NumberFormat('es-CO').format(plan.valor);
+                document.getElementById('valor_real').value = plan.valor;
             }
 
             // Duración
             const duracionVisual = document.getElementById('duracion_visual');
             const planInfinito = document.getElementById('plan_infinito');
 
-            const isInfinito = !plan.duracion || plan.duracion === 0;
+            const isInfinito = !plan.duracion || Number(plan.duracion) === 0;
 
             planInfinito.checked = isInfinito;
 
             if (isInfinito) {
                 duracionVisual.value = '';
                 duracionVisual.disabled = true;
-                duracionVisual.placeholder = 'Este plan es infinito';
+                duracionVisual.placeholder = 'Este plan se enviará con duración infinita';
+                document.getElementById('duracion_real').value = '0';
             } else {
                 duracionVisual.disabled = false;
                 duracionVisual.value = plan.duracion;
                 duracionVisual.placeholder = '60';
+                document.getElementById('duracion_real').value = plan.duracion;
             }
 
             // Destacado
@@ -311,7 +316,8 @@
 
             let beneficios = plan.descripcion;
 
-            if (typeof beneficios === 'string') {
+            // Asegurar que siempre sea array de strings
+            if (!Array.isArray(beneficios)) {
                 try {
                     beneficios = JSON.parse(beneficios);
                 } catch {
@@ -322,7 +328,7 @@
             if (!Array.isArray(beneficios) || beneficios.length === 0) {
                 agregarBeneficio();
             } else {
-                beneficios.forEach(b => agregarBeneficio(b));
+                beneficios.forEach(b => agregarBeneficio(b ?? ''));
             }
 
             // Guardar estado original NORMALIZADO
@@ -354,26 +360,37 @@
             wrapper.className = 'space-y-1';
 
             wrapper.innerHTML = `
-        <div class="flex gap-2">
-            <input type="text"
-                name="descripcion[]"
-                value="${valor}"
-                maxlength="${MAX_CHARS}"
-                class="flex-1 rounded-xl border border-gray-300 px-4 py-3"
-                oninput="limitarYValidar(this)"
-                onblur="validarBeneficio(this)">
-            <button type="button" onclick="eliminarBeneficio(this)"
-                class="px-3 text-red-500">✕</button>
-        </div>
-        <p class="text-sm text-red-500 hidden"></p>
-    `;
+            <div class="flex gap-2">
+                <input type="text"
+                    name="descripcion[]"
+                    value="${valor}"
+                    placeholder="Ej: Acceso a todas las funciones"
+                    maxlength="${MAX_CHARS}"
+                    class="flex-1 rounded-xl border border-gray-300 px-4 py-3"
+                    oninput="limitarYValidar(this)"
+                    onblur="validarBeneficio(this)">
+                    <button type="button" onclick="eliminarBeneficio(this)"
+                    class="px-3 text-red-500">✕</button>
+                </div>
+                <p class="text-sm text-red-500 hidden"></p>
+            `;
 
             container.appendChild(wrapper);
         }
 
         function eliminarBeneficio(btn) {
             const container = document.getElementById('beneficios-container');
-            if (container.children.length <= 1) return;
+
+            if (container.children.length <= 1) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No permitido',
+                    text: 'Debes tener al menos un beneficio en el plan.',
+                    confirmButtonColor: '#3085d6'
+                });
+                return;
+            }
+
             btn.closest('.space-y-1').remove();
         }
 
@@ -984,11 +1001,30 @@
                             const beneficios = document.querySelectorAll('input[name="descripcion[]"]');
                             const planInfinito = document.getElementById('plan_infinito');
 
-                            const valorRaw = document.getElementById('valor_real')?.value || '0';
-                            const duracionRaw = document.getElementById('duracion_real')?.value || '';
-                            // =========================
-                            // NOMBRE
-                            // =========================
+                            const valorRaw = document.getElementById('valor_real')?.value;
+                            const duracionRaw = document.getElementById('duracion_real')?.value;
+                            const planGratuito = document.getElementById('plan_gratuito');
+
+                            if (!planGratuito.checked && (!valorRaw || valorRaw === '0')) {
+                                valido = false;
+                                errores.push(' <b>Valor</b>: es obligatorio.');
+
+                                const valorInput = document.getElementById('valor_visual');
+                                const valorError = document.getElementById('valor_error');
+
+                                valorInput.classList.add('border-red-500');
+                                valorError.textContent = 'El valor es obligatorio.';
+                                valorError.classList.remove('hidden');
+                            } else {
+                                // Si es gratuito o tiene valor válido, limpiar error
+                                const valorInput = document.getElementById('valor_visual');
+                                const valorError = document.getElementById('valor_error');
+
+                                valorInput.classList.remove('border-red-500');
+                                valorError.classList.add('hidden');
+                                valorError.textContent = '';
+                            }
+
                             // =========================
                             // NOMBRE
                             // =========================
@@ -1019,11 +1055,14 @@
                             // =========================
                             const valorError = document.getElementById('valor_error');
 
-                            if (!valorRaw) {
+                            if (!valorRaw || valorRaw === '') {
                                 valido = false;
                                 errores.push(' <b>Valor</b>: es obligatorio.');
 
-                                valor.classList.add('border-red-500');
+                                const valorInput = document.getElementById('valor_visual');
+                                const valorError = document.getElementById('valor_error');
+
+                                valorInput.classList.add('border-red-500');
                                 valorError.textContent = 'El valor es obligatorio.';
                                 valorError.classList.remove('hidden');
                             }
@@ -1033,15 +1072,16 @@
                             // =========================
                             const duracionError = document.getElementById('duracion_error');
 
-                            if (!planInfinito.checked) {
-                                if (!duracionRaw) {
-                                    valido = false;
-                                    errores.push(' <b>Duración</b>: es obligatoria.');
+                            if (!planInfinito.checked && (!duracionRaw || duracionRaw === '0')) {
+                                valido = false;
+                                errores.push(' <b>Duración</b>: es obligatoria.');
 
-                                    duracion.classList.add('border-red-500');
-                                    duracionError.textContent = 'La duración es obligatoria.';
-                                    duracionError.classList.remove('hidden');
-                                }
+                                const duracionInput = document.getElementById('duracion_visual');
+                                const duracionError = document.getElementById('duracion_error');
+
+                                duracionInput.classList.add('border-red-500');
+                                duracionError.textContent = 'La duración es obligatoria.';
+                                duracionError.classList.remove('hidden');
                             }
 
 

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Pago;
 use App\Models\Licencia;
 use Carbon\Carbon;
+use Illuminate\Support\ServiceProvider;
 
 class PagoController extends Controller
 {
@@ -19,8 +20,10 @@ class PagoController extends Controller
         return view('sadmin.pagos', compact('pagos'));
     }
 
+
     public function aprobar($id)
     {
+
         $pago = Pago::with(['plan', 'admin'])->findOrFail($id);
 
         // Aprobar el pago

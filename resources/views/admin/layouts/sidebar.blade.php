@@ -46,35 +46,32 @@
     <nav class="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
         <div class="flex flex-col gap-1">
 
-            @if (!empty($licenciaBloqueada))
-                <!-- SOLO cuando la licencia está vencida -->
 
+            @if ($licenciaBloqueada)
                 <h1 class="text-[#4c669a] dark:text-gray-400 text-[10px] uppercase font-bold px-3 py-2">
                     Licencia vencida
                 </h1>
 
                 <a href="{{ route('admin.planes') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-            text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+              text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
                     <span class="material-symbols-outlined">payments</span>
                     <p class="text-sm font-medium leading-normal">Pagar planes</p>
                 </a>
 
                 <a href="{{ route('admin.historialp') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-            text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+              text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
                     <span class="material-symbols-outlined">corporate_fare</span>
                     <p class="text-sm font-medium">Historial de pagos</p>
                 </a>
-            @else
-                <!-- MENÚ NORMAL (licencia activa) -->
+
+
 
                 <h1 class="text-[#4c669a] dark:text-gray-400 text-[10px] uppercase font-bold px-3 py-2">
                     Gestión Central
                 </h1>
-
-
-
+            @else
                 <!-- Usuarios -->
                 <a href="{{ route('admin.home') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
@@ -129,7 +126,7 @@
                     <span class="material-symbols-outlined">settings</span>
                     <p class="text-sm font-medium">Configuración</p>
                 </a> --}}
-            @endif
+                @endif
 
         </div>
 
