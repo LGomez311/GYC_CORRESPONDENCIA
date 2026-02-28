@@ -283,10 +283,19 @@
 
                     @foreach ($planes as $plan)
                         <div
-                            class="flex flex-col h-full min-h-[380px]
-                                    rounded-2xl border border-[#cfd7e7]
-                                    bg-white p-6 shadow-sm hover:shadow-xl transition">
+                            class="flex flex-col h-full min-h-[380px] p-6 transition
+                                {{ $plan->es_destacado
+                                ? 'relative scale-105 rounded-3xl border-2 border-primary bg-white shadow-2xl shadow-primary/10'
+                                : 'rounded-2xl border border-[#cfd7e7] bg-white shadow-sm hover:shadow-xl' }}">
 
+                            @if ($plan->es_destacado)
+                                <div
+                                    class="absolute -top-4 left-1/2 -translate-x-1/2
+                                        bg-primary text-white text-[10px] font-black uppercase
+                                        tracking-widest px-4 py-1.5 rounded-full">
+                                    Más Popular
+                                </div>
+                            @endif
 
                             <!-- Info -->
                             <div>
@@ -295,7 +304,9 @@
                                 </h2>
 
                                 <div class="mb-4">
-                                    <span class="block text-4xl font-black text-[#0d121b]">
+                                    <span
+                                        class="block text-4xl font-black
+    {{ $plan->es_destacado ? 'text-primary' : 'text-[#0d121b]' }}">
                                         ${{ number_format($plan->valor, 0, ',', '.') }}
                                     </span>
 
@@ -324,10 +335,11 @@
                             <!-- Botón -->
                             <a href="#" class="mt-auto pt-4">
                                 <button
-                                    class="w-full h-11 rounded-xl bg-[#e7ebf3]
-                                            text-[#0d121b] font-bold
-                                            hover:bg-primary hover:text-white transition">
-                                    Contactar asesor
+                                    class="w-full h-11 rounded-xl font-bold transition
+    {{ $plan->es_destacado
+        ? 'bg-primary text-white hover:bg-blue-700 shadow-lg shadow-primary/30'
+        : 'bg-[#e7ebf3] text-[#0d121b] hover:bg-primary hover:text-white' }}">
+                                    {{ $plan->es_destacado ? 'Seleccionar Plan' : 'Contactar asesor' }}
                                 </button>
                             </a>
                         </div>

@@ -79,6 +79,9 @@
                                 <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Descripción</th>
                                 <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Precio</th>
                                 <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Duración (Dias)</th>
+                                <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase text-center">
+                                    Destacado
+                                </th>
                                 <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase text-right">Acciones</th>
                             </tr>
                         </thead>
@@ -91,6 +94,7 @@
                                     <td class="px-6 py-4">
                                         <span class="text-sm font-bold dark:text-white">
                                             {{ $plan->nomb_plan }}
+
                                         </span>
                                     </td>
 
@@ -112,6 +116,14 @@
 
                                     <td class="px-6 py-4 text-sm dark:text-gray-300">
                                         {{ $plan->duracion }} Días
+                                    </td>
+
+                                    <td class="px-6 py-4 text-center">
+                                        @if ($plan->es_destacado)
+                                            <span class="text-blue-600 text-lg">Destacado</span>
+                                        @else
+                                            <span class="text-gray-300">—</span>
+                                        @endif
                                     </td>
 
                                     <td class="px-6 py-4 text-right">
