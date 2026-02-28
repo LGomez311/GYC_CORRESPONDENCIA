@@ -96,7 +96,7 @@ return [
         'mixed' => 'La contraseña debe contener al menos una mayúscula y una minúscula.',
         'numbers' => 'La contraseña debe contener al menos un número.',
         'symbols' => 'La contraseña debe contener al menos un símbolo.',
-        'uncompromised' => 'La contraseña ha aparecido en una filtración de datos. Elige otra diferente.',
+        'uncompromised' => 'Esta contraseña no es segura porque ya ha sido usada en otros sitios. Por favor elige una diferente.',
     ],
 
     'attributes' => [
