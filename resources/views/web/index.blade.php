@@ -104,10 +104,13 @@
                         sola plataforma segura, rápida y centralizada.
                     </p>
                     <div class="flex flex-col sm:flex-row gap-4">
-                        <button
-                            class="bg-primary hover:bg-blue-700 text-white px-8 py-4 rounded-xl text-base font-bold shadow-xl shadow-primary/30 flex items-center justify-center gap-2 transition-all">
-                            Empezar ahora <span class="material-symbols-outlined">arrow_forward</span>
-                        </button>
+                        <a href="#pricing">
+                            <button
+                                class="bg-primary hover:bg-blue-700 text-white px-8 py-4 rounded-xl text-base font-bold shadow-xl shadow-primary/30 flex items-center justify-center gap-2 transition-all">
+                                Empezar ahora
+                                <span class="material-symbols-outlined">arrow_forward</span>
+                            </button>
+                        </a>
                         {{-- <button
                             class="bg-white border border-[#e7ebf3] hover:border-primary/30 text-[#0d121b] px-8 py-4 rounded-xl text-base font-bold flex items-center justify-center gap-2 transition-all">
                             Ver demo en vivo <span class="material-symbols-outlined">play_circle</span>
@@ -139,7 +142,7 @@
                         class="relative bg-white border border-[#e7ebf3] rounded-3xl shadow-2xl overflow-hidden aspect-[4/3] flex items-center justify-center">
                         <div class="w-full h-full bg-cover bg-center"
                             data-alt="Modern software dashboard preview interface"
-                            style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDJdAEO033LvNdWSE9fvgkhecTEXFhYQ4FeYHw10qWx_fdkeMADZN4G9doXXl_mCOnvVQV1Wp2z2wn977kPsnDkxVk78eScZ8_fuVWJq0XKpg5SmyH9yA8N3RumZzykpIG2aenaS4ulaBm2V2FKPFuj8vbyS_g-jrQjc-Upgj0cN1XqD1oLSYvgvrkKpdk6GHxYTGO7eYvuGMPQMzg_tKEx1G_k0xgW1KQMEyZuLuhik1iJT0GACrJPrt6cs1MleLwcdPFttS-t3Ok");'>
+                            style="background-image: url('{{ asset('storage/public/s.png') }}');">
                         </div>
                     </div>
                 </div>
@@ -285,8 +288,8 @@
                         <div
                             class="flex flex-col h-full min-h-[380px] p-6 transition
                                 {{ $plan->es_destacado
-                                ? 'relative scale-105 rounded-3xl border-2 border-primary bg-white shadow-2xl shadow-primary/10'
-                                : 'rounded-2xl border border-[#cfd7e7] bg-white shadow-sm hover:shadow-xl' }}">
+                                    ? 'relative scale-105 rounded-3xl border-2 border-primary bg-white shadow-2xl shadow-primary/10'
+                                    : 'rounded-2xl border border-[#cfd7e7] bg-white shadow-sm hover:shadow-xl' }}">
 
                             @if ($plan->es_destacado)
                                 <div
@@ -332,14 +335,31 @@
                                 </div>
                             </div>
 
+                            @php
+                                $mensaje =
+                                    "Hola 👋, estoy interesado en el plan {$plan->nomb_plan} de IncolDEV.
+💼 Precio: $" .
+                                    number_format($plan->valor, 0, ',', '.') .
+                                    "
+📅 Duración: " .
+                                    ($plan->duracion ? $plan->duracion . ' días' : 'Pago único') .
+                                    "
+¿Podrían asesorarme?";
+                                $whatsappUrl =
+                                    'https://wa.me/' .
+                                    config('services.whatsapp.number') .
+                                    '?text=' .
+                                    urlencode($mensaje);
+                            @endphp
+
                             <!-- Botón -->
-                            <a href="#" class="mt-auto pt-4">
+                            <a href="{{ $whatsappUrl }}" target="_blank" class="mt-auto pt-4">
                                 <button
                                     class="w-full h-11 rounded-xl font-bold transition
-    {{ $plan->es_destacado
-        ? 'bg-primary text-white hover:bg-blue-700 shadow-lg shadow-primary/30'
-        : 'bg-[#e7ebf3] text-[#0d121b] hover:bg-primary hover:text-white' }}">
-                                    {{ $plan->es_destacado ? 'Seleccionar Plan' : 'Contactar asesor' }}
+                                {{ $plan->es_destacado
+                                    ? 'bg-primary text-white hover:bg-blue-700 shadow-lg shadow-primary/30'
+                                    : 'bg-[#e7ebf3] text-[#0d121b] hover:bg-primary hover:text-white' }}">
+                                    Contactar asesor
                                 </button>
                             </a>
                         </div>
@@ -361,14 +381,31 @@
                     ¿Listo para digitalizar su <br class="hidden md:block" /> centro de correspondencia?
                 </h2>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center relative z-10">
-                    <button
-                        class="bg-white text-primary px-10 py-5 rounded-2xl text-lg font-black hover:bg-gray-100 transition-all shadow-xl">
-                        Solicitar demostración
-                    </button>
-                    <button
-                        class="bg-primary/20 backdrop-blur-md border border-white/30 text-white px-10 py-5 rounded-2xl text-lg font-black hover:bg-white/10 transition-all">
-                        Contactar Soporte
-                    </button>
+                    @php
+                        $demoMsg = "Hola 👋, me gustaría solicitar una demostración del sistema IncolDEV.
+¿Podrían mostrarme cómo funciona?";
+                        $demoUrl =
+                            'https://wa.me/' . config('services.whatsapp.number') . '?text=' . urlencode($demoMsg);
+                    @endphp
+
+                    <a href="{{ $demoUrl }}" target="_blank">
+                        <button
+                            class="bg-white text-primary px-10 py-5 rounded-2xl text-lg font-black hover:bg-gray-100 transition-all shadow-xl">
+                            Solicitar demostración
+                        </button>
+                    </a>
+                    @php
+                        $soporteMsg = 'Hola 👋, necesito ayuda con IncolDEV. ¿Podrían apoyarme?';
+                        $soporteUrl =
+                            'https://wa.me/' . config('services.whatsapp.number') . '?text=' . urlencode($soporteMsg);
+                    @endphp
+
+                    <a href="{{ $soporteUrl }}" target="_blank">
+                        <button
+                            class="bg-primary/20 backdrop-blur-md border border-white/30 text-white px-10 py-5 rounded-2xl text-lg font-black hover:bg-white/10 transition-all">
+                            Contactar Soporte
+                        </button>
+                    </a>
                 </div>
             </div>
         </section>
@@ -389,7 +426,8 @@
                 </p>
                 <div class="flex gap-4">
                     <a class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-[#25D366] hover:bg-[#25D366] hover:text-white transition-all"
-                        href="https://wa.me/573150168048" target="_blank">
+                        href="https://wa.me/573150168048?text=Hola%20👋,%20estoy%20interesado%20en%20contratar%20un%20plan%20de%20IncolDEV.%20¿Podrían%20asesorarme?"
+                        target="_blank">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                             <path
                                 d="M20.52 3.48A11.82 11.82 0 0012.01 0C5.38 0 .02 5.36.02 11.99c0 2.11.55 4.17 1.6 6L0 24l6.2-1.6a11.93 11.93 0 005.81 1.48h.01c6.63 0 11.99-5.36 11.99-11.99a11.9 11.9 0 00-3.49-8.41zM12.01 21.3a9.3 9.3 0 01-4.74-1.3l-.34-.2-3.68.95.98-3.59-.22-.37a9.29 9.29 0 0114.34-11.47 9.24 9.24 0 012.72 6.55c0 5.13-4.18 9.33-9.32 9.33zm5.11-6.97c-.28-.14-1.65-.81-1.91-.9-.26-.1-.45-.14-.64.14-.18.28-.73.9-.9 1.09-.16.18-.32.2-.6.07-.28-.14-1.18-.44-2.25-1.39-.83-.74-1.39-1.66-1.55-1.94-.16-.28-.02-.43.12-.57.13-.13.28-.32.42-.48.14-.16.18-.28.28-.46.1-.18.05-.35-.02-.48-.07-.14-.64-1.54-.88-2.11-.23-.55-.47-.48-.64-.49l-.55-.01c-.18 0-.48.07-.73.35-.25.28-.96.94-.96 2.29s.99 2.66 1.13 2.84c.14.18 1.95 2.98 4.73 4.18.66.29 1.18.46 1.58.59.66.21 1.26.18 1.73.11.53-.08 1.65-.67 1.88-1.32.23-.65.23-1.21.16-1.32-.07-.11-.25-.18-.53-.32z" />
@@ -408,27 +446,37 @@
             <div>
                 <h4 class="font-bold text-[#0d121b] mb-6">Producto</h4>
                 <ul class="flex flex-col gap-4 text-sm text-[#4c669a]">
-                    <li><a class="hover:text-primary transition-colors" href="#">Características</a></li>
-                    <li><a class="hover:text-primary transition-colors" href="#">Seguridad</a></li>
-                    <li><a class="hover:text-primary transition-colors" href="#">Precios</a></li>
-                    <li><a class="hover:text-primary transition-colors" href="#">Versión Mobile</a></li>
+                    <li><a class="hover:text-primary transition-colors"
+                            href="{{ route('caracteristicas') }}">Características</a></li>
+                    <li><a class="hover:text-primary transition-colors" href="{{ route('seguridad') }}">Seguridad</a>
+                    </li>
+                    <li><a class="hover:text-primary transition-colors" href="{{ route('precios') }}">Precios</a>
+                    </li>
+                    <li><a class="hover:text-primary transition-colors" href="{{ route('mobile') }}">Versión
+                            Mobile</a></li>
                 </ul>
             </div>
             <div>
                 <h4 class="font-bold text-[#0d121b] mb-6">Empresa</h4>
                 <ul class="flex flex-col gap-4 text-sm text-[#4c669a]">
-                    <li><a class="hover:text-primary transition-colors" href="#">Sobre nosotros</a></li>
-                    <li><a class="hover:text-primary transition-colors" href="#">Blog</a></li>
-                    <li><a class="hover:text-primary transition-colors" href="#">Clientes</a></li>
-                    <li><a class="hover:text-primary transition-colors" href="#">Contacto</a></li>
+                    <li><a class="hover:text-primary transition-colors" href="{{ route('sobre.nosotros') }}">Sobre
+                            nosotros</a></li>
+                    <li><a class="hover:text-primary transition-colors" href="{{ route('blog') }}">Blog</a></li>
+                    <li><a class="hover:text-primary transition-colors" href="{{ route('clientes') }}">Clientes</a>
+                    </li>
+                    <li><a class="hover:text-primary transition-colors" href="{{ route('contacto') }}">Contacto</a>
+                    </li>
                 </ul>
             </div>
             <div>
                 <h4 class="font-bold text-[#0d121b] mb-6">Legal</h4>
                 <ul class="flex flex-col gap-4 text-sm text-[#4c669a]">
-                    <li><a class="hover:text-primary transition-colors" href="#">Privacidad</a></li>
-                    <li><a class="hover:text-primary transition-colors" href="#">Términos de servicio</a></li>
-                    <li><a class="hover:text-primary transition-colors" href="#">Cookies</a></li>
+                    <li><a class="hover:text-primary transition-colors"
+                            href="{{ route('privacidad') }}">Privacidad</a></li>
+                    <li><a class="hover:text-primary transition-colors" href="{{ route('terminos') }}">Términos de
+                            servicio</a></li>
+                    <li><a class="hover:text-primary transition-colors" href="{{ route('cookies') }}">Cookies</a>
+                    </li>
                 </ul>
             </div>
         </div>

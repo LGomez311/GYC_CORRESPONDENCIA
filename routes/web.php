@@ -340,3 +340,18 @@ Route::middleware(['auth:web', 'licencia.activa', 'role:2'])->group(function () 
     Route::get('/admin/areas/export/excel', [AreaController::class, 'exportExcel'])->name('admin.areas.export.excel');
     Route::get('/admin/areas/export/pdf', [AreaController::class, 'exportPdf'])->name('admin.areas.export.pdf');
 });
+
+// Vistas de web index publico
+Route::view('/caracteristicas', 'web.pages.producto.caracteristicas')->name('caracteristicas');
+Route::view('/seguridad', 'web.pages.producto.seguridad')->name('seguridad');
+Route::view('/precios', 'web.pages.producto.precios')->name('precios');
+Route::view('/mobile', 'web.pages.producto.mobile')->name('mobile');
+
+Route::view('/sobre-nosotros', 'web.pages.empresa.sobre-nosotros')->name('sobre.nosotros');
+Route::view('/clientes', 'web.pages.empresa.clientes')->name('clientes');
+Route::view('/blog', 'web.pages.empresa.blog')->name('blog');
+Route::view('/contacto', 'web.pages.empresa.contacto')->name('contacto');
+
+Route::view('/privacidad', 'web.pages.legal.privacidad')->name('privacidad');
+Route::view('/terminos', 'web.pages.legal.terminos')->name('terminos');
+Route::view('/cookies', 'web.pages.legal.cookies')->name('cookies');
