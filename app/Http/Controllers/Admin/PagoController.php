@@ -19,7 +19,10 @@ class PagoController extends Controller
 
     public function historial()
     {
+        $admin = Auth::user();
+
         $pagos = Pago::with(['plan', 'estado', 'admin'])
+            ->where('id_admin', $admin->emple_doc)
             ->orderBy('fecha_pago', 'desc')
             ->paginate(4);
 
