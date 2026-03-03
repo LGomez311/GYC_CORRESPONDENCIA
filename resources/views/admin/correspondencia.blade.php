@@ -12,7 +12,7 @@
                     Consulta de Correspondencia
                 </h1>
                 <p class="text-[#4c669a] dark:text-gray-400 text-sm sm:text-base">
-                    Vista detallada del historial de documentos recibidos y enviados.
+                    Vista detallada del historial de documentos vinculados a tu empresa.
                 </p>
             </div>
             <div class="flex gap-3">
@@ -24,119 +24,43 @@
             </div>
         </div>
 
-        <!-- ================= STATS GRID ================= -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            <!-- Recibidos Hoy -->
-            <div class="bg-white dark:bg-[#161d2b] p-6 rounded-2xl border border-[#cfd7e7] dark:border-gray-800 shadow-sm">
-                <div class="flex justify-between items-start mb-4">
-                    <p class="text-xs font-bold text-[#4c669a] uppercase tracking-wider">Recibidos Hoy</p>
-                    <span class="p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl">
-                        <span class="material-symbols-outlined">inbox</span>
-                    </span>
-                </div>
-                <div class="flex items-baseline gap-2">
-                    <h3 class="text-3xl font-bold dark:text-white">24</h3>
-                    <span class="text-xs font-bold text-emerald-500 flex items-center">
-                        <span class="material-symbols-outlined text-[14px]">trending_up</span>
-                        12%
-                    </span>
-                </div>
-                <p class="text-xs text-slate-400 dark:text-gray-500 mt-2">Documentos procesados este turno</p>
-            </div>
-
-            <!-- Pendientes -->
-            <div class="bg-white dark:bg-[#161d2b] p-6 rounded-2xl border border-[#cfd7e7] dark:border-gray-800 shadow-sm">
-                <div class="flex justify-between items-start mb-4">
-                    <p class="text-xs font-bold text-[#4c669a] uppercase tracking-wider">Pendientes de Trámite</p>
-                    <span class="p-2 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-xl">
-                        <span class="material-symbols-outlined">pending_actions</span>
-                    </span>
-                </div>
-                <div class="flex items-baseline gap-2">
-                    <h3 class="text-3xl font-bold dark:text-white">08</h3>
-                </div>
-                <p class="text-xs text-slate-400 dark:text-gray-500 mt-2">Documentos en proceso de revisión</p>
-            </div>
-
-            <!-- Enviados -->
-            <div class="bg-white dark:bg-[#161d2b] p-6 rounded-2xl border border-[#cfd7e7] dark:border-gray-800 shadow-sm">
-                <div class="flex justify-between items-start mb-4">
-                    <p class="text-xs font-bold text-[#4c669a] uppercase tracking-wider">Enviados (Mes)</p>
-                    <span class="p-2 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl">
-                        <span class="material-symbols-outlined">outbox</span>
-                    </span>
-                </div>
-                <div class="flex items-baseline gap-2">
-                    <h3 class="text-3xl font-bold dark:text-white">342</h3>
-                </div>
-                <p class="text-xs text-slate-400 dark:text-gray-500 mt-2">Total de envíos registrados este mes</p>
-            </div>
-        </div>
-
-        <!-- ================= FILTERS ================= -->
-        <div class="bg-white dark:bg-[#161d2b] border border-[#cfd7e7] dark:border-gray-800 rounded-2xl p-6 mb-6">
-            <div class="flex flex-wrap gap-4 items-end">
-                <div class="flex-1 min-w-[200px]">
-                    <label class="block text-xs font-bold text-[#4c669a] uppercase tracking-wider mb-2">
-                        Rango de Fechas
-                    </label>
-                    <div class="relative">
-                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">calendar_today</span>
-                        <input class="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-gray-800 border border-[#cfd7e7] dark:border-gray-700 rounded-xl text-sm focus:ring-primary focus:border-primary dark:text-white"
-                            type="text" value="01 Dic, 2024 - 15 Dic, 2024" />
-                    </div>
-                </div>
-                <div class="w-full sm:w-48">
-                    <label class="block text-xs font-bold text-[#4c669a] uppercase tracking-wider mb-2">Tipo</label>
-                    <select class="w-full px-4 py-2.5 bg-slate-50 dark:bg-gray-800 border border-[#cfd7e7] dark:border-gray-700 rounded-xl text-sm focus:ring-primary focus:border-primary dark:text-white">
-                        <option>Todos los tipos</option>
-                        <option>Recibido Externo</option>
-                        <option>Enviado Externo</option>
-                        <option>Interno</option>
-                    </select>
-                </div>
-                <div class="w-full sm:w-48">
-                    <label class="block text-xs font-bold text-[#4c669a] uppercase tracking-wider mb-2">Estado</label>
-                    <select class="w-full px-4 py-2.5 bg-slate-50 dark:bg-gray-800 border border-[#cfd7e7] dark:border-gray-700 rounded-xl text-sm focus:ring-primary focus:border-primary dark:text-white">
-                        <option>Cualquier estado</option>
-                        <option>Radicado</option>
-                        <option>En Trámite</option>
-                        <option>Finalizado</option>
-                    </select>
-                </div>
-                <div class="flex gap-2 w-full lg:w-auto">
-                    <button class="flex-1 lg:flex-none bg-primary text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-primary/20">
-                        <span class="material-symbols-outlined text-[18px]">filter_alt</span>
-                        Filtrar
-                    </button>
-                    <button class="flex-1 lg:flex-none px-4 py-2.5 text-[#4c669a] dark:text-gray-400 hover:text-primary transition-colors text-sm font-semibold">
-                        Limpiar
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- ================= TABLE ================= -->
+        <!-- ================= TABLE CONTAINER ================= -->
         <div class="bg-white dark:bg-[#161d2b] border border-[#cfd7e7] dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">
+            
+            <!-- Table Header / Search -->
+            <div class="px-6 py-4 border-b border-[#cfd7e7] dark:border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50/50 dark:bg-background-dark/20">
+                <div>
+                    <h2 class="text-lg font-bold text-[#0d121b] dark:text-white">Listado de Correspondencia</h2>
+                    <p class="text-xs text-[#4c669a] dark:text-gray-400">Consulta radicado, asunto, remitente y destinatario.</p>
+                </div>
+                <div class="relative w-full md:w-96">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#4c669a] text-lg">search</span>
+                    <input type="text" id="searchCorrespondence" placeholder="Buscar por radicado o asunto..." 
+                        class="pl-10 pr-4 py-2 bg-white dark:bg-[#0d121b] border border-[#cfd7e7] dark:border-gray-800 rounded-lg text-sm focus:outline-none focus:border-primary transition-all w-full shadow-sm">
+                </div>
+            </div>
+
             <div class="overflow-x-auto">
-                <table class="w-full text-left min-w-[800px]">
+                <table class="w-full text-left min-w-[1000px]">
                     <thead>
-                        <tr class="bg-slate-50 dark:bg-background-dark/50 border-b border-[#cfd7e7] dark:border-gray-800">
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">No. Radicado / ID</th>
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Institución / Origen</th>
+                        <tr class="bg-slate-50/30 dark:bg-background-dark/10 border-b border-[#cfd7e7] dark:border-gray-800">
+                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Radicados</th>
+                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Origen / Institución</th>
                             <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Asunto</th>
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Fecha / Hora</th>
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider text-center">Estado</th>
+                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Destinatario</th>
+                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Folios / Anexos</th>
+                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Estado</th>
                             <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider text-right">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-[#cfd7e7] dark:divide-gray-800">
-                        <!-- Example Row 1 -->
-                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                    <tbody id="tableCorrespondence" class="divide-y divide-[#cfd7e7] dark:divide-gray-800">
+                        @forelse($correspondencias as $cor)
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" 
+                            data-search="{{ strtolower($cor->num_radicado_ext . ' ' . $cor->num_radicado_int . ' ' . $cor->asunto) }}">
                             <td class="px-6 py-4">
                                 <div class="flex flex-col">
-                                    <span class="font-bold text-[#0d121b] dark:text-white">EXT-2024-00124</span>
-                                    <span class="text-xs text-[#4c669a] font-mono">ID: 88412</span>
+                                    <span class="font-bold text-[#0d121b] dark:text-white">EXT: {{ $cor->num_radicado_ext ?? 'N/A' }}</span>
+                                    <span class="text-xs text-[#4c669a] font-mono">INT: {{ $cor->num_radicado_int }}</span>
                                 </div>
                             </td>
                             <td class="px-6 py-4">
@@ -145,25 +69,43 @@
                                         <span class="material-symbols-outlined text-[18px]">business</span>
                                     </div>
                                     <div class="flex flex-col">
-                                        <span class="text-sm font-bold dark:text-white">Ministerio de Transporte</span>
-                                        <span class="text-xs text-[#4c669a]">Bogotá D.C.</span>
+                                        <span class="text-sm font-bold dark:text-white">{{ $cor->nom_institucion }}</span>
+                                        <span class="text-xs text-[#4c669a]">{{ $cor->ciudad->ciudad_nom ?? $cor->ciudad_proveniente }}</span>
                                     </div>
                                 </div>
                             </td>
                             <td class="px-6 py-4">
-                                <p class="text-sm text-slate-600 dark:text-gray-300 max-w-xs truncate">
-                                    Solicitud de prórroga licitación corredor vial norte etapa 2...
-                                </p>
+                                <div class="flex flex-col max-w-xs">
+                                    <span class="text-sm text-[#0d121b] dark:text-white font-medium truncate" title="{{ $cor->asunto }}">
+                                        {{ $cor->asunto }}
+                                    </span>
+                                    <span class="text-xs text-[#4c669a]">{{ \Carbon\Carbon::parse($cor->fecha_hora_recib)->format('d M, Y H:i') }}</span>
+                                </div>
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex flex-col">
-                                    <span class="text-sm dark:text-white">12 Dic, 2024</span>
-                                    <span class="text-xs text-[#4c669a]">09:45 AM</span>
+                                    <span class="text-sm font-bold dark:text-white">{{ $cor->dirigidoA->emple_nombres ?? 'N/A' }} {{ $cor->dirigidoA->emple_apellidos ?? '' }}</span>
+                                    <span class="text-xs text-[#4c669a]">Doc: {{ $cor->doc_quien_dirige }}</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-center">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">
-                                    Radicado
+                            <td class="px-6 py-4">
+                                <div class="flex flex-col text-xs text-[#4c669a]">
+                                    <span>Folios: {{ $cor->folio }}</span>
+                                    <span class="truncate max-w-[120px]">Anexos: {{ $cor->anexo ?? 'Ninguno' }}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                @php
+                                    $estadoNom = $cor->estado->estado_nomb ?? 'Desconocido';
+                                    $bgColor = 'bg-slate-100 text-slate-700 dark:bg-gray-800 dark:text-gray-300';
+                                    if(stripos($estadoNom, 'activo') !== false || stripos($estadoNom, 'radicado') !== false) {
+                                        $bgColor = 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400';
+                                    } elseif(stripos($estadoNom, 'proceso') !== false || stripos($estadoNom, 'tramite') !== false) {
+                                        $bgColor = 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400';
+                                    }
+                                @endphp
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $bgColor }}">
+                                    {{ $estadoNom }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-right">
@@ -171,13 +113,24 @@
                                     <button class="p-2 text-[#4c669a] hover:text-primary transition-colors" title="Ver detalle">
                                         <span class="material-symbols-outlined text-[20px]">visibility</span>
                                     </button>
-                                    <button class="p-2 text-[#4c669a] hover:text-primary transition-colors" title="Descargar Adjunto">
-                                        <span class="material-symbols-outlined text-[20px]">attachment</span>
-                                    </button>
+                                    @if($cor->archivo)
+                                    <a href="{{ asset('storage/' . $cor->archivo) }}" target="_blank" class="p-2 text-[#4c669a] hover:text-primary transition-colors" title="Ver Archivo">
+                                        <span class="material-symbols-outlined text-[20px]">description</span>
+                                    </a>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
-                        <!-- Repeat rows as needed -->
+                        @empty
+                        <tr>
+                            <td colspan="7" class="px-6 py-12 text-center">
+                                <div class="flex flex-col items-center justify-center">
+                                    <span class="material-symbols-outlined text-4xl text-[#cfd7e7] dark:text-gray-700 mb-2">mail</span>
+                                    <p class="text-sm text-[#4c669a] dark:text-gray-400">No se encontraron registros de correspondencia.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
@@ -185,17 +138,37 @@
             <!-- PAGINATION -->
             <div class="px-6 py-4 bg-slate-50 dark:bg-background-dark/30 border-t border-[#cfd7e7] dark:border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <p class="text-sm text-[#4c669a]">
-                    Mostrando <span class="font-medium text-[#0d121b] dark:text-white">1</span> a <span class="font-medium text-[#0d121b] dark:text-white">3</span> de <span class="font-medium text-[#0d121b] dark:text-white">124</span> resultados
+                    Total: <span class="font-medium text-[#0d121b] dark:text-white">{{ count($correspondencias) }}</span> registros vinculados
                 </p>
                 <div class="flex gap-2">
                     <button class="px-4 py-2 text-sm font-bold text-[#4c669a] bg-white dark:bg-gray-800 border border-[#cfd7e7] dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50" disabled>
                         Anterior
                     </button>
-                    <button class="px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors">
+                    <button class="px-4 py-2 text-sm font-bold text-[#4c669a] bg-white dark:bg-gray-800 border border-[#cfd7e7] dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50" disabled>
                         Siguiente
                     </button>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchCorrespondence');
+            const tableBody = document.getElementById('tableCorrespondence');
+            const rows = tableBody.querySelectorAll('tr[data-search]');
+
+            searchInput.addEventListener('input', function() {
+                const term = this.value.toLowerCase();
+                rows.forEach(row => {
+                    const searchData = row.getAttribute('data-search');
+                    if (searchData.includes(term)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
 @endsection

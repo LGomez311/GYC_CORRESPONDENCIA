@@ -64,7 +64,7 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::middleware(['auth:web', 'licencia.activa'])->group(function () {
 
     // SuperAdmin (el middleware lo deja pasar)
-    Route::get('/superadmin', fn() => view('sadmin.index'))->name('sadmin.index');
+    Route::get('/superadmin', [\App\Http\Controllers\Sadmin\DashboardController::class, 'index'])->name('sadmin.index');
 
     // Admin
     Route::get('/admin', fn() => view('admin.index'))->name('admin.index');
@@ -79,7 +79,7 @@ Route::prefix('sadmin')
     ->group(function () {
 
         // Dashboard
-        Route::get('/', fn() => view('sadmin.index'))->name('sadmin.dashboard');
+        Route::get('/', [\App\Http\Controllers\Sadmin\DashboardController::class, 'index'])->name('sadmin.dashboard');
 
         // Pagos
         Route::get('/pagos', [SadminPagoController::class, 'index'])
@@ -140,7 +140,7 @@ Route::prefix('admin')
     ->group(function () {
 
         // Dashboard
-        Route::get('/', fn() => view('admin.usuarios'))->name('admin.index');
+        Route::get('/', [\App\Http\Controllers\Admin\UsuarioController::class, 'index'])->name('admin.index');
         Route::get('/home', [AdminHomeController::class, 'index'])->name('admin.home');
 
         // Planes
@@ -154,8 +154,8 @@ Route::prefix('admin')
         Route::get('/historialp', [AdminPagoController::class, 'historial'])->name('admin.historialp');
 
         // Otros recursos del admin
-        Route::get('/correspondencia', fn() => view('admin.correspondencia'))->name('admin.correspondencia');
-        Route::get('/usuarios', fn() => view('admin.usuarios'))->name('admin.usuarios');
+        Route::get('/correspondencia', [\App\Http\Controllers\Admin\AdminCorrespondenciaController::class, 'index'])->name('admin.correspondencia');
+        Route::get('/usuarios', [\App\Http\Controllers\Admin\UsuarioController::class, 'index'])->name('admin.usuarios');
         
         // Prioridades (CRUD + export)
         Route::get('/prioridad', [PrioridadController::class, 'index'])->name('admin.prioridad.index');

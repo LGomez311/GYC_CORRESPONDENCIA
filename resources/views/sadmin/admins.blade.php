@@ -121,9 +121,15 @@
                         </td>
 
                         <td class="px-6 py-4 text-sm dark:text-gray-300 align-middle text-center">
-                            <span class="text-sm font-bold text-[#0d121b] dark:text-white">
-                                {{ $user->estado->estado_nomb }}
-                            </span>
+                            @if($user->estado->estado_nomb === 'Activo' || $user->estado->estado_nomb === 'Aprobado')
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                    {{ $user->estado->estado_nomb }}
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+                                    {{ $user->estado->estado_nomb }}
+                                </span>
+                            @endif
                         </td>
 
                         <td class="px-6 py-4 text-right">

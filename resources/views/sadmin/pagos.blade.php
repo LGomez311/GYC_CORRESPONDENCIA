@@ -114,7 +114,20 @@
                             <span class="text-gray-400 text-xs">No adjunto</span>
                             @endif
                         </td>
-                        <td class="px-6 py-4 text-sm font-bold">{{ $pago->estado?->estado_nomb ?? 'Sin estado' }}
+                        <td class="px-6 py-4 text-sm font-bold">
+                            @if($pago->estado?->estado_nomb === 'Aprobado' || $pago->estado?->estado_nomb === 'Activo')
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                    {{ $pago->estado->estado_nomb }}
+                                </span>
+                            @elseif($pago->estado?->estado_nomb === 'En espera' || $pago->estado?->estado_nomb === 'Pendiente')
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400">
+                                    {{ $pago->estado->estado_nomb }}
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+                                    {{ $pago->estado?->estado_nomb ?? 'Sin estado' }}
+                                </span>
+                            @endif
                         </td>
                         <td class="px-6 py-4 text-center">
                             @if ($pago->estado?->estado_nomb === 'En espera')

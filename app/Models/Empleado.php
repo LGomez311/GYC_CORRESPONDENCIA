@@ -63,6 +63,11 @@ class Empleado extends Authenticatable
         return $this->belongsTo(Empresa::class, 'nit_empresa');
     }
 
+    public function area()
+    {
+        return $this->belongsTo(Area::class, 'emple_area', 'id_area');
+    }
+
 
     public $timestamps = false;
 
