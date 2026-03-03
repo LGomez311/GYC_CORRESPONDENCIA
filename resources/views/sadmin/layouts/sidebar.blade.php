@@ -48,7 +48,7 @@
                     ? 'bg-primary/10 text-primary'
                     : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
                 <span class="material-symbols-outlined">dashboard</span>
-                <p class="text-sm font-medium">Resumen</p>
+                <p class="text-sm font-medium">Inicio</p>
             </a>
 
             <!-- Empresas -->
@@ -100,8 +100,10 @@
                 <span class="material-symbols-outlined">badge</span>
                 <p class="text-sm font-medium leading-normal">Licencias</p>
             </a>
+            
 
-            <!-- Configuración -->
+            <!-- Configuración
+             
             <a href="#"
                 class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
                 {{ request()->routeIs('configuracion*')
@@ -110,6 +112,7 @@
                 <span class="material-symbols-outlined">settings</span>
                 <p class="text-sm font-medium">Configuración</p>
             </a>
+            -->
 
         </div>
     </nav>

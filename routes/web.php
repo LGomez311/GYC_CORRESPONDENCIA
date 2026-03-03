@@ -64,7 +64,7 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::middleware(['auth:web', 'licencia.activa'])->group(function () {
 
     // SuperAdmin (el middleware lo deja pasar)
-    Route::get('/superadmin', fn() => view('sadmin.index'))->name('sadmin.index');
+    Route::get('/superadmin', [\App\Http\Controllers\Sadmin\DashboardController::class, 'index'])->name('sadmin.index');
 
     // Admin
     Route::get('/admin', fn() => view('admin.index'))->name('admin.index');
@@ -79,7 +79,7 @@ Route::prefix('sadmin')
     ->group(function () {
 
         // Dashboard
-        Route::get('/', fn() => view('sadmin.index'))->name('sadmin.dashboard');
+        Route::get('/', [\App\Http\Controllers\Sadmin\DashboardController::class, 'index'])->name('sadmin.dashboard');
 
         // Pagos
         Route::get('/pagos', [SadminPagoController::class, 'index'])
