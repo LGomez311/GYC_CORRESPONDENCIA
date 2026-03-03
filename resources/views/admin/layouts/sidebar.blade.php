@@ -134,7 +134,7 @@
                     <span class="material-symbols-outlined">settings</span>
                     <p class="text-sm font-medium">Configuración</p>
                 </a> --}}
-                @endif
+            @endif
 
         </div>
 
@@ -143,7 +143,7 @@
     <div class="p-4 border-t border-[#cfd7e7] dark:border-gray-800">
         <div class="flex items-center gap-3 px-2">
             <div class="size-10 rounded-full bg-cover bg-center border-2 border-primary/20"
-                style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDJcGRY-BUZTWEM5ibdEl0CAPx6S68HRHNI75XLKXGYO_z1Yd7z2gBTZpw0ZjxccQMZRPFckRBrh-k7UE4xhSIaLL0haUdYWhwJV-R6N0qYwl3sPmvAFlE9FWn1Q5cnjIBQhPIHL_W1uUjO8qxMuQot0PIQwxRKisYbuWi7hiavy--o7Mj7AxnATmf44PtXGyJwvy_d7zhcMujMnynV0amQBSz0Zd2oZuguH4G1yeeA5wQUDqNieSzOs_pwq9oJk6WCOwYWzncf6FA");'>
+                style='background-image: url("{{ auth()->user()->emple_img ? asset('storage/' . auth()->user()->emple_img) : asset('images/default-avatar.png') }}");'>
             </div>
             <div class="overflow-hidden">
                 <p class="text-sm font-bold truncate dark:text-white">
