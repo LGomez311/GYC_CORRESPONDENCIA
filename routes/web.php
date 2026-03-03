@@ -140,7 +140,7 @@ Route::prefix('admin')
     ->group(function () {
 
         // Dashboard
-        Route::get('/', fn() => view('admin.usuarios'))->name('admin.index');
+        Route::get('/', [\App\Http\Controllers\Admin\UsuarioController::class, 'index'])->name('admin.index');
         Route::get('/home', [AdminHomeController::class, 'index'])->name('admin.home');
 
         // Planes
@@ -154,8 +154,8 @@ Route::prefix('admin')
         Route::get('/historialp', [AdminPagoController::class, 'historial'])->name('admin.historialp');
 
         // Otros recursos del admin
-        Route::get('/correspondencia', fn() => view('admin.correspondencia'))->name('admin.correspondencia');
-        Route::get('/usuarios', fn() => view('admin.usuarios'))->name('admin.usuarios');
+        Route::get('/correspondencia', [\App\Http\Controllers\Admin\AdminCorrespondenciaController::class, 'index'])->name('admin.correspondencia');
+        Route::get('/usuarios', [\App\Http\Controllers\Admin\UsuarioController::class, 'index'])->name('admin.usuarios');
         
         // Prioridades (CRUD + export)
         Route::get('/prioridad', [PrioridadController::class, 'index'])->name('admin.prioridad.index');

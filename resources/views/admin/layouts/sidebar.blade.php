@@ -88,6 +88,14 @@
                     <p class="text-sm font-medium">Usuarios</p>
                 </a>
 
+                <!-- Correspondencia -->
+                <a href="{{ route('admin.correspondencia') }}"
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
+            text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                    <span class="material-symbols-outlined">mail</span>
+                    <p class="text-sm font-medium">Correspondencia</p>
+                </a>
+
                 <!-- Pagar planes -->
                 <a href="{{ route('admin.planes') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
