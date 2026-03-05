@@ -159,6 +159,24 @@
                 </a>
             </div>
 
+            <!-- 8. Radicados -->
+            <div
+                class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 transition-all group flex flex-col h-full">
+                <div
+                    class="size-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform">
+                    <span class="material-symbols-outlined text-3xl">pin</span>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Radicados</h3>
+                <p class="text-slate-500 dark:text-slate-400 text-sm mb-6 flex-1">
+                    Administrar los números de radicado oficiales del sistema.
+                </p>
+                <a href="{{ route('admin.radicado.index') }}"
+                    class="w-full py-3 bg-primary hover:bg-primary/90 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2">
+                    <span>Administrar</span>
+                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                </a>
+            </div>
+
         </div>
 
     </div>

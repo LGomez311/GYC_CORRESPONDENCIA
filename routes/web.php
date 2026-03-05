@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\PrioridadController;
 use App\Http\Controllers\Admin\TipoController;
 use App\Http\Controllers\Admin\EstadoController;
 use App\Http\Controllers\Admin\RolController;
+use App\Http\Controllers\Admin\RadicadoController;
 use App\Http\Controllers\Admin\HomeController as AdminHomeController;
 
 
@@ -196,6 +197,15 @@ Route::prefix('admin')
         Route::get('/rol/export/excel', [RolController::class, 'exportExcel'])->name('admin.rol.export.excel');
         Route::get('/rol/export/pdf', [RolController::class, 'exportPdf'])->name('admin.rol.export.pdf');
         Route::get('/rol/check', [RolController::class, 'check'])->name('admin.rol.check');
+
+        // Radicados (CRUD)
+        Route::get('/radicados', [RadicadoController::class, 'index'])->name('admin.radicado.index');
+        Route::post('/radicados', [RadicadoController::class, 'store'])->name('admin.radicado.store');
+        Route::put('/radicados/{id}', [RadicadoController::class, 'update'])->name('admin.radicado.update');
+        Route::delete('/radicados/{id}', [RadicadoController::class, 'destroy'])->name('admin.radicado.destroy');
+        Route::get('/radicados/check', [RadicadoController::class, 'check'])->name('admin.radicado.check');
+        Route::get('/radicados/export/excel', [RadicadoController::class, 'exportExcel'])->name('admin.radicado.export.excel');
+        Route::get('/radicados/export/pdf', [RadicadoController::class, 'exportPdf'])->name('admin.radicado.export.pdf');
     });
 
 // Otros recursos del admin (duplicados eliminados)
