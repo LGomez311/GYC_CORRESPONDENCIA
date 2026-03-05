@@ -7,19 +7,13 @@ use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
+    /**
+     * Seed the application's database.
+     */
     public function run(): void
     {
-        // Crear usuario de prueba
-        User::firstOrCreate(
-            ['email' => 'test@example.com'],
-            [
-                'name' => 'Test User',
-                'password' => bcrypt('password')
-            ]
-        );
-
-        // Ejecutar seeders
         $this->call([
+            CatalogosSeeder::class,
             RemitenteSeeder::class,
             DepartamentoSeeder::class,
             CiudadSeeder::class,

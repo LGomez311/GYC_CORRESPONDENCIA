@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 26-02-2026 a las 06:41:44
+-- Tiempo de generación: 03-03-2026 a las 22:54:30
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -75,6 +75,45 @@ CREATE TABLE `ciudad` (
   `ciudad_id_dpto` varchar(10) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Volcado de datos para la tabla `ciudad`
+--
+
+INSERT INTO `ciudad` (`ciudad_cod_post`, `ciudad_nom`, `ciudad_id_dpto`) VALUES
+('05001', 'Medellín', '05'),
+('08001', 'Barranquilla', '08'),
+('11001', 'Bogotá D.C.', '11'),
+('13001', 'Cartagena', '13'),
+('15001', 'Tunja', '15'),
+('17001', 'Manizales', '17'),
+('18001', 'Florencia', '18'),
+('19001', 'Popayán', '19'),
+('20001', 'Valledupar', '20'),
+('23001', 'Montería', '23'),
+('25001', 'Bogotá D.C.', '25'),
+('27001', 'Quibdó', '27'),
+('41001', 'Neiva', '41'),
+('44001', 'Riohacha', '44'),
+('47001', 'Santa Marta', '47'),
+('50001', 'Villavicencio', '50'),
+('52001', 'Pasto', '52'),
+('54001', 'Cúcuta', '54'),
+('63001', 'Armenia', '63'),
+('66001', 'Pereira', '66'),
+('68001', 'Bucaramanga', '68'),
+('70001', 'Sincelejo', '70'),
+('73001', 'Ibagué', '73'),
+('76001', 'Cali', '76'),
+('81001', 'Arauca', '81'),
+('85001', 'Yopal', '85'),
+('86001', 'Mocoa', '86'),
+('88001', 'San Andrés', '88'),
+('91001', 'Leticia', '91'),
+('94001', 'Inírida', '94'),
+('95001', 'San José del Guaviare', '95'),
+('97001', 'Mitú', '97'),
+('99001', 'Puerto Carreño', '99');
+
 -- --------------------------------------------------------
 
 --
@@ -85,6 +124,46 @@ CREATE TABLE `departamento` (
   `dpto_codigo_postal` varchar(10) NOT NULL,
   `dpto_nombre` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `departamento`
+--
+
+INSERT INTO `departamento` (`dpto_codigo_postal`, `dpto_nombre`) VALUES
+('05', 'Antioquia'),
+('08', 'Atlántico'),
+('11', 'Bogotá D.C.'),
+('13', 'Bolívar'),
+('15', 'Boyacá'),
+('17', 'Caldas'),
+('18', 'Caquetá'),
+('19', 'Cauca'),
+('20', 'Cesar'),
+('23', 'Córdoba'),
+('25', 'Cundinamarca'),
+('27', 'Chocó'),
+('41', 'Huila'),
+('44', 'La Guajira'),
+('47', 'Magdalena'),
+('50', 'Meta'),
+('52', 'Nariño'),
+('54', 'Norte de Santander'),
+('63', 'Quindío'),
+('66', 'Risaralda'),
+('68', 'Santander'),
+('70', 'Sucre'),
+('73', 'Tolima'),
+('76', 'Valle del Cauca'),
+('766', 'Dsds'),
+('81', 'Arauca'),
+('85', 'Casanare'),
+('86', 'Putumayo'),
+('88', 'San Andrés y Providencia'),
+('91', 'Amazonas'),
+('94', 'Guainía'),
+('95', 'Guaviare'),
+('97', 'Vaupés'),
+('99', 'Vichada');
 
 -- --------------------------------------------------------
 
@@ -124,10 +203,12 @@ CREATE TABLE `empleado` (
 --
 
 INSERT INTO `empleado` (`emple_doc`, `nit_empresa`, `password`, `emple_nombres`, `emple_apellidos`, `emple_tel`, `emple_correo`, `emple_img`, `emple_estado`, `emple_rol`, `emple_area`) VALUES
-('1001', NULL, '$2y$12$h2K09eO/8SzeJQgNASdo3OYDxn0o4Po7TmlsjAgFpz.p1rea4rrku', 'Kevin', 'Villafrade', NULL, 'kevin@gmail.com', NULL, 1, 1, NULL),
-('1002', NULL, '$2y$12$LnlHo.YRNtS13.rTT9XSd.0HtAYC2vJ.qVxEP3.AXqLKuP0e15Xva', 'Luis', 'Gomez', NULL, 'luis@gmail.com', NULL, 1, 2, NULL),
-('1003', NULL, '$2y$12$MC/IFZFcwBFCEH.U8JDcke63ZJFiD9OT.U9B80fFv6PS5zmlTXzGS', 'Yuber', 'Paez', NULL, 'yuber@gmail.com', NULL, 1, 3, NULL),
-('2005914095', NULL, '$2y$12$Q2D86tKv7pyD07L2WSZf3Oz9itYl59mY/s//gskgBdNPBc.j/g/eG', 'SUPER', 'ADMIN', NULL, 'kevinreal2209@gmail.com', NULL, 1, 1, NULL);
+('1005912004', NULL, '$2y$12$9PqwoUdBiin5OBpTJt70xO6iHr/BtY78G2Co.W8b1O2KyE9Oh2gr.', 'Kevin', 'Villafrade', NULL, 'kevindany2209@gmail.com', NULL, 1, 1, NULL),
+('1005912005', '5444444444', '$2y$12$JrVsN6D3tjJ3tZko3Gvs.uXfZvP6mr1lhR.6D/dKKOT753u2o4nLC', 'Kev', 'Dan', '3153524586', 'kevin22298@gmail.com', NULL, 1, 2, NULL),
+('1070730214', NULL, '$2y$12$qk/ky/QNhy3Yx2fg1TZqf.Ppqg1j8WTYgkA.JtTseooT/kLQKm4Ha', 'Yuber', 'Paez', NULL, 'santiagopc333@gmail.com', NULL, 1, 1, NULL),
+('1106394865', NULL, '$2y$12$1C771qhrFK7Q5ZlljvmFOuPd0.Tt66FiiYsSi0ctFtAdgryCd/oSW', 'Luis', 'Gomez', NULL, 'lucho3112007@gmail.com', NULL, 1, 1, NULL),
+('1234567890', NULL, '$2y$12$vvTluBDjmUMUTmJFDmasuO3ntmSgP4be7mr7QViuMveJzQ6ZJWHlS', 'Yuber', 'Paez', NULL, 'santiagouber333@gmail.com', NULL, 1, 1, NULL),
+('2005914095', NULL, '$2y$12$.DJlZQ94Fqg/XR1Wb386R.FikANGCWnqNQcAYZTQHCc.1.PpXqE7y', 'SUPER', 'ADMIN', NULL, 'kevinreal2209@gmail.com', NULL, 1, 1, NULL);
 
 -- --------------------------------------------------------
 
@@ -144,6 +225,13 @@ CREATE TABLE `empresa` (
   `contacto` varchar(15) DEFAULT NULL,
   `empresa_correo` varchar(150) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `empresa`
+--
+
+INSERT INTO `empresa` (`nit_empresa`, `nomb_empresa`, `doc_representante`, `nomb_representante`, `direccion`, `contacto`, `empresa_correo`) VALUES
+('5444444444', 'SENA: Servicio Nacional de Aprendizaje', '19455957', 'Jorge Eduardo Londoño Ulloa', 'Carrera 45 Sur # 141-05 (Sector Picaleña, contiguo a la Casa de la Moneda)', '3013725753', 'sena@gmail.com');
 
 -- --------------------------------------------------------
 
@@ -254,6 +342,13 @@ CREATE TABLE `licencia` (
   `licencia_origen` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Volcado de datos para la tabla `licencia`
+--
+
+INSERT INTO `licencia` (`id_licencia`, `id_estado`, `id_pago`, `fecha_inicio`, `fecha_fin`, `tipo_licencia`, `licencia_origen`) VALUES
+(27, 1, 54, '2026-03-03 14:24:30', '2026-04-02 14:24:30', 'ACTIVACION', NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -293,6 +388,13 @@ CREATE TABLE `pagos` (
   `fecha_inicio` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Volcado de datos para la tabla `pagos`
+--
+
+INSERT INTO `pagos` (`id_pago`, `id_plan`, `comprobante`, `id_admin`, `moneda`, `id_est_pago`, `fecha_pago`, `fecha_inicio`) VALUES
+(54, 4, NULL, '1005912005', 'COP', 4, '2026-03-03 14:24:09', NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -313,7 +415,8 @@ CREATE TABLE `password_codes` (
 --
 
 INSERT INTO `password_codes` (`id`, `emple_correo`, `code`, `expires_at`, `created_at`, `updated_at`) VALUES
-(8, 'nikolas1993838@gmail.com', '941212', '2026-02-26 10:12:33', '2026-02-26 10:02:33', '2026-02-26 10:02:33');
+(8, 'nikolas1993838@gmail.com', '941212', '2026-02-26 10:12:33', '2026-02-26 10:02:33', '2026-02-26 10:02:33'),
+(13, 'kevinreal2209@gmail.com', '359541', '2026-02-27 18:39:29', '2026-02-27 18:29:29', '2026-02-27 18:29:29');
 
 -- --------------------------------------------------------
 
@@ -338,7 +441,7 @@ CREATE TABLE `plan` (
   `nomb_plan` varchar(50) NOT NULL,
   `valor` int(12) NOT NULL,
   `descripcion` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`descripcion`)),
-  `duracion` int(10) NOT NULL,
+  `duracion` int(10) DEFAULT NULL,
   `es_destacado` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -349,7 +452,7 @@ CREATE TABLE `plan` (
 INSERT INTO `plan` (`id_plan`, `nomb_plan`, `valor`, `descripcion`, `duracion`, `es_destacado`) VALUES
 (4, 'Mensual', 200000, '[\"Acceso completo al sistema.\",\"Soporte básico.\",\"Garantía 7 días.\"]', 30, 0),
 (5, 'Trimestral', 540000, '[\"Acceso completo al sistema.\",\"Soporte prioritario.\",\"Garantía 14 días.\", \"Incluye 1 capacitación.\"]', 90, 0),
-(6, 'Semestral', 1040000, '[\"Acceso completo al sistema.\",\"Soporte prioritario extendido.\",\"Garantía 30 días.\", \"Incluye 2 capacitaciones.\"]\r\n', 180, 0),
+(6, 'Semestral', 1040000, '[\"Acceso completo al sistema.\",\"Soporte prioritario extendido.\",\"Garantía 30 días.\", \"Incluye 2 capacitaciones.\"]\r\n', 180, 1),
 (10, 'Anual', 1950000, '[\"Acceso completo al sistema.\",\"Soporte prioritario exclusivo.\",\"Garant\\u00eda 60 d\\u00edas.\",\"Incluye 6 capacitaciones.\"]', 365, 0);
 
 -- --------------------------------------------------------
@@ -363,6 +466,13 @@ CREATE TABLE `prioridad` (
   `prioridad_nombre` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Volcado de datos para la tabla `prioridad`
+--
+
+INSERT INTO `prioridad` (`id_prioridad`, `prioridad_nombre`) VALUES
+(1, 'ALTA');
+
 -- --------------------------------------------------------
 
 --
@@ -375,6 +485,13 @@ CREATE TABLE `radicados` (
   `id_est_radicado` int(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Volcado de datos para la tabla `radicados`
+--
+
+INSERT INTO `radicados` (`id_radicado`, `num_radicado`, `id_est_radicado`) VALUES
+(1, '5656879789', 1);
+
 -- --------------------------------------------------------
 
 --
@@ -383,7 +500,7 @@ CREATE TABLE `radicados` (
 
 CREATE TABLE `recibido` (
   `id_recibido` int(20) NOT NULL,
-  `num_radicado_ext` int(20) DEFAULT NULL,
+  `num_radicado_ext` varchar(20) DEFAULT NULL,
   `num_radicado_int` int(20) NOT NULL,
   `asunto` varchar(100) DEFAULT NULL,
   `fecha_hora_recib` datetime DEFAULT NULL,
@@ -399,6 +516,14 @@ CREATE TABLE `recibido` (
   `archivo` varchar(500) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Volcado de datos para la tabla `recibido`
+--
+
+INSERT INTO `recibido` (`id_recibido`, `num_radicado_ext`, `num_radicado_int`, `asunto`, `fecha_hora_recib`, `nom_institucion`, `ciudad_proveniente`, `folio`, `anexo`, `observaciones`, `doc_quien_registra`, `doc_quien_dirige`, `id_tipo`, `id_estado_rec`, `archivo`) VALUES
+(0, '4545686767', 1, 'DENUNCIA', NULL, 'PERSONA', '05001', 2, '2', 'DENUNCIA PUBLICA', 1234567888, '1005912005', 1, 0, NULL),
+(1, '4545686767', 1, 'DENUNCIA', NULL, 'PERSONA', '05001', 2, '2', 'DENUNCIA PUBLICA', 1234567888, '1005912005', 1, 0, NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -407,7 +532,7 @@ CREATE TABLE `recibido` (
 
 CREATE TABLE `remitente` (
   `rem_doc` int(20) NOT NULL,
-  `nit_empresa` varchar(25) NOT NULL,
+  `nit_empresa` varchar(25) DEFAULT NULL,
   `rem_nombres` varchar(50) NOT NULL,
   `rem_apellidos` varchar(50) NOT NULL,
   `rem_correo` varchar(255) NOT NULL,
@@ -416,6 +541,13 @@ CREATE TABLE `remitente` (
   `rem_ciudad` varchar(10) NOT NULL,
   `rem_estado` int(10) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `remitente`
+--
+
+INSERT INTO `remitente` (`rem_doc`, `nit_empresa`, `rem_nombres`, `rem_apellidos`, `rem_correo`, `password`, `rem_tel`, `rem_ciudad`, `rem_estado`) VALUES
+(1234567888, '5444444444', 'Kevin', 'Daniel', 'kevin.daniel@gmail.com', '$2y$12$V/kBOsNQ33fJEcmod3oG.e2F/VDOtKa3dzc6TQjvpuTBb4WXy6DPe', '3001234567', '11001', 2);
 
 -- --------------------------------------------------------
 
@@ -457,7 +589,10 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('IPCiOapeDNkFGXHGDovLIdgkdS49BkxyCiq3f67U', 1001, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiRzlwc2J1UUdiamJJUUNUVTJOamlzTWdHUXNIaURXN1dKeFNzQTgwbCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zYWRtaW4vZW1wcmVzYXMiO3M6NToicm91dGUiO3M6ODoiZW1wcmVzYXMiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7czo0OiIxMDAxIjt9', 1772084495);
+('aPJHnyOw9IzxH3jjNjml7fj6oq3J4xuiFvHoV5E4', 1005912004, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiRmVIbWQyVWtudTh2SEdjczhtWWJiSFBTcXo1cXdDYVZ6UjVQaVJWaSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zYWRtaW4vcGFnb3MiO3M6NToicm91dGUiO3M6MTI6InNhZG1pbi5wYWdvcyI7fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtzOjEwOiIxMDA1OTEyMDA0Ijt9', 1772573986),
+('DDjdTiK2zBIuuFFVDVZhSq8IIrHp6Dnfmify30mp', 1005912004, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiMnBhWjl4WGh3MUljWUZWYURJODdiYUdnaHJvWnF3NG4zS1RZc3p2RyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo5OiJ3ZWIuaW5kZXgiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjE1OiJsb2Nrb3V0X3NlY29uZHMiO2k6MzAwO3M6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtzOjEwOiIxMDA1OTEyMDA0Ijt9', 1772573465),
+('EDJ8MMU8HrhuADfgSqEBJLxH4nfhmaCIWLnk448D', 1005912005, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoid0Qwb1dDOWc1UFpKYUYyaHMwVFRUVEhTUmlmd0hwTXYxU0cwd3BJTCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hZG1pbiI7czo1OiJyb3V0ZSI7czoxMToiYWRtaW4uaW5kZXgiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7czoxMDoiMTAwNTkxMjAwNSI7fQ==', 1772572830),
+('HsSncbnAK7z05MNhk91so1ovlwJk0D3LnzUSPa6o', 1005912005, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiMzZUNmdrcEx1czN6N2RCbDlqb0JJMjd4MnZCWTUweEtWQUNOYUhCMiI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hZG1pbi9vdHJvcyI7czo1OiJyb3V0ZSI7czoxMToiYWRtaW4ub3Ryb3MiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7czoxMDoiMTAwNTkxMjAwNSI7fQ==', 1772573901);
 
 -- --------------------------------------------------------
 
@@ -470,6 +605,13 @@ CREATE TABLE `tipo` (
   `tipo_nombre` varchar(100) DEFAULT NULL,
   `id_prioridad` int(10) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `tipo`
+--
+
+INSERT INTO `tipo` (`id_tipo`, `tipo_nombre`, `id_prioridad`) VALUES
+(1, 'DENUNCIA', 1);
 
 -- --------------------------------------------------------
 
@@ -658,8 +800,8 @@ ALTER TABLE `recibido`
   ADD KEY `id_tipo` (`id_tipo`),
   ADD KEY `id_estado_rec` (`id_estado_rec`),
   ADD KEY `doc_quien_registra` (`doc_quien_registra`),
-  ADD KEY `num_radicado_int` (`num_radicado_int`),
-  ADD KEY `ciudad_proveniente` (`ciudad_proveniente`);
+  ADD KEY `ciudad_proveniente` (`ciudad_proveniente`),
+  ADD KEY `num_radicado_int` (`num_radicado_int`);
 
 --
 -- Indices de la tabla `remitente`
@@ -715,6 +857,12 @@ ALTER TABLE `detalle_envio`
   MODIFY `id_detalle` int(10) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT de la tabla `estado`
+--
+ALTER TABLE `estado`
+  MODIFY `id_estado` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
 -- AUTO_INCREMENT de la tabla `failed_jobs`
 --
 ALTER TABLE `failed_jobs`
@@ -730,7 +878,7 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT de la tabla `licencia`
 --
 ALTER TABLE `licencia`
-  MODIFY `id_licencia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id_licencia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT de la tabla `migrations`
@@ -742,25 +890,43 @@ ALTER TABLE `migrations`
 -- AUTO_INCREMENT de la tabla `pagos`
 --
 ALTER TABLE `pagos`
-  MODIFY `id_pago` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
+  MODIFY `id_pago` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
 
 --
 -- AUTO_INCREMENT de la tabla `password_codes`
 --
 ALTER TABLE `password_codes`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT de la tabla `plan`
 --
 ALTER TABLE `plan`
-  MODIFY `id_plan` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id_plan` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+
+--
+-- AUTO_INCREMENT de la tabla `prioridad`
+--
+ALTER TABLE `prioridad`
+  MODIFY `id_prioridad` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `radicados`
 --
 ALTER TABLE `radicados`
-  MODIFY `id_radicado` int(10) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_radicado` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT de la tabla `rol`
+--
+ALTER TABLE `rol`
+  MODIFY `id_rol` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT de la tabla `tipo`
+--
+ALTER TABLE `tipo`
+  MODIFY `id_tipo` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `users`
@@ -835,7 +1001,8 @@ ALTER TABLE `recibido`
   ADD CONSTRAINT `recibido_ibfk_4` FOREIGN KEY (`id_estado_rec`) REFERENCES `estado` (`id_estado`),
   ADD CONSTRAINT `recibido_ibfk_5` FOREIGN KEY (`doc_quien_registra`) REFERENCES `remitente` (`rem_doc`),
   ADD CONSTRAINT `recibido_ibfk_7` FOREIGN KEY (`num_radicado_int`) REFERENCES `radicados` (`id_radicado`),
-  ADD CONSTRAINT `recibido_ibfk_8` FOREIGN KEY (`ciudad_proveniente`) REFERENCES `ciudad` (`ciudad_cod_post`);
+  ADD CONSTRAINT `recibido_ibfk_8` FOREIGN KEY (`ciudad_proveniente`) REFERENCES `ciudad` (`ciudad_cod_post`),
+  ADD CONSTRAINT `recibido_ibfk_9` FOREIGN KEY (`num_radicado_int`) REFERENCES `radicados` (`id_radicado`);
 
 --
 -- Filtros para la tabla `remitente`
