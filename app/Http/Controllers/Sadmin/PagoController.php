@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Pago;
 use App\Models\Licencia;
 use Carbon\Carbon;
+use Illuminate\Support\ServiceProvider;
 
 class PagoController extends Controller
 {
@@ -14,13 +15,15 @@ class PagoController extends Controller
         // Paginación: 10 registros por página (ajusta a tu gusto)
         $pagos = Pago::with(['plan', 'estado', 'admin'])
             ->orderBy('fecha_pago', 'desc')
-            ->paginate(3);
+            ->paginate(4);
 
         return view('sadmin.pagos', compact('pagos'));
     }
 
+
     public function aprobar($id)
     {
+
         $pago = Pago::with(['plan', 'admin'])->findOrFail($id);
 
         // Aprobar el pago

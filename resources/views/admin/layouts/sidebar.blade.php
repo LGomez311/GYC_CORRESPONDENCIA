@@ -46,35 +46,32 @@
     <nav class="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
         <div class="flex flex-col gap-1">
 
-            @if (!empty($licenciaBloqueada))
-                <!-- SOLO cuando la licencia está vencida -->
 
+            @if ($licenciaBloqueada)
                 <h1 class="text-[#4c669a] dark:text-gray-400 text-[10px] uppercase font-bold px-3 py-2">
                     Licencia vencida
                 </h1>
 
                 <a href="{{ route('admin.planes') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-            text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+              text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
                     <span class="material-symbols-outlined">payments</span>
                     <p class="text-sm font-medium leading-normal">Pagar planes</p>
                 </a>
 
                 <a href="{{ route('admin.historialp') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-            text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+              text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
                     <span class="material-symbols-outlined">corporate_fare</span>
                     <p class="text-sm font-medium">Historial de pagos</p>
                 </a>
-            @else
-                <!-- MENÚ NORMAL (licencia activa) -->
+
+
 
                 <h1 class="text-[#4c669a] dark:text-gray-400 text-[10px] uppercase font-bold px-3 py-2">
                     Gestión Central
                 </h1>
-
-
-
+            @else
                 <!-- Usuarios -->
                 <a href="{{ route('admin.home') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
@@ -89,6 +86,14 @@
             text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
                     <span class="material-symbols-outlined">group</span>
                     <p class="text-sm font-medium">Usuarios</p>
+                </a>
+
+                <!-- Correspondencia -->
+                <a href="{{ route('admin.correspondencia') }}"
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
+            text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                    <span class="material-symbols-outlined">mail</span>
+                    <p class="text-sm font-medium">Correspondencia</p>
                 </a>
 
                 <!-- Pagar planes -->
@@ -138,7 +143,7 @@
     <div class="p-4 border-t border-[#cfd7e7] dark:border-gray-800">
         <div class="flex items-center gap-3 px-2">
             <div class="size-10 rounded-full bg-cover bg-center border-2 border-primary/20"
-                style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDJcGRY-BUZTWEM5ibdEl0CAPx6S68HRHNI75XLKXGYO_z1Yd7z2gBTZpw0ZjxccQMZRPFckRBrh-k7UE4xhSIaLL0haUdYWhwJV-R6N0qYwl3sPmvAFlE9FWn1Q5cnjIBQhPIHL_W1uUjO8qxMuQot0PIQwxRKisYbuWi7hiavy--o7Mj7AxnATmf44PtXGyJwvy_d7zhcMujMnynV0amQBSz0Zd2oZuguH4G1yeeA5wQUDqNieSzOs_pwq9oJk6WCOwYWzncf6FA");'>
+                style='background-image: url("{{ auth()->user()->emple_img ? asset('storage/' . auth()->user()->emple_img) : asset('images/default-avatar.png') }}");'>
             </div>
             <div class="overflow-hidden">
                 <p class="text-sm font-bold truncate dark:text-white">

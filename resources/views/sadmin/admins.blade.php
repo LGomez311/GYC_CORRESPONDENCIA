@@ -1,1427 +1,1379 @@
 @extends('sadmin.layouts.app')
 
-@section('title', 'Panel de Usuarios')
+@section('title', 'Panel de Administradores')
 
 @section('content')
+<div class="p-4 md:p-8 max-w-7xl mx-auto w-full">
 
-    <script>
-        /**
-         * ===== FUNCIONES DE SEGURIDAD Y SANITIZACIÓN (Se cargan PRIMERO) =====
-         */
-
-        /**
-         * Sanitiza strings contra XSS
-         */
-        function sanitizeString(str) {
-            if (!str) return '';
-            return String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#x27;')
-                .replace(/\//g, '&#x2F;');
-        }
-
-        /**
-         * Detecta patrones de inyección SQL
-         */
-        function detectSQLInjection(str) {
-            if (!str) return false;
-            const sqlPatterns = [
-                /(\b(UNION|SELECT|INSERT|UPDATE|DELETE|DROP|EXEC|EXECUTE|SCRIPT|ALERT|EVAL)\b)/gi,
-                /(-{2}|\/\*|\*\/|;)/g,
-                /(javascript:|onerror=|onload=|onclick=)/gi
-            ];
-            return sqlPatterns.some(pattern => {
-                pattern.lastIndex = 0;
-                return pattern.test(str);
-            });
-        }
-
-        /**
-         * Valida contra XSS
-         */
-        function detectXSSAttempt(str) {
-            if (!str) return false;
-            const xssPatterns = [
-                /<script[^>]*>.*?<\/script>/gi,
-                /javascript:/gi,
-                /<iframe[^>]*>/gi,
-                /<img[^>]*on/gi,
-                /on(load|error|click|mouse)[^=]*=/gi,
-                /<svg[^>]*on/gi,
-                /eval\(/gi
-            ];
-            return xssPatterns.some(pattern => {
-                pattern.lastIndex = 0;
-                return pattern.test(str);
-            });
-        }
-
-        /**
-         * Valida entrada de usuario
-         */
-        function validateSecurityThreats(fields = {}) {
-            for (const [fieldName, value] of Object.entries(fields)) {
-                if (!value) continue;
-                if (detectSQLInjection(value)) {
-                    return {
-                        valid: false,
-                        threat: 'SQL Injection',
-                        field: fieldName
-                    };
-                }
-                if (detectXSSAttempt(value)) {
-                    return {
-                        valid: false,
-                        threat: 'XSS Attack',
-                        field: fieldName
-                    };
-                }
-            }
-            return {
-                valid: true
-            };
-        }
-
-        /**
-         * Previene múltiples envíos (rate limiting)
-         */
-        let formSubmitTimestamp = 0;
-        const FORM_SUBMIT_COOLDOWN = 2000;
-
-        function canSubmitForm() {
-            const now = Date.now();
-            if (now - formSubmitTimestamp < FORM_SUBMIT_COOLDOWN) {
-                return false;
-            }
-            formSubmitTimestamp = now;
-            return true;
-        }
-    </script>
-
-    <div class="p-8 max-w-7xl mx-auto w-full">
-        <div class="flex flex-wrap justify-between items-end gap-3 mb-8">
-            <div class="flex flex-col gap-1">
-                <h1 class="text-[#0d121b] dark:text-white text-3xl font-black leading-tight tracking-tight">
-                    Gestión de Admins de Empresas</h1>
-                <p class="text-[#4c669a] dark:text-gray-400 text-base font-normal">Controle el acceso y gestione
-                    los perfiles de administradores para cada organización.</p>
-            </div>
-            <div class="flex gap-3">
+    {{-- HEADER --}}
+    <div class="flex flex-wrap justify-between items-end gap-3 mb-8">
+        <div class="flex flex-col gap-1">
+            <h1 class="text-[#0d121b] dark:text-white text-3xl font-black leading-tight tracking-tight">
+                Gestión de Administradores de Empresa
+            </h1>
+            <p class="text-[#4c669a] dark:text-gray-400 text-base font-normal">
+                Controle el acceso y gestione los perfiles de administradores para la empresa
+            </p>
+        </div>
+        <div class="flex gap-3">
+            <button id="btnOpenCrear"
+                class="px-4 py-2 bg-primary text-white rounded-lg font-bold text-sm flex items-center gap-2 shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all">
+                <span class="material-symbols-outlined text-sm">person_add</span>
+                Crear Nuevo Admin
+            </button>
+        </div>
+    </div>
 
 
+    {{-- TABLA --}}
+    <div class="bg-white dark:bg-[#161d2b] rounded-xl border border-[#cfd7e7] dark:border-gray-800 overflow-hidden shadow-sm">
+        <div class="p-6 border-b border-[#cfd7e7] dark:border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <h2 class="text-[#0d121b] dark:text-white text-lg font-bold leading-tight">Administradores de Empresas</h2>
+            <button onclick="openExportModal()"
+                class="px-3 py-2 border border-[#cfd7e7] dark:border-gray-700 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors dark:text-white">
+                <span class="material-symbols-outlined text-sm">download</span>
+                Exportar
+            </button>
+        </div>
 
+        {{-- MODAL EXPORTAR ADMINISTRADORES --}}
+        <div id="exportModal" class="fixed inset-0 bg-black/40 hidden flex items-center justify-center z-50">
+            <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg w-72 p-5">
 
-                {{-- BOTÓN CREAR --}}
-                <button onclick="openModal()"
-                    class="px-4 py-2 bg-primary text-white rounded-lg font-bold text-sm flex items-center gap-2 shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all">
-                    <span class="material-symbols-outlined text-sm">person_add</span>
-                    Crear Nuevo Admin
+                <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-4">
+                    Exportar Administradores
+                </h3>
+
+                <div class="flex flex-col gap-3">
+
+                    <!-- PDF -->
+                    <a href="{{ route('sadmin.export.pdf') }}"
+                        class="flex items-center gap-2 px-4 py-2 text-sm font-semibold border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                        <span class="material-symbols-outlined text-red-600">picture_as_pdf</span>
+                        PDF
+                    </a>
+
+                    <!-- Excel -->
+                    <a href="{{ route('sadmin.export.excel') }}"
+                        class="flex items-center gap-2 px-4 py-2 text-sm font-semibold border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                        <span class="material-symbols-outlined text-green-600">grid_on</span>
+                        Excel
+                    </a>
+
+                </div>
+
+                <button onclick="closeExportModal()"
+                    class="mt-4 w-full text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                    Cancelar
                 </button>
-
-
 
             </div>
         </div>
-        <div
-            class="bg-white dark:bg-[#161d2b] rounded-xl border border-[#cfd7e7] dark:border-gray-800 overflow-hidden shadow-sm">
-            <div
-                class="p-6 border-b border-[#cfd7e7] dark:border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <h2 class="text-[#0d121b] dark:text-white text-lg font-bold leading-tight">Administradores de
-                    Empresas</h2>
 
-                {{-- BOTÓN EXPORTAR --}}
-                <button onclick="openExportModal()"
-                    class="px-3 py-2 border border-[#cfd7e7] dark:border-gray-700 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors dark:text-white">
-                    <span class="material-symbols-outlined text-sm">download</span>
-                    Exportar
-                </button>
-
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead class="bg-background-light dark:bg-background-dark/50">
-                        <tr>
-                            <th
-                                class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">
-                                Nombre del Administrador</th>
-                            <th
-                                class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider text-center">
-                                Empresa Asociada
-                            </th>
-
-                            <th
-                                class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">
-                                Correo Electrónico</th>
-                            <th
-                                class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">
-                                Estado</th>
-                            <th
-                                class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider text-right">
-                                Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-[#cfd7e7] dark:divide-gray-800">
-                        @foreach ($users as $user)
-                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-3">
-                                        <div
-                                            class="size-10 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center overflow-hidden">
-                                            <img alt="Avatar" class="w-full h-full object-cover"
-                                                src="{{ asset('storage/' . $user->emple_img) }}">
-                                        </div>
-                                        <div class="flex flex-col">
-                                            <span
-                                                class="text-sm font-bold text-[#0d121b] dark:text-white">{{ $user->emple_nombres }}
-                                                {{ $user->emple_apellidos }}
-                                            </span>
-                                            <span class="text-xs text-[#4c669a] dark:text-gray-400">DOCUMENTO:
-                                                {{ $user->emple_doc }}</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 text-sm dark:text-gray-300 align-middle text-center">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-background-light dark:bg-background-dark/50">
+                    <tr>
+                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">Nombre del Administrador</th>
+                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider text-center">Empresa Asociada</th>
+                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">Teléfono</th>
+                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">Correo Electrónico</th>
+                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider">Estado</th>
+                        <th class="px-6 py-4 text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider text-right">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[#cfd7e7] dark:divide-gray-800">
+                    @forelse ($users as $user)
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="size-10 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center overflow-hidden">
+                                    <img alt="Avatar" class="w-full h-full object-cover"
+                                        src="{{ asset('storage/' . $user->emple_img) }}">
+                                </div>
+                                <div class="flex flex-col">
                                     <span class="text-sm font-bold text-[#0d121b] dark:text-white">
-                                        {{ $user->empresa->nomb_empresa }}
+                                        {{ $user->emple_nombres }} {{ $user->emple_apellidos }}
                                     </span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span
-                                        class="text-sm text-[#4c669a] dark:text-gray-400 underline decoration-primary/30">{{ $user->emple_correo }}</span>
-                                </td>
-
-                                <td class="px-6 py-4">
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                                        {{ $user->estado->estado_nomb }}
-
+                                    <span class="text-xs text-[#4c669a] dark:text-gray-400">
+                                        DOCUMENTO: {{ $user->emple_doc }}
                                     </span>
-                                </td>
-                                <td class="px-6 py-4 text-right">
-                                    <div class="flex justify-end gap-1">
-                                        <button onclick="openModalProfile(this)"
-                                            class="p-2 text-[#4c669a] hover:text-primary transition-colors"
-                                            title="Ver detalles" data-documento="{{ $user->emple_doc }}"
-                                            data-nit="{{ $user->empresa->nit_empresa ?? '' }}"
-                                            data-empresa="{{ $user->empresa->nombre_empresa ?? '' }}"
-                                            data-nombres="{{ $user->emple_nombres }}"
-                                            data-apellidos="{{ $user->emple_apellidos }}"
-                                            data-telefono="{{ $user->emple_tel }}" data-correo="{{ $user->emple_correo }}"
-                                            data-estado="{{ $user->estado->estado_nomb ?? '' }}"
-                                            data-rol="{{ $user->rol->rol_nomb ?? '' }}"
-                                            data-area="{{ $user->area->area_nomb ?? '' }}"
-                                            data-foto="{{ asset('storage/' . $user->emple_img) }}"
-                                            class="p-2 text-[#4c669a] hover:text-primary transition-colors"
-                                            title="Ver detalles">
-                                            <span class="material-symbols-outlined text-[20px]">visibility</span>
-                                        </button>
-                                        <button
-                                            class="p-2 text-[#4c669a] hover:text-primary transition-colors btn-open-edit"
-                                            title="Editar" data-documento="{{ $user->emple_doc }}"
-                                            data-nit="{{ $user->nit_empresa }}" data-nombres="{{ $user->emple_nombres }}"
-                                            data-apellidos="{{ $user->emple_apellidos }}"
-                                            data-telefono="{{ $user->emple_tel }}" data-correo="{{ $user->emple_correo }}"
-                                            data-estado="{{ $user->emple_estado }}">
-                                            <span class="material-symbols-outlined text-[20px]">edit</span>
-                                        </button>
+                                </div>
+                            </div>
+                        </td>
 
-                                        <form action="{{ route('usuarios.destroy', $user->emple_doc) }}" method="POST"
-                                            class="form-eliminar inline">
-                                            @csrf
-                                            @method('DELETE')
+                        <td class="px-6 py-4 text-sm dark:text-gray-300 align-middle text-center">
+                            <span class="text-sm font-bold text-[#0d121b] dark:text-white">
+                                {{ $user->empresa?->nomb_empresa ?? 'Sin empresa' }}
+                            </span>
+                        </td>
 
-                                            <button type="submit"
-                                                class="p-2 text-[#4c669a] hover:text-red-500 transition-colors"
-                                                title="Eliminar">
-                                                <span class="material-symbols-outlined text-[20px]">delete</span>
-                                            </button>
-                                        </form>
+                        <td class="px-6 py-4">
+                            <span class="text-sm text-[#4c669a] dark:text-gray-400 underline decoration-primary/30">
+                                {{ $user->emple_tel }}
+                            </span>
+                        </td>
 
-                                    </div>
-                                </td>
-                            </tr>
+                        <td class="px-6 py-4">
+                            <span class="text-sm text-[#4c669a] dark:text-gray-400 underline decoration-primary/30">
+                                {{ $user->emple_correo }}
+                            </span>
+                        </td>
+
+                        <td class="px-6 py-4 text-sm dark:text-gray-300 align-middle text-center">
+                            @if($user->estado->estado_nomb === 'Activo' || $user->estado->estado_nomb === 'Aprobado')
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                    {{ $user->estado->estado_nomb }}
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+                                    {{ $user->estado->estado_nomb }}
+                                </span>
+                            @endif
+                        </td>
+
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex justify-end gap-1">
+                                <button class="p-2 text-[#4c669a] hover:text-primary transition-colors btn-open-edit"
+                                    title="Editar"
+                                    data-id="{{ $user->emple_doc }}"
+                                    data-documento="{{ $user->emple_doc }}"
+                                    data-nit="{{ $user->empresa?->nit_empresa }}"
+                                    data-nombres="{{ $user->emple_nombres }}"
+                                    data-apellidos="{{ $user->emple_apellidos }}"
+                                    data-telefono="{{ $user->emple_tel }}"
+                                    data-correo="{{ $user->emple_correo }}"
+                                    data-estado="{{ $user->emple_estado }}">
+                                    <span class="material-symbols-outlined text-[20px]">edit</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    @empty
+                    <tr>
+                        <td colspan="8" class="text-center py-6 text-gray-400">No hay administradores registrados</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+
+            <div class="flex gap-1 mt-4">
+                {{ $users->links() }}
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- MODAL CREAR --}}
+<div id="userModal"
+    class="fixed inset-0 bg-black/40 flex items-center justify-center hidden z-50 p-4">
+    <div class="bg-white w-full max-w-3xl rounded-xl shadow-xl relative my-10 max-h-[90vh] flex flex-col overflow-hidden">
+        <div class="px-6 pt-6">
+            <div class="flex justify-between items-center border-b pb-4 mb-4">
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-800">
+                        Registrar Nuevo Administrador
+                    </h2>
+                    <p class="text-sm text-gray-500">
+                        Complete los datos del administrador, los campos con (*) son obligatorios.
+                    </p>
+                </div>
+
+                <button class="btn-close text-gray-500 hover:text-gray-800">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+        </div>
+
+        <form method="POST"
+            action="{{ route('admins.store') }}"
+            id="userForm"
+            enctype="multipart/form-data"
+            class="flex-1 overflow-y-auto px-6 pb-6 space-y-6">
+            @csrf
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                <!-- DOCUMENTO -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">
+                        Documento (*)
+                    </label>
+                    <input
+                        name="emple_doc"
+                        id="documento"
+                        type="text"
+                        inputmode="numeric"
+                        pattern="[0-9]*"
+                        oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                        maxlength="10"
+                        placeholder="Ingrese documento..."
+                        value="{{ old('emple_doc') }}"
+                        class="mt-1 w-full rounded-lg border-gray-300">
+                    <p id="error-documento" class="text-sm text-red-600 hidden"></p>
+                </div>
+
+                <!-- EMPRESA -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Empresa NIT (*)
+                    </label>
+                    <select
+                        name="nit_empresa"
+                        id="nit_empresa"
+                        class="mt-1 w-full rounded-lg border-gray-300" required>
+                        <option value="">Seleccionar empresa...</option>
+                        @foreach($empresas as $empresa)
+                        <option value="{{ $empresa->nit_empresa }}">
+                            {{ $empresa->nit_empresa }} - {{ $empresa->nomb_empresa }}
+                        </option>
                         @endforeach
+
                         @if ($users->count() == 0)
-                            <tr>
-                                <td colspan="6" class="px-6 py-10 text-center">
-                                    <div
-                                        class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-sm">
-                                        <span class="material-symbols-outlined text-[18px]">info</span>
-                                        No hay registros disponibles
-                                    </div>
-                                </td>
-                            </tr>
+                        <tr>
+                            <td colspan="6" class="px-6 py-10 text-center">
+                                <div
+                                    class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-sm">
+                                    <span class="material-symbols-outlined text-[18px]">info</span>
+                                    No hay registros disponibles
+                                </div>
+                            </td>
+                        </tr>
                         @endif
-                    </tbody>
-                </table>
-                <div class="p-4 border-t border-[#cfd7e7] dark:border-gray-800">
-                    {{ $users->links() }}
+                        </tbody>
+                        </table>
+                        <div class="p-4 border-t border-[#cfd7e7] dark:border-gray-800">
+                            {{ $users->links() }}
+                    </select>
+                    <p id="error-nit" class="text-sm text-red-600 hidden"></p>
+                </div>
+
+                <!-- NOMBRES -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">
+                        Nombres (*)
+                    </label>
+                    <input
+                        name="emple_nombres"
+                        id="nombres"
+                        type="text"
+                        maxlength="50"
+                        placeholder="Ingrese nombres..."
+                        value="{{ old('emple_nombres') }}"
+                        class="mt-1 w-full rounded-lg border-gray-300">
+                    <p id="error-nombres" class="text-sm text-red-600 hidden"></p>
+                </div>
+
+                <!-- APELLIDOS -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">
+                        Apellidos (*)
+                    </label>
+                    <input
+                        name="emple_apellidos"
+                        id="apellidos"
+                        type="text"
+                        maxlength="50"
+                        placeholder="Ingrese apellidos..."
+                        value="{{ old('emple_apellidos') }}"
+                        class="mt-1 w-full rounded-lg border-gray-300">
+                    <p id="error-apellidos" class="text-sm text-red-600 hidden"></p>
+                </div>
+
+                <!-- TELÉFONO -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">
+                        Teléfono (*)
+                    </label>
+                    <input
+                        name="emple_tel"
+                        id="telefono"
+                        type="text"
+                        inputmode="numeric"
+                        pattern="[0-9]*"
+                        oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                        maxlength="12"
+                        placeholder="Ingrese teléfono... "
+                        value="{{ old('emple_tel') }}"
+                        class="mt-1 w-full rounded-lg border-gray-300">
+                    <p id="error-telefono" class="text-sm text-red-600 hidden"></p>
+                </div>
+
+                <!-- CORREO -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">
+                        Correo (*)
+                    </label>
+                    <input
+                        name="emple_correo"
+                        id="correo"
+                        type="email"
+                        maxlength="150"
+                        placeholder="Ingrese correo electrónico..."
+                        value="{{ old('emple_correo') }}"
+                        class="mt-1 w-full rounded-lg border-gray-300">
+                    <p id="error-correo" class="text-sm text-red-600 hidden"></p>
+                </div>
+
+                <!-- CONTRASEÑA -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700">
+                        Contraseña (*)
+                    </label>
+                    <input
+                        name="password"
+                        id="password"
+                        type="password"
+                        maxlength="64"
+                        oninput="this.value = this.value.replace(/\s/g, '')"
+                        placeholder="Ingrese contraseña segura..."
+                        class="mt-1 w-full rounded-lg border-gray-300">
+                    <p id="error-password" class="text-sm text-red-600 hidden"></p>
+                </div>
+
+                <!-- FOTO -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700">
+                        Foto de perfil (Solo formato JPEG, PNG, WEBP)
+                    </label>
+                    <input
+                        name="emple_img"
+                        type="file"
+                        accept=".jpg,.jpeg,.png,.webp"
+                        class="mt-1 w-full rounded-lg border-gray-300">
+                </div>
+
+                <!-- ESTADO -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">
+                        Estado
+                    </label>
+                    <input
+                        type="text"
+                        value="{{ $estados->where('id_estado', 1)->first()->estado_nomb ?? 'Activo' }}"
+                        readonly
+                        class="mt-1 w-full rounded-lg bg-gray-100 border-gray-300 cursor-not-allowed">
+                </div>
+
+                <!-- ROL -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">
+                        Rol
+                    </label>
+                    <input
+                        type="text"
+                        value="Administrador"
+                        readonly
+                        class="mt-1 w-full rounded-lg bg-gray-100 border-gray-300 cursor-not-allowed">
                 </div>
 
             </div>
 
+            <!-- BOTONES -->
+            <div class="flex justify-end gap-3 pt-6 border-t">
+                <button type="button"
+                    class="btn-close px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100">
+                    Cancelar
+                </button>
 
+                <button id="btnGuardar"
+                    type="submit"
+                    class="px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2">
+                    <span class="material-symbols-outlined">save</span>
+                    Guardar
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+{{-- MODAL EDITAR --}}
+<div id="userModalEdit" class="fixed inset-0 flex items-center justify-center hidden z-50">
+    <div class="bg-white w-full max-w-3xl rounded-xl shadow-xl p-6 relative">
+
+        <div class="flex justify-between items-center border-b pb-4 mb-6">
+            <div>
+                <h2 class="text-xl font-semibold text-gray-800">
+                    Editar Administrador
+                </h2>
+                <p class="text-sm text-gray-500">
+                    Modifique los datos del administrador, los campos con (*) son obligatorios.
+                </p>
+            </div>
+
+            <button class="btn-close text-gray-500 hover:text-gray-800">
+                <span class="material-symbols-outlined">close</span>
+            </button>
         </div>
-    </div>
-    </div>
-    @if (session('error'))
-        <script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: '{{ session('error') }}',
-                confirmButtonColor: '#dc2626'
-            });
-        </script>
-    @endif
-    <script>
-        document.querySelectorAll('.form-eliminar').forEach(form => {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
 
-                Swal.fire({
-                    title: '¿Eliminar usuario?',
-                    text: 'Esta acción no se puede deshacer',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Sí, eliminar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        form.submit();
-                    }
-                });
-            });
-        });
-    </script>
+        <form method="POST"
+            id="formEdit"
+            enctype="multipart/form-data">
+            @csrf
+            @method('PUT')
 
-    {{-- MODAL EXPORTAR --}}
-    <div id="exportModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
-        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg w-72 p-5">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-            <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-4">
-                Exportar Administradores
-            </h3>
+                <input type="hidden" name="modal_type" value="edit">
 
-            <div class="flex flex-col gap-3">
+                <!-- DOCUMENTO -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">
+                        Documento (*)
+                    </label>
+                    <input
+                        type="text"
+                        name="emple_doc"
+                        id="edit_documento"
+                        maxlength="10"
+                        inputmode="numeric"
+                        pattern="[0-9]*"
+                        oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                        placeholder="Ingrese documento..."
+                        value="{{ old('emple_doc') }}"
+                        readonly
+                        class="mt-1 w-full rounded-lg border-gray-300">
+                    <p id="edit-error-documento" class="text-sm text-red-600 hidden"></p>
+                </div>
 
-                <!-- PDF -->
-                <a href="{{ route('sadmin.export.pdf') }}"
-                    class="flex items-center gap-2 px-4 py-2 text-sm font-semibold border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
-                    <span class="material-symbols-outlined text-red-600">picture_as_pdf</span>
-                    PDF
-                </a>
+                <!-- EMPRESA -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">
+                        Empresa (NIT) (*)
+                    </label>
+                    <select
+                        name="nit_empresa"
+                        id="edit_nit"
+                        class="mt-1 w-full rounded-lg border-gray-300">
+                        <option value="">Seleccionar empresa...</option>
+                        @foreach($empresas as $empresa)
+                        <option value="{{ $empresa->nit_empresa }}"
+                            {{ old('nit_empresa') == $empresa->nit_empresa ? 'selected' : '' }}>
+                            {{ $empresa->nit_empresa }} - {{ $empresa->nomb_empresa }}
+                        </option>
+                        @endforeach
+                    </select>
+                    <p id="edit-error-nit" class="text-sm text-red-600 hidden"></p>
+                </div>
 
-                <!-- Excel -->
-                <a href="{{ route('sadmin.export.excel') }}"
-                    class="flex items-center gap-2 px-4 py-2 text-sm font-semibold border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
-                    <span class="material-symbols-outlined text-green-600">grid_on</span>
-                    Excel
-                </a>
+                <!-- NOMBRES -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">
+                        Nombres (*)
+                    </label>
+                    <input
+                        type="text"
+                        name="emple_nombres"
+                        id="edit_nombres"
+                        maxlength="50"
+                        placeholder="Ingrese nombres..."
+                        value="{{ old('emple_nombres') }}"
+                        class="mt-1 w-full rounded-lg border-gray-300">
+                    <p id="edit-error-nombres" class="text-sm text-red-600 hidden"></p>
+                </div>
+
+                <!-- APELLIDOS -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">
+                        Apellidos (*)
+                    </label>
+                    <input
+                        type="text"
+                        name="emple_apellidos"
+                        id="edit_apellidos"
+                        maxlength="50"
+                        placeholder="Ingrese apellidos..."
+                        value="{{ old('emple_apellidos') }}"
+                        class="mt-1 w-full rounded-lg border-gray-300">
+                    <p id="edit-error-apellidos" class="text-sm text-red-600 hidden"></p>
+                </div>
+
+                <!-- TELÉFONO -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">
+                        Teléfono (*)
+                    </label>
+                    <input
+                        type="text"
+                        name="emple_tel"
+                        id="edit_telefono"
+                        maxlength="12"
+                        inputmode="numeric"
+                        pattern="[0-9]*"
+                        oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                        placeholder="Ingrese teléfono..."
+                        value="{{ old('emple_tel') }}"
+                        class="mt-1 w-full rounded-lg border-gray-300">
+                    <p id="edit-error-telefono" class="text-sm text-red-600 hidden"></p>
+                </div>
+
+                <!-- CORREO -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">
+                        Correo (*)
+                    </label>
+                    <input
+                        type="email"
+                        name="emple_correo"
+                        id="edit_correo"
+                        maxlength="150"
+                        placeholder="Ingrese correo electrónico..."
+                        value="{{ old('emple_correo') }}"
+                        class="mt-1 w-full rounded-lg border-gray-300">
+                    <p id="edit-error-correo" class="text-sm text-red-600 hidden"></p>
+                </div>
+
+                <!-- FOTO -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700">
+                        Foto de perfil (Solo formato JPEG, PNG, WEBP)
+                    </label>
+                    <input
+                        type="file"
+                        name="emple_img"
+                        id="edit_imagen"
+                        accept=".jpg,.jpeg,.png,.webp"
+                        class="mt-1 w-full rounded-lg border-gray-300">
+                    <p id="edit-error-imagen" class="text-sm text-red-600 hidden"></p>
+                </div>
+
+                <!-- ESTADO -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">
+                        Estado
+                    </label>
+                    <select
+                        name="emple_estado"
+                        id="edit_estado"
+                        class="mt-1 w-full rounded-lg border-gray-300">
+                        <option value="">Seleccionar estado...</option>
+                        @foreach($estados as $estado)
+                        @if(in_array($estado->id_estado, [1, 2]))
+                        <option value="{{ $estado->id_estado }}"
+                            {{ old('emple_estado') == $estado->id_estado ? 'selected' : '' }}>
+                            {{ $estado->estado_nomb }}
+                        </option>
+                        @endif
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- ROL (Solo visual) -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">
+                        Rol
+                    </label>
+                    <input
+                        type="text"
+                        value="Administrador"
+                        readonly
+                        class="mt-1 w-full rounded-lg bg-gray-100 border-gray-300 cursor-not-allowed">
+                </div>
 
             </div>
 
-            <button onclick="closeExportModal()"
-                class="mt-4 w-full text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-                Cancelar
-            </button>
+            <!-- BOTONES -->
+            <div class="flex justify-end gap-3 pt-6 border-t">
+                <button type="button"
+                    class="btn-close px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100">
+                    Cancelar
+                </button>
 
-        </div>
+                <button
+                    id="btnGuardarEdit"
+                    type="submit"
+                    class="px-6 py-2 rounded-lg bg-blue-600 text-white flex items-center gap-2 opacity-50 cursor-not-allowed">
+                    <span class="material-symbols-outlined">save</span>
+                    Guardar Cambios
+                </button>
+            </div>
+
+        </form>
     </div>
-    <script>
-        function openExportModal() {
-            document.getElementById('exportModal').classList.remove('hidden');
-            document.getElementById('exportModal').classList.add('flex');
+</div>
+
+@if ($errors->any())
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        // Determinar qué modal abrir: 'create' o 'edit'
+        const modalType = "{{ old('modal_type', 'create') }}"; // por defecto 'create'
+
+        if (modalType === 'create') {
+            const modalCrear = document.getElementById('userModal');
+            modalCrear.classList.remove('hidden');
+
+            // Llenar automáticamente los inputs con old()
+            modalCrear.querySelectorAll('input, select, textarea').forEach(input => {
+                const name = input.name;
+                if (!name) return;
+
+                const valorOld = "{{ old('" + name + "') }}";
+                if (valorOld !== '') input.value = valorOld;
+            });
+
+            // Habilitar botón guardar
+            const btnGuardar = document.getElementById('btnGuardar');
+            btnGuardar.disabled = false;
+            btnGuardar.classList.remove('opacity-50', 'cursor-not-allowed');
+
+        } else if (modalType === 'edit') {
+            const modalEditar = document.getElementById('userModalEdit');
+            modalEditar.classList.remove('hidden');
+
+            const documento = "{{ old('emple_doc') }}";
+
+            if (documento) {
+                document.getElementById('formEdit').action =
+                    "{{ route('admins.update', ':id') }}".replace(':id', documento);
+            }
+
+            // Llenar automáticamente los inputs con old()
+            modalEditar.querySelectorAll('input, select, textarea').forEach(input => {
+                const name = input.name;
+                if (!name) return;
+
+                const valorOld = "{{ old('" + name + "') }}";
+                if (valorOld !== '') input.value = valorOld;
+            });
+
+            // Habilitar botón guardar
+            const btnGuardarEdit = document.getElementById('btnGuardarEdit');
+            btnGuardarEdit.disabled = false;
+            btnGuardarEdit.classList.remove('opacity-50', 'cursor-not-allowed');
         }
 
-        function closeExportModal() {
-            document.getElementById('exportModal').classList.add('hidden');
-            document.getElementById('exportModal').classList.remove('flex');
-        }
-    </script>
-
-
+    });
+</script>
+@endif
 
 @endsection
 
-@section('modals')
+@section('scripts')
 
-    <!-- Scripts globales (cargados primero) -->
-    <script>
-        /**
-         * ===== VALIDACIONES DEL FORMULARIO DE EDITAR ADMIN =====
-         */
-        let validEdit = {
-            nombres: false,
-            apellidos: false,
-            telefono: false,
-            correo: false,
-            estado: false
-        };
+{{-- SWEET ALERTS --}}
+@if(session('success'))
+<script>
+    Swal.fire({
+        icon: 'success',
+        title: 'Operación exitosa',
+        text: "{{ session('success') }}",
+        confirmButtonColor: '#16a34a',
+        confirmButtonText: 'Aceptar'
+    });
+</script>
+@endif
 
-        let editFormOriginalData = {};
+@if(session('error'))
+<script>
+    Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: "{{ session('error') }}",
+        confirmButtonColor: '#dc2626',
+        confirmButtonText: 'Entendido'
+    });
+</script>
+@endif
 
-        // Validación de texto para edición
-        function validateTextoEdit(input, errorId) {
-            input.value = input.value
-                .replace(/[^a-zA-Z\s]/g, '')
-                .replace(/\b\w/g, l => l.toUpperCase());
+@if($errors->any())
+<script>
+    Swal.fire({
+        icon: 'error',
+        title: 'Errores en el formulario',
+        html: `
+        <ul style="text-align:left;">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    `,
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'Ok'
+    });
+</script>
+@endif
 
-            const isValid = /^[A-Z][a-zA-Z\s]*$/.test(input.value);
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
 
-            // 🔒 Validar contra XSS
-            if (detectXSSAttempt(input.value)) {
-                const errorEl = document.getElementById(errorId);
-                if (errorEl) errorEl.textContent = 'Caracteres no permitidos (XSS detectado)';
-                toggleErrorEdit(errorId, true);
-                validEdit[input.id.replace('edit_', '')] = false;
-            } else {
-                validEdit[input.id.replace('edit_', '')] = isValid;
-                toggleErrorEdit(errorId, !isValid);
-            }
-            checkFormEdit();
-        }
+        /* ===========================
+           VARIABLES GENERALES
+        ============================*/
 
-        // Validación de teléfono para edición
-        function validateTelefonoEdit(input) {
-            input.value = input.value.replace(/\D/g, '').slice(0, 10);
-            validEdit.telefono = input.value.length === 10;
-            toggleErrorEdit('edit-error-telefono', !validEdit.telefono);
-            checkFormEdit();
-        }
+        const modalCrear = document.getElementById('userModal');
+        const modalEditar = document.getElementById('userModalEdit');
 
-        // Validación de correo para edición
-        function validateCorreoEdit(input) {
-            const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            validEdit.correo = regex.test(input.value);
+        const btnGuardar = document.getElementById('btnGuardar');
+        const btnGuardarEdit = document.getElementById('btnGuardarEdit');
 
-            // 🔒 Validar contra XSS
-            if (detectXSSAttempt(input.value)) {
-                const errorEl = document.getElementById('edit-error-correo');
-                if (errorEl) errorEl.textContent = 'Correo contiene caracteres no permitidos';
-                toggleErrorEdit('edit-error-correo', true);
-                validEdit.correo = false;
-            } else {
-                toggleErrorEdit('edit-error-correo', !validEdit.correo);
-            }
-            checkFormEdit();
-        }
+        let originalEditData = {};
+        let camposTocados = {};
 
-        // Validación de estado para edición
-        function validateEstadoEdit(input) {
-            validEdit.estado = input.value !== '';
-            checkFormEdit();
-        }
+        /* ===========================
+           MODALES
+        ============================*/
 
-        // Mostrar/ocultar errores para edición
-        function toggleErrorEdit(id, show) {
-            const element = document.getElementById(id);
-            if (element) {
-                element.classList.toggle('hidden', !show);
-            }
-        }
+        document.getElementById('btnOpenCrear').addEventListener('click', () => {
+            modalCrear.classList.remove('hidden');
+        });
 
-        // Detectar cambios en el formulario de edición
-        function hasEditFormChanged() {
-            const fieldMap = {
-                'edit_nombres': 'edit_nombres',
-                'edit_apellidos': 'edit_apellidos',
-                'edit_telefono': 'edit_telefono',
-                'edit_correo': 'edit_correo',
-                'edit_estado': 'edit_estado'
-            };
+        document.querySelectorAll('.btn-close').forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.closest('.fixed').classList.add('hidden');
+            });
+        });
 
-            for (const [fieldId, key] of Object.entries(fieldMap)) {
-                const input = document.getElementById(fieldId);
-                if (input && input.value.trim() !== editFormOriginalData[key]) {
-                    return true;
-                }
-            }
-            return false;
-        }
+        document.querySelectorAll('.btn-open-edit').forEach(btn => {
+            btn.addEventListener('click', function() {
 
-        // Guardar datos originales
-        function saveEditFormOriginalData() {
-            editFormOriginalData = {
-                edit_nombres: document.getElementById('edit_nombres')?.value.trim() || '',
-                edit_apellidos: document.getElementById('edit_apellidos')?.value.trim() || '',
-                edit_telefono: document.getElementById('edit_telefono')?.value.trim() || '',
-                edit_correo: document.getElementById('edit_correo')?.value.trim() || '',
-                edit_estado: document.getElementById('edit_estado')?.value.trim() || ''
-            };
-        }
-
-        // Habilitar botón de edición
-        function checkFormEdit() {
-            const isValid = Object.values(validEdit).every(v => v === true);
-            const btn = document.getElementById('btnGuardarEdit');
-
-            btn.disabled = !isValid;
-            btn.classList.toggle('opacity-50', !isValid);
-            btn.classList.toggle('cursor-not-allowed', !isValid);
-        }
-
-        // FUNCIÓN PARA ABRIR MODAL DE EDICIÓN
-        function openModalEdit(btn) {
-            try {
-                if (!btn || !btn.dataset) {
-                    console.error('Botón no válido');
-                    return;
-                }
-
-                const form = document.getElementById('formEdit');
-                const editDoc = document.getElementById('edit_documento');
-                const editNit = document.getElementById('edit_nit');
-                const editNombres = document.getElementById('edit_nombres');
-                const editApellidos = document.getElementById('edit_apellidos');
-                const editTelefono = document.getElementById('edit_telefono');
-                const editCorreo = document.getElementById('edit_correo');
-                const editEstado = document.getElementById('edit_estado');
-                const editPassword = document.getElementById('edit_password');
-                const userModalEdit = document.getElementById('userModalEdit');
-                const modalOverlayEdit = document.getElementById('modalOverlayEdit');
-
-                if (!form || !editDoc || !editNombres || !editApellidos || !editTelefono ||
-                    !editCorreo || !editEstado || !userModalEdit || !modalOverlayEdit) {
-                    console.error('Algunos elementos no existen en el DOM');
-                    return;
-                }
-
-                // Obtener y sanitizar datos del botón
                 const data = {
-                    documento: sanitizeString(btn.dataset.documento || ''),
-                    nit: sanitizeString(btn.dataset.nit || ''),
-                    nombres: sanitizeString(btn.dataset.nombres || ''),
-                    apellidos: sanitizeString(btn.dataset.apellidos || ''),
-                    telefono: sanitizeString(btn.dataset.telefono || ''),
-                    correo: sanitizeString(btn.dataset.correo || ''),
-                    estado: sanitizeString(btn.dataset.estado || '')
+                    documento: btn.dataset.documento || '',
+                    nit: btn.dataset.nit || '',
+                    nombres: btn.dataset.nombres || '',
+                    apellidos: btn.dataset.apellidos || '',
+                    telefono: btn.dataset.telefono || '',
+                    correo: btn.dataset.correo || '',
+                    estado: btn.dataset.estado || ''
                 };
 
-                // 🔒 Validar seguridad de los datos
-                const securityCheck = validateSecurityThreats(data);
-                if (!securityCheck.valid) {
+                // Guardamos valores originales
+                originalEditData = {
+                    ...data
+                };
+
+                document.getElementById('edit_documento').value = data.documento;
+                $('#edit_nit').val(data.nit).trigger('change');
+                document.getElementById('edit_nombres').value = data.nombres;
+                document.getElementById('edit_apellidos').value = data.apellidos;
+                document.getElementById('edit_telefono').value = data.telefono;
+                document.getElementById('edit_correo').value = data.correo;
+                document.getElementById('edit_estado').value = data.estado;
+                document.getElementById('formEdit').action =
+                    "{{ route('admins.update', ':id') }}".replace(':id', data.documento);
+
+                Object.keys(reglasEditar).forEach(id => {
+                    validarCampoEditar(id);
+                });
+
+                btnGuardarEdit.disabled = false;
+                btnGuardarEdit.classList.remove('opacity-50', 'cursor-not-allowed');
+
+                modalEditar.classList.remove('hidden');
+            });
+        });
+
+        /* ===========================
+           VALIDACIÓN CREAR
+        ===========================*/
+
+        const reglasCrear = {
+
+            documento: {
+                required: true,
+                min: 6,
+                max: 10,
+                regex: /^[0-9]+$/,
+                custom: function(valor) {
+                    return !/^(\d)\1+$/.test(valor); // Evita 0000000, 1111111
+                },
+                error: 'error-documento',
+                mensajes: {
+                    required: 'El documento es obligatorio.',
+                    min: 'El documento debe tener mínimo 6 dígitos.',
+                    max: 'El documento no puede superar 10 dígitos.',
+                    regex: 'El documento solo permite números sin espacios.',
+                    custom: 'No se permiten números repetidos como 0000000.'
+                }
+            },
+
+
+            nombres: {
+                required: true,
+                min: 3,
+                max: 60,
+                regex: /^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3,}( [A-Za-zÁÉÍÓÚáéíóúÑñ]{3,})?$/,
+                custom: function(valor) {
+                    const palabras = valor.trim().split(/\s+/);
+                    return palabras.length <= 2;
+                },
+                error: 'error-nombres',
+                mensajes: {
+                    required: 'El nombre es obligatorio.',
+                    min: 'Debe tener al menos una palabra.',
+                    max: 'No puede superar 60 caracteres.',
+                    regex: 'Solo letras, tildes, sin espacios.',
+                    custom: 'No puede superar 2 palabras.'
+                }
+            },
+
+            apellidos: {
+                required: true,
+                min: 3,
+                max: 60,
+                regex: /^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3,}( [A-Za-zÁÉÍÓÚáéíóúÑñ]{3,})?$/,
+                custom: function(valor) {
+                    const palabras = valor.trim().split(/\s+/);
+                    return palabras.length <= 2;
+                },
+                error: 'error-apellidos',
+                mensajes: {
+                    required: 'Los apellidos son obligatorios.',
+                    min: 'Debe tener al menos una palabra.',
+                    max: 'No puede superar 60 caracteres.',
+                    regex: 'Solo letras, tildes, sin espacios.',
+                    custom: 'No puede superar 2 palabras.'
+                }
+            },
+
+            telefono: {
+                required: true,
+                min: 7,
+                max: 12,
+                regex: /^[0-9]+$/,
+                error: 'error-telefono',
+                mensajes: {
+                    required: 'El teléfono es obligatorio.',
+                    min: 'El teléfono debe tener mínimo 7 dígitos.',
+                    max: 'El teléfono no puede superar 12 dígitos.',
+                    regex: 'El teléfono solo permite números sin espacios.'
+                }
+            },
+
+            correo: {
+                required: true,
+                min: 8,
+                max: 150,
+                regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                error: 'error-correo',
+                mensajes: {
+                    required: 'El correo es obligatorio.',
+                    min: 'El correo debe tener mínimo 8 caracteres.',
+                    max: 'El correo no puede superar 150 caracteres.',
+                    regex: 'Debe tener un formato válido ejemplo: texto@texto.dominio'
+                }
+            },
+
+            password: {
+                required: true,
+                min: 10,
+                max: 64,
+                regex: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!"#$%&\/()=@])[^\s]{10,64}$/,
+                error: 'error-password',
+                mensajes: {
+                    required: 'La contraseña es obligatoria.',
+                    min: 'Debe tener mínimo 10 caracteres.',
+                    max: 'No puede superar 64 caracteres.',
+                    regex: 'Debe incluir: 1 mayúscula, 1 minúscula, 1 número, 1 carácter especial y no contener espacios.'
+                }
+            }
+        };
+
+        Object.keys(reglasCrear).forEach(id => {
+
+            const input = document.getElementById(id);
+
+            //  Cuando escribe
+            input.addEventListener('input', () => {
+
+                const valor = input.value.trim();
+
+                // Si empieza a escribir, marcamos como tocado
+                if (valor.length > 0) {
+                    camposTocados[id] = true;
+                }
+
+                validarCampoIndividual(id);
+            });
+
+            //  Cuando sale del campo
+            input.addEventListener('blur', () => {
+                camposTocados[id] = true;
+                validarCampoIndividual(id);
+                validarFormularioCrear(); // validamos
+            });
+
+        });
+
+        const formCrear = document.getElementById('userForm');
+
+        formCrear.addEventListener('submit', function(e) {
+
+            const fileInput = this.querySelector('input[name="emple_img"]');
+            if (fileInput && fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+
+                // Validar tamaño
+                const maxSizeMB = 1; // tu límite real
+                const maxSizeBytes = maxSizeMB * 1024 * 1024;
+                if (file.size > maxSizeBytes) {
+                    e.preventDefault();
                     Swal.fire({
                         icon: 'error',
-                        title: 'Seguridad',
-                        text: `Datos sospechosos detectados en: ${securityCheck.field}`,
-                        timer: 3000
+                        title: 'Imagen muy grande',
+                        text: `La imagen no puede superar ${maxSizeMB} MB.`,
+                        confirmButtonColor: '#dc2626',
+                        confirmButtonText: 'Entendido'
                     });
+                    return false;
+                }
+
+                // Validar tipo
+                const tiposPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
+                if (!tiposPermitidos.includes(file.type)) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Formato inválido',
+                        text: 'Solo se permiten imágenes JPEG, PNG o WEBP.',
+                        confirmButtonColor: '#dc2626',
+                        confirmButtonText: 'Entendido'
+                    });
+                    return false;
+                }
+            }
+
+        });
+
+        function validarCampoIndividual(id) {
+
+            const input = document.getElementById(id);
+            const regla = reglasCrear[id];
+            const error = document.getElementById(regla.error);
+
+            if (!camposTocados[id]) return;
+
+            const valor = input.value.trim();
+
+            // Reset visual
+            input.classList.remove('border-red-500', 'border-green-500');
+            error.classList.add('hidden');
+
+            //  VALIDACIÓN ESPECIAL PASSWORD
+            if (id === 'password') {
+
+                if (valor === '') {
+                    input.classList.add('border-red-500');
+                    error.textContent = regla.mensajes.required;
+                    error.classList.remove('hidden');
                     return;
                 }
 
-                // Establecer la acción del formulario
-                form.action = `/sadmin/admins/${data.documento}`;
-
-                // Llenar los campos
-                editDoc.value = data.documento;
-                editNit.value = data.nit;
-                editNombres.value = data.nombres;
-                editApellidos.value = data.apellidos;
-                editTelefono.value = data.telefono;
-                editCorreo.value = data.correo;
-                editEstado.value = data.estado;
-                if (editPassword) {
-                    editPassword.value = '';
+                if (valor.length > 64) {
+                    input.classList.add('border-red-500');
+                    error.textContent = regla.mensajes.max;
+                    error.classList.remove('hidden');
+                    return;
                 }
 
-                // 🔒 Guardar datos originales para detectar cambios
-                saveEditFormOriginalData();
+                const regexEstructura = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!"#$%&\/()=@.,;:?~^_*+\-])[^\s]{10,64}$/;
 
-                // Validar campos al abrir
-                validEdit.nombres = data.nombres && /^[A-Z][a-zA-Z\s]*$/.test(data.nombres);
-                validEdit.apellidos = data.apellidos && /^[A-Z][a-zA-Z\s]*$/.test(data.apellidos);
-                validEdit.telefono = data.telefono && data.telefono.toString().length === 10;
-                validEdit.correo = data.correo && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.correo);
-                validEdit.estado = data.estado && data.estado !== '';
+                if (!regexEstructura.test(valor)) {
+                    input.classList.add('border-red-500');
+                    error.textContent = regla.mensajes.regex;
+                    error.classList.remove('hidden');
+                    return;
+                }
 
-                // 🔒 Limpiar errores visuales
-                Object.keys(validEdit).forEach(key => {
-                    const errorEl = document.getElementById(`edit-error-${key}`);
-                    if (errorEl) errorEl.classList.add('hidden');
-                });
+                if (valor.length < regla.min) {
+                    input.classList.add('border-red-500');
+                    error.textContent = regla.mensajes.min;
+                    error.classList.remove('hidden');
+                    return;
+                }
 
-                checkFormEdit();
-                userModalEdit.classList.remove('hidden');
-                modalOverlayEdit.classList.remove('hidden');
-
-                console.log('Modal abierto exitosamente');
-            } catch (e) {
-                console.error('Error al abrir modal:', e);
-                alert('Error: ' + e.message);
+                input.classList.add('border-green-500');
+                return;
             }
+
+            // 🔴 1. Campo obligatorio
+            if (regla.required && valor === '') {
+                input.classList.add('border-red-500');
+                error.textContent = regla.mensajes.required;
+                error.classList.remove('hidden');
+                return;
+            }
+
+            // 🔴 2. Longitud mínima
+            if (regla.min && valor.length < regla.min) {
+                input.classList.add('border-red-500');
+                error.textContent = regla.mensajes.min;
+                error.classList.remove('hidden');
+                return;
+            }
+
+            // 🔴 3. Longitud máxima
+            if (regla.max && valor.length > regla.max) {
+                input.classList.add('border-red-500');
+                error.textContent = regla.mensajes.max;
+                error.classList.remove('hidden');
+                return;
+            }
+
+            // 🔴 4. Validación personalizada
+            if (regla.custom && !regla.custom(valor)) {
+                input.classList.add('border-red-500');
+                error.textContent = regla.mensajes.custom;
+                error.classList.remove('hidden');
+                return;
+            }
+
+            // 🔴 5. Regex (estructura final)
+            if (regla.regex && !regla.regex.test(valor)) {
+                input.classList.add('border-red-500');
+                error.textContent = regla.mensajes.regex;
+                error.classList.remove('hidden');
+                return;
+            }
+
+            // 🟢 Todo correcto
+            input.classList.add('border-green-500');
         }
 
-        function closeModalEdit() {
-            const userModalEdit = document.getElementById('userModalEdit');
-            const modalOverlayEdit = document.getElementById('modalOverlayEdit');
-            if (userModalEdit) userModalEdit.classList.add('hidden');
-            if (modalOverlayEdit) modalOverlayEdit.classList.add('hidden');
+        function validarCampo(id) {
+
+            const input = document.getElementById(id);
+            const regla = reglasCrear[id];
+
+            if (!input || !regla) return false;
+
+            const valor = input.value.trim();
+
+            if (regla.required && valor === '') return false;
+            if (regla.min && valor.length < regla.min) return false;
+            if (regla.max && valor.length > regla.max) return false;
+            if (regla.regex && !regla.regex.test(valor)) return false;
+            if (regla.custom && !regla.custom(valor)) return false;
+
+            return true;
         }
 
-        // Exponer funciones globalmente para llamadas inline (onclick)
-        try {
-            window.openModalEdit = openModalEdit;
-            window.closeModalEdit = closeModalEdit;
-        } catch (e) {
-            console.warn('No se pudo exponer funciones de modal globalmente', e);
-        }
 
-        // Asociar listeners a botones de editar (evita depender de onclick inline)
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.btn-open-edit').forEach(btn => {
-                // evitar doble registro
-                if (btn.dataset.listenerAttached) return;
-                btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    try {
-                        openModalEdit(this);
-                    } catch (err) {
-                        console.error('Error al abrir modal edit programático:', err);
-                    }
+
+        /* ===========================
+           VALIDACIÓN EDITAR
+        ============================*/
+
+        function validarImagenEdit() {
+
+            const inputImagenEdit = document.getElementById('edit_imagen');
+            const errorImagenEdit = document.getElementById('edit-error-imagen');
+
+            const archivo = inputImagenEdit.files[0];
+
+            if (!archivo) return true;
+
+            const tamañoMaximo = 2 * 1024 * 1024;
+            const tiposPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
+
+            if (archivo.size > tamañoMaximo) {
+
+                errorImagenEdit.textContent = "La imagen no puede superar los 2MB";
+                errorImagenEdit.classList.remove('hidden');
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Archivo demasiado grande',
+                    text: 'La imagen no puede superar los 2MB',
+                    confirmButtonText: 'OK'
                 });
-                btn.dataset.listenerAttached = '1';
-            });
+
+                return false;
+            }
+
+            if (!tiposPermitidos.includes(archivo.type)) {
+
+                errorImagenEdit.textContent = "Formato inválido. Solo JPG, PNG o WEBP.";
+                errorImagenEdit.classList.remove('hidden');
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Formato inválido',
+                    text: 'Solo se permiten imágenes JPG, PNG o WEBP.',
+                    confirmButtonText: 'OK'
+                });
+
+                return false;
+            }
+
+            errorImagenEdit.classList.add('hidden');
+            return true;
+        }
+
+        let ultimoEnvio = 0;
+
+        document.getElementById('formEdit').addEventListener('submit', function(e) {
+
+            const ahora = Date.now();
+            const diferencia = ahora - ultimoEnvio;
+
+            // ⛔ Si intenta enviar antes de 2 segundos
+            if (diferencia < 2000) {
+                e.preventDefault();
+
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Espera un momento',
+                    text: 'Por favor espera antes de enviar nuevamente.',
+                    timer: 1500,
+                    confirmButtonText: 'OK'
+                });
+
+                return;
+            }
+
+            // Guardamos el momento del envío
+            ultimoEnvio = ahora;
+
+            //  Validar campos
+            if (!validarEditar()) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Errores de Validación',
+                    text: 'Por favor, verifica los campos resaltados',
+                    timer: 2000,
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
+            //  Validar imagen
+            if (!validarImagenEdit()) {
+                e.preventDefault();
+                return;
+            }
+
+            //  Validar cambios
+            if (!huboCambios()) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Sin cambios',
+                    text: 'No hay cambios que guardar.',
+                    timer: 2000,
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
         });
 
-        // 🔒 Validación al enviar formulario de edición
-        document.addEventListener('DOMContentLoaded', function() {
-            const formEdit = document.getElementById('formEdit');
-            if (formEdit) {
-                formEdit.addEventListener('submit', function(e) {
-                    // Rate limiting
-                    if (!canSubmitForm()) {
-                        e.preventDefault();
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Espera un momento',
-                            text: 'Por favor, espera antes de enviar nuevamente',
-                            timer: 1500
-                        });
-                        return;
-                    }
+        const reglasEditar = {
 
-                    // Recopilar datos del formulario
-                    const formData = {
-                        nombres: document.getElementById('edit_nombres').value,
-                        apellidos: document.getElementById('edit_apellidos').value,
-                        correo: document.getElementById('edit_correo').value
-                    };
+            edit_documento: {
+                required: true,
+                min: 6,
+                max: 10,
+                regex: /^[0-9]+$/,
+                custom: function(valor) {
+                    return !/^(\d)\1+$/.test(valor);
+                },
+                error: 'edit-error-documento',
+                mensajes: {
+                    required: 'El documento es obligatorio.',
+                    min: 'Debe tener mínimo 6 dígitos.',
+                    max: 'No puede superar 10 dígitos.',
+                    regex: 'Solo números sin espacios.',
+                    custom: 'No se permiten números repetidos.'
+                }
+            },
 
-                    // Validar seguridad
-                    const securityCheck = validateSecurityThreats(formData);
-                    if (!securityCheck.valid) {
-                        e.preventDefault();
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Alerta de Seguridad',
-                            text: `Se detectó un intento de ${securityCheck.threat}. Campo: ${securityCheck.field}`,
-                            timer: 3000
-                        });
-                        return;
-                    }
+            edit_nombres: {
+                required: true,
+                min: 3,
+                max: 60,
+                regex: /^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3,}( [A-Za-zÁÉÍÓÚáéíóúÑñ]{3,})?$/,
+                custom: function(valor) {
+                    return valor.trim().split(/\s+/).length <= 2;
+                },
+                error: 'edit-error-nombres',
+                mensajes: {
+                    required: 'El nombre es obligatorio.',
+                    min: 'Debe tener mínimo 3 letras.',
+                    max: 'No puede superar 60 caracteres.',
+                    regex: 'Solo letras, tildes, sin espacios.',
+                    custom: 'Máximo 2 palabras.'
+                }
+            },
 
-                    // Validar que haya cambios
-                    if (!hasEditFormChanged()) {
-                        e.preventDefault();
-                        Swal.fire({
-                            icon: 'info',
-                            title: 'Sin cambios',
-                            text: 'No hay cambios que guardar',
-                            timer: 2000
-                        });
-                        return;
-                    }
+            edit_apellidos: {
+                required: true,
+                min: 3,
+                max: 60,
+                regex: /^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3,}( [A-Za-zÁÉÍÓÚáéíóúÑñ]{3,})?$/,
+                custom: function(valor) {
+                    return valor.trim().split(/\s+/).length <= 2;
+                },
+                error: 'edit-error-apellidos',
+                mensajes: {
+                    required: 'Los apellidos son obligatorios.',
+                    min: 'Debe tener mínimo 3 letras.',
+                    max: 'No puede superar 60 caracteres.',
+                    regex: 'Solo letras, tildes, sin espacios.',
+                    custom: 'Máximo 2 palabras.'
+                }
+            },
 
-                    // Validar que todos los campos sean válidos
-                    if (!Object.values(validEdit).every(v => v === true)) {
-                        e.preventDefault();
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Errores de validación',
-                            text: 'Por favor, verifica los campos resaltados',
-                            timer: 2000
-                        });
-                    }
-                });
+            edit_telefono: {
+                required: true,
+                min: 7,
+                max: 12,
+                regex: /^[0-9]+$/,
+                error: 'edit-error-telefono',
+                mensajes: {
+                    required: 'El teléfono es obligatorio.',
+                    min: 'Mínimo 7 dígitos.',
+                    max: 'Máximo 12 dígitos.',
+                    regex: 'Solo números.'
+                }
+            },
 
-                // 🔒 Prevenir pegado de contenido malicioso en editar
-                const editForm = document.getElementById('formEdit');
-                if (editForm) {
-                    const editInputs = editForm.querySelectorAll('input[type="text"], input[type="email"]');
-                    editInputs.forEach(input => {
-                        input.addEventListener('paste', (e) => {
-                            const pastedText = e.clipboardData.getData('text');
-
-                            if (detectXSSAttempt(pastedText) || detectSQLInjection(pastedText)) {
-                                e.preventDefault();
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Contenido no permitido',
-                                    text: 'El contenido que intentas pegar contiene caracteres no válidos',
-                                    timer: 2000
-                                });
-                                return false;
-                            }
-                        });
-                    });
+            edit_correo: {
+                required: true,
+                min: 8,
+                max: 150,
+                regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                error: 'edit-error-correo',
+                mensajes: {
+                    required: 'El correo es obligatorio.',
+                    min: 'Debe tener mínimo 8 caracteres.',
+                    max: 'No puede superar 150 caracteres.',
+                    regex: 'Formato inválido.'
                 }
             }
-        });
-    </script>
-
-    <!-- Overlay -->
-    <div id="modalOverlay" class="fixed inset-0 bg-black/40 hidden z-40"></div>
-
-    <!-- Modal -->
-    <div id="userModal" class="fixed inset-0 flex items-center justify-center hidden z-50">
-        <div class="bg-white w-full max-w-3xl rounded-xl shadow-xl p-6 relative">
-
-            <!-- Header -->
-            <div class="flex justify-between items-center border-b pb-4 mb-6">
-                <h2 class="text-xl font-semibold text-gray-800">
-                    Registrar Nuevo Admin
-                </h2>
-                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-800">
-                    <span class="material-symbols-outlined">close</span>
-                </button>
-            </div>
-
-            <!-- Formulario -->
-            <form method="POST" action="{{ route('sadmin.store') }}" id="userForm" enctype="multipart/form-data"
-                class="space-y-6">
-                @csrf
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                    <!-- Documento -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Documento</label>
-                        <input name="emple_doc" id="documento" type="text"
-                            class="mt-1 w-full rounded-lg border-gray-300" oninput="validateDocumento(this)">
-                        <p id="error-documento" class="text-sm text-red-500 hidden">
-                            Solo números, sin puntos
-                        </p>
-
-                    </div>
-
-                    <!-- NIT Empresa -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Empresa (NIT)</label>
-                        <select name="nit_empresa" class="mt-1 w-full rounded-lg border-gray-300" required>
-                            <option value="">Seleccionar empresa...</option>
-                            @foreach ($empresas as $empresa)
-                                <option value="{{ $empresa->nit_empresa }}">{{ $empresa->nit_empresa }} -
-                                    {{ $empresa->nomb_empresa ?? 'Sin nombre' }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <!-- Nombres -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Nombres</label>
-                        <input name="emple_nombres" id="nombres" type="text"
-                            class="mt-1 w-full rounded-lg border-gray-300" oninput="validateTexto(this, 'error-nombres')">
-                        <p id="error-nombres" class="text-sm text-red-500 hidden">
-                            Solo letras, primera letra en mayúscula
-                        </p>
-
-                    </div>
-
-                    <!-- Apellidos -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Apellidos</label>
-                        <input name="emple_apellidos" id="apellidos" type="text"
-                            class="mt-1 w-full rounded-lg border-gray-300"
-                            oninput="validateTexto(this, 'error-apellidos')">
-                        <p id="error-apellidos" class="text-sm text-red-500 hidden">
-                            Solo letras, primera letra en mayúscula
-                        </p>
-
-                    </div>
-
-                    <!-- Teléfono -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Teléfono</label>
-                        <input name="emple_tel" id="telefono" type="text"
-                            class="mt-1 w-full rounded-lg border-gray-300" oninput="validateTelefono(this)">
-                        <p id="error-telefono" class="text-sm text-red-500 hidden">
-                            Solo números, máximo 10 dígitos
-                        </p>
-
-                    </div>
-
-                    <!-- Correo -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Correo electrónico</label>
-                        <input name="emple_correo" id="correo" type="email"
-                            class="mt-1 w-full rounded-lg border-gray-300" oninput="validateCorreo(this)">
-                        <p id="error-correo" class="text-sm text-red-500 hidden">
-                            Correo electrónico inválido
-                        </p>
-
-                    </div>
-
-                    <!-- Password -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Contraseña</label>
-                        <input name="password" id="password" type="password"
-                            class="mt-1 w-full rounded-lg border-gray-300" oninput="validatePassword(this)">
-                        <p id="error-password" class="text-sm text-red-500 hidden">
-                            Mín 8 caracteres, 1 minúscula y 3 números
-                        </p>
-
-                    </div>
-
-                    <!-- Foto de perfil -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Foto de perfil</label>
-                        <input name="emple_img" type="file" class="mt-1 w-full rounded-lg border-gray-300">
-                    </div>
-
-                    <!-- Estado (automático) -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Estado</label>
-                        <select disabled class="mt-1 w-full rounded-lg border-gray-300 bg-gray-100">
-                            <option>Activo</option>
-                        </select>
-                    </div>
-                    <input type="hidden" name="emple_estado" value="1">
-                    <input type="hidden" name="emple_rol" value="2">
-
-
-                    <!-- Rol (automático) -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Rol</label>
-                        <select disabled class="mt-1 w-full rounded-lg border-gray-300 bg-gray-100">
-                            <option>Administrador Empresa</option>
-                        </select>
-                    </div>
-
-                </div>
-
-                <!-- Acciones -->
-                <div class="flex justify-end gap-3 pt-6 border-t">
-                    <button type="button" onclick="closeModal()"
-                        class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100">
-                        Cancelar
-                    </button>
-                    <button id="btnGuardar" type="submit" disabled
-                        class="px-6 py-2 rounded-lg bg-blue-600 text-white opacity-50 cursor-not-allowed">
-                        Registrar Usuario
-                    </button>
-
-                </div>
-
-            </form>
-        </div>
-    </div>
-
-    <!-- Scripts -->
-    <script>
-        /**
-         * ===== VALIDACIONES DEL FORMULARIO DE CREAR ADMIN =====
-         */
-        let valid = {
-            documento: false,
-            nombres: false,
-            apellidos: false,
-            telefono: false,
-            correo: false,
-            password: false
         };
 
-        // Validar Documento - Solo números
-        function validateDocumento(input, errorId = 'error-documento') {
-            input.value = input.value.replace(/\D/g, '');
-            valid.documento = input.value.length > 0;
+        function validarCampoEditar(id) {
 
-            // 🔒 Validar contra inyecciones
-            if (detectSQLInjection(input.value)) {
-                toggleError(errorId, true);
-                valid.documento = false;
-            } else {
-                toggleError(errorId, !valid.documento);
+            const input = document.getElementById(id);
+            const regla = reglasEditar[id];
+            const error = document.getElementById(regla.error);
+            const valor = input.value.trim();
+
+            input.classList.remove('border-red-500', 'border-green-500');
+            error.classList.add('hidden');
+
+            if (regla.required && valor === '') {
+                input.classList.add('border-red-500');
+                error.textContent = regla.mensajes.required;
+                error.classList.remove('hidden');
+                return false;
             }
-            checkForm();
-        }
 
-        // Validar texto - Letras + primera mayúscula
-        function validateTexto(input, errorId) {
-            input.value = input.value
-                .replace(/[^a-zA-Z\s]/g, '')
-                .replace(/\b\w/g, l => l.toUpperCase());
-
-            const isValid = /^[A-Z][a-zA-Z\s]*$/.test(input.value);
-
-            // 🔒 Validar contra XSS
-            if (detectXSSAttempt(input.value)) {
-                toggleError(errorId, true);
-                valid[input.id] = false;
-            } else {
-                valid[input.id] = isValid;
-                toggleError(errorId, !isValid);
+            if (regla.min && valor.length < regla.min) {
+                input.classList.add('border-red-500');
+                error.textContent = regla.mensajes.min;
+                error.classList.remove('hidden');
+                return false;
             }
-            checkForm();
-        }
 
-        // Validar Teléfono
-        function validateTelefono(input) {
-            input.value = input.value.replace(/\D/g, '').slice(0, 10);
-            valid.telefono = input.value.length === 10;
-            toggleError('error-telefono', !valid.telefono);
-            checkForm();
-        }
-
-        // Validar Correo
-        function validateCorreo(input) {
-            const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            valid.correo = regex.test(input.value);
-
-            // 🔒 Validar contra XSS
-            if (detectXSSAttempt(input.value)) {
-                toggleError('error-correo', true);
-                valid.correo = false;
-            } else {
-                toggleError('error-correo', !valid.correo);
+            if (regla.max && valor.length > regla.max) {
+                input.classList.add('border-red-500');
+                error.textContent = regla.mensajes.max;
+                error.classList.remove('hidden');
+                return false;
             }
-            checkForm();
-        }
 
-        // Validar Contraseña
-        function validatePassword(input) {
-            const numbers = input.value.replace(/\D/g, '').length;
-            const regex = /^(?=.*[a-z]).{8,}$/;
-
-            valid.password = regex.test(input.value) && numbers >= 3;
-            toggleError('error-password', !valid.password);
-            checkForm();
-        }
-
-        // Mostrar / ocultar errores
-        function toggleError(id, show) {
-            const element = document.getElementById(id);
-            if (element) {
-                element.classList.toggle('hidden', !show);
+            if (regla.custom && !regla.custom(valor)) {
+                input.classList.add('border-red-500');
+                error.textContent = regla.mensajes.custom;
+                error.classList.remove('hidden');
+                return false;
             }
+
+            if (regla.regex && !regla.regex.test(valor)) {
+                input.classList.add('border-red-500');
+                error.textContent = regla.mensajes.regex;
+                error.classList.remove('hidden');
+                return false;
+            }
+
+            input.classList.add('border-green-500');
+            return true;
         }
 
-        // Habilitar botón
-        function checkForm() {
-            const isValid = Object.values(valid).every(v => v === true);
-            const btn = document.getElementById('btnGuardar');
 
-            btn.disabled = !isValid;
-            btn.classList.toggle('opacity-50', !isValid);
-            btn.classList.toggle('cursor-not-allowed', !isValid);
-        }
+        Object.keys(reglasEditar).forEach(id => {
 
-        // 🔒 Prevenir pegado de contenido malicioso y asociar envío seguro cuando el DOM esté listo
-        document.addEventListener('DOMContentLoaded', function() {
-            const formInputs = document.querySelectorAll(
-                '#userForm input[type="text"], #userForm input[type="email"]');
+            const input = document.getElementById(id);
 
-            formInputs.forEach(input => {
-                input.addEventListener('paste', (e) => {
-                    const pastedText = e.clipboardData.getData('text');
+            if (!input) return; // ← protección
 
-                    if (detectXSSAttempt(pastedText) || detectSQLInjection(pastedText)) {
-                        e.preventDefault();
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Contenido no permitido',
-                            text: 'El contenido que intentas pegar contiene caracteres no válidos',
-                            timer: 2000
-                        });
-                        return false;
-                    }
-                });
+            input.addEventListener('input', () => {
+                validarCampoEditar(id);
             });
 
-            // 🔒 Validación al enviar formulario (adjuntar listener ahora que el formulario existe)
-            const userForm = document.getElementById('userForm');
-            if (userForm) {
-                userForm.addEventListener('submit', function(e) {
-                    // Rate limiting
-                    if (!canSubmitForm()) {
-                        e.preventDefault();
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Espera un momento',
-                            text: 'Por favor, espera antes de enviar nuevamente',
-                            timer: 1500
-                        });
-                        return;
-                    }
-
-                    // Recopilar datos
-                    const formData = {
-                        documento: document.getElementById('documento').value,
-                        nombres: document.getElementById('nombres').value,
-                        apellidos: document.getElementById('apellidos').value,
-                        correo: document.getElementById('correo').value
-                    };
-
-                    // Validar seguridad
-                    const securityCheck = validateSecurityThreats(formData);
-                    if (!securityCheck.valid) {
-                        e.preventDefault();
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Alerta de Seguridad',
-                            text: `Se detectó un intento de ${securityCheck.threat}. Campo: ${securityCheck.field}`,
-                            timer: 3000
-                        });
-                        return;
-                    }
-
-                    // Validar que todos los campos sean válidos
-                    if (!Object.values(valid).every(v => v === true)) {
-                        e.preventDefault();
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Errores de validación',
-                            text: 'Por favor, verifica los campos resaltados',
-                            timer: 2000
-                        });
-                    }
-                });
-            }
         });
 
-        // Funciones para abrir/cerrar modal de creación
-        function openModal() {
-            const overlay = document.getElementById('modalOverlay');
-            const modal = document.getElementById('userModal');
-            if (overlay) overlay.classList.remove('hidden');
-            if (modal) modal.classList.remove('hidden');
+        // Activar botón cuando cambian los selects
+        ['edit_nit', 'edit_estado'].forEach(id => {
+            const input = document.getElementById(id);
+            if (!input) return;
+
+            input.addEventListener('change', () => {});
+        });
+
+        function validarEditar() {
+
+            let todoValido = true;
+
+            Object.keys(reglasEditar).forEach(id => {
+                if (!validarCampoEditar(id)) {
+                    todoValido = false;
+                }
+            });
+
+            return todoValido;
         }
 
-        function closeModal() {
-            const overlay = document.getElementById('modalOverlay');
-            const modal = document.getElementById('userModal');
-            if (overlay) overlay.classList.add('hidden');
-            if (modal) modal.classList.add('hidden');
+        function huboCambios() {
+
+
+            const fotoInput = document.querySelector('#userModalEdit input[name="emple_img"]');
+
+            return (
+                originalEditData.documento !== document.getElementById('edit_documento').value.trim() ||
+                originalEditData.nombres !== document.getElementById('edit_nombres').value.trim() ||
+                originalEditData.apellidos !== document.getElementById('edit_apellidos').value.trim() ||
+                originalEditData.telefono !== document.getElementById('edit_telefono').value.trim() ||
+                originalEditData.correo !== document.getElementById('edit_correo').value.trim() ||
+                originalEditData.nit !== document.getElementById('edit_nit').value ||
+                originalEditData.estado !== document.getElementById('edit_estado').value ||
+                (fotoInput && fotoInput.files.length > 0)
+            );
         }
 
-        // Exponer openModal/closeModal globalmente
-        try {
-            window.openModal = openModal;
-            window.closeModal = closeModal;
-        } catch (e) {
-            console.warn('No se pudo exponer funciones openModal/closeModal', e);
-        }
-    </script>
-
-    @if (session()->has('success'))
-        <script>
-            Swal.fire({
-                icon: 'success',
-                title: '¡Éxito!',
-                text: "{{ session('success') }}",
-                confirmButtonColor: '#16a34a'
-            });
-        </script>
-    @endif
-
-    @if (session()->has('error'))
-        <script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: "{{ session('error') }}",
-                confirmButtonColor: '#dc2626'
-            });
-        </script>
-    @endif
-
-    @if (session()->has('warning'))
-        <script>
-            Swal.fire({
-                icon: 'warning',
-                title: 'Atención',
-                text: "{{ session('warning') }}",
-                confirmButtonColor: '#d97706'
-            });
-        </script>
-    @endif
-
-    @if (session()->has('info'))
-        <script>
-            Swal.fire({
-                icon: 'info',
-                title: 'Información',
-                text: "{{ session('info') }}",
-                confirmButtonColor: '#2563eb'
-            });
-        </script>
-    @endif
-
-
-
-
-    {{--  Formulario de editar usuarios --}}
-
-
-    <!-- Overlay -->
-    <div id="modalOverlayEdit" class="fixed inset-0 bg-black/40 hidden z-40"></div>
-
-    <!-- Modal -->
-    <div id="userModalEdit" class="fixed inset-0 flex items-center justify-center hidden z-50">
-        <div class="bg-white w-full max-w-3xl rounded-xl shadow-xl p-6 relative">
-
-            <!-- Header -->
-            <div class="flex justify-between items-center border-b pb-4 mb-6">
-                <h2 class="text-xl font-semibold text-gray-800">
-                    Editar Admin
-                </h2>
-                <button onclick="closeModalEdit()" class="text-gray-500 hover:text-gray-800">
-                    <span class="material-symbols-outlined">close</span>
-                </button>
-            </div>
-
-
-            <!-- Formulario -->
-            <form method="POST" action="" id="formEdit" enctype="multipart/form-data" class="space-y-6">
-                @csrf
-                @method('PUT')
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                    <!-- Documento -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Documento</label>
-                        <input name="emple_doc" id="edit_documento" class="mt-1 w-full rounded-lg border-gray-300"
-                            oninput="validateDocumento(this, 'edit-error-documento')">
-                        <p id="edit-error-documento" class="text-sm text-red-500 hidden">
-                            Solo números, sin puntos
-                        </p>
-
-                    </div>
-
-                    <!-- NIT Empresa -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Empresa (NIT)</label>
-                        <select name="nit_empresa" id="edit_nit" class="mt-1 w-full rounded-lg border-gray-300"
-                            required>
-                            <option value="">Seleccionar empresa...</option>
-                            @foreach ($empresas as $empresa)
-                                <option value="{{ $empresa->nit_empresa }}">{{ $empresa->nit_empresa }} -
-                                    {{ $empresa->nomb_empresa ?? 'Sin nombre' }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <!-- Nombres -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Nombres</label>
-                        <input name="emple_nombres" id="edit_nombres" type="text"
-                            class="mt-1 w-full rounded-lg border-gray-300"
-                            oninput="validateTextoEdit(this, 'edit-error-nombres')">
-                        <p id="edit-error-nombres" class="text-sm text-red-500 hidden">
-                            Solo letras, primera letra en mayúscula
-                        </p>
-
-                    </div>
-
-                    <!-- Apellidos -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Apellidos</label>
-                        <input name="emple_apellidos" id="edit_apellidos" type="text"
-                            class="mt-1 w-full rounded-lg border-gray-300"
-                            oninput="validateTextoEdit(this, 'edit-error-apellidos')">
-                        <p id="edit-error-apellidos" class="text-sm text-red-500 hidden">
-                            Solo letras, primera letra en mayúscula
-                        </p>
-
-                    </div>
-
-                    <!-- Teléfono -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Teléfono</label>
-                        <input name="emple_tel" id="edit_telefono" type="text"
-                            class="mt-1 w-full rounded-lg border-gray-300" oninput="validateTelefonoEdit(this)">
-                        <p id="edit-error-telefono" class="text-sm text-red-500 hidden">
-                            Solo números, máximo 10 dígitos
-                        </p>
-
-                    </div>
-
-                    <!-- Correo -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Correo electrónico</label>
-                        <input name="emple_correo" id="edit_correo" type="email"
-                            class="mt-1 w-full rounded-lg border-gray-300" oninput="validateCorreoEdit(this)">
-                        <p id="edit-error-correo" class="text-sm text-red-500 hidden">
-                            Correo electrónico inválido
-                        </p>
-
-                    </div>
-
-                    <!-- Password (OPCIONAL) -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Contraseña (Opcional)</label>
-                        <input name="password" id="edit_password" type="password"
-                            class="mt-1 w-full rounded-lg border-gray-300">
-                        <p class="text-xs text-gray-500 mt-1">
-                            Déjalo en blanco para mantener la contraseña actual
-                        </p>
-
-                    </div>
-
-                    <!-- Foto de perfil -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Foto de perfil</label>
-                        <input name="emple_img" type="file" class="mt-1 w-full rounded-lg border-gray-300">
-                    </div>
-
-                    <!-- Estado -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Estado</label>
-                        <select name="emple_estado" id="edit_estado" class="mt-1 w-full rounded-lg border-gray-300"
-                            onchange="validateEstadoEdit(this)">
-                            <option value="">Seleccionar estado...</option>
-                            @foreach ($estados as $estado)
-                                <option value="{{ $estado->id_estado }}">
-                                    {{ $estado->estado_nomb }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <!-- Rol (automático) -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Rol</label>
-                        <select disabled class="mt-1 w-full rounded-lg border-gray-300 bg-gray-100">
-                            <option>Administrador Empresa</option>
-                        </select>
-                    </div>
-
-                </div>
-
-                <!-- Acciones -->
-                <div class="flex justify-end gap-3 pt-6 border-t">
-                    <button type="button" onclick="closeModalEdit()"
-                        class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100">
-                        Cancelar
-                    </button>
-                    <button id="btnGuardarEdit" type="submit"
-                        class="px-6 py-2 rounded-lg bg-blue-600 text-white opacity-50 cursor-not-allowed">
-                        Actualizar Usuario
-                    </button>
-
-                </div>
-
-            </form>
-        </div>
-    </div>
-
-    @if (session()->has('success'))
-        <script>
-            Swal.fire({
-                icon: 'success',
-                title: '¡Éxito!',
-                text: "{{ session('success') }}",
-                confirmButtonColor: '#16a34a'
-            });
-        </script>
-    @endif
-
-    @if (session()->has('error'))
-        <script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: "{{ session('error') }}",
-                confirmButtonColor: '#dc2626'
-            });
-        </script>
-    @endif
-
-    @if (session()->has('warning'))
-        <script>
-            Swal.fire({
-                icon: 'warning',
-                title: 'Atención',
-                text: "{{ session('warning') }}",
-                confirmButtonColor: '#d97706'
-            });
-        </script>
-    @endif
-
-    @if (session()->has('info'))
-        <script>
-            Swal.fire({
-                icon: 'info',
-                title: 'Información',
-                text: "{{ session('info') }}",
-                confirmButtonColor: '#2563eb'
-            });
-        </script>
-    @endif
-
-
-
-
-
-
-    {{-- Mostrar perfil --}}
-    <!-- Overlay -->
-    <div id="modalOverlayProfile" class="fixed inset-0 bg-black/40 hidden z-40"></div>
-
-    <!-- Modal Perfil -->
-    <div id="userModalProfile" class="fixed inset-0 flex items-center justify-center hidden z-50">
-        <div class="bg-white w-full max-w-4xl rounded-xl shadow-xl p-6 relative">
-
-            <!-- Header -->
-            <div class="flex justify-between items-center border-b pb-4 mb-6">
-                <h2 class="text-xl font-semibold text-gray-800">
-                    Perfil del Usuario
-                </h2>
-                <button onclick="closeModalProfile()" class="text-gray-500 hover:text-gray-800">
-                    <span class="material-symbols-outlined">close</span>
-                </button>
-            </div>
-
-            <!-- Contenido -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-                <!-- Foto de perfil -->
-                <div class="flex flex-col items-center gap-4">
-                    <img id="profile_foto" src="/img/default-user.png"
-                        class="w-40 h-40 rounded-full object-cover border shadow" alt="Foto de perfil">
-
-                    <span class="text-sm text-gray-500">Foto de perfil</span>
-                </div>
-
-
-                <!-- Datos -->
-                <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                    <!-- Documento -->
-                    <div>
-                        <label class="text-sm text-gray-500">Documento</label>
-                        <p id="profile_documento" class="font-medium text-gray-800"></p>
-                    </div>
-
-                    <!-- Estado -->
-                    <div>
-                        <label class="text-sm text-gray-500">Estado</label>
-                        <p id="profile_estado" class="font-medium text-gray-800"></p>
-                    </div>
-
-                    <!-- NIT Empresa -->
-                    <div>
-                        <label class="text-sm text-gray-500">NIT Empresa</label>
-                        <p id="profile_nit" class="font-medium text-gray-800"></p>
-                    </div>
-
-                    <!-- Nombre Empresa -->
-                    <div>
-                        <label class="text-sm text-gray-500">Empresa</label>
-                        <p id="profile_empresa" class="font-medium text-gray-800"></p>
-                    </div>
-
-                    <!-- Nombres -->
-                    <div>
-                        <label class="text-sm text-gray-500">Nombres</label>
-                        <p id="profile_nombres" class="font-medium text-gray-800"></p>
-                    </div>
-
-                    <!-- Apellidos -->
-                    <div>
-                        <label class="text-sm text-gray-500">Apellidos</label>
-                        <p id="profile_apellidos" class="font-medium text-gray-800"></p>
-                    </div>
-
-                    <!-- Teléfono -->
-                    <div>
-                        <label class="text-sm text-gray-500">Teléfono</label>
-                        <p id="profile_telefono" class="font-medium text-gray-800"></p>
-                    </div>
-
-                    <!-- Correo -->
-                    <div>
-                        <label class="text-sm text-gray-500">Correo</label>
-                        <p id="profile_correo" class="font-medium text-gray-800"></p>
-                    </div>
-
-                    <!-- Rol -->
-                    <div>
-                        <label class="text-sm text-gray-500">Rol</label>
-                        <p id="profile_rol" class="font-medium text-gray-800"></p>
-                    </div>
-
-                    <!-- Área -->
-                    <div>
-                        <label class="text-sm text-gray-500">Área</label>
-                        <p id="profile_area" class="font-medium text-gray-800"></p>
-                    </div>
-
-
-
-                </div>
-            </div>
-
-            <!-- Footer -->
-            <div class="flex justify-end pt-6 border-t mt-6">
-                <button onclick="closeModalProfile()"
-                    class="px-6 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100">
-                    Cerrar
-                </button>
-            </div>
-
-        </div>
-    </div>
-    <script>
-        function openModalProfile(btn) {
-            // 🔒 Sanitizar todos los datos antes de mostrar
-            const sanitizedData = {
-                documento: sanitizeString(btn.dataset.documento || ''),
-                nit: sanitizeString(btn.dataset.nit || ''),
-                empresa: sanitizeString(btn.dataset.empresa || ''),
-                nombres: sanitizeString(btn.dataset.nombres || ''),
-                apellidos: sanitizeString(btn.dataset.apellidos || ''),
-                telefono: sanitizeString(btn.dataset.telefono || ''),
-                correo: sanitizeString(btn.dataset.correo || ''),
-                estado: sanitizeString(btn.dataset.estado || ''),
-                rol: sanitizeString(btn.dataset.rol || ''),
-                area: sanitizeString(btn.dataset.area || ''),
-                foto: sanitizeString(btn.dataset.foto || '')
-            };
-
-            // Mostrar datos sanitizados
-            document.getElementById('profile_documento').textContent = sanitizedData.documento;
-            document.getElementById('profile_nit').textContent = sanitizedData.nit;
-            document.getElementById('profile_empresa').textContent = sanitizedData.empresa;
-            document.getElementById('profile_nombres').textContent = sanitizedData.nombres;
-            document.getElementById('profile_apellidos').textContent = sanitizedData.apellidos;
-            document.getElementById('profile_telefono').textContent = sanitizedData.telefono;
-            document.getElementById('profile_correo').textContent = sanitizedData.correo;
-            document.getElementById('profile_estado').textContent = sanitizedData.estado;
-            document.getElementById('profile_rol').textContent = sanitizedData.rol;
-            document.getElementById('profile_area').textContent = sanitizedData.area;
-
-            // Foto
-            document.getElementById('profile_foto').src =
-                sanitizedData.foto && sanitizedData.foto !== '' ?
-                sanitizedData.foto :
-                '/img/default-user.png';
-
-            // Mostrar modal
-            document.getElementById('modalOverlayProfile').classList.remove('hidden');
-            document.getElementById('userModalProfile').classList.remove('hidden');
+        window.openExportModal = function() {
+            document.getElementById('exportModal').classList.remove('hidden');
         }
 
-        function closeModalProfile() {
-            document.getElementById('modalOverlayProfile').classList.add('hidden');
-            document.getElementById('userModalProfile').classList.add('hidden');
+        window.closeExportModal = function() {
+            document.getElementById('exportModal').classList.add('hidden');
         }
-    </script>
 
+    });
+</script>
 
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
 
+        $('#nit_empresa').select2({
+            placeholder: "Buscar por NIT o nombre...",
+            allowClear: true,
+            width: '100%',
+            dropdownParent: $('#userModal')
+        });
+
+        $('#edit_nit').select2({
+            placeholder: "Buscar por NIT o nombre...",
+            allowClear: true,
+            width: '100%',
+            dropdownParent: $('#userModalEdit')
+        });
+
+    });
+</script>
 @endsection

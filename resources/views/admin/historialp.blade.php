@@ -5,7 +5,7 @@
 @section('content')
 
 
-    <div class="p-8 max-w-7xl mx-auto w-full">
+    <div class="p-4 md:p-8 max-w-7xl mx-auto w-full">
 
         {{-- HEADER --}}
         <div class="flex flex-wrap justify-between items-end gap-3 mb-8">
@@ -49,8 +49,9 @@
                             <tr>
                                 <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">ID Pago</th>
                                 <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Plan</th>
-                                <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Monto</th>
+                                <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Pagado por</th>
                                 <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Fecha de Pago</th>
+                                <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Inicio de licencia</th>
                                 <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Estado</th>
                                 <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Comprobante</th>
                             </tr>
@@ -72,10 +73,15 @@
                                         {{ $pago->plan->nomb_plan }}
                                     </td>
 
-                                    {{-- MONTO --}}
-                                    <td class="px-6 py-4 text-sm font-bold">
-                                        {{ number_format($pago->monto, 2) }}
+                                    <td class="px-6 py-4 text-sm">
+                                        <div class="flex flex-col">
+                                            <span class="font-semibold">{{ $pago->admin?->emple_nombres }}
+                                                {{ $pago->admin?->emple_apellidos }}</span>
+                                            <span class="text-xs text-gray-500">{{ $pago->admin?->emple_correo }}</span>
+                                        </div>
                                     </td>
+
+
 
                                     {{-- FECHA --}}
                                     <td class="px-6 py-4 text-sm">
@@ -87,6 +93,10 @@
                                                 {{ \Carbon\Carbon::parse($pago->fecha_pago)->format('H:i:s') }}
                                             </span>
                                         </div>
+                                    </td>
+
+                                    <td class="px-6 py-4 text-sm">
+                                        {{ $pago->fecha_inicio ? \Carbon\Carbon::parse($pago->fecha_inicio)->format('Y-m-d') : '—' }}
                                     </td>
 
                                     <td class="px-6 py-4 text-sm font-bold">
@@ -110,6 +120,9 @@
                         </tbody>
 
                     </table>
+                </div>
+                <div class="flex gap-1">
+                    {{ $pagos->links('') }}
                 </div>
             </div>
         </div>

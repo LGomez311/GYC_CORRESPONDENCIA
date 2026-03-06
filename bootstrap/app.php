@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // 👇 REGISTRAR TU MIDDLEWARE AQUÍ
         $middleware->alias([
             'licencia.activa' => \App\Http\Middleware\LicenciaActiva::class,
+            'role' => \App\Http\Middleware\CheckRole::class,
         ]);
 
     })

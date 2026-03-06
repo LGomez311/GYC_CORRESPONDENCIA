@@ -5,7 +5,7 @@
 
 @section('content')
 
-<div class="p-8 space-y-8">
+<div class="p-4 md:p-8 space-y-8">
 
     {{-- License Info Card --}}
     <section>

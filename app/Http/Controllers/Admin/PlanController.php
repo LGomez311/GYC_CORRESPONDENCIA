@@ -32,5 +32,4 @@ class PlanController extends Controller
         return Excel::download(new PlanesExport, 'planes_sistema.xlsx');
     }
 
-
 }

@@ -55,11 +55,12 @@
 <body class="font-display">
 
     {{-- ======= BANNER LICENCIA ======= --}}
-    @if (!empty($licenciaBloqueada))
+    {{-- Banner superior para licencia bloqueada --}}
+    @if ($licenciaBloqueada)
         <div class="fixed top-0 left-0 right-0 z-50 bg-red-600 text-white">
             <div class="flex items-center justify-between px-6 py-2 text-sm">
                 <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined fill text-white text-base">
+                    <span class="material-symbols-outlined text-white text-base">
                         warning
                     </span>
                     <span>
@@ -72,13 +73,11 @@
 
 
     {{-- ======= LAYOUT PRINCIPAL ======= --}}
-    <div class="flex h-screen w-full bg-background-light dark:bg-background-dark overflow-hidden
-        @if (!empty($licenciaBloqueada)) pt-10 @endif">
+    <div class="flex h-screen w-full bg-background-light dark:bg-background-dark overflow-hidden">
+        {{-- @if ($licenciaBloqueada) pt-10 @endif"> --}}
 
         {{-- Overlay móvil --}}
-        <div id="sidebarOverlay"
-            class="fixed inset-0 bg-black/40 z-40 hidden md:hidden"
-            onclick="toggleSidebar()">
+        <div id="sidebarOverlay" class="fixed inset-0 bg-black/40 z-40 hidden md:hidden" onclick="toggleSidebar()">
         </div>
 
         {{-- Sidebar --}}
@@ -101,7 +100,7 @@
             </div>
 
             {{-- Contenido --}}
-            <main class="flex-1 overflow-y-auto p-6 md:p-8">
+            <main class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
                 @yield('content')
             </main>
 
@@ -171,4 +170,5 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 </body>
+
 </html>

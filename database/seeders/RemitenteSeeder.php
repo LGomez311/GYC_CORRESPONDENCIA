@@ -12,12 +12,12 @@ class RemitenteSeeder extends Seeder
     {
         DB::table('remitente')->insert([
             [
-                'rem_doc' => 1004,
-                'nit_empresa' => '3241234', // ya existe en empresa
+                'rem_doc' => 1234567889,
+                'nit_empresa' => '5444444444', // ya existe en empresa
                 'rem_nombres' => 'Kevin',
                 'rem_apellidos' => 'Daniel',
-                'rem_correo' => 'kevin.daniel@gmail.com',
-                'password' => Hash::make('1234'),
+                'rem_correo' => 'kevin.dadaniel@gmail.com',
+                'password' => Hash::make('Yuber1234!'),
                 'rem_tel' => '3001234567',
                 'rem_ciudad' => '11001', // Bogotá
                 'rem_estado' => 1 // 1 = Activo según tu tabla estado

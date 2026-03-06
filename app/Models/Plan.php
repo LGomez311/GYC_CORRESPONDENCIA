@@ -10,15 +10,18 @@ class Plan extends Model
     protected $table = 'plan';
     protected $primaryKey = 'id_plan';
 
-    public $timestamps = false; // no tiene created at or updated at
+    public $timestamps = false; 
 
     protected $fillable = [
         'nomb_plan',
         'valor',
-        'descripcion',
         'duracion',
+        'descripcion',
+        'es_destacado',
     ];
+
     protected $casts = [
-        'descripcion' => 'array',
+        'descripcion' => 'array',  
+        'es_destacado' => 'boolean',
     ];
 }

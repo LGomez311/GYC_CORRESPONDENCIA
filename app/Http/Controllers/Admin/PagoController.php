@@ -19,7 +19,12 @@ class PagoController extends Controller
 
     public function historial()
     {
-        $pagos = Pago::all();
+        $admin = Auth::user();
+
+        $pagos = Pago::with(['plan', 'estado', 'admin'])
+            ->where('id_admin', $admin->emple_doc)
+            ->orderBy('fecha_pago', 'desc')
+            ->paginate(4);
 
         return view('admin.historialp', compact('pagos'));
     }
@@ -57,7 +62,7 @@ class PagoController extends Controller
         ]);
 
         return redirect()
-            ->route('admin.home')
+            ->route('admin.historialp')
             ->with('success', 'Pago notificado correctamente. En espera de aprobación.');
     }
 }

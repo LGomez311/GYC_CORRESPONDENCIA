@@ -48,9 +48,19 @@ class Empleado extends Authenticatable
     /**
      * Relaciones
      */
+    public function estado()
+    {
+        return $this->belongsTo(Estado::class, 'emple_estado', 'id_estado');
+    }
+
     public function rol()
     {
         return $this->belongsTo(Rol::class, 'emple_rol', 'id_rol');
+    }
+
+    public function empresa()
+    {
+        return $this->belongsTo(Empresa::class, 'nit_empresa');
     }
 
     public function area()
@@ -58,16 +68,6 @@ class Empleado extends Authenticatable
         return $this->belongsTo(Area::class, 'emple_area', 'id_area');
     }
 
-    public function estado()
-    {
-        return $this->belongsTo(Estado::class, 'emple_estado', 'id_estado');
-    }
-
-    public function empresa()
-    {
-        return $this->belongsTo(Empresa::class, 'nit_empresa');
-    }
-    
 
     public $timestamps = false;
 
@@ -79,7 +79,6 @@ class Empleado extends Authenticatable
             'emple_doc'   // PK en empleado
         );
     }
-
     public function enviosEnviados()
     {
         return $this->hasMany(
@@ -97,5 +96,4 @@ class Empleado extends Authenticatable
             'emple_doc'            // PK en empleado
         );
     }
-    
 }

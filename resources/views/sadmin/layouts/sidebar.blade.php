@@ -23,8 +23,8 @@
     }
 </script>
 
-<aside
-    class="w-64 flex-shrink-0 border-r border-[#cfd7e7] dark:border-gray-800 bg-white dark:bg-[#161d2b] flex flex-col">
+<aside id="sidebar"
+    class="fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-[#161d2b] border-r border-[#cfd7e7] dark:border-gray-800 transform -translate-x-full transition-transform duration-300 ease-in-out md:relative md:translate-x-0 flex flex-col">
 
     <div class="p-6 flex items-center gap-3">
         <div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
@@ -48,7 +48,7 @@
                     ? 'bg-primary/10 text-primary'
                     : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
                 <span class="material-symbols-outlined">dashboard</span>
-                <p class="text-sm font-medium">Resumen</p>
+                <p class="text-sm font-medium">Inicio</p>
             </a>
 
             <!-- Empresas -->
@@ -101,7 +101,9 @@
                 <p class="text-sm font-medium leading-normal">Licencias</p>
             </a>
 
-            <!-- Configuración -->
+
+            <!-- Configuración
+             
             <a href="#"
                 class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
                 {{ request()->routeIs('configuracion*')
@@ -110,6 +112,7 @@
                 <span class="material-symbols-outlined">settings</span>
                 <p class="text-sm font-medium">Configuración</p>
             </a>
+            -->
 
         </div>
     </nav>
@@ -117,7 +120,7 @@
     <div class="p-4 border-t border-[#cfd7e7] dark:border-gray-800">
         <div class="flex items-center gap-3 px-2">
             <div class="size-10 rounded-full bg-cover bg-center border-2 border-primary/20"
-                style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDJcGRY-BUZTWEM5ibdEl0CAPx6S68HRHNI75XLKXGYO_z1Yd7z2gBTZpw0ZjxccQMZRPFckRBrh-k7UE4xhSIaLL0haUdYWhwJV-R6N0qYwl3sPmvAFlE9FWn1Q5cnjIBQhPIHL_W1uUjO8qxMuQot0PIQwxRKisYbuWi7hiavy--o7Mj7AxnATmf44PtXGyJwvy_d7zhcMujMnynV0amQBSz0Zd2oZuguH4G1yeeA5wQUDqNieSzOs_pwq9oJk6WCOwYWzncf6FA");'>
+                style='background-image: url("{{ auth()->user()->emple_img ? asset(auth()->user()->emple_img) : asset('images/default-avatar.png') }}");'>
             </div>
             <div class="overflow-hidden">
                 <p class="text-sm font-bold truncate dark:text-white">
@@ -130,7 +133,7 @@
         </div>
     </div>
     <div class="p-4 border-t border-[#cfd7e7] dark:border-gray-800">
-    <!-- Botón Cerrar Sesión -->
+        <!-- Botón Cerrar Sesión -->
         <form method="POST" action="{{ route('logout') }}">
             @csrf
             <button type="submit"

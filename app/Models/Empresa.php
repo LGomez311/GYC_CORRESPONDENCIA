@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Plan;
+use App\Models\Empleado;
 
 
 class Empresa extends Model
@@ -21,20 +22,17 @@ class Empresa extends Model
     protected $fillable = [
         'nit_empresa',
         'nomb_empresa',
-        'id_representante',
         'direccion',
         'contacto',
-        'empresa_correo'
+        'empresa_correo',
+        'doc_representante',
+        'nomb_representante'
     ];
 
-    public function representante()
+    // relacion de empleados con la empresa
+    public function empleados()
     {
-        return $this->belongsTo(
-            Empleado::class,
-            'id_representante',
-            'emple_doc'
-        );
+        return $this->hasMany(Empleado::class, 'nit_empresa', 'nit_empresa');
     }
-    }
+}
 
-    

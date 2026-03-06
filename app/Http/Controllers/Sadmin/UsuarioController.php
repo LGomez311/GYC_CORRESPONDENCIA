@@ -3,161 +3,322 @@
 namespace App\Http\Controllers\Sadmin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Empleado;
-use App\Models\Empresa;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
+use App\Models\Empleado;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
-use App\Models\Estado;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\AdminsExport;
-use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Str;
 
 class UsuarioController extends Controller
 {
     public function index()
     {
-        $users = Empleado::with(['rol'])
+        $users = Empleado::with(['empresa', 'estado', 'rol'])
             ->where('emple_rol', 2)
-            ->orderBy('emple_nombres')
-            ->paginate(1);
+            ->whereHas('empresa')
+            ->paginate(10);
 
-        $estados = Estado::all();
-        $empresas = Empresa::all();
 
-        return view('sadmin.admins', compact('users', 'estados', 'empresas'));
+        $empresas = \App\Models\Empresa::all();
+        $estados = \App\Models\Estado::all();
+        $estadoActivo = \App\Models\Estado::where('estado_nomb', 'Activo')->first();
+
+        return view('sadmin.admins', compact('users', 'empresas', 'estados', 'estadoActivo'));
     }
-
 
     public function store(Request $request)
     {
         $request->validate([
-            'emple_doc'       => 'required|string|max:50|unique:empleado,emple_doc',
-            'emple_nombres'   => 'required|string|max:100',
-            'emple_apellidos' => 'required|string|max:100',
-            'emple_tel'       => 'required|digits:10',
-            'emple_correo'    => 'required|email|max:150|unique:empleado,emple_correo',
-            'password'        => ['required','string','min:8','regex:/^(?=(.*\\d){3,})(?=.*[a-z]).{8,}$/'],
-            'emple_img'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'nit_empresa'     => 'required|exists:empresa,nit_empresa',
-            'emple_estado'    => 'required|exists:estado,id_estado',
-            'emple_rol'       => 'required|integer',
-            'emple_area'      => 'nullable|integer',
+
+            'emple_doc' => [
+                'required',
+                'numeric',
+                'digits_between:6,10',
+                'regex:/^[0-9]+$/',
+                'unique:empleado,emple_doc',
+                function ($attribute, $value, $fail) {
+                    if (preg_match('/^(\d)\1+$/', $value)) {
+                        $fail('No se permiten números repetidos como 000000 o 111111.');
+                    }
+                }
+            ],
+
+            'nit_empresa' => 'required|exists:empresa,nit_empresa',
+
+            'emple_nombres' => [
+                'required',
+                'string',
+                'max:50',
+                'regex:/^[A-Za-zÁÉÍÓÚáéíóúñÑ\' ]+$/'
+            ],
+
+            'emple_apellidos' => [
+                'required',
+                'string',
+                'max:50',
+                'regex:/^[A-Za-zÁÉÍÓÚáéíóúñÑ\' ]+$/'
+            ],
+
+            'emple_tel' => [
+                'nullable',
+                'digits_between:7,12',
+                'regex:/^[0-9]+$/'
+            ],
+
+            'emple_correo' => [
+                'required',
+                'email',
+                'min:8',
+                'max:150',
+                'unique:empleado,emple_correo',
+                'regex:/^\S+$/'
+            ],
+
+            'password' => [
+                'required',
+                'string',
+                'max:64', // opcional, para limitar la longitud
+                Password::min(10)       // mínimo 10 caracteres
+                    ->letters()         // al menos una letra
+                    ->mixedCase()       // mayúscula y minúscula
+                    ->numbers()         // al menos un número
+                    ->symbols()         // al menos un símbolo
+                    ->uncompromised()   // revisa si la contraseña ha sido expuesta en filtraciones
+            ],
+
+            'emple_img' => [
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:1024'
+            ],
+
         ], [
-            'emple_doc.required' => 'El documento es obligatorio',
-            'emple_doc.unique' => 'Ya existe un usuario con este documento',
-            'emple_correo.unique' => 'El correo ya está registrado',
-            'nit_empresa.exists' => 'La empresa seleccionada no existe',
-            'emple_estado.exists' => 'El estado seleccionado no es válido',
-            'password.regex' => 'La contraseña debe tener al menos 8 caracteres, 1 letra minúscula y 3 números',
+
+            // DOCUMENTO
+            'emple_doc.required' => '• El documento es obligatorio.',
+            'emple_doc.numeric' => '• El documento solo puede contener números.',
+            'emple_doc.digits_between' => '• El documento debe tener entre 6 y 10 dígitos.',
+            'emple_doc.unique' => '• Este documento ya está registrado en el sistema.',
+            'emple_doc.regex' => '• El documento solo puede contener números.',
+
+            // EMPRESA
+            'nit_empresa.required' => '• Debe seleccionar una empresa.',
+            'nit_empresa.exists' => '• La empresa seleccionada no es válida.',
+
+            // NOMBRES
+            'emple_nombres.required' => '• El nombre es obligatorio.',
+            'emple_nombres.regex' => '• El nombre solo puede contener letras.',
+            'emple_nombres.max' => '• El nombre no puede superar los 50 caracteres.',
+
+            // APELLIDOS
+            'emple_apellidos.required' => '• El apellido es obligatorio.',
+            'emple_apellidos.regex' => '• El apellido solo puede contener letras.',
+            'emple_apellidos.max' => '• El apellido no puede superar los 50 caracteres.',
+
+            // TELÉFONO
+            'emple_tel.digits_between' => '• El teléfono debe tener entre 7 y 12 dígitos.',
+            'emple_tel.regex' => '• El teléfono solo puede contener números.',
+
+            // CORREO
+            'emple_correo.required' => '• El correo electrónico es obligatorio.',
+            'emple_correo.email' => '• El correo no tiene un formato válido.',
+            'emple_correo.unique' => '• Este correo ya está registrado en el sistema.',
+            'emple_correo.regex' => '• El correo no puede contener espacios.',
+
+            // PASSWORD
+            'password.required' => '• La contraseña es obligatoria.',
+            'password.min' => '• La contraseña debe tener mínimo 10 caracteres.',
+            'password' => '• La contraseña debe incluir mayúscula, minúscula, número y símbolo.',
+            'password.max' => '• La contraseña no puede superar los 64 caracteres.',
+
+            // IMAGEN
+            'emple_img.image' => '• El archivo debe ser una imagen válida.',
+            'emple_img.mimes' => '• La imagen debe ser jpg, jpeg, png o webp.',
+            'emple_img.max' => '• La imagen no puede pesar más de 1MB.'
+
+        ], [
+
+            // Nombres amigables
+            'emple_doc' => 'documento',
+            'emple_nombres' => 'nombre',
+            'emple_apellidos' => 'apellido',
+            'emple_correo' => 'correo electrónico',
+            'emple_tel' => 'teléfono',
+            'password' => 'contraseña',
         ]);
 
-        $rutaImagen = null;
+        $empleado = new Empleado();
+        $empleado->emple_doc = $request->emple_doc;
+        $empleado->nit_empresa = $request->nit_empresa;
+        $empleado->emple_nombres = Str::title($request->emple_nombres);
+        $empleado->emple_apellidos = Str::title($request->emple_apellidos);
+        $empleado->emple_tel = $request->emple_tel;
+        $empleado->emple_correo = $request->emple_correo;
+        $empleado->emple_estado = $request->emple_estado ?? 1;
+        $empleado->emple_rol = 2;
+        $empleado->password = Hash::make($request->password);
 
+        // Manejo de imagen
         if ($request->hasFile('emple_img')) {
-            $rutaImagen = $request->file('emple_img')
-                ->store('empleado', 'public');
+
+            $image = $request->file('emple_img');
+            $filename = time() . '.' . $image->getClientOriginalExtension();
+            $path = storage_path('app/public/' . $filename);
+
+            $manager = new ImageManager(new Driver());
+            $img = $manager->read($image->getRealPath());
+            $img->cover(256, 256)->save($path);
+
+            $empleado->emple_img = $filename;
         }
 
-        Empleado::create([
-            'emple_doc'       => $request->emple_doc,
-            'nit_empresa'     => $request->nit_empresa,
-            'password'        => Hash::make($request->password),
-            'emple_nombres'   => $request->emple_nombres,
-            'emple_apellidos' => $request->emple_apellidos,
-            'emple_tel'       => $request->emple_tel,
-            'emple_correo'    => $request->emple_correo,
-            'emple_img'       => $rutaImagen,
-            'emple_estado'    => $request->emple_estado,
-            'emple_rol'       => $request->emple_rol,
-            'emple_area'      => $request->emple_area,
-        ]);
+        $empleado->save();
 
-        return redirect()->back()->with('success', 'Usuario registrado correctamente');
+        return redirect()->back()->with('success', 'Administrador creado correctamente');
     }
 
-    public function update(Request $request, $documento)
+    public function update(Request $request, $emple_doc)
     {
-        // 1. Validación primero
-        $request->validate([
-            'emple_nombres'   => 'required|string|max:100',
-            'emple_apellidos' => 'required|string|max:100',
-            'emple_tel'       => 'required|digits:10',
-            'emple_correo'    => 'required|email|unique:empleado,emple_correo,' . $documento . ',emple_doc',
-            'password'        => 'nullable|min:8',
-            'emple_img'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'emple_estado'    => 'required|exists:estado,id_estado',
-            'nit_empresa'     => 'required|exists:empresa,nit_empresa',
-        ]);
+        $empleado = Empleado::with(['estado', 'rol'])->findOrFail($emple_doc);
 
-        // 2. Buscar empleado
-        $empleado = Empleado::findOrFail($documento);
-
-        // 3. Datos a actualizar
-        $data = [
-            'emple_nombres'   => $request->emple_nombres,
-            'emple_apellidos' => $request->emple_apellidos,
-            'emple_tel'       => $request->emple_tel,
-            'emple_correo'    => $request->emple_correo,
-            'emple_estado'    => $request->emple_estado,
-            'nit_empresa'     => $request->nit_empresa,
-        ];
-
-        // 4. Solo actualizar password si viene en el request
-        if ($request->filled('password')) {
-            $data['password'] = Hash::make($request->password);
+        if ($request->emple_doc != $empleado->emple_doc) {
+            abort(403, 'No se permite modificar el documento.');
         }
 
-        // 5. Foto de perfil
-        if ($request->hasFile('emple_img')) {
+        if ($request->has('emple_rol')) {
+            abort(403, 'No se permite modificar el rol.');
+        }
 
-            // Eliminar foto anterior si existe
-            if ($empleado->emple_img && Storage::disk('public')->exists($empleado->emple_img)) {
+        $request->validate([
+
+            'nit_empresa' => 'required|exists:empresa,nit_empresa',
+
+            'emple_nombres' => [
+                'required',
+                'string',
+                'max:50',
+                'regex:/^[A-Za-zÁÉÍÓÚáéíóúñÑ\' ]+$/'
+            ],
+
+            'emple_apellidos' => [
+                'required',
+                'string',
+                'max:50',
+                'regex:/^[A-Za-zÁÉÍÓÚáéíóúñÑ\' ]+$/'
+            ],
+
+            'emple_tel' => [
+                'nullable',
+                'digits_between:7,12',
+                'regex:/^[0-9]+$/'
+            ],
+
+            'emple_correo' => [
+                'required',
+                'email',
+                'max:150',
+                Rule::unique('empleado', 'emple_correo')
+                    ->ignore($empleado->emple_doc, 'emple_doc'),
+            ],
+
+            'emple_estado' => 'required|exists:estado,id_estado',
+
+        ], [
+            // DOCUMENTO
+            'emple_doc.required' => '• El documento es obligatorio.',
+            'emple_doc.numeric' => '• El documento solo puede contener números.',
+            'emple_doc.digits_between' => '• El documento debe tener entre 6 y 10 dígitos.',
+            'emple_doc.unique' => '• Este documento ya está registrado en el sistema.',
+
+            // EMPRESA
+            'nit_empresa.required' => '• Debe seleccionar una empresa.',
+            'nit_empresa.exists' => '• La empresa seleccionada no es válida.',
+
+            // NOMBRES
+            'emple_nombres.required' => '• El nombre es obligatorio.',
+            'emple_nombres.regex' => '• El nombre solo puede contener letras.',
+            'emple_nombres.max' => '• El nombre no puede superar los 50 caracteres.',
+
+            // APELLIDOS
+            'emple_apellidos.required' => '• El apellido es obligatorio.',
+            'emple_apellidos.regex' => '• El apellido solo puede contener letras.',
+            'emple_apellidos.max' => '• El apellido no puede superar los 50 caracteres.',
+
+            // TELÉFONO
+            'emple_tel.digits_between' => '• El teléfono debe tener entre 7 y 12 dígitos.',
+            'emple_tel.regex' => '• El teléfono solo puede contener números.',
+
+            // CORREO
+            'emple_correo.required' => '• El correo electrónico es obligatorio.',
+            'emple_correo.email' => '• El correo no tiene un formato válido.',
+            'emple_correo.unique' => '• Este correo ya está registrado en el sistema.',
+
+            // ESTADO
+            'emple_estado.required' => '• Debe seleccionar un estado.',
+            'emple_estado.exists' => '• El estado seleccionado no es válido.',
+        ], [
+
+            // Nombres amigables
+            'emple_doc' => 'documento',
+            'emple_nombres' => 'nombre',
+            'emple_apellidos' => 'apellido',
+            'emple_correo' => 'correo electrónico',
+            'emple_tel' => 'teléfono',
+        ]);
+
+        $empleado->nit_empresa = $request->nit_empresa;
+        $empleado->emple_nombres = Str::title($request->emple_nombres);
+        $empleado->emple_apellidos = Str::title($request->emple_apellidos);
+        $empleado->emple_tel = $request->emple_tel;
+        $empleado->emple_correo = $request->emple_correo;
+        $empleado->emple_estado = $request->emple_estado;
+
+        // Manejo de imagen
+        if ($request->hasFile('emple_img')) {
+            // Borrar imagen anterior si existe
+            if ($empleado->emple_img) {
                 Storage::disk('public')->delete($empleado->emple_img);
             }
 
-            // Guardar nueva foto
-            $ruta = $request->file('emple_img')->store('empleado', 'public');
+            $image = $request->file('emple_img');
+            $filename = time() . '.' . $image->getClientOriginalExtension();
+            $path = storage_path('app/public/' . $filename);
 
-            $data['emple_img'] = $ruta;
+            $manager = new ImageManager(new Driver());
+            $img = $manager->read($image->getRealPath());
+            $img->cover(256, 256)->save($path);
+
+            $empleado->emple_img = $filename;
         }
 
-        // 6. Update
-        $empleado->update($data);
+        $empleado->save();
 
-        return redirect()->back()->with('success', 'Usuario actualizado correctamente');
+        return redirect()->back()->with('success', 'Administrador actualizado correctamente');
     }
-
-    public function destroy($emple_doc)
-    {
-        $user = Empleado::findOrFail($emple_doc);
-
-        // Eliminar imagen si existe
-        if ($user->emple_img && Storage::disk('public')->exists($user->emple_img)) {
-            Storage::disk('public')->delete($user->emple_img);
-        }
-
-        $user->delete();
-
-        return redirect()->back()->with('success', 'Usuario eliminado correctamente');
-    }
-
-
-
-    public function exportExcel()
-    {
-        return Excel::download(new AdminsExport, 'admins_empresas.xlsx');
-    }
-
 
     public function exportPdf()
     {
-        $admins = Empleado::with(['empresa', 'estado', 'rol', 'area'])
-            ->where('emple_rol', 2) // solo admins empresa si quieres
+        $admins = Empleado::with(['empresa', 'estado', 'rol'])
+            ->where('emple_rol', 2)
+            ->whereHas('empresa')
             ->get();
 
-        $pdf = Pdf::loadView('sadmin.exports.admins_pdf', compact('admins'));
+        $pdf = Pdf::loadView('sadmin.pdf.admins_pdf', compact('admins'))
+            ->setPaper('A4', 'landscape');
 
-        return $pdf->download('admins_empresas.pdf');
+        return $pdf->download('administradores.pdf');
+    }
+
+    public function exportExcel()
+    {
+        return Excel::download(new AdminsExport, 'administradores.xlsx');
     }
 }

@@ -5,7 +5,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>GestionCorr - Gestión de Correspondencia Digital</title>
+    <title>IncolDev - Gestión de Correspondencia Digital</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800;900&amp;display=swap"
         rel="stylesheet" />
@@ -58,7 +58,7 @@
                 <div class="bg-primary text-white p-1.5 rounded-lg flex items-center justify-center">
                     <span class="material-symbols-outlined text-2xl">mail</span>
                 </div>
-                <h2 class="text-[#0d121b] text-xl font-extrabold tracking-tight">GYC Correspondencia</h2>
+                <h2 class="text-[#0d121b] text-xl font-extrabold tracking-tight">IncolDEV</h2>
             </div>
             <nav class="hidden md:flex items-center gap-10">
                 <a class="text-[#4c669a] hover:text-primary text-sm font-semibold transition-colors"
@@ -71,16 +71,18 @@
                     href="#">Soporte</a>
             </nav>
             <div class="flex items-center gap-3">
-                <a href="{{ route('login') }}">
+                {{-- <a href="">
                     <button
                         class="hidden sm:flex px-5 py-2.5 text-[#0d121b] hover:bg-gray-100 rounded-lg text-sm font-bold transition-all">
                         Iniciar sesión
                     </button>
+                </a> --}}
+                <a href="{{ route('login') }}">
+                    <button
+                        class="bg-primary hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg text-sm font-bold shadow-lg shadow-primary/20 transition-all">
+                        Iniciar sesión
+                    </button>
                 </a>
-                <button
-                    class="bg-primary hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg text-sm font-bold shadow-lg shadow-primary/20 transition-all">
-                    Empezar ahora
-                </button>
             </div>
         </div>
     </header>
@@ -102,14 +104,17 @@
                         sola plataforma segura, rápida y centralizada.
                     </p>
                     <div class="flex flex-col sm:flex-row gap-4">
-                        <button
-                            class="bg-primary hover:bg-blue-700 text-white px-8 py-4 rounded-xl text-base font-bold shadow-xl shadow-primary/30 flex items-center justify-center gap-2 transition-all">
-                            Empezar ahora <span class="material-symbols-outlined">arrow_forward</span>
-                        </button>
-                        <button
+                        <a href="#pricing">
+                            <button
+                                class="bg-primary hover:bg-blue-700 text-white px-8 py-4 rounded-xl text-base font-bold shadow-xl shadow-primary/30 flex items-center justify-center gap-2 transition-all">
+                                Empezar ahora
+                                <span class="material-symbols-outlined">arrow_forward</span>
+                            </button>
+                        </a>
+                        {{-- <button
                             class="bg-white border border-[#e7ebf3] hover:border-primary/30 text-[#0d121b] px-8 py-4 rounded-xl text-base font-bold flex items-center justify-center gap-2 transition-all">
                             Ver demo en vivo <span class="material-symbols-outlined">play_circle</span>
-                        </button>
+                        </button> --}}
                     </div>
                     {{-- <div class="flex items-center gap-6 pt-4 border-t border-[#e7ebf3]">
                         <div class="flex -space-x-3">
@@ -137,7 +142,7 @@
                         class="relative bg-white border border-[#e7ebf3] rounded-3xl shadow-2xl overflow-hidden aspect-[4/3] flex items-center justify-center">
                         <div class="w-full h-full bg-cover bg-center"
                             data-alt="Modern software dashboard preview interface"
-                            style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDJdAEO033LvNdWSE9fvgkhecTEXFhYQ4FeYHw10qWx_fdkeMADZN4G9doXXl_mCOnvVQV1Wp2z2wn977kPsnDkxVk78eScZ8_fuVWJq0XKpg5SmyH9yA8N3RumZzykpIG2aenaS4ulaBm2V2FKPFuj8vbyS_g-jrQjc-Upgj0cN1XqD1oLSYvgvrkKpdk6GHxYTGO7eYvuGMPQMzg_tKEx1G_k0xgW1KQMEyZuLuhik1iJT0GACrJPrt6cs1MleLwcdPFttS-t3Ok");'>
+                            style="background-image: url('{{ asset('storage/public/s.png') }}');">
                         </div>
                     </div>
                 </div>
@@ -147,7 +152,7 @@
         <section class="py-20 bg-white" id="how-it-works">
             <div class="max-w-[1280px] mx-auto px-6 md:px-20 text-center mb-16">
                 <h3 class="text-primary font-bold text-sm uppercase tracking-[0.2em] mb-4">Proceso Ágil</h3>
-                <h2 class="text-3xl md:text-4xl font-black text-[#0d121b]">¿Cómo empezar con GYC Correspondencia?</h2>
+                <h2 class="text-3xl md:text-4xl font-black text-[#0d121b]">¿Cómo empezar con IncolDEV?</h2>
             </div>
             <div class="max-w-[1280px] mx-auto px-6 md:px-20">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -281,9 +286,19 @@
 
                     @foreach ($planes as $plan)
                         <div
-                            class="flex flex-col justify-between h-full min-h-[440px]
-                rounded-2xl border border-[#cfd7e7]
-                bg-white p-6 shadow-sm hover:shadow-xl transition">
+                            class="flex flex-col h-full min-h-[380px] p-6 transition
+                                {{ $plan->es_destacado
+                                    ? 'relative scale-105 rounded-3xl border-2 border-primary bg-white shadow-2xl shadow-primary/10'
+                                    : 'rounded-2xl border border-[#cfd7e7] bg-white shadow-sm hover:shadow-xl' }}">
+
+                            @if ($plan->es_destacado)
+                                <div
+                                    class="absolute -top-4 left-1/2 -translate-x-1/2
+                                        bg-primary text-white text-[10px] font-black uppercase
+                                        tracking-widest px-4 py-1.5 rounded-full">
+                                    Más Popular
+                                </div>
+                            @endif
 
                             <!-- Info -->
                             <div>
@@ -292,7 +307,9 @@
                                 </h2>
 
                                 <div class="mb-4">
-                                    <span class="block text-4xl font-black text-[#0d121b]">
+                                    <span
+                                        class="block text-4xl font-black
+    {{ $plan->es_destacado ? 'text-primary' : 'text-[#0d121b]' }}">
                                         ${{ number_format($plan->valor, 0, ',', '.') }}
                                     </span>
 
@@ -302,7 +319,7 @@
                                 </div>
 
                                 <!-- Beneficios -->
-                                <div class="flex flex-col gap-3 text-sm text-[#0d121b] min-h-[120px]">
+                                <div class="flex flex-col gap-3 text-sm text-[#0d121b]">
                                     @forelse ($plan->descripcion ?? [] as $beneficio)
                                         <div class="flex items-center gap-2">
                                             <span class="material-symbols-outlined text-primary text-base">
@@ -318,13 +335,31 @@
                                 </div>
                             </div>
 
+                            @php
+                                $mensaje =
+                                    "Hola 👋, estoy interesado en el plan {$plan->nomb_plan} de IncolDEV.
+💼 Precio: $" .
+                                    number_format($plan->valor, 0, ',', '.') .
+                                    "
+📅 Duración: " .
+                                    ($plan->duracion ? $plan->duracion . ' días' : 'Pago único') .
+                                    "
+¿Podrían asesorarme?";
+                                $whatsappUrl =
+                                    'https://wa.me/' .
+                                    config('services.whatsapp.number') .
+                                    '?text=' .
+                                    urlencode($mensaje);
+                            @endphp
+
                             <!-- Botón -->
-                            <a href="#" class="mt-6">
+                            <a href="{{ $whatsappUrl }}" target="_blank" class="mt-auto pt-4">
                                 <button
-                                    class="w-full h-11 rounded-xl bg-[#e7ebf3]
-                        text-[#0d121b] font-bold
-                        hover:bg-primary hover:text-white transition">
-                                    Seleccionar
+                                    class="w-full h-11 rounded-xl font-bold transition
+                                {{ $plan->es_destacado
+                                    ? 'bg-primary text-white hover:bg-blue-700 shadow-lg shadow-primary/30'
+                                    : 'bg-[#e7ebf3] text-[#0d121b] hover:bg-primary hover:text-white' }}">
+                                    Contactar asesor
                                 </button>
                             </a>
                         </div>
@@ -346,14 +381,31 @@
                     ¿Listo para digitalizar su <br class="hidden md:block" /> centro de correspondencia?
                 </h2>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center relative z-10">
-                    <button
-                        class="bg-white text-primary px-10 py-5 rounded-2xl text-lg font-black hover:bg-gray-100 transition-all shadow-xl">
-                        Empezar Prueba Gratis
-                    </button>
-                    <button
-                        class="bg-primary/20 backdrop-blur-md border border-white/30 text-white px-10 py-5 rounded-2xl text-lg font-black hover:bg-white/10 transition-all">
-                        Contactar Soporte
-                    </button>
+                    @php
+                        $demoMsg = "Hola 👋, me gustaría solicitar una demostración del sistema IncolDEV.
+¿Podrían mostrarme cómo funciona?";
+                        $demoUrl =
+                            'https://wa.me/' . config('services.whatsapp.number') . '?text=' . urlencode($demoMsg);
+                    @endphp
+
+                    <a href="{{ $demoUrl }}" target="_blank">
+                        <button
+                            class="bg-white text-primary px-10 py-5 rounded-2xl text-lg font-black hover:bg-gray-100 transition-all shadow-xl">
+                            Solicitar demostración
+                        </button>
+                    </a>
+                    @php
+                        $soporteMsg = 'Hola 👋, necesito ayuda con IncolDEV. ¿Podrían apoyarme?';
+                        $soporteUrl =
+                            'https://wa.me/' . config('services.whatsapp.number') . '?text=' . urlencode($soporteMsg);
+                    @endphp
+
+                    <a href="{{ $soporteUrl }}" target="_blank">
+                        <button
+                            class="bg-primary/20 backdrop-blur-md border border-white/30 text-white px-10 py-5 rounded-2xl text-lg font-black hover:bg-white/10 transition-all">
+                            Contactar Soporte
+                        </button>
+                    </a>
                 </div>
             </div>
         </section>
@@ -366,61 +418,71 @@
                     <div class="bg-primary text-white p-1 rounded-md flex items-center justify-center">
                         <span class="material-symbols-outlined text-xl">mail</span>
                     </div>
-                    <h2 class="text-[#0d121b] text-lg font-bold">GestionCorr</h2>
+                    <h2 class="text-[#0d121b] text-lg font-bold">IncolDEV</h2>
                 </div>
                 <p class="text-sm text-[#4c669a] leading-relaxed mb-6">
                     La plataforma líder en gestión de mensajería institucional en Latinoamérica. Innovación y seguridad
                     en cada entrega.
                 </p>
                 <div class="flex gap-4">
-                    <a class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-[#4c669a] hover:bg-primary hover:text-white transition-all"
-                        href="#">
-                        <svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24">
+                    <a class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-[#25D366] hover:bg-[#25D366] hover:text-white transition-all"
+                        href="https://wa.me/573150168048?text=Hola%20👋,%20estoy%20interesado%20en%20contratar%20un%20plan%20de%20IncolDEV.%20¿Podrían%20asesorarme?"
+                        target="_blank">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                             <path
-                                d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z">
-                            </path>
+                                d="M20.52 3.48A11.82 11.82 0 0012.01 0C5.38 0 .02 5.36.02 11.99c0 2.11.55 4.17 1.6 6L0 24l6.2-1.6a11.93 11.93 0 005.81 1.48h.01c6.63 0 11.99-5.36 11.99-11.99a11.9 11.9 0 00-3.49-8.41zM12.01 21.3a9.3 9.3 0 01-4.74-1.3l-.34-.2-3.68.95.98-3.59-.22-.37a9.29 9.29 0 0114.34-11.47 9.24 9.24 0 012.72 6.55c0 5.13-4.18 9.33-9.32 9.33zm5.11-6.97c-.28-.14-1.65-.81-1.91-.9-.26-.1-.45-.14-.64.14-.18.28-.73.9-.9 1.09-.16.18-.32.2-.6.07-.28-.14-1.18-.44-2.25-1.39-.83-.74-1.39-1.66-1.55-1.94-.16-.28-.02-.43.12-.57.13-.13.28-.32.42-.48.14-.16.18-.28.28-.46.1-.18.05-.35-.02-.48-.07-.14-.64-1.54-.88-2.11-.23-.55-.47-.48-.64-.49l-.55-.01c-.18 0-.48.07-.73.35-.25.28-.96.94-.96 2.29s.99 2.66 1.13 2.84c.14.18 1.95 2.98 4.73 4.18.66.29 1.18.46 1.58.59.66.21 1.26.18 1.73.11.53-.08 1.65-.67 1.88-1.32.23-.65.23-1.21.16-1.32-.07-.11-.25-.18-.53-.32z" />
                         </svg>
                     </a>
                     <a class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-[#4c669a] hover:bg-primary hover:text-white transition-all"
-                        href="#">
-                        <svg class="w-4 h-4" fill="currentColor" viewbox="0 0 24 24">
+                        href="mailto:contacto@tudominio.com">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                             <path
-                                d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.058-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z">
-                            </path>
+                                d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
                         </svg>
                     </a>
+
                 </div>
             </div>
             <div>
                 <h4 class="font-bold text-[#0d121b] mb-6">Producto</h4>
                 <ul class="flex flex-col gap-4 text-sm text-[#4c669a]">
-                    <li><a class="hover:text-primary transition-colors" href="#">Características</a></li>
-                    <li><a class="hover:text-primary transition-colors" href="#">Seguridad</a></li>
-                    <li><a class="hover:text-primary transition-colors" href="#">Precios</a></li>
-                    <li><a class="hover:text-primary transition-colors" href="#">Versión Mobile</a></li>
+                    <li><a class="hover:text-primary transition-colors"
+                            href="{{ route('caracteristicas') }}">Características</a></li>
+                    <li><a class="hover:text-primary transition-colors" href="{{ route('seguridad') }}">Seguridad</a>
+                    </li>
+                    <li><a class="hover:text-primary transition-colors" href="{{ route('precios') }}">Precios</a>
+                    </li>
+                    <li><a class="hover:text-primary transition-colors" href="{{ route('mobile') }}">Versión
+                            Mobile</a></li>
                 </ul>
             </div>
             <div>
                 <h4 class="font-bold text-[#0d121b] mb-6">Empresa</h4>
                 <ul class="flex flex-col gap-4 text-sm text-[#4c669a]">
-                    <li><a class="hover:text-primary transition-colors" href="#">Sobre nosotros</a></li>
-                    <li><a class="hover:text-primary transition-colors" href="#">Blog</a></li>
-                    <li><a class="hover:text-primary transition-colors" href="#">Clientes</a></li>
-                    <li><a class="hover:text-primary transition-colors" href="#">Contacto</a></li>
+                    <li><a class="hover:text-primary transition-colors" href="{{ route('sobre.nosotros') }}">Sobre
+                            nosotros</a></li>
+                    <li><a class="hover:text-primary transition-colors" href="{{ route('blog') }}">Blog</a></li>
+                    <li><a class="hover:text-primary transition-colors" href="{{ route('clientes') }}">Clientes</a>
+                    </li>
+                    <li><a class="hover:text-primary transition-colors" href="{{ route('contacto') }}">Contacto</a>
+                    </li>
                 </ul>
             </div>
             <div>
                 <h4 class="font-bold text-[#0d121b] mb-6">Legal</h4>
                 <ul class="flex flex-col gap-4 text-sm text-[#4c669a]">
-                    <li><a class="hover:text-primary transition-colors" href="#">Privacidad</a></li>
-                    <li><a class="hover:text-primary transition-colors" href="#">Términos de servicio</a></li>
-                    <li><a class="hover:text-primary transition-colors" href="#">Cookies</a></li>
+                    <li><a class="hover:text-primary transition-colors"
+                            href="{{ route('privacidad') }}">Privacidad</a></li>
+                    <li><a class="hover:text-primary transition-colors" href="{{ route('terminos') }}">Términos de
+                            servicio</a></li>
+                    <li><a class="hover:text-primary transition-colors" href="{{ route('cookies') }}">Cookies</a>
+                    </li>
                 </ul>
             </div>
         </div>
         <div
             class="max-w-[1280px] mx-auto px-6 md:px-20 pt-8 border-t border-[#e7ebf3] flex flex-col md:flex-row justify-between items-center gap-4">
-            <p class="text-xs text-[#4c669a]">© 2024 GestionCorr Inc. Todos los derechos reservados.</p>
+            <p class="text-xs text-[#4c669a]">© 2026 IncolDEV. Todos los derechos reservados.</p>
             <div class="flex items-center gap-2">
                 <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                 <p class="text-xs text-[#4c669a] font-medium">Sistemas Operativos 100%</p>

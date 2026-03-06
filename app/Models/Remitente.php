@@ -41,7 +41,12 @@ class Remitente extends Authenticatable
      */
     public function ciudad()
     {
-        return $this->belongsTo(Ciudad::class, 'rem_ciudad', 'id_ciudad');
+        return $this->belongsTo(Ciudad::class, 'rem_ciudad', 'ciudad_cod_post');
+    }
+
+    public function empresa()
+    {
+        return $this->belongsTo(Empresa::class, 'nit_empresa', 'nit_empresa');
     }
 
     public $timestamps = false;
