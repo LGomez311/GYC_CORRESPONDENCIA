@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 03-03-2026 a las 22:54:30
+-- Tiempo de generación: 06-03-2026 a las 04:04:48
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -37,7 +37,13 @@ CREATE TABLE `area` (
 --
 
 INSERT INTO `area` (`id_area`, `area_nom`) VALUES
-(1, 'Administrativa');
+(1, 'Administrativa'),
+(4, 'Gerencia General'),
+(5, 'Recursos Humanos'),
+(6, 'Contabilidad'),
+(7, 'Correspondencia'),
+(8, 'Archivo Central'),
+(9, 'Oficina Asesora Juridica');
 
 -- --------------------------------------------------------
 
@@ -175,7 +181,8 @@ CREATE TABLE `detalle_envio` (
   `id_detalle` int(10) NOT NULL,
   `id_quien_envie` varchar(20) NOT NULL,
   `id_quien_recibe` varchar(20) NOT NULL,
-  `id_envio` int(15) NOT NULL
+  `id_envio` int(15) NOT NULL,
+  `fecha_traslado` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -203,12 +210,14 @@ CREATE TABLE `empleado` (
 --
 
 INSERT INTO `empleado` (`emple_doc`, `nit_empresa`, `password`, `emple_nombres`, `emple_apellidos`, `emple_tel`, `emple_correo`, `emple_img`, `emple_estado`, `emple_rol`, `emple_area`) VALUES
-('1005912004', NULL, '$2y$12$9PqwoUdBiin5OBpTJt70xO6iHr/BtY78G2Co.W8b1O2KyE9Oh2gr.', 'Kevin', 'Villafrade', NULL, 'kevindany2209@gmail.com', NULL, 1, 1, NULL),
-('1005912005', '5444444444', '$2y$12$JrVsN6D3tjJ3tZko3Gvs.uXfZvP6mr1lhR.6D/dKKOT753u2o4nLC', 'Kev', 'Dan', '3153524586', 'kevin22298@gmail.com', NULL, 1, 2, NULL),
+('1005912003', '4565464564', '$2y$12$Ld5g59zFru6uK2Xr8MDBHeaaqH/DkGvsLc7ws9YU8BnLdteFAOLt6', 'Kevin', 'Villafrade', '3152782654', 'kevindany2222209@gmail.com', NULL, 1, 2, NULL),
+('1005912004', NULL, '$2y$12$8bMAGjrEDHldGDZeWSNuHuKoTSTM9AQ..46sDhqaig/U.NkYDMqC2', 'Kevin', 'Villafrade', NULL, 'kevindany2209@gmail.com', NULL, 1, 1, NULL),
+('1005912005', '4354353454', '$2y$12$dsRE/4pK1lXTVNdR6zZrtORXIj2m9VEhCDjZEuKmj8funIyPz92AO', 'Kevin', 'Villafrade', '3152782654', 'kevindany222209@gmail.com', NULL, 1, 2, NULL),
+('1005912006', '9887978978', '$2y$12$yPm04nkeOykarN33WJEoeOzsk2WEeQKpPxUKiQhnMLPontQc7kSNS', 'Daniel', 'Perez', '545466545465', 'nikolas1993838@gmail.com', NULL, 1, 2, NULL),
 ('1070730214', NULL, '$2y$12$qk/ky/QNhy3Yx2fg1TZqf.Ppqg1j8WTYgkA.JtTseooT/kLQKm4Ha', 'Yuber', 'Paez', NULL, 'santiagopc333@gmail.com', NULL, 1, 1, NULL),
 ('1106394865', NULL, '$2y$12$1C771qhrFK7Q5ZlljvmFOuPd0.Tt66FiiYsSi0ctFtAdgryCd/oSW', 'Luis', 'Gomez', NULL, 'lucho3112007@gmail.com', NULL, 1, 1, NULL),
 ('1234567890', NULL, '$2y$12$vvTluBDjmUMUTmJFDmasuO3ntmSgP4be7mr7QViuMveJzQ6ZJWHlS', 'Yuber', 'Paez', NULL, 'santiagouber333@gmail.com', NULL, 1, 1, NULL),
-('2005914095', NULL, '$2y$12$.DJlZQ94Fqg/XR1Wb386R.FikANGCWnqNQcAYZTQHCc.1.PpXqE7y', 'SUPER', 'ADMIN', NULL, 'kevinreal2209@gmail.com', NULL, 1, 1, NULL);
+('2005914095', NULL, '$2y$12$g35zw/eJt16pV3Cjhac/8.X69C5QhR8S7WCGZQtgQiFKd.qq53ceK', 'SUPER', 'ADMIN', NULL, 'kevinreal2209@gmail.com', NULL, 1, 1, NULL);
 
 -- --------------------------------------------------------
 
@@ -231,7 +240,10 @@ CREATE TABLE `empresa` (
 --
 
 INSERT INTO `empresa` (`nit_empresa`, `nomb_empresa`, `doc_representante`, `nomb_representante`, `direccion`, `contacto`, `empresa_correo`) VALUES
-('5444444444', 'SENA: Servicio Nacional de Aprendizaje', '19455957', 'Jorge Eduardo Londoño Ulloa', 'Carrera 45 Sur # 141-05 (Sector Picaleña, contiguo a la Casa de la Moneda)', '3013725753', 'sena@gmail.com');
+('4354353454', 'KFC & Food', '38144607', 'Emilio Casas', 'Avenida 37 N12 - 23 fdssfdsdfsdf', '3152782654', 'kfc@gmail.com'),
+('4355466554', 'SUBWAY', '5654645645', 'Subway Dueño', 'Cra 12 N37 A16 PRUEBA PORUEBA', '3152782654', 'subway@gmail.com'),
+('4565464564', 'LA MAZZA', '38144609', 'Adriana Perez', 'Avenida 37 N12 - 23 Gaitan', '3152782654', 'lamazzaibg@gmail.com'),
+('9887978978', '657 Sport', '7866787678', 'Humbert Villein', 'Avenida 37 N12 - 23 fdgfgdgfdgdfgdfgdffgdfdgfgdgfdfdgdfg', '3152782654', '657sports@gmail.com');
 
 -- --------------------------------------------------------
 
@@ -250,7 +262,8 @@ CREATE TABLE `envio` (
   `anexo` varchar(500) NOT NULL,
   `id_tipo_envio` int(11) DEFAULT NULL,
   `id_estado_envio` int(10) DEFAULT NULL,
-  `archivo` varchar(500) NOT NULL
+  `archivo` varchar(500) NOT NULL,
+  `nit_empresa` varchar(25) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -273,7 +286,13 @@ INSERT INTO `estado` (`id_estado`, `estado_nomb`) VALUES
 (1, 'Activo'),
 (2, 'Inactivo'),
 (4, 'Aprobado'),
-(5, 'No Aprobado');
+(5, 'No Aprobado'),
+(7, 'Recibido'),
+(8, 'En Tramite'),
+(9, 'Resuelto'),
+(10, 'Archivado'),
+(11, 'Rechazado'),
+(12, 'Digitalizado');
 
 -- --------------------------------------------------------
 
@@ -347,7 +366,11 @@ CREATE TABLE `licencia` (
 --
 
 INSERT INTO `licencia` (`id_licencia`, `id_estado`, `id_pago`, `fecha_inicio`, `fecha_fin`, `tipo_licencia`, `licencia_origen`) VALUES
-(27, 1, 54, '2026-03-03 14:24:30', '2026-04-02 14:24:30', 'ACTIVACION', NULL);
+(27, 1, 55, '2026-02-27 12:00:22', '2026-05-28 12:00:22', 'ACTIVACION', NULL),
+(30, 1, 56, '2026-05-28 12:00:22', '2026-08-26 12:00:22', 'RENOVACION', 27),
+(31, 1, 59, '2026-08-26 12:00:22', '2026-09-25 12:00:22', 'RENOVACION', 30),
+(32, 1, 58, '2026-09-25 12:00:22', '2026-10-25 12:00:22', 'RENOVACION', 31),
+(34, 1, 61, '2026-03-02 22:49:42', '2026-03-10 22:49:42', 'ACTIVACION', NULL);
 
 -- --------------------------------------------------------
 
@@ -393,7 +416,14 @@ CREATE TABLE `pagos` (
 --
 
 INSERT INTO `pagos` (`id_pago`, `id_plan`, `comprobante`, `id_admin`, `moneda`, `id_est_pago`, `fecha_pago`, `fecha_inicio`) VALUES
-(54, 4, NULL, '1005912005', 'COP', 4, '2026-03-03 14:24:09', NULL);
+(54, 10, NULL, '1005912005', 'COP', 4, '2026-02-27 11:58:57', NULL),
+(55, 5, NULL, '1005912006', 'COP', 4, '2026-02-27 11:59:10', NULL),
+(56, 5, NULL, '1005912006', 'COP', 4, '2026-02-27 12:01:04', NULL),
+(57, 6, NULL, '1005912005', 'COP', 4, '2026-02-27 12:01:17', NULL),
+(58, 4, NULL, '1005912006', 'COP', 4, '2026-02-27 12:05:03', NULL),
+(59, 4, NULL, '1005912006', 'COP', 4, '2026-02-27 12:05:09', NULL),
+(60, 10, NULL, '1005912005', 'COP', 4, '2026-02-27 12:06:40', NULL),
+(61, 4, NULL, '1005912003', 'COP', 4, '2026-03-02 22:49:33', NULL);
 
 -- --------------------------------------------------------
 
@@ -415,8 +445,7 @@ CREATE TABLE `password_codes` (
 --
 
 INSERT INTO `password_codes` (`id`, `emple_correo`, `code`, `expires_at`, `created_at`, `updated_at`) VALUES
-(8, 'nikolas1993838@gmail.com', '941212', '2026-02-26 10:12:33', '2026-02-26 10:02:33', '2026-02-26 10:02:33'),
-(13, 'kevinreal2209@gmail.com', '359541', '2026-02-27 18:39:29', '2026-02-27 18:29:29', '2026-02-27 18:29:29');
+(8, 'nikolas1993838@gmail.com', '941212', '2026-02-26 10:12:33', '2026-02-26 10:02:33', '2026-02-26 10:02:33');
 
 -- --------------------------------------------------------
 
@@ -452,8 +481,9 @@ CREATE TABLE `plan` (
 INSERT INTO `plan` (`id_plan`, `nomb_plan`, `valor`, `descripcion`, `duracion`, `es_destacado`) VALUES
 (4, 'Mensual', 200000, '[\"Acceso completo al sistema.\",\"Soporte básico.\",\"Garantía 7 días.\"]', 30, 0),
 (5, 'Trimestral', 540000, '[\"Acceso completo al sistema.\",\"Soporte prioritario.\",\"Garantía 14 días.\", \"Incluye 1 capacitación.\"]', 90, 0),
-(6, 'Semestral', 1040000, '[\"Acceso completo al sistema.\",\"Soporte prioritario extendido.\",\"Garantía 30 días.\", \"Incluye 2 capacitaciones.\"]\r\n', 180, 1),
-(10, 'Anual', 1950000, '[\"Acceso completo al sistema.\",\"Soporte prioritario exclusivo.\",\"Garant\\u00eda 60 d\\u00edas.\",\"Incluye 6 capacitaciones.\"]', 365, 0);
+(6, 'Semestral', 1040000, '[\"Acceso completo al sistema.\",\"Soporte prioritario extendido.\",\"Garantía 30 días.\", \"Incluye 2 capacitaciones.\"]\r\n', 180, 0),
+(10, 'Anual', 1950000, '[\"Acceso completo al sistema.\",\"Soporte prioritario exclusivo.\",\"Garant\\u00eda 60 d\\u00edas.\",\"Incluye 6 capacitaciones.\"]', 365, 0),
+(12, 'Sotfware tuyo', 0, '[\"Es totalmente tuyo el sistema\"]', 7, 0);
 
 -- --------------------------------------------------------
 
@@ -471,7 +501,10 @@ CREATE TABLE `prioridad` (
 --
 
 INSERT INTO `prioridad` (`id_prioridad`, `prioridad_nombre`) VALUES
-(1, 'ALTA');
+(1, 'Alta'),
+(2, 'Media'),
+(3, 'Baja'),
+(4, 'Urgente');
 
 -- --------------------------------------------------------
 
@@ -482,15 +515,9 @@ INSERT INTO `prioridad` (`id_prioridad`, `prioridad_nombre`) VALUES
 CREATE TABLE `radicados` (
   `id_radicado` int(10) NOT NULL,
   `num_radicado` varchar(100) NOT NULL,
-  `id_est_radicado` int(20) NOT NULL
+  `id_est_radicado` int(20) NOT NULL,
+  `nit_empresa` varchar(25) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `radicados`
---
-
-INSERT INTO `radicados` (`id_radicado`, `num_radicado`, `id_est_radicado`) VALUES
-(1, '5656879789', 1);
 
 -- --------------------------------------------------------
 
@@ -500,7 +527,7 @@ INSERT INTO `radicados` (`id_radicado`, `num_radicado`, `id_est_radicado`) VALUE
 
 CREATE TABLE `recibido` (
   `id_recibido` int(20) NOT NULL,
-  `num_radicado_ext` varchar(20) DEFAULT NULL,
+  `num_radicado_ext` int(20) DEFAULT NULL,
   `num_radicado_int` int(20) NOT NULL,
   `asunto` varchar(100) DEFAULT NULL,
   `fecha_hora_recib` datetime DEFAULT NULL,
@@ -513,16 +540,9 @@ CREATE TABLE `recibido` (
   `doc_quien_dirige` varchar(20) DEFAULT NULL,
   `id_tipo` int(20) DEFAULT NULL,
   `id_estado_rec` int(10) DEFAULT NULL,
-  `archivo` varchar(500) DEFAULT NULL
+  `archivo` varchar(500) DEFAULT NULL,
+  `nit_empresa` varchar(25) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `recibido`
---
-
-INSERT INTO `recibido` (`id_recibido`, `num_radicado_ext`, `num_radicado_int`, `asunto`, `fecha_hora_recib`, `nom_institucion`, `ciudad_proveniente`, `folio`, `anexo`, `observaciones`, `doc_quien_registra`, `doc_quien_dirige`, `id_tipo`, `id_estado_rec`, `archivo`) VALUES
-(0, '4545686767', 1, 'DENUNCIA', NULL, 'PERSONA', '05001', 2, '2', 'DENUNCIA PUBLICA', 1234567888, '1005912005', 1, 0, NULL),
-(1, '4545686767', 1, 'DENUNCIA', NULL, 'PERSONA', '05001', 2, '2', 'DENUNCIA PUBLICA', 1234567888, '1005912005', 1, 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -547,7 +567,7 @@ CREATE TABLE `remitente` (
 --
 
 INSERT INTO `remitente` (`rem_doc`, `nit_empresa`, `rem_nombres`, `rem_apellidos`, `rem_correo`, `password`, `rem_tel`, `rem_ciudad`, `rem_estado`) VALUES
-(1234567888, '5444444444', 'Kevin', 'Daniel', 'kevin.daniel@gmail.com', '$2y$12$V/kBOsNQ33fJEcmod3oG.e2F/VDOtKa3dzc6TQjvpuTBb4WXy6DPe', '3001234567', '11001', 2);
+(1234567888, NULL, 'Kevin', 'Daniel', 'kevin.daniel@gmail.com', '$2y$12$V/kBOsNQ33fJEcmod3oG.e2F/VDOtKa3dzc6TQjvpuTBb4WXy6DPe', '3001234567', '11001', 1);
 
 -- --------------------------------------------------------
 
@@ -589,10 +609,9 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('aPJHnyOw9IzxH3jjNjml7fj6oq3J4xuiFvHoV5E4', 1005912004, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiRmVIbWQyVWtudTh2SEdjczhtWWJiSFBTcXo1cXdDYVZ6UjVQaVJWaSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zYWRtaW4vcGFnb3MiO3M6NToicm91dGUiO3M6MTI6InNhZG1pbi5wYWdvcyI7fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtzOjEwOiIxMDA1OTEyMDA0Ijt9', 1772573986),
-('DDjdTiK2zBIuuFFVDVZhSq8IIrHp6Dnfmify30mp', 1005912004, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiMnBhWjl4WGh3MUljWUZWYURJODdiYUdnaHJvWnF3NG4zS1RZc3p2RyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo5OiJ3ZWIuaW5kZXgiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjE1OiJsb2Nrb3V0X3NlY29uZHMiO2k6MzAwO3M6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtzOjEwOiIxMDA1OTEyMDA0Ijt9', 1772573465),
-('EDJ8MMU8HrhuADfgSqEBJLxH4nfhmaCIWLnk448D', 1005912005, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoid0Qwb1dDOWc1UFpKYUYyaHMwVFRUVEhTUmlmd0hwTXYxU0cwd3BJTCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hZG1pbiI7czo1OiJyb3V0ZSI7czoxMToiYWRtaW4uaW5kZXgiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7czoxMDoiMTAwNTkxMjAwNSI7fQ==', 1772572830),
-('HsSncbnAK7z05MNhk91so1ovlwJk0D3LnzUSPa6o', 1005912005, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiMzZUNmdrcEx1czN6N2RCbDlqb0JJMjd4MnZCWTUweEtWQUNOYUhCMiI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hZG1pbi9vdHJvcyI7czo1OiJyb3V0ZSI7czoxMToiYWRtaW4ub3Ryb3MiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7czoxMDoiMTAwNTkxMjAwNSI7fQ==', 1772573901);
+('0d7xfs0vCqltVkoAzbiFDYO3nMIjPzUwSYHo9W8c', 2005914095, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiTndHTVNkWHl2eFZ0aTNFdW9YdkFKNjJzdHQ4U1R0NFlvNXJpeFgxSSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzI6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zdXBlcmFkbWluIjtzOjU6InJvdXRlIjtzOjEyOiJzYWRtaW4uaW5kZXgiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjE1OiJsb2Nrb3V0X3NlY29uZHMiO2k6MzAwO3M6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtzOjEwOiIyMDA1OTE0MDk1Ijt9', 1772766268),
+('1sgS0gFOeMRB6u5ejwStCm2VGokKLIjgXwa7FwBB', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiQ2VOU09OREdJZVJuY1RRRlpUQzEwdEQ2Y0FFc2RwR0ZYOEZvc0RGSSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9sb2dpbiI7czo1OiJyb3V0ZSI7czo1OiJsb2dpbiI7fX0=', 1772510741),
+('tbhJusVTxoyfXSnzNaDgexC1FKdcaH1bPaivMimC', 1005912004, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiMHVLTHBDSVdkdjhlRTI3azR6a1R4aHRnMENlc1MzalRFZTBma3pvRyI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzI6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zdXBlcmFkbWluIjtzOjU6InJvdXRlIjtzOjEyOiJzYWRtaW4uaW5kZXgiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7czoxMDoiMTAwNTkxMjAwNCI7fQ==', 1772510884);
 
 -- --------------------------------------------------------
 
@@ -603,15 +622,24 @@ INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, 
 CREATE TABLE `tipo` (
   `id_tipo` int(20) NOT NULL,
   `tipo_nombre` varchar(100) DEFAULT NULL,
-  `id_prioridad` int(10) DEFAULT NULL
+  `id_prioridad` int(10) DEFAULT NULL,
+  `dias_respuesta` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `tipo`
 --
 
-INSERT INTO `tipo` (`id_tipo`, `tipo_nombre`, `id_prioridad`) VALUES
-(1, 'DENUNCIA', 1);
+INSERT INTO `tipo` (`id_tipo`, `tipo_nombre`, `id_prioridad`, `dias_respuesta`) VALUES
+(1, 'Derecho de Peticion', NULL, NULL),
+(2, 'Queja', NULL, NULL),
+(3, 'Reclamo', NULL, NULL),
+(4, 'Solicitud', NULL, NULL),
+(5, 'Carta', NULL, NULL),
+(6, 'Memorando', NULL, NULL),
+(7, 'Circular', NULL, NULL),
+(8, 'Resolucion', NULL, NULL),
+(9, 'Contrato', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -709,7 +737,8 @@ ALTER TABLE `envio`
   ADD KEY `id_tipo_envio` (`id_tipo_envio`),
   ADD KEY `id_estado_envio` (`id_estado_envio`),
   ADD KEY `envio_ibfk_1` (`doc_quien_dirigido`),
-  ADD KEY `num_radicado_int` (`num_radicado_int`);
+  ADD KEY `num_radicado_int` (`num_radicado_int`),
+  ADD KEY `fk_empresa_envio` (`nit_empresa`);
 
 --
 -- Indices de la tabla `estado`
@@ -789,7 +818,8 @@ ALTER TABLE `prioridad`
 --
 ALTER TABLE `radicados`
   ADD PRIMARY KEY (`id_radicado`),
-  ADD KEY `id_est_radicado` (`id_est_radicado`);
+  ADD KEY `id_est_radicado` (`id_est_radicado`),
+  ADD KEY `nit_empresa` (`nit_empresa`);
 
 --
 -- Indices de la tabla `recibido`
@@ -800,8 +830,9 @@ ALTER TABLE `recibido`
   ADD KEY `id_tipo` (`id_tipo`),
   ADD KEY `id_estado_rec` (`id_estado_rec`),
   ADD KEY `doc_quien_registra` (`doc_quien_registra`),
+  ADD KEY `num_radicado_int` (`num_radicado_int`),
   ADD KEY `ciudad_proveniente` (`ciudad_proveniente`),
-  ADD KEY `num_radicado_int` (`num_radicado_int`);
+  ADD KEY `fk_empresa_recibido` (`nit_empresa`);
 
 --
 -- Indices de la tabla `remitente`
@@ -848,7 +879,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT de la tabla `area`
 --
 ALTER TABLE `area`
-  MODIFY `id_area` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id_area` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_envio`
@@ -860,7 +891,7 @@ ALTER TABLE `detalle_envio`
 -- AUTO_INCREMENT de la tabla `estado`
 --
 ALTER TABLE `estado`
-  MODIFY `id_estado` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id_estado` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT de la tabla `failed_jobs`
@@ -878,7 +909,7 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT de la tabla `licencia`
 --
 ALTER TABLE `licencia`
-  MODIFY `id_licencia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+  MODIFY `id_licencia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
 -- AUTO_INCREMENT de la tabla `migrations`
@@ -890,43 +921,43 @@ ALTER TABLE `migrations`
 -- AUTO_INCREMENT de la tabla `pagos`
 --
 ALTER TABLE `pagos`
-  MODIFY `id_pago` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
+  MODIFY `id_pago` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
 
 --
 -- AUTO_INCREMENT de la tabla `password_codes`
 --
 ALTER TABLE `password_codes`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT de la tabla `plan`
 --
 ALTER TABLE `plan`
-  MODIFY `id_plan` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id_plan` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT de la tabla `prioridad`
 --
 ALTER TABLE `prioridad`
-  MODIFY `id_prioridad` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_prioridad` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `radicados`
 --
 ALTER TABLE `radicados`
-  MODIFY `id_radicado` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_radicado` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT de la tabla `rol`
 --
 ALTER TABLE `rol`
-  MODIFY `id_rol` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id_rol` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT de la tabla `tipo`
 --
 ALTER TABLE `tipo`
-  MODIFY `id_tipo` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_tipo` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT de la tabla `users`
@@ -969,7 +1000,8 @@ ALTER TABLE `envio`
   ADD CONSTRAINT `envio_ibfk_3` FOREIGN KEY (`doc_quien_envia`) REFERENCES `empleado` (`emple_doc`),
   ADD CONSTRAINT `envio_ibfk_4` FOREIGN KEY (`id_tipo_envio`) REFERENCES `tipo` (`id_tipo`),
   ADD CONSTRAINT `envio_ibfk_5` FOREIGN KEY (`id_estado_envio`) REFERENCES `estado` (`id_estado`),
-  ADD CONSTRAINT `envio_ibfk_6` FOREIGN KEY (`num_radicado_int`) REFERENCES `radicados` (`id_radicado`);
+  ADD CONSTRAINT `envio_ibfk_6` FOREIGN KEY (`num_radicado_int`) REFERENCES `radicados` (`id_radicado`),
+  ADD CONSTRAINT `fk_empresa_envio` FOREIGN KEY (`nit_empresa`) REFERENCES `empresa` (`nit_empresa`);
 
 --
 -- Filtros para la tabla `licencia`
@@ -990,19 +1022,20 @@ ALTER TABLE `pagos`
 -- Filtros para la tabla `radicados`
 --
 ALTER TABLE `radicados`
-  ADD CONSTRAINT `radicados_ibfk_1` FOREIGN KEY (`id_est_radicado`) REFERENCES `estado` (`id_estado`);
+  ADD CONSTRAINT `radicados_ibfk_1` FOREIGN KEY (`id_est_radicado`) REFERENCES `estado` (`id_estado`),
+  ADD CONSTRAINT `radicados_ibfk_2` FOREIGN KEY (`nit_empresa`) REFERENCES `empresa` (`nit_empresa`);
 
 --
 -- Filtros para la tabla `recibido`
 --
 ALTER TABLE `recibido`
+  ADD CONSTRAINT `fk_empresa_recibido` FOREIGN KEY (`nit_empresa`) REFERENCES `empresa` (`nit_empresa`),
   ADD CONSTRAINT `recibido_ibfk_2` FOREIGN KEY (`doc_quien_dirige`) REFERENCES `empleado` (`emple_doc`),
   ADD CONSTRAINT `recibido_ibfk_3` FOREIGN KEY (`id_tipo`) REFERENCES `tipo` (`id_tipo`),
   ADD CONSTRAINT `recibido_ibfk_4` FOREIGN KEY (`id_estado_rec`) REFERENCES `estado` (`id_estado`),
   ADD CONSTRAINT `recibido_ibfk_5` FOREIGN KEY (`doc_quien_registra`) REFERENCES `remitente` (`rem_doc`),
   ADD CONSTRAINT `recibido_ibfk_7` FOREIGN KEY (`num_radicado_int`) REFERENCES `radicados` (`id_radicado`),
-  ADD CONSTRAINT `recibido_ibfk_8` FOREIGN KEY (`ciudad_proveniente`) REFERENCES `ciudad` (`ciudad_cod_post`),
-  ADD CONSTRAINT `recibido_ibfk_9` FOREIGN KEY (`num_radicado_int`) REFERENCES `radicados` (`id_radicado`);
+  ADD CONSTRAINT `recibido_ibfk_8` FOREIGN KEY (`ciudad_proveniente`) REFERENCES `ciudad` (`ciudad_cod_post`);
 
 --
 -- Filtros para la tabla `remitente`
