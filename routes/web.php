@@ -74,6 +74,8 @@ Route::middleware(['auth:web', 'licencia.activa'])->group(function () {
 
     // Empleado
     Route::get('/empleado', fn() => view('empleado.index'))->name('empleado.index');
+    Route::get('/empleado/correspondencia-recibida', fn() => view('empleado.correspondencia_recibida'))->name('empleado.correspondencia_recibida');
+    Route::get('/empleado/reportes', fn() => view('empleado.reportes'))->name('empleado.reportes');
 });
 
 
