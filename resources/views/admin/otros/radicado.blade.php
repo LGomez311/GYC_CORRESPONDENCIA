@@ -82,13 +82,6 @@
                                             class="p-2 text-[#4c669a] hover:text-primary transition">
                                             <span class="material-symbols-outlined text-[20px]">edit</span>
                                         </button>
-                                        <form action="{{ route('admin.radicado.destroy', $r->id_radicado) }}" method="POST" class="inline d-delete">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="p-2 text-red-500 hover:text-red-700 transition">
-                                                <span class="material-symbols-outlined text-[20px]">delete</span>
-                                            </button>
-                                        </form>
                                     </div>
                                 </td>
 
@@ -438,27 +431,6 @@
                 }
             });
 
-            // Confirmación de eliminación
-            const deleteForms = document.querySelectorAll('.d-delete');
-            deleteForms.forEach(form => {
-                form.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    Swal.fire({
-                        title: '¿Estás seguro?',
-                        text: "¡No podrás revertir esto!",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#3085d6',
-                        cancelButtonColor: '#d33',
-                        confirmButtonText: 'Sí, eliminar',
-                        cancelButtonText: 'Cancelar'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            form.submit();
-                        }
-                    });
-                });
-            });
 
         });
     </script>

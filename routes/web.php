@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
@@ -29,6 +29,8 @@ use App\Http\Controllers\Sadmin\PlanController as SadminPlanController;
 use App\Http\Controllers\Admin\PlanController as AdminPlanController;
 use App\Exports\PrioridadesExport;
 
+// controller de remitente
+use App\Http\Controllers\Remitente\ExternarecController;
 
 
 Route::get('/', [LandingController::class, 'index'])->name('web.index');
@@ -157,7 +159,7 @@ Route::prefix('admin')
         // Otros recursos del admin
         Route::get('/correspondencia', [\App\Http\Controllers\Admin\AdminCorrespondenciaController::class, 'index'])->name('admin.correspondencia');
         Route::get('/usuarios', [\App\Http\Controllers\Admin\UsuarioController::class, 'index'])->name('admin.usuarios');
-        
+
         // Prioridades (CRUD + export)
         Route::get('/prioridad', [PrioridadController::class, 'index'])->name('admin.prioridad.index');
         Route::post('/prioridad', [PrioridadController::class, 'store'])->name('admin.prioridad.store');
@@ -167,7 +169,7 @@ Route::prefix('admin')
         Route::get('/prioridad/export/excel', [PrioridadController::class, 'exportExcel'])->name('admin.prioridad.export.excel');
         Route::get('/prioridad/export/pdf', [PrioridadController::class, 'exportPdf'])->name('admin.prioridad.export.pdf');
         Route::get('/prioridad/check', [PrioridadController::class, 'check'])->name('admin.prioridad.check');
-        
+
         // Tipos (CRUD + export)
         Route::get('/tipo', [TipoController::class, 'index'])->name('admin.tipo.index');
         Route::post('/tipo', [TipoController::class, 'store'])->name('admin.tipo.store');
@@ -177,7 +179,7 @@ Route::prefix('admin')
         Route::get('/tipo/export/excel', [TipoController::class, 'exportExcel'])->name('admin.tipo.export.excel');
         Route::get('/tipo/export/pdf', [TipoController::class, 'exportPdf'])->name('admin.tipo.export.pdf');
         Route::get('/tipo/check', [TipoController::class, 'check'])->name('admin.tipo.check');
-        
+
         // Estados (mostrar desde id >= 6)
         Route::get('/estado', [EstadoController::class, 'index'])->name('admin.estado.index');
         Route::post('/estado', [EstadoController::class, 'store'])->name('admin.estado.store');
@@ -225,7 +227,7 @@ Route::prefix('sadmin')->name('sadmin.')->middleware(['auth:web', 'role:1'])->gr
         ->name('licencias.toggle');
 });
 
-//ruta remitente - Kevin
+
 
 Route::middleware(['auth:remitente', 'licencia.activa'])->group(function () {
     Route::get('/remitente', fn() => view('remitente.index'))->name('remitente.index');
@@ -329,7 +331,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth:web', 'licencia.activa
         ->name('departamento.export.excel');
 
     Route::get(
-        'departamento/check-codigo', [DepartamentoController::class, 'checkCodigo']
+        'departamento/check-codigo',
+        [DepartamentoController::class, 'checkCodigo']
     )->name('departamento.check');
 });
 
@@ -365,3 +368,28 @@ Route::view('/contacto', 'web.pages.empresa.contacto')->name('contacto');
 Route::view('/privacidad', 'web.pages.legal.privacidad')->name('privacidad');
 Route::view('/terminos', 'web.pages.legal.terminos')->name('terminos');
 Route::view('/cookies', 'web.pages.legal.cookies')->name('cookies');
+
+// Vistas remitente
+Route::middleware(['auth:remitente', 'licencia.activa'])->group(function () {
+    Route::get('/remitente', fn() => view('remitente.index'))->name('remitente.index');
+});
+
+Route::prefix('remitente')
+    ->middleware(['auth:remitente', 'licencia.activa'])
+    ->group(function () {
+
+        Route::get('/interna', function () {
+            return view('remitente.interna');
+        })->name('remitente.interna');
+
+
+        Route::get('/externarec', [ExternarecController::class, 'index'])->name('remitente.externarec');
+
+        Route::get('/externaenv', function () {
+            return view('remitente.externaenv');
+        })->name('remitente.externaenv');
+
+        Route::post('/externarec', [ExternarecController::class, 'store'])->name('externarec.store');
+
+        Route::get('/empleados/buscar', [ExternarecController::class, 'buscarEmpleados'])->name('externarec.empleados.buscar');
+    });

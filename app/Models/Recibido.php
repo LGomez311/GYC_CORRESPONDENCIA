@@ -3,6 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Tipo;
+use App\Models\Estado;
+use App\Models\Ciudad;
+use App\Models\Radicado;
+use App\Models\Empleado;
+use App\Models\Remitente;
+use App\Models\Empresa;
 
 class Recibido extends Model
 {
@@ -24,7 +31,8 @@ class Recibido extends Model
         'doc_quien_dirige',
         'id_tipo',
         'id_estado_rec',
-        'archivo'
+        'archivo',
+        'nit_empresa'
     ];
 
     /**
@@ -72,6 +80,6 @@ class Recibido extends Model
      */
     public function radicado()
     {
-        return $this->belongsTo(Radicados::class, 'num_radicado_int', 'id_radicado');
+        return $this->belongsTo(Radicado::class, 'num_radicado_int', 'id_radicado');
     }
 }
