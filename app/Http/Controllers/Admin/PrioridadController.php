@@ -68,12 +68,7 @@ class PrioridadController extends Controller
         return redirect()->route('admin.prioridad.index')->with('success', 'Prioridad actualizada correctamente');
     }
 
-    public function destroy($id)
-    {
-        $p = Prioridad::findOrFail($id);
-        $p->delete();
-        return redirect()->route('admin.prioridad.index')->with('success', 'Prioridad eliminada correctamente');
-    }
+
 
     public function exportExcel()
     {

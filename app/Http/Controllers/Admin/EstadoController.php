@@ -70,12 +70,7 @@ class EstadoController extends Controller
         return redirect()->route('admin.estado.index')->with('success', 'Estado actualizado correctamente');
     }
 
-    public function destroy($id)
-    {
-        $e = Estado::findOrFail($id);
-        $e->delete();
-        return redirect()->route('admin.estado.index')->with('success', 'Estado eliminado correctamente');
-    }
+
 
     public function exportExcel()
     {

@@ -12,7 +12,8 @@ class Tipo extends Model
 
     protected $fillable = [
         'tipo_nombre',
-        'id_prioridad'
+        'id_prioridad',
+        'dias_respuesta'
     ];
 
     public function prioridad()

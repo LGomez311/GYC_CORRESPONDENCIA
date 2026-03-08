@@ -30,7 +30,8 @@ class TipoController extends Controller
                 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/',
                 'unique:tipo,tipo_nombre'
             ],
-            'id_prioridad' => 'required|integer|exists:prioridad,id_prioridad'
+            'id_prioridad' => 'required|integer|exists:prioridad,id_prioridad',
+            'dias_respuesta' => 'required|integer|min:1'
         ], [
             'tipo_nombre.required' => 'El nombre del tipo es obligatorio.',
             'tipo_nombre.min' => 'Debe tener mínimo 3 caracteres.',
@@ -38,7 +39,9 @@ class TipoController extends Controller
             'tipo_nombre.regex' => 'Debe iniciar con al menos 3 letras continuas sin espacios.',
             'tipo_nombre.unique' => 'Este tipo ya existe.',
             'id_prioridad.required' => 'Seleccione una prioridad.',
-            'id_prioridad.exists' => 'La prioridad seleccionada no es válida.'
+            'id_prioridad.exists' => 'La prioridad seleccionada no es válida.',
+            'dias_respuesta.required' => 'Debe indicar los días hábiles de respuesta.',
+            'dias_respuesta.min' => 'Los días de respuesta deben ser al menos 1.',
         ]);
 
         $validated['tipo_nombre'] = ucfirst(strtolower(trim($validated['tipo_nombre'])));
@@ -59,7 +62,8 @@ class TipoController extends Controller
                 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/',
                 'unique:tipo,tipo_nombre,' . $id . ',id_tipo'
             ],
-            'id_prioridad' => 'required|integer|exists:prioridad,id_prioridad'
+            'id_prioridad' => 'required|integer|exists:prioridad,id_prioridad',
+            'dias_respuesta' => 'required|integer|min:1'
         ], [
             'tipo_nombre.required' => 'El nombre del tipo es obligatorio.',
             'tipo_nombre.min' => 'Debe tener mínimo 3 caracteres.',
@@ -67,24 +71,22 @@ class TipoController extends Controller
             'tipo_nombre.regex' => 'Debe iniciar con al menos 3 letras continuas sin espacios.',
             'tipo_nombre.unique' => 'Este tipo ya existe.',
             'id_prioridad.required' => 'Seleccione una prioridad.',
-            'id_prioridad.exists' => 'La prioridad seleccionada no es válida.'
+            'id_prioridad.exists' => 'La prioridad seleccionada no es válida.',
+            'dias_respuesta.required' => 'Debe indicar los días hábiles de respuesta.',
+            'dias_respuesta.min' => 'Los días de respuesta deben ser al menos 1.',
         ]);
 
         $t = Tipo::findOrFail($id);
         $t->update([
             'tipo_nombre' => $request->tipo_nombre,
-            'id_prioridad' => $request->id_prioridad
+            'id_prioridad' => $request->id_prioridad,
+            'dias_respuesta' => $request->dias_respuesta
         ]);
 
         return redirect()->route('admin.tipo.index')->with('success', 'Tipo actualizado correctamente');
     }
 
-    public function destroy($id)
-    {
-        $t = Tipo::findOrFail($id);
-        $t->delete();
-        return redirect()->route('admin.tipo.index')->with('success', 'Tipo eliminado correctamente');
-    }
+
 
     public function exportExcel()
     {

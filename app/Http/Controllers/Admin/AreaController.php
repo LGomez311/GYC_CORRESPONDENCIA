@@ -74,20 +74,7 @@ class AreaController extends Controller
             ->with('success', 'Área actualizada correctamente');
     }
 
-    public function destroy($id)
-    {
-        $area = Area::findOrFail($id);
 
-        if ($area->empleados()->count() > 0) {
-            return redirect()->route('admin.area.index')
-                ->with('error', 'No se puede eliminar el área porque tiene empleados asignados.');
-        }
-
-        $area->delete();
-
-        return redirect()->route('admin.area.index')
-            ->with('success', 'Área eliminada correctamente');
-    }
 
     public function exportExcel()
     {

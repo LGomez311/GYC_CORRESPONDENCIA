@@ -101,13 +101,7 @@ class CiudadController extends Controller
             ->with('success', 'Ciudad actualizada correctamente');
     }
 
-    public function destroy($id)
-    {
-        $ciudad = Ciudad::findOrFail($id);
-        $ciudad->delete();
 
-        return redirect()->back()->with('success', 'Ciudad eliminada correctamente');
-    }
 
     public function exportPDF()
     {
