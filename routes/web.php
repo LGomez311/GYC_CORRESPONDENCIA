@@ -72,7 +72,11 @@ Route::middleware(['auth:web', 'licencia.activa'])->group(function () {
 
     // Empleado
     Route::get('/empleado', fn() => view('empleado.index'))->name('empleado.index');
-    Route::get('/empleado/correspondencia-recibida', fn() => view('empleado.correspondencia_recibida'))->name('empleado.correspondencia_recibida');
+    Route::get('/empleado/correspondencia-recibida', [\App\Http\Controllers\Empleado\CorrespondenciaController::class, 'recibida'])->name('empleado.correspondencia_recibida');
+    Route::post('/empleado/correspondencia-recibida/{id}/estado', [\App\Http\Controllers\Empleado\CorrespondenciaController::class, 'actualizarEstado'])->name('empleado.estado_externa');
+    Route::post('/empleado/correspondencia-interna/{id}/estado', [\App\Http\Controllers\Empleado\CorrespondenciaController::class, 'actualizarEstadoInterna'])->name('empleado.estado_interna');
+    Route::post('/empleado/correspondencia-recibida/{id}/reasignar', [\App\Http\Controllers\Empleado\CorrespondenciaController::class, 'reasignar'])->name('empleado.reasignar_externa');
+    Route::post('/empleado/correspondencia-interna/nueva', [\App\Http\Controllers\Empleado\CorrespondenciaController::class, 'nuevaInterna'])->name('empleado.nueva_interna');
     Route::get('/empleado/reportes', fn() => view('empleado.reportes'))->name('empleado.reportes');
 });
 

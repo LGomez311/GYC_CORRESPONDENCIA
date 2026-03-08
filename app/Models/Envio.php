@@ -18,9 +18,11 @@ class Envio extends Model
         'fecha',
         'destino',
         'anexo',
+        'folio',
         'id_tipo_envio',
         'id_estado_envio',
         'archivo',
+        'nit_empresa',
     ];
 
     protected $casts = [
@@ -45,9 +47,20 @@ class Envio extends Model
         return $this->belongsTo(Empleado::class, 'doc_quien_envia', 'emple_doc');
     }
 
-    // Quien recibe
     public function quienDirigido()
     {
         return $this->belongsTo(Empleado::class, 'doc_quien_dirigido', 'emple_doc');
+    }
+
+    // Relación con el número de radicado interno generado
+    public function radicado()
+    {
+        return $this->belongsTo(Radicado::class, 'num_radicado_int', 'id_radicado');
+    }
+
+    // Relación con los anexos
+    public function anexos()
+    {
+        return $this->hasMany(AnexoEnvio::class, 'id_envio', 'id_envio');
     }
 }

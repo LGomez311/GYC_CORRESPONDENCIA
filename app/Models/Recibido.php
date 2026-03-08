@@ -72,6 +72,14 @@ class Recibido extends Model
      */
     public function radicado()
     {
-        return $this->belongsTo(Radicados::class, 'num_radicado_int', 'id_radicado');
+        return $this->belongsTo(Radicado::class, 'num_radicado_int', 'id_radicado');
+    }
+
+    /**
+     * Relación con los anexos
+     */
+    public function anexos()
+    {
+        return $this->hasMany(AnexoRecibido::class, 'id_recibido', 'id_recibido');
     }
 }
