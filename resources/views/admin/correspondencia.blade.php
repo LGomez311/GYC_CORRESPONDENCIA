@@ -16,7 +16,7 @@
                 </p>
             </div>
             <div class="flex gap-3">
-                <button
+                <button onclick="openExportModalCor()"
                     class="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#161d2b] border border-[#cfd7e7] dark:border-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors dark:text-white">
                     <span class="material-symbols-outlined text-[18px]">download</span>
                     Exportar
@@ -110,7 +110,19 @@
                             </td>
                             <td class="px-6 py-4 text-right">
                                 <div class="flex justify-end gap-1">
-                                    <button class="p-2 text-[#4c669a] hover:text-primary transition-colors" title="Ver detalle">
+                                    <button class="p-2 text-[#4c669a] hover:text-primary transition-colors btn-view-cor" title="Ver detalle"
+                                        data-ext="{{ $cor->num_radicado_ext ?? 'N/A' }}"
+                                        data-int="{{ $cor->num_radicado_int }}"
+                                        data-institucion="{{ $cor->nom_institucion }}"
+                                        data-ciudad="{{ $cor->ciudad->ciudad_nom ?? $cor->ciudad_proveniente }}"
+                                        data-asunto="{{ $cor->asunto }}"
+                                        data-fecha="{{ \Carbon\Carbon::parse($cor->fecha_hora_recib)->format('d M, Y H:i') }}"
+                                        data-destinatario="{{ $cor->dirigidoA->emple_nombres ?? 'N/A' }} {{ $cor->dirigidoA->emple_apellidos ?? '' }}"
+                                        data-docdest="{{ $cor->doc_quien_dirige }}"
+                                        data-folios="{{ $cor->folio }}"
+                                        data-anexos="{{ $cor->anexo ?? 'Ninguno' }}"
+                                        data-estado="{{ $estadoNom }}"
+                                        data-archivo="{{ $cor->archivo ? asset('storage/' . $cor->archivo) : '' }}">
                                         <span class="material-symbols-outlined text-[20px]">visibility</span>
                                     </button>
                                     @if($cor->archivo)
@@ -158,17 +170,156 @@
             const tableBody = document.getElementById('tableCorrespondence');
             const rows = tableBody.querySelectorAll('tr[data-search]');
 
-            searchInput.addEventListener('input', function() {
-                const term = this.value.toLowerCase();
-                rows.forEach(row => {
-                    const searchData = row.getAttribute('data-search');
-                    if (searchData.includes(term)) {
-                        row.style.display = '';
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const term = this.value.toLowerCase();
+                    rows.forEach(row => {
+                        const searchData = row.getAttribute('data-search');
+                        if (searchData.includes(term)) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                });
+            }
+
+            // MODAL DE DETALLES DE CORRESPONDENCIA
+            const modalDetallesCor = document.getElementById('detallesCorModal');
+            
+            document.querySelectorAll('.btn-view-cor').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.getElementById('detExt').textContent = btn.dataset.ext;
+                    document.getElementById('detInt').textContent = btn.dataset.int;
+                    document.getElementById('detInst').textContent = btn.dataset.institucion;
+                    document.getElementById('detCiudad').textContent = btn.dataset.ciudad;
+                    document.getElementById('detAsunto').textContent = btn.dataset.asunto;
+                    document.getElementById('detFecha').textContent = btn.dataset.fecha;
+                    document.getElementById('detDest').textContent = btn.dataset.destinatario;
+                    document.getElementById('detDocDest').textContent = btn.dataset.docdest;
+                    document.getElementById('detFolios').textContent = btn.dataset.folios;
+                    document.getElementById('detAnexos').textContent = btn.dataset.anexos;
+                    
+                    const estado = btn.dataset.estado;
+                    document.getElementById('detEstado').textContent = estado;
+
+                    const btnArchivo = document.getElementById('detBtnArchivo');
+                    if(btn.dataset.archivo) {
+                        btnArchivo.href = btn.dataset.archivo;
+                        btnArchivo.style.display = 'inline-flex';
                     } else {
-                        row.style.display = 'none';
+                        btnArchivo.style.display = 'none';
                     }
+
+                    modalDetallesCor.classList.remove('hidden');
+                });
+            });
+
+            document.querySelectorAll('.btn-close-cor').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btn.closest('.fixed').classList.add('hidden');
                 });
             });
         });
+    </script>
+
+    {{-- MODAL VER DETALLES CORRESPONDENCIA --}}
+    <div id="detallesCorModal" class="fixed inset-0 bg-black/40 flex items-center justify-center hidden z-50 p-4">
+        <div class="bg-white dark:bg-[#161d2b] w-full max-w-2xl rounded-xl shadow-xl relative my-10 max-h-[90vh] flex flex-col overflow-hidden">
+            <div class="px-6 pt-6 pb-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+                <h2 class="text-xl font-semibold text-[#0d121b] dark:text-white">Detalles de Correspondencia</h2>
+                <button class="btn-close-cor text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto text-sm text-[#4c669a] dark:text-gray-300">
+                <div class="flex flex-col md:flex-row gap-6 mb-6 items-start">
+                    <div class="w-16 h-16 rounded-xl bg-slate-100 dark:bg-gray-800 flex-shrink-0 flex justify-center items-center border border-[#cfd7e7] dark:border-gray-700">
+                        <span class="material-symbols-outlined text-3xl text-gray-400">mail</span>
+                    </div>
+                    <div class="flex flex-col gap-1 flex-1">
+                        <h3 class="text-xl font-bold text-[#0d121b] dark:text-white" id="detAsunto">-</h3>
+                        <p class="text-sm font-medium flex items-center gap-2 text-primary">EXT: <span id="detExt" class="font-bold">-</span> <span class="text-xs text-gray-400">|</span> INT: <span id="detInt" class="font-bold">-</span></p>
+                        <p class="flex items-center gap-2 w-fit px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs font-semibold mt-1">
+                            <span id="detEstado">-</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Institución / Origen</label>
+                        <p class="text-base text-[#0d121b] dark:text-white font-medium break-all" id="detInst">-</p>
+                        <p class="text-xs mt-0.5" id="detCiudad">-</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Fecha de Ingreso</label>
+                        <p class="text-base text-[#0d121b] dark:text-white font-medium" id="detFecha">-</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Destinatario (Dirigido a)</label>
+                        <p class="text-base text-[#0d121b] dark:text-white font-medium" id="detDest">-</p>
+                        <p class="text-xs mt-0.5">Doc: <span id="detDocDest">-</span></p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Documentos</label>
+                        <p class="text-sm text-[#0d121b] dark:text-white font-medium">Folios: <span id="detFolios">-</span></p>
+                        <p class="text-sm text-[#0d121b] dark:text-white font-medium">Anexos: <span id="detAnexos">-</span></p>
+                    </div>
+                </div>
+                
+                <div class="mt-6 pt-4 border-t border-gray-100 dark:border-gray-800 flex justify-center">
+                    <a href="#" id="detBtnArchivo" target="_blank" class="px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-lg flex items-center gap-2 hover:bg-primary hover:text-white transition-colors text-sm font-semibold" style="display:none;">
+                        <span class="material-symbols-outlined text-[18px]">download</span> Ver Documento Adjunto
+                    </a>
+                </div>
+            </div>
+            
+            <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-800 flex justify-end">
+                <button class="btn-close-cor px-6 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 transition-colors font-medium">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    {{-- MODAL EXPORTAR --}}
+    <div id="exportModalCor" class="fixed inset-0 bg-black/40 flex items-center justify-center hidden z-50 p-4">
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg w-72 p-5 relative">
+            <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-4">
+                Exportar Correspondencia
+            </h3>
+            <div class="flex flex-col gap-3">
+                <!-- PDF -->
+                <a href="{{ route('admin.correspondencia.export.pdf') }}"
+                    class="flex items-center gap-2 px-4 py-2 text-sm font-semibold border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-white dark:border-gray-700 transition">
+                    <span class="material-symbols-outlined text-red-600">picture_as_pdf</span>
+                    PDF
+                </a>
+                <!-- Excel -->
+                <a href="{{ route('admin.correspondencia.export.excel') }}"
+                    class="flex items-center gap-2 px-4 py-2 text-sm font-semibold border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-white dark:border-gray-700 transition">
+                    <span class="material-symbols-outlined text-green-600">grid_on</span>
+                    Excel
+                </a>
+            </div>
+            <button onclick="closeExportModalCor()"
+                class="mt-4 w-full text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 font-medium pb-1">
+                Cancelar
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function openExportModalCor() {
+            const modal = document.getElementById('exportModalCor');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeExportModalCor() {
+            const modal = document.getElementById('exportModalCor');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
     </script>
 @endsection

@@ -61,6 +61,7 @@
                             <th class="px-4 sm:px-6 py-3 sm:py-4 text-xs font-bold text-[#4c669a] uppercase text-center">ID</th>
                             <th class="px-4 sm:px-6 py-3 sm:py-4 text-xs font-bold text-[#4c669a] uppercase text-center">Tipo</th>
                             <th class="px-4 sm:px-6 py-3 sm:py-4 text-xs font-bold text-[#4c669a] uppercase text-center">Prioridad</th>
+                            <th class="px-4 sm:px-6 py-3 sm:py-4 text-xs font-bold text-[#4c669a] uppercase text-center">Días Hábiles</th>
                             <th class="px-4 sm:px-6 py-3 sm:py-4 text-xs font-bold text-[#4c669a] uppercase text-center">Acciones</th>
                         </tr>
                     </thead>
@@ -76,9 +77,11 @@
 
                                 <td class="px-4 sm:px-6 py-3 sm:py-4 text-center">{{ $t->prioridad->prioridad_nombre ?? '' }}</td>
 
+                                <td class="px-4 sm:px-6 py-3 sm:py-4 text-center">{{ $t->dias_respuesta }}</td>
+
                                 <td class="px-4 sm:px-6 py-3 sm:py-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
-                                        <button onclick="openEditModal('{{ $t->id_tipo }}','{{ $t->tipo_nombre }}','{{ $t->id_prioridad }}')"
+                                        <button onclick="openEditModal('{{ $t->id_tipo }}','{{ $t->tipo_nombre }}','{{ $t->id_prioridad }}', '{{ $t->dias_respuesta }}')"
                                             class="p-2 text-[#4c669a] hover:text-primary transition">
                                             <span class="material-symbols-outlined text-[20px]">edit</span>
                                         </button>
@@ -145,6 +148,19 @@
                     @endif
                 </div>
 
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-1">Días Hábiles de Respuesta</label>
+                    <input type="number" id="dias_respuesta" name="dias_respuesta" 
+                        value="{{ old('form_type') == 'create' ? old('dias_respuesta') : '' }}"
+                        class="w-full px-3 py-2 border rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 focus:ring-2 focus:ring-primary {{ (old('form_type') == 'create' && $errors->has('dias_respuesta')) ? 'border-red-500' : '' }}" required min="1" title="Ingrese los días hábiles">
+                    
+                    @if(old('form_type') == 'create')
+                        @error('dias_respuesta')
+                            <p class="error-msg server-error text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    @endif
+                </div>
+
                 <div class="flex justify-end gap-3">
                     <button type="button" onclick="closeModals()" class="px-4 py-2 bg-gray-300 rounded-lg">Cancelar</button>
                     <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg">Guardar</button>
@@ -192,6 +208,19 @@
 
                     @if(old('form_type') == 'edit')
                         @error('id_prioridad')
+                            <p class="error-msg server-error text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    @endif
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-1">Días Hábiles de Respuesta</label>
+                    <input type="number" id="edit_dias_respuesta" name="dias_respuesta" 
+                        value="{{ old('form_type') == 'edit' ? old('dias_respuesta') : '' }}"
+                        class="w-full px-3 py-2 border rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 focus:ring-2 focus:ring-primary {{ (old('form_type') == 'edit' && $errors->has('dias_respuesta')) ? 'border-red-500' : '' }}" required min="1" title="Ingrese los días hábiles">
+                    
+                    @if(old('form_type') == 'edit')
+                        @error('dias_respuesta')
                             <p class="error-msg server-error text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
                     @endif
@@ -295,6 +324,7 @@
                 
                 const inputNombre = document.getElementById('tipo_nombre');
                 const inputPrioridad = document.getElementById('id_prioridad');
+                const inputDias = document.getElementById('dias_respuesta');
                 
                 if(inputNombre) {
                     inputNombre.dataset.dirty = '';
@@ -306,6 +336,11 @@
                     limpiarError(inputPrioridad);
                 }
 
+                if(inputDias) {
+                    inputDias.dataset.dirty = '';
+                    limpiarError(inputDias);
+                }
+
                 const btn = document.querySelector('#createModal button[type="submit"]');
                 if(btn) {
                     btn.disabled = true;
@@ -315,19 +350,22 @@
                 toggleModal('createModal', true);
             }
 
-            window.openEditModal = function(id, nombre, prioridad) {
+            window.openEditModal = function(id, nombre, prioridad, dias) {
                 let url = "{{ route('admin.tipo.update', ['id' => '__ID__']) }}";
                 url = url.replace('__ID__', id);
                 document.getElementById('editForm').action = url;
                 document.getElementById('edit_id_tipo').value = id;
                 document.getElementById('edit_tipo_nombre').value = nombre;
                 document.getElementById('edit_id_prioridad').value = prioridad;
+                document.getElementById('edit_dias_respuesta').value = dias;
                 
                 document.getElementById('edit_tipo_nombre').dataset.dirty = '';
                 document.getElementById('edit_id_prioridad').dataset.dirty = '';
+                document.getElementById('edit_dias_respuesta').dataset.dirty = '';
 
                 limpiarError(document.getElementById('edit_tipo_nombre'));
                 limpiarError(document.getElementById('edit_id_prioridad'));
+                limpiarError(document.getElementById('edit_dias_respuesta'));
 
                 toggleModal('editModal', true);
                 
@@ -430,16 +468,36 @@
                 return true;
             }
 
+            function validarDias(input) {
+                let valor = input.value;
+                let serverError = input.parentNode.querySelector('.server-error');
+                if (serverError && !input.dataset.dirty) {
+                    input.classList.remove('border-green-500', 'border-gray-300');
+                    input.classList.add('border-red-500');
+                    return false; 
+                }
+                
+                if (valor === "" || valor < 1) {
+                    mostrarError(input, "Ingrese un número válido mayor a 0.");
+                    return false;
+                }
+                
+                limpiarError(input);
+                return true;
+            }
+
             // Crear
             const inputCreate = document.getElementById('tipo_nombre');
             const selectCreate = document.getElementById('id_prioridad');
+            const inputDiasCreate = document.getElementById('dias_respuesta');
             const btnCreate = document.querySelector('#createModal button[type="submit"]');
 
-            if (inputCreate && selectCreate && btnCreate) {
+            if (inputCreate && selectCreate && inputDiasCreate && btnCreate) {
                 function validarCreate() {
                     const okNombre = validarNombre(inputCreate);
                     const okPrioridad = validarPrioridad(selectCreate);
-                    const ok = okNombre && okPrioridad;
+                    const okDias = validarDias(inputDiasCreate);
+                    const ok = okNombre && okPrioridad && okDias;
                     
                     btnCreate.disabled = !ok;
                     btnCreate.classList.toggle('opacity-50', btnCreate.disabled);
@@ -457,19 +515,26 @@
                     validarCreate();
                 });
 
+                inputDiasCreate.addEventListener('input', function() {
+                    this.dataset.dirty = 'true';
+                    validarCreate();
+                });
+
                 validarCreate();
             }
 
             // Editar
             const inputEdit = document.getElementById('edit_tipo_nombre');
             const selectEdit = document.getElementById('edit_id_prioridad');
+            const inputDiasEdit = document.getElementById('edit_dias_respuesta');
             const btnEdit = document.querySelector('#editModal button[type="submit"]');
 
-            if (inputEdit && selectEdit && btnEdit) {
+            if (inputEdit && selectEdit && inputDiasEdit && btnEdit) {
                 function validarEdit() {
                     const okNombre = validarNombre(inputEdit);
                     const okPrioridad = validarPrioridad(selectEdit);
-                    const ok = okNombre && okPrioridad;
+                    const okDias = validarDias(inputDiasEdit);
+                    const ok = okNombre && okPrioridad && okDias;
                     
                     btnEdit.disabled = !ok;
                     btnEdit.classList.toggle('opacity-50', btnEdit.disabled);
@@ -483,6 +548,11 @@
                 });
                 
                 selectEdit.addEventListener('change', function() {
+                    this.dataset.dirty = 'true';
+                    validarEdit();
+                });
+
+                inputDiasEdit.addEventListener('input', function() {
                     this.dataset.dirty = 'true';
                     validarEdit();
                 });

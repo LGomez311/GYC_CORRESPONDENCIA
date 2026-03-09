@@ -160,13 +160,23 @@ Route::prefix('admin')
 
         // Otros recursos del admin
         Route::get('/correspondencia', [\App\Http\Controllers\Admin\AdminCorrespondenciaController::class, 'index'])->name('admin.correspondencia');
+        Route::get('/correspondencia/export/excel', [\App\Http\Controllers\Admin\AdminCorrespondenciaController::class, 'exportExcel'])->name('admin.correspondencia.export.excel');
+        Route::get('/correspondencia/export/pdf', [\App\Http\Controllers\Admin\AdminCorrespondenciaController::class, 'exportPdf'])->name('admin.correspondencia.export.pdf');
+        
+        // Usuarios (Empleados y Remitentes)
         Route::get('/usuarios', [\App\Http\Controllers\Admin\UsuarioController::class, 'index'])->name('admin.usuarios');
+
+        Route::post('/usuarios/empleado', [\App\Http\Controllers\Admin\UsuarioController::class, 'storeEmpleado'])->name('admin.empleado.store');
+        Route::put('/usuarios/empleado/{emple_doc}', [\App\Http\Controllers\Admin\UsuarioController::class, 'updateEmpleado'])->name('admin.empleado.update');
+        Route::post('/usuarios/remitente', [\App\Http\Controllers\Admin\UsuarioController::class, 'storeRemitente'])->name('admin.remitente.store');
+        Route::put('/usuarios/remitente/{rem_doc}', [\App\Http\Controllers\Admin\UsuarioController::class, 'updateRemitente'])->name('admin.remitente.update');
+
+        
 
         // Prioridades (CRUD + export)
         Route::get('/prioridad', [PrioridadController::class, 'index'])->name('admin.prioridad.index');
         Route::post('/prioridad', [PrioridadController::class, 'store'])->name('admin.prioridad.store');
         Route::put('/prioridad/{id}', [PrioridadController::class, 'update'])->name('admin.prioridad.update');
-        Route::delete('/prioridad/{id}', [PrioridadController::class, 'destroy'])->name('admin.prioridad.destroy');
 
         Route::get('/prioridad/export/excel', [PrioridadController::class, 'exportExcel'])->name('admin.prioridad.export.excel');
         Route::get('/prioridad/export/pdf', [PrioridadController::class, 'exportPdf'])->name('admin.prioridad.export.pdf');
@@ -176,7 +186,6 @@ Route::prefix('admin')
         Route::get('/tipo', [TipoController::class, 'index'])->name('admin.tipo.index');
         Route::post('/tipo', [TipoController::class, 'store'])->name('admin.tipo.store');
         Route::put('/tipo/{id}', [TipoController::class, 'update'])->name('admin.tipo.update');
-        Route::delete('/tipo/{id}', [TipoController::class, 'destroy'])->name('admin.tipo.destroy');
 
         Route::get('/tipo/export/excel', [TipoController::class, 'exportExcel'])->name('admin.tipo.export.excel');
         Route::get('/tipo/export/pdf', [TipoController::class, 'exportPdf'])->name('admin.tipo.export.pdf');
@@ -186,7 +195,6 @@ Route::prefix('admin')
         Route::get('/estado', [EstadoController::class, 'index'])->name('admin.estado.index');
         Route::post('/estado', [EstadoController::class, 'store'])->name('admin.estado.store');
         Route::put('/estado/{id}', [EstadoController::class, 'update'])->name('admin.estado.update');
-        Route::delete('/estado/{id}', [EstadoController::class, 'destroy'])->name('admin.estado.destroy');
 
         Route::get('/estado/export/excel', [EstadoController::class, 'exportExcel'])->name('admin.estado.export.excel');
         Route::get('/estado/export/pdf', [EstadoController::class, 'exportPdf'])->name('admin.estado.export.pdf');
@@ -196,7 +204,6 @@ Route::prefix('admin')
         Route::get('/rol', [RolController::class, 'index'])->name('admin.rol.index');
         Route::post('/rol', [RolController::class, 'store'])->name('admin.rol.store');
         Route::put('/rol/{id}', [RolController::class, 'update'])->name('admin.rol.update');
-        Route::delete('/rol/{id}', [RolController::class, 'destroy'])->name('admin.rol.destroy');
 
         Route::get('/rol/export/excel', [RolController::class, 'exportExcel'])->name('admin.rol.export.excel');
         Route::get('/rol/export/pdf', [RolController::class, 'exportPdf'])->name('admin.rol.export.pdf');
@@ -206,7 +213,6 @@ Route::prefix('admin')
         Route::get('/radicados', [RadicadoController::class, 'index'])->name('admin.radicado.index');
         Route::post('/radicados', [RadicadoController::class, 'store'])->name('admin.radicado.store');
         Route::put('/radicados/{id}', [RadicadoController::class, 'update'])->name('admin.radicado.update');
-        Route::delete('/radicados/{id}', [RadicadoController::class, 'destroy'])->name('admin.radicado.destroy');
         Route::get('/radicados/check', [RadicadoController::class, 'check'])->name('admin.radicado.check');
         Route::get('/radicados/export/excel', [RadicadoController::class, 'exportExcel'])->name('admin.radicado.export.excel');
         Route::get('/radicados/export/pdf', [RadicadoController::class, 'exportPdf'])->name('admin.radicado.export.pdf');
@@ -299,7 +305,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth:web', 'licencia.activa
     Route::get('/areas', [AreaController::class, 'index'])->name('area.index');
     Route::post('/areas', [AreaController::class, 'store'])->name('area.store');
     Route::put('/areas/{id}', [AreaController::class, 'update'])->name('area.update');
-    Route::delete('/areas/{id}', [AreaController::class, 'destroy'])->name('area.destroy');
 });
 
 Route::prefix('admin')->name('admin.')->middleware(['auth:web', 'licencia.activa', 'role:2'])->group(function () {
@@ -323,9 +328,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth:web', 'licencia.activa
     Route::put('/departamento/{id}', [DepartamentoController::class, 'update'])
         ->name('departamento.update');
 
-    Route::delete('/departamento/{id}', [DepartamentoController::class, 'destroy'])
-        ->name('departamento.destroy');
-
     Route::get('/departamento/export/pdf', [DepartamentoController::class, 'exportPdf'])
         ->name('departamento.export.pdf');
 
@@ -346,7 +348,6 @@ Route::middleware(['auth:web', 'licencia.activa', 'role:2'])->group(function () 
     Route::get('/admin/ciudad', [CiudadController::class, 'index'])->name('admin.ciudad.index');
     Route::post('/admin/ciudad', [CiudadController::class, 'store'])->name('admin.ciudad.store');
     Route::put('/admin/ciudad/{id}', [CiudadController::class, 'update'])->name('admin.ciudad.update');
-    Route::delete('/admin/ciudad/{id}', [CiudadController::class, 'destroy'])->name('admin.ciudad.destroy');
 
     Route::get('/admin/ciudad/export/pdf', [CiudadController::class, 'exportPDF'])->name('admin.ciudad.export.pdf');
     Route::get('/admin/ciudad/export/excel', [CiudadController::class, 'exportExcel'])->name('admin.ciudad.export.excel');

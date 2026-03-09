@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Recibido;
 use Illuminate\Http\Request;
+use App\Exports\CorrespondenciaExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class AdminCorrespondenciaController extends Controller
 {
@@ -26,5 +29,32 @@ class AdminCorrespondenciaController extends Controller
             ->get();
 
         return view('admin.correspondencia', compact('correspondencias'));
+    }
+
+    private function getCorrespondenciaFiltered()
+    {
+        $nitEmpresa = auth()->user()->nit_empresa;
+
+        return Recibido::with(['dirigidoA', 'registradoPor', 'tipo', 'estado', 'ciudad'])
+            ->whereHas('registradoPor', function($query) use ($nitEmpresa) {
+                $query->where('nit_empresa', $nitEmpresa);
+            })
+            ->orWhereHas('dirigidoA', function($query) use ($nitEmpresa) {
+                $query->where('nit_empresa', $nitEmpresa);
+            })
+            ->get();
+    }
+
+    public function exportExcel()
+    {
+        $correspondencias = $this->getCorrespondenciaFiltered();
+        return Excel::download(new CorrespondenciaExport($correspondencias), 'correspondencia.xlsx');
+    }
+
+    public function exportPdf()
+    {
+        $correspondencias = $this->getCorrespondenciaFiltered();
+        $pdf = Pdf::loadView('admin.pdf.correspondencia_pdf', compact('correspondencias'))->setPaper('A4', 'landscape');
+        return $pdf->download('correspondencia.pdf');
     }
 }

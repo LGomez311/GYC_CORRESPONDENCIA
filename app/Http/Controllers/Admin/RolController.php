@@ -69,12 +69,7 @@ class RolController extends Controller
         return redirect()->route('admin.rol.index')->with('success', 'Rol actualizado correctamente');
     }
 
-    public function destroy($id)
-    {
-        $r = Rol::findOrFail($id);
-        $r->delete();
-        return redirect()->route('admin.rol.index')->with('success', 'Rol eliminada correctamente');
-    }
+
 
     public function exportExcel()
     {

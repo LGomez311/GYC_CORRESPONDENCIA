@@ -31,14 +31,7 @@
                 </p>
             </div>
 
-            <button onclick="openCreateModal()"
-                class="w-full sm:w-auto px-5 py-2.5 bg-primary text-white rounded-lg 
-            font-bold text-sm flex items-center justify-center gap-2 
-            shadow-lg shadow-primary/20 
-            hover:bg-primary/90 transition-all duration-200">
-                <span class="material-symbols-outlined text-[18px]">add</span>
-                Añadir Radicado
-            </button>
+            <div class="w-full sm:w-auto mt-2 lg:mt-0"></div>
         </div>
 
         <div class="bg-white dark:bg-[#161d2b] rounded-xl border border-[#cfd7e7] dark:border-gray-800 shadow-sm">
@@ -78,9 +71,11 @@
 
                                 <td class="px-4 sm:px-6 py-3 sm:py-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
-                                        <button onclick="openEditModal('{{ $r->id_radicado }}','{{ $r->num_radicado }}','{{ $r->id_est_radicado }}')"
-                                            class="p-2 text-[#4c669a] hover:text-primary transition">
-                                            <span class="material-symbols-outlined text-[20px]">edit</span>
+                                        <button class="p-2 text-[#4c669a] hover:text-primary transition btn-view-radicado" title="Ver Detalle"
+                                            data-id="{{ $r->id_radicado }}"
+                                            data-num="{{ $r->num_radicado }}"
+                                            data-estado="{{ $r->estado->estado_nomb ?? 'N/A' }}">
+                                            <span class="material-symbols-outlined text-[20px]">visibility</span>
                                         </button>
                                     </div>
                                 </td>
@@ -113,105 +108,41 @@
                 @csrf
                 <input type="hidden" name="form_type" value="create">
 
-                <div class="mb-4">
-                    <label class="block text-sm font-medium mb-1 dark:text-gray-300">Número de Radicado</label>
-                    <input type="text" id="num_radicado" name="num_radicado" 
-                        value="{{ old('form_type') == 'create' ? old('num_radicado') : '' }}"
-                        class="w-full px-3 py-2 border rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 focus:ring-2 focus:ring-primary {{ (old('form_type') == 'create' && $errors->has('num_radicado')) ? 'border-red-500' : '' }}" required minlength="10" maxlength="18" pattern="^20[2-9][0-9][0-9]{6,14}$" title="Debe ser numérico, tener entre 10 y 18 dígitos y comenzar con el año (ej: 2026...)">
-                    
-                    @if(old('form_type') == 'create')
-                        @error('num_radicado')
-                            <p class="error-msg server-error text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    @endif
-                </div>
+@section('modals')
 
-                <div class="mb-4">
-                    <label class="block text-sm font-medium mb-1 dark:text-gray-300">Estado</label>
-                    <select name="id_est_radicado" id="id_est_radicado" required
-                        class="w-full px-3 py-2 border rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 focus:ring-2 focus:ring-primary {{ (old('form_type') == 'create' && $errors->has('id_est_radicado')) ? 'border-red-500' : '' }}">
-                        <option value="">Seleccione un estado</option>
-                        @foreach($estados as $est)
-                            <option value="{{ $est->id_estado }}" {{ (old('form_type') == 'create' && old('id_est_radicado') == $est->id_estado) ? 'selected' : '' }}>
-                                {{ $est->estado_nomb }}
-                            </option>
-                        @endforeach
-                    </select>
-
-                    @if(old('form_type') == 'create')
-                        @error('id_est_radicado')
-                            <p class="error-msg server-error text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    @endif
+    <!-- MODAL DETALLES RADICADO -->
+    <div id="detallesRadicadoModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-[#161d2b] w-[95%] sm:w-full max-w-md rounded-xl shadow-2xl p-6 relative">
+            <h2 class="text-lg font-bold mb-4 text-[#0d121b] dark:text-white border-b border-[#cfd7e7] dark:border-gray-800 pb-2">Detalles del Radicado</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider mb-1">ID Radicado</label>
+                    <p class="text-base text-[#0d121b] dark:text-white font-medium" id="detRadId">-</p>
                 </div>
-
-                <div class="flex justify-end gap-3">
-                    <button type="button" onclick="closeModals()" class="px-4 py-2 bg-gray-300 rounded-lg">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg">Guardar</button>
+                <div>
+                    <label class="block text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider mb-1">Número de Radicado</label>
+                    <p class="text-base text-[#0d121b] dark:text-white font-medium" id="detRadNum">-</p>
                 </div>
-            </form>
+                <div>
+                    <label class="block text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider mb-1">Estado Actual</label>
+                    <p class="text-base text-[#0d121b] dark:text-white font-medium" id="detRadEstado">-</p>
+                </div>
+            </div>
+            <div class="mt-6 pt-4 border-t border-[#cfd7e7] dark:border-gray-800 flex justify-end">
+                <button onclick="closeDetallesRadicadoModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 transition-colors font-medium">Cerrar</button>
+            </div>
         </div>
     </div>
 
-    <!-- MODAL EDITAR -->
-    <div id="editModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
-        <div class="bg-white dark:bg-gray-900 w-[95%] sm:w-full max-w-md rounded-xl shadow-2xl p-6">
-
-            <h2 class="text-lg font-bold mb-4 dark:text-white">Editar Radicado</h2>
-
-            <form id="editForm" method="POST">
-                @csrf
-                @method('PUT')
-                <input type="hidden" name="form_type" value="edit">
-                <input type="hidden" id="edit_id_radicado" name="id_radicado" value="{{ old('id_radicado') }}">
-
-                <div class="mb-4">
-                    <label class="block text-sm font-medium mb-1 dark:text-gray-300">Número de Radicado</label>
-                    <input type="text" id="edit_num_radicado" name="num_radicado" 
-                        value="{{ old('form_type') == 'edit' ? old('num_radicado') : '' }}"
-                        class="w-full px-3 py-2 border rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 focus:ring-2 focus:ring-primary {{ (old('form_type') == 'edit' && $errors->has('num_radicado')) ? 'border-red-500' : '' }}" required minlength="10" maxlength="18" pattern="^20[2-9][0-9][0-9]{6,14}$" title="Debe ser numérico, tener entre 10 y 18 dígitos y comenzar con el año (ej: 2026...)">
-                    
-                    @if(old('form_type') == 'edit')
-                        @error('num_radicado')
-                            <p class="error-msg server-error text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    @endif
-                </div>
-
-                <div class="mb-4">
-                    <label class="block text-sm font-medium mb-1 dark:text-gray-300">Estado</label>
-                    <select id="edit_id_est_radicado" name="id_est_radicado" required
-                        class="w-full px-3 py-2 border rounded-lg border-gray-300 dark:bg-gray-800 dark:border-gray-700 focus:ring-2 focus:ring-primary {{ (old('form_type') == 'edit' && $errors->has('id_est_radicado')) ? 'border-red-500' : '' }}">
-                        <option value="">Seleccione un estado</option>
-                        @foreach($estados as $est)
-                            <option value="{{ $est->id_estado }}" {{ (old('form_type') == 'edit' && old('id_est_radicado') == $est->id_estado) ? 'selected' : '' }}>
-                                {{ $est->estado_nomb }}
-                            </option>
-                        @endforeach
-                    </select>
-
-                    @if(old('form_type') == 'edit')
-                        @error('id_est_radicado')
-                            <p class="error-msg server-error text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    @endif
-                </div>
-
-                <div class="flex justify-end gap-3">
-                    <button type="button" onclick="closeModals()" class="px-4 py-2 bg-gray-300 rounded-lg">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg">Actualizar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-@endsection
-
-
-@section('scripts')
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        function closeDetallesRadicadoModal() {
+            const modal = document.getElementById('detallesRadicadoModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
+<<<<<<< HEAD
 
             // ================= ALERTS DE SESIÓN Y ERRORES =================
             @if(session('success'))
@@ -432,22 +363,22 @@
             });
 
 
+=======
+            document.querySelectorAll('.btn-view-radicado').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.getElementById('detRadId').textContent = btn.dataset.id;
+                    document.getElementById('detRadNum').textContent = btn.dataset.num;
+                    document.getElementById('detRadEstado').textContent = btn.dataset.estado;
+                    const modal = document.getElementById('detallesRadicadoModal');
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                });
+            });
+>>>>>>> origin/Luis
         });
     </script>
 
     <!-- MODAL EXPORTAR -->
-    <div id="exportModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
-        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg w-72 p-5">
-
-            <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-4">
-                Exportar Radicados
-            </h3>
-
-            <div class="flex flex-col gap-3">
-
-                <!-- PDF -->
-                <a href="{{ route('admin.radicado.export.pdf') }}"
-                    class="flex items-center gap-2 px-4 py-2 text-sm font-semibold border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
                     <span class="material-symbols-outlined text-red-600">picture_as_pdf</span>
                     PDF
                 </a>

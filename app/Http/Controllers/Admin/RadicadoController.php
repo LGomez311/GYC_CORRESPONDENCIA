@@ -74,14 +74,7 @@ class RadicadoController extends Controller
         return redirect()->back()->with('success', 'Radicado actualizado correctamente.');
     }
 
-    public function destroy($id)
-    {
-        $radicado = Radicado::findOrFail($id);
-        
-        $radicado->delete();
 
-        return redirect()->back()->with('success', 'Radicado eliminado correctamente.');
-    }
 
     public function check(Request $request)
     {

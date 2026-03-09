@@ -49,10 +49,27 @@ class CatalogosSeeder extends Seeder
 
         // 5. Tipos de Documento
         $tipos = [
-            'Derecho de Peticion', 'Queja', 'Reclamo', 'Solicitud', 'Carta', 'Memorando', 'Circular', 'Resolucion', 'Contrato'
+            ['nombre' => 'Derecho de Peticion', 'prioridad' => 'Urgente', 'dias' => 15],
+            ['nombre' => 'Queja', 'prioridad' => 'Alta', 'dias' => 15],
+            ['nombre' => 'Reclamo', 'prioridad' => 'Alta', 'dias' => 15],
+            ['nombre' => 'Solicitud', 'prioridad' => 'Media', 'dias' => 10],
+            ['nombre' => 'Carta', 'prioridad' => 'Baja', 'dias' => 5],
+            ['nombre' => 'Memorando', 'prioridad' => 'Media', 'dias' => 5],
+            ['nombre' => 'Circular', 'prioridad' => 'Baja', 'dias' => 5],
+            ['nombre' => 'Resolucion', 'prioridad' => 'Media', 'dias' => 15],
+            ['nombre' => 'Contrato', 'prioridad' => 'Alta', 'dias' => 10],
         ];
+        
         foreach ($tipos as $t) {
-            Tipo::firstOrCreate(['tipo_nombre' => $t]);
+            $prioridad = Prioridad::where('prioridad_nombre', $t['prioridad'])->first();
+            
+            Tipo::updateOrCreate(
+                ['tipo_nombre' => $t['nombre']],
+                [
+                    'id_prioridad' => $prioridad ? $prioridad->id_prioridad : null,
+                    'dias_respuesta' => $t['dias']
+                ]
+            );
         }
 
         // 6. Radicados de ejemplo (formato AGN colombiano)

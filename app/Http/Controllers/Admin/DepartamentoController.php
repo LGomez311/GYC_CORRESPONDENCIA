@@ -99,20 +99,8 @@ class DepartamentoController extends Controller
 }
 
     // ELIMINAR (con control FK)
-    public function destroy($id)
-    {
-        $departamento = Departamento::findOrFail($id);
 
-        if ($departamento->ciudades()->count() > 0) {
-            return redirect()->back()
-                ->with('error', 'No se puede eliminar porque tiene ciudades asociadas.');
-        }
 
-        $departamento->delete();
-
-        return redirect()->route('admin.departamento.index')
-            ->with('success', 'Departamento eliminado correctamente.');
-    }
 
     // EXPORTAR PDF
     public function exportPDF()
