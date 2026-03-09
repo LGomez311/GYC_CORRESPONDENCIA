@@ -164,7 +164,7 @@ class CorrespondenciaController extends Controller
 
         // Si se subió un archivo de respuesta, guardarlo
         if ($request->hasFile('archivo_respuesta')) {
-            $path = $request->file('archivo_respuesta')->store('archivos', 'public');
+            $path = $request->file('archivo_respuesta')->store('correspondencia', 'public');
             $nuevoRegistro->archivo_respuesta = $path;
         } else {
             // Mantener el archivo previo si existe o dejar nulo (depende la regla de negocio, 
@@ -187,12 +187,25 @@ class CorrespondenciaController extends Controller
         // Process new Anexos Respuesta Múltiples as part of the overall Envio thread
         if ($request->hasFile('archivos_respuesta')) {
             foreach ($request->file('archivos_respuesta') as $file) {
-                $pathAnexoResp = $file->store('archivos', 'public');
+                $pathAnexoResp = $file->store('correspondencia', 'public');
                 \App\Models\AnexoRespuesta::create([
                     'id_detalle' => $nuevoRegistro->id_detalle,
                     'ruta_archivo' => $pathAnexoResp,
                     'nombre_original' => $file->getClientOriginalName(),
                 ]);
+            }
+        }
+
+        // Si el estado es finalizado (9=Archivado, 10=Resuelto, u otros considerados finales en tu negocio)
+        // marcamos el radicado asociado como "Inactivo" (id_estado = 2 asumiendo Activo=1 e Inactivo=2 del EstadoSeeder)
+        if (in_array($estado->id_estado, [9, 10]) || stripos($estado->estado_nomb, 'rechazado') !== false) {
+            $envioAsociado = \App\Models\Envio::find($detalleAntiguo->id_envio);
+            if ($envioAsociado && $envioAsociado->num_radicado_int) {
+                $radicadoInt = \App\Models\Radicado::find($envioAsociado->num_radicado_int);
+                if ($radicadoInt) {
+                    $radicadoInt->id_est_radicado = 2; // Inactivo
+                    $radicadoInt->save();
+                }
             }
         }
 
@@ -271,7 +284,8 @@ class CorrespondenciaController extends Controller
 
     public function nuevaInterna(Request $request)
     {
-        $request->validate([
+        try {
+            $request->validate([
             'asunto' => 'required|string|max:100',
             'doc_quien_dirigido' => 'required|exists:empleado,emple_doc',
             'id_tipo_envio' => 'required|exists:tipo,id_tipo',
@@ -288,12 +302,16 @@ class CorrespondenciaController extends Controller
         // We will insert a new Radicado automatically for internal to maintain consistency.
         
         $estadoRecibido = \App\Models\Estado::where('estado_nomb', 'Recibido')->first();
-        $estadoId = $estadoRecibido ? $estadoRecibido->id_estado : 7; // Fallback to 7
+        $estadoEnviado = \App\Models\Estado::where('estado_nomb', 'Enviado')->first();
+        
+        $estadoRecibidoId = $estadoRecibido ? $estadoRecibido->id_estado : 7; // Fallback
+        $estadoEnviadoId = $estadoEnviado ? $estadoEnviado->id_estado : 7; // Fallback if not found
+        $estadoActivoId = 1; // ID 1 = Activo (basado en EstadoSeeder)
 
         // Create Radicado (using a logical numbering for internal, you could customize this)
         $radicado = new \App\Models\Radicado();
         $radicado->num_radicado = 'INT-' . date('Y') . '-' . str_pad(rand(1, 99999), 5, '0', STR_PAD_LEFT);
-        $radicado->id_est_radicado = $estadoId;
+        $radicado->id_est_radicado = $estadoActivoId;
         $radicado->nit_empresa = $user->nit_empresa;
         $radicado->save();
 
@@ -303,15 +321,15 @@ class CorrespondenciaController extends Controller
         $envio->doc_quien_envia = $user->emple_doc;
         $envio->doc_quien_dirigido = null; // Internal, not a remitente
         $envio->fecha = now();
-        $envio->anexo = $request->anexo;
+        $envio->anexo = $request->has('anexo') ? $request->anexo : null;
         $envio->folio = $request->folio ?? 0;
         $envio->id_tipo_envio = $request->id_tipo_envio;
-        $envio->id_estado_envio = $estadoId;
+        $envio->id_estado_envio = $estadoEnviadoId; // El que envía (remitente) inicia en 'Enviado'
         $envio->nit_empresa = $user->nit_empresa;
         $envio->destino = 'Interno';
 
         if ($request->hasFile('archivo')) {
-            $path = $request->file('archivo')->store('archivos', 'public');
+            $path = $request->file('archivo')->store('correspondencia', 'public');
             $envio->archivo = $path;
         } else {
             $envio->archivo = '';
@@ -322,7 +340,7 @@ class CorrespondenciaController extends Controller
         // Procesar los Anexos Múltiples
         if ($request->hasFile('anexos')) {
             foreach ($request->file('anexos') as $file) {
-                $pathAnexo = $file->store('archivos', 'public');
+                $pathAnexo = $file->store('correspondencia', 'public');
                 \App\Models\AnexoEnvio::create([
                     'id_envio' => $envio->id_envio,
                     'ruta_archivo' => $pathAnexo,
@@ -337,10 +355,17 @@ class CorrespondenciaController extends Controller
         $detalle->id_quien_recibe = $request->doc_quien_dirigido;
         $detalle->id_envio = $envio->id_envio;
         $detalle->fecha_traslado = now();
-        $detalle->id_estado_rec = $estadoId;
+        $detalle->id_estado_rec = $estadoRecibidoId; // El que recibe (destinatario) inicia en 'Recibido'
         $detalle->observaciones = $request->observaciones;
         $detalle->save();
 
         return back()->with('success', 'Correspondencia interna creada y enviada exitosamente.', ['int_page' => 1]);
+        
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            \Log::error('Error guardando correspondencia interna: ' . $e->getMessage());
+            return back()->with('error', 'Error interno al guardar: ' . $e->getMessage())->withInput();
+        }
     }
 }
