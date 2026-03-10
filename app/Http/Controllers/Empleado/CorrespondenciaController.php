@@ -17,31 +17,42 @@ class CorrespondenciaController extends Controller
         
         // Fetch real data. We assume the user has a nit_empresa attribute based on the database schema.
         // Fetch stats
+        // Fetch stats using grouping subqueries to avoid duplicate history traces
         $queryBase = Recibido::query();
-        // if ($user && isset($user->nit_empresa)) {
-        //     $queryBase->where('nit_empresa', $user->nit_empresa);
-        // }
 
-        $totalRecibidas = (clone $queryBase)->count();
-        $enTramite = (clone $queryBase)->where('id_estado_rec', 8)->count(); // 8 = En Tramite
-        $finalizadas = (clone $queryBase)->whereIn('id_estado_rec', [9, 10])->count();
+        $latestRecibidoSubquery = clone $queryBase;
+        $latestRecibidoSubquery = $latestRecibidoSubquery->select(\Illuminate\Support\Facades\DB::raw('MAX(id_recibido) as id_recibido'))->groupBy('num_radicado_ext', 'num_radicado_int');
+        $queryBandejaUnicaExt = Recibido::whereIn('id_recibido', $latestRecibidoSubquery);
+
+        $totalRecibidas = (clone $queryBandejaUnicaExt)->count();
+        $enTramite = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 8)->count(); 
+        $finalizadas = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 9)->count();
+        $archivadas = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 10)->count();
+        $vencidas = 0; // Se puede implementar luego la logica o join para buscar vencimiento de radicados. 
         
-        $correspondencias = (clone $queryBase)->with(['radicado', 'estado', 'dirigidoA', 'registradoPor', 'tipo', 'ciudad', 'anexos'])
+        $correspondencias = (clone $queryBandejaUnicaExt)->with(['radicado', 'estado', 'dirigidoA', 'registradoPor', 'tipo.prioridad', 'ciudad', 'anexos'])
             ->orderBy('id_recibido', 'desc')
             ->paginate(10, ['*'], 'ext_page');
 
         // Start query for BANDEJA INTERNA
-        $queryInterna = DetalleEnvio::with(['envio', 'envio.tipoEnvio', 'envio.radicado', 'quienEnvia', 'estado', 'anexosRespuesta'])
-            ->where('id_quien_recibe', $user->emple_doc)
-            ->whereHas('estado', function ($q) {
-                // Filter out archived ones if any
-                $q->where('estado_nomb', '!=', 'Archivado');
-            });
-        $totalInternas = (clone $queryInterna)->count();
-        $enTramiteInt = (clone $queryInterna)->where('id_estado_rec', 8)->count();
-        $finalizadasInt = (clone $queryInterna)->whereIn('id_estado_rec', [9, 10])->count();
+        $queryInterna = DetalleEnvio::with(['envio', 'envio.tipoEnvio', 'envio.radicado', 'quienEnvia', 'quienEnvia.area', 'estado', 'anexosRespuesta'])
+            ->where('id_quien_recibe', $user->emple_doc);
+            
+        // Fix counters using grouping subquery so we don't count history duplicates
+        $latestDetalleSubqueryInt = clone $queryInterna;
+        $latestDetalleSubqueryInt = $latestDetalleSubqueryInt->select(\Illuminate\Support\Facades\DB::raw('MAX(id_detalle) as id_detalle'))->groupBy('id_envio');
 
-        $correspondenciasInternas = (clone $queryInterna)->orderBy('id_detalle', 'desc')
+        $queryBandejaUnicaInt = DetalleEnvio::whereIn('id_detalle', $latestDetalleSubqueryInt)->where('id_quien_recibe', $user->emple_doc);
+
+        $totalInternas = (clone $queryBandejaUnicaInt)->count();
+        $enTramiteInt = (clone $queryBandejaUnicaInt)->where('id_estado_rec', 8)->count();
+        $finalizadasInt = (clone $queryBandejaUnicaInt)->where('id_estado_rec', 9)->count();
+        $archivadasInt = (clone $queryBandejaUnicaInt)->where('id_estado_rec', 10)->count();
+        $vencidasInt = 0; // Same, placeholder for overdue.
+
+        $correspondenciasInternas = clone $queryBandejaUnicaInt;
+        $correspondenciasInternas = $correspondenciasInternas->with(['envio', 'envio.tipoEnvio.prioridad', 'envio.radicado', 'quienEnvia', 'quienEnvia.area', 'estado', 'anexosRespuesta'])
+            ->orderBy('id_detalle', 'desc')
             ->paginate(10, ['*'], 'int_page');
 
         // Fetch all active employees for the reassignment modal
@@ -53,8 +64,8 @@ class CorrespondenciaController extends Controller
         $tipos = \App\Models\Tipo::all();
 
         return view('empleado.correspondencia_recibida', compact(
-            'correspondencias', 'totalRecibidas', 'enTramite', 'finalizadas',
-            'correspondenciasInternas', 'totalInternas', 'enTramiteInt', 'finalizadasInt',
+            'correspondencias', 'totalRecibidas', 'enTramite', 'finalizadas', 'archivadas', 'vencidas',
+            'correspondenciasInternas', 'totalInternas', 'enTramiteInt', 'finalizadasInt', 'archivadasInt', 'vencidasInt',
             'empleados', 'tipos'
         ));
     }
@@ -138,7 +149,11 @@ class CorrespondenciaController extends Controller
         }
 
         // Prevent updating historical records via API manipulation
-        $latestDetalleId = DetalleEnvio::where('id_envio', $detalleAntiguo->id_envio)->max('id_detalle');
+        // VERY IMPORTANT: Check the latest ID strictly for this recipient's thread 
+        // because an internal document can be sent to multiple users at once.
+        $latestDetalleId = DetalleEnvio::where('id_envio', $detalleAntiguo->id_envio)
+                                       ->where('id_quien_recibe', $detalleAntiguo->id_quien_recibe)
+                                       ->max('id_detalle');
         if ($detalleAntiguo->id_detalle != $latestDetalleId) {
             return back()->with('error', 'No se puede modificar un historial pasado. Solo el estado más reciente puede ser actualizado.');
         }
@@ -287,7 +302,8 @@ class CorrespondenciaController extends Controller
         try {
             $request->validate([
             'asunto' => 'required|string|max:100',
-            'doc_quien_dirigido' => 'required|exists:empleado,emple_doc',
+            'doc_quien_dirigido' => 'required|array|min:1',
+            'doc_quien_dirigido.*' => 'exists:empleado,emple_doc',
             'id_tipo_envio' => 'required|exists:tipo,id_tipo',
             'observaciones' => 'nullable|string',
             'archivo' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120', // Max 5MB
@@ -311,7 +327,10 @@ class CorrespondenciaController extends Controller
         // Create Radicado (using a logical numbering for internal, you could customize this)
         $radicado = new \App\Models\Radicado();
         $radicado->num_radicado = 'INT-' . date('Y') . '-' . str_pad(rand(1, 99999), 5, '0', STR_PAD_LEFT);
+<<<<<<< Updated upstream
         $radicado->id_est_radicado = $estadoActivoId;
+=======
+>>>>>>> Stashed changes
         $radicado->nit_empresa = $user->nit_empresa;
         $radicado->save();
 
@@ -349,6 +368,7 @@ class CorrespondenciaController extends Controller
             }
         }
 
+<<<<<<< Updated upstream
         // Create DetalleEnvio (Receiver tracking)
         $detalle = new \App\Models\DetalleEnvio();
         $detalle->id_quien_envie = $user->emple_doc;
@@ -367,5 +387,20 @@ class CorrespondenciaController extends Controller
             \Log::error('Error guardando correspondencia interna: ' . $e->getMessage());
             return back()->with('error', 'Error interno al guardar: ' . $e->getMessage())->withInput();
         }
+=======
+        // Create DetalleEnvio (Receiver tracking) for each recipient
+        foreach ($request->doc_quien_dirigido as $destinatario_doc) {
+            $detalle = new \App\Models\DetalleEnvio();
+            $detalle->id_quien_envie = $user->emple_doc;
+            $detalle->id_quien_recibe = $destinatario_doc;
+            $detalle->id_envio = $envio->id_envio;
+            $detalle->fecha_traslado = now();
+            $detalle->id_estado_rec = $estadoId;
+            $detalle->observaciones = $request->observaciones;
+            $detalle->save();
+        }
+
+        return back()->with('success', 'Correspondencia interna creada y enviada exitosamente a los destinatarios seleccionados.', ['int_page' => 1]);
+>>>>>>> Stashed changes
     }
 }

@@ -53,7 +53,6 @@
                         <tr>
                             <th class="px-4 sm:px-6 py-3 sm:py-4 text-xs font-bold text-[#4c669a] uppercase text-center">ID</th>
                             <th class="px-4 sm:px-6 py-3 sm:py-4 text-xs font-bold text-[#4c669a] uppercase text-center">Número de Radicado</th>
-                            <th class="px-4 sm:px-6 py-3 sm:py-4 text-xs font-bold text-[#4c669a] uppercase text-center">Estado</th>
                             <th class="px-4 sm:px-6 py-3 sm:py-4 text-xs font-bold text-[#4c669a] uppercase text-center">Acciones</th>
                         </tr>
                     </thead>
@@ -67,15 +66,16 @@
 
                                 <td class="px-4 sm:px-6 py-3 sm:py-4 text-center font-bold text-[#0d121b] dark:text-white">{{ $r->num_radicado }}</td>
 
-                                <td class="px-4 sm:px-6 py-3 sm:py-4 text-center">{{ $r->estado->estado_nomb ?? 'N/A' }}</td>
-
                                 <td class="px-4 sm:px-6 py-3 sm:py-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
                                         <button class="p-2 text-[#4c669a] hover:text-primary transition btn-view-radicado" title="Ver Detalle"
                                             data-id="{{ $r->id_radicado }}"
-                                            data-num="{{ $r->num_radicado }}"
-                                            data-estado="{{ $r->estado->estado_nomb ?? 'N/A' }}">
+                                            data-num="{{ $r->num_radicado }}">
                                             <span class="material-symbols-outlined text-[20px]">visibility</span>
+                                        </button>
+                                        <button class="p-2 text-[#4c669a] hover:text-primary transition" title="Editar Radicado"
+                                            onclick="openEditModal({{ $r->id_radicado }}, '{{ $r->num_radicado }}')">
+                                            <span class="material-symbols-outlined text-[20px]">edit</span>
                                         </button>
                                     </div>
                                 </td>
@@ -99,16 +99,48 @@
 @section('modals')
 
     <!-- MODAL CREAR -->
-    <div id="createModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
-        <div class="bg-white dark:bg-gray-900 w-[95%] sm:w-full max-w-md rounded-xl shadow-2xl p-6">
-
+    <div id="createModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-[#161d2b] w-full max-w-md rounded-xl shadow-2xl p-6 relative">
             <h2 class="text-lg font-bold mb-4 dark:text-white">Crear Radicado</h2>
-
             <form action="{{ route('admin.radicado.store') }}" method="POST" id="createForm">
                 @csrf
                 <input type="hidden" name="form_type" value="create">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Número de Radicado <span class="text-red-500">*</span></label>
+                        <input type="text" name="num_radicado" value="{{ old('num_radicado', old('form_type') === 'create' ? old('num_radicado') : '') }}" class="w-full border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg p-2 focus:ring-primary focus:border-primary transition-colors" placeholder="Ej: 20261234567890">
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end gap-3">
+                    <button type="button" onclick="closeModals()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 transition-colors font-medium">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-@section('modals')
+    <!-- MODAL EDITAR -->
+    <div id="editModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-[#161d2b] w-full max-w-md rounded-xl shadow-2xl p-6 relative">
+            <h2 class="text-lg font-bold mb-4 dark:text-white">Editar Radicado</h2>
+            <form action="" method="POST" id="editForm">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="form_type" value="edit">
+                <input type="hidden" name="id_radicado" id="edit_id_radicado">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Número de Radicado <span class="text-red-500">*</span></label>
+                        <input type="text" name="num_radicado" id="edit_num_radicado" class="w-full border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg p-2 focus:ring-primary focus:border-primary transition-colors">
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end gap-3">
+                    <button type="button" onclick="closeModals()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 transition-colors font-medium">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">Actualizar</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- MODAL DETALLES RADICADO -->
     <div id="detallesRadicadoModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 p-4">
@@ -122,10 +154,6 @@
                 <div>
                     <label class="block text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider mb-1">Número de Radicado</label>
                     <p class="text-base text-[#0d121b] dark:text-white font-medium" id="detRadNum">-</p>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-[#4c669a] dark:text-gray-400 uppercase tracking-wider mb-1">Estado Actual</label>
-                    <p class="text-base text-[#0d121b] dark:text-white font-medium" id="detRadEstado">-</p>
                 </div>
             </div>
             <div class="mt-6 pt-4 border-t border-[#cfd7e7] dark:border-gray-800 flex justify-end">
@@ -142,8 +170,6 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-<<<<<<< HEAD
-
             // ================= ALERTS DE SESIÓN Y ERRORES =================
             @if(session('success'))
                 Swal.fire({
@@ -218,13 +244,12 @@
                 toggleModal('createModal', true);
             }
 
-            window.openEditModal = function(id, num, est) {
+            window.openEditModal = function(id, num) {
                 let url = "{{ route('admin.radicado.update', ['id' => '__ID__']) }}";
                 url = url.replace('__ID__', id);
                 document.getElementById('editForm').action = url;
                 document.getElementById('edit_id_radicado').value = id;
                 document.getElementById('edit_num_radicado').value = num;
-                document.getElementById('edit_id_est_radicado').value = est;
 
                 const form = document.getElementById('editForm');
                 const inputs = form.querySelectorAll('input, select');
@@ -322,12 +347,10 @@
                 const id = isEdit ? document.getElementById('edit_id_radicado').value : null;
                 
                 const numInput = form.querySelector('input[name="num_radicado"]');
-                const estSelect = form.querySelector('select[name="id_est_radicado"]');
                 
                 const okNum = await validarNumero(numInput, id);
-                const okEst = validarEstado(estSelect);
                 
-                const ok = okNum && okEst;
+                const ok = okNum;
                 
                 if(btn) {
                     btn.disabled = !ok;
@@ -344,7 +367,6 @@
                 if (!form) return;
 
                 const numInput = form.querySelector('input[name="num_radicado"]');
-                const estSelect = form.querySelector('select[name="id_est_radicado"]');
 
                 if (numInput) {
                     numInput.addEventListener('input', function() {
@@ -353,28 +375,17 @@
                         validarForm(form);
                     });
                 }
-
-                if (estSelect) {
-                    estSelect.addEventListener('change', function() {
-                        this.dataset.dirty = 'true';
-                        validarForm(form);
-                    });
-                }
             });
 
-
-=======
             document.querySelectorAll('.btn-view-radicado').forEach(btn => {
                 btn.addEventListener('click', function() {
                     document.getElementById('detRadId').textContent = btn.dataset.id;
                     document.getElementById('detRadNum').textContent = btn.dataset.num;
-                    document.getElementById('detRadEstado').textContent = btn.dataset.estado;
                     const modal = document.getElementById('detallesRadicadoModal');
                     modal.classList.remove('hidden');
                     modal.classList.add('flex');
                 });
             });
->>>>>>> origin/Luis
         });
     </script>
 

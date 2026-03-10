@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Radicado;
-use App\Models\Estado;
 use Illuminate\Http\Request;
 use App\Exports\RadicadoExport;
 use Maatwebsite\Excel\Facades\Excel;
@@ -14,9 +13,8 @@ class RadicadoController extends Controller
 {
     public function index()
     {
-        $radicados = Radicado::with('estado')->paginate(5);
-        $estados = Estado::where('id_estado', '>=', 1)->get(); // Filtrar estados según necesidad
-        return view('admin.otros.radicado', compact('radicados', 'estados'));
+        $radicados = Radicado::paginate(5);
+        return view('admin.otros.radicado', compact('radicados'));
     }
 
     public function store(Request $request)
@@ -29,16 +27,13 @@ class RadicadoController extends Controller
                 'max:18',
                 'unique:radicados,num_radicado',
                 'regex:/^20[2-9][0-9][0-9]{6,14}$/'
-            ],
-            'id_est_radicado' => 'required|exists:estado,id_estado'
+            ]
         ], [
             'num_radicado.required' => 'El número de radicado es obligatorio.',
             'num_radicado.unique' => 'Este número de radicado ya existe.',
             'num_radicado.min' => 'El radicado debe tener al menos 10 dígitos.',
             'num_radicado.max' => 'El radicado no puede superar los 18 dígitos.',
-            'num_radicado.regex' => 'Formato inválido. Debe ser numérico y comenzar con el año (ej: 2026...).',
-            'id_est_radicado.required' => 'El estado es obligatorio.',
-            'id_est_radicado.exists' => 'El estado seleccionado no es válido.'
+            'num_radicado.regex' => 'Formato inválido. Debe ser numérico y comenzar con el año (ej: 2026...).'
         ]);
 
         Radicado::create($validated);
@@ -56,16 +51,13 @@ class RadicadoController extends Controller
                 'max:18',
                 'unique:radicados,num_radicado,' . $id . ',id_radicado',
                 'regex:/^20[2-9][0-9][0-9]{6,14}$/'
-            ],
-            'id_est_radicado' => 'required|exists:estado,id_estado'
+            ]
         ], [
             'num_radicado.required' => 'El número de radicado es obligatorio.',
             'num_radicado.unique' => 'Este número de radicado ya existe.',
             'num_radicado.min' => 'El radicado debe tener al menos 10 dígitos.',
             'num_radicado.max' => 'El radicado no puede superar los 18 dígitos.',
-            'num_radicado.regex' => 'Formato inválido. Debe ser numérico y comenzar con el año (ej: 2026...).',
-            'id_est_radicado.required' => 'El estado es obligatorio.',
-            'id_est_radicado.exists' => 'El estado seleccionado no es válido.'
+            'num_radicado.regex' => 'Formato inválido. Debe ser numérico y comenzar con el año (ej: 2026...).'
         ]);
 
         $radicado = Radicado::findOrFail($id);
@@ -96,7 +88,7 @@ class RadicadoController extends Controller
 
     public function exportPdf()
     {
-        $radicados = Radicado::with('estado')->get();
+        $radicados = Radicado::get();
         $pdf = Pdf::loadView('admin.pdf.radicado_pdf', compact('radicados'));
         return $pdf->download('radicados.pdf');
     }
