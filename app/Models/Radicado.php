@@ -11,12 +11,6 @@ class Radicado extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'num_radicado',
-        'id_est_radicado'
+        'num_radicado'
     ];
-
-    public function estado()
-    {
-        return $this->belongsTo(Estado::class, 'id_est_radicado', 'id_estado');
-    }
 }

@@ -26,79 +26,93 @@
         </div>
     </div>
 
-    <!-- Charts area - Top Layer -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Dynamic Metrics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         
-        <!-- Estado de Correspondencia Chart (Pie/Doughnut Placeholder) -->
-        <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
-            <h3 class="font-bold text-lg dark:text-white mb-4">Estado General de Trámites</h3>
-            <div class="relative h-64 w-full flex items-center justify-center">
-                <!-- Decorative Graphic (Pie Chart lookalike) -->
-                <div class="relative w-48 h-48 rounded-full border-[16px] border-blue-500 flex items-center justify-center" style="border-top-color: #3b82f6; border-right-color: #eab308; border-bottom-color: #22c55e; border-left-color: #ef4444;">
-                    <div class="text-center">
-                        <p class="text-3xl font-bold dark:text-white">124</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Total</p>
-                    </div>
+        <!-- Recibidos -->
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-hidden">
+            <div class="absolute right-0 top-0 h-full w-24 bg-gradient-to-l from-blue-50 to-transparent dark:from-blue-900/20"></div>
+            <div class="flex items-start justify-between relative z-10">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Recibidos</p>
+                    <h3 class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{ $countRecibido }}</h3>
                 </div>
-            </div>
-            
-            <div class="mt-4 grid grid-cols-2 gap-4">
-                <div class="flex items-center gap-2">
-                    <div class="w-3 h-3 rounded-full bg-blue-500"></div>
-                    <span class="text-sm text-gray-600 dark:text-gray-300">Recibidos (40%)</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                    <span class="text-sm text-gray-600 dark:text-gray-300">En Trámite (30%)</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                    <span class="text-sm text-gray-600 dark:text-gray-300">Finalizados (25%)</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                    <span class="text-sm text-gray-600 dark:text-gray-300">Vencidos (5%)</span>
+                <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                    <span class="material-symbols-outlined">inbox</span>
                 </div>
             </div>
         </div>
 
-        <!-- Recepción por día (Bar Chart Placeholder) -->
-        <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
-            <h3 class="font-bold text-lg dark:text-white mb-4">Volumen de Ingreso (Últimos 7 días)</h3>
-            <div class="h-64 flex items-end justify-between gap-2 border-b border-l border-gray-200 dark:border-gray-700 p-2 pb-0 opacity-80">
-                <div class="w-full bg-blue-500/80 hover:bg-blue-600 transition-colors rounded-t cursor-pointer relative" style="height: 30%;" title="26 Feb: 15 ingresados">
-                    <span class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-gray-500 dark:text-gray-400">15</span>
+        <!-- En Trámite -->
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-hidden">
+            <div class="absolute right-0 top-0 h-full w-24 bg-gradient-to-l from-yellow-50 to-transparent dark:from-yellow-900/20"></div>
+            <div class="flex items-start justify-between relative z-10">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">En Trámite</p>
+                    <h3 class="text-3xl font-bold text-yellow-600 dark:text-yellow-400">{{ $countTramite }}</h3>
                 </div>
-                <div class="w-full bg-blue-500/80 hover:bg-blue-600 transition-colors rounded-t cursor-pointer relative" style="height: 50%;" title="27 Feb: 25 ingresados">
-                    <span class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-gray-500 dark:text-gray-400">25</span>
+                <div class="w-10 h-10 rounded-full bg-yellow-100 dark:bg-yellow-900/40 flex items-center justify-center text-yellow-600 dark:text-yellow-400">
+                    <span class="material-symbols-outlined">pending_actions</span>
                 </div>
-                <div class="w-full bg-blue-500/80 hover:bg-blue-600 transition-colors rounded-t cursor-pointer relative" style="height: 40%;" title="28 Feb: 20 ingresados">
-                    <span class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-gray-500 dark:text-gray-400">20</span>
-                </div>
-                <div class="w-full bg-blue-500/80 hover:bg-blue-600 transition-colors rounded-t cursor-pointer relative" style="height: 80%;" title="01 Mar: 40 ingresados">
-                    <span class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-gray-500 dark:text-gray-400">40</span>
-                </div>
-                <div class="w-full bg-blue-500/80 hover:bg-blue-600 transition-colors rounded-t cursor-pointer relative" style="height: 60%;" title="02 Mar: 30 ingresados">
-                    <span class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-gray-500 dark:text-gray-400">30</span>
-                </div>
-                <div class="w-full bg-gray-300 dark:bg-gray-700/80 rounded-t relative" style="height: 10%;" title="03 Mar: 5 (Fin de semana)">
-                    <span class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-gray-500 dark:text-gray-400">5</span>
-                </div>
-                <div class="w-full bg-blue-500/80 hover:bg-blue-600 transition-colors rounded-t cursor-pointer relative" style="height: 70%;" title="04 Mar: 35 ingresados">
-                    <span class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-gray-500 dark:text-gray-400">35</span>
-                </div>
-            </div>
-            <div class="flex justify-between mt-2 px-2 text-xs text-gray-500 dark:text-gray-400">
-                <span>26 F</span>
-                <span>27 F</span>
-                <span>28 F</span>
-                <span>01 M</span>
-                <span>02 M</span>
-                <span>03 M</span>
-                <span>04 M</span>
             </div>
         </div>
-        
+
+        <!-- Finalizados -->
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-hidden">
+            <div class="absolute right-0 top-0 h-full w-24 bg-gradient-to-l from-green-50 to-transparent dark:from-green-900/20"></div>
+            <div class="flex items-start justify-between relative z-10">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Finalizados</p>
+                    <h3 class="text-3xl font-bold text-green-600 dark:text-green-400">{{ $countFinalizado }}</h3>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center text-green-600 dark:text-green-400">
+                    <span class="material-symbols-outlined">task_alt</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rechazados -->
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-hidden">
+            <div class="absolute right-0 top-0 h-full w-24 bg-gradient-to-l from-red-50 to-transparent dark:from-red-900/20"></div>
+            <div class="flex items-start justify-between relative z-10">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Rechazados</p>
+                    <h3 class="text-3xl font-bold text-red-600 dark:text-red-400">{{ $countRechazado }}</h3>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center text-red-600 dark:text-red-400">
+                    <span class="material-symbols-outlined">cancel</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Archivados -->
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-hidden">
+            <div class="absolute right-0 top-0 h-full w-24 bg-gradient-to-l from-gray-50 to-transparent dark:from-gray-900/20"></div>
+            <div class="flex items-start justify-between relative z-10">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Archivados</p>
+                    <h3 class="text-3xl font-bold text-gray-600 dark:text-gray-400">{{ $countArchivado }}</h3>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400">
+                    <span class="material-symbols-outlined">folder</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Radicados Únicos -->
+        <div class="bg-slate-900 dark:bg-white p-6 rounded-xl border border-transparent shadow-sm relative overflow-hidden">
+            <div class="absolute right-0 top-0 h-full w-24 bg-gradient-to-l from-primary/20 to-transparent"></div>
+            <div class="flex items-start justify-between relative z-10">
+                <div>
+                    <p class="text-sm font-medium text-slate-400 dark:text-gray-500 mb-1">Total Único</p>
+                    <h3 class="text-3xl font-bold text-white dark:text-gray-900">{{ $totalUnicos }}</h3>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-white/10 dark:bg-slate-100 flex items-center justify-center text-white dark:text-slate-900">
+                    <span class="material-symbols-outlined">tag</span>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- Bottom Data Summary -->
