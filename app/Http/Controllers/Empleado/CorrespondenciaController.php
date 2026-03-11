@@ -364,6 +364,24 @@ class CorrespondenciaController extends Controller
             }
         }
 
+        // Create DetalleEnvio (Receiver tracking)
+        $detalle = new \App\Models\DetalleEnvio();
+        $detalle->id_quien_envie = $user->emple_doc;
+        $detalle->id_quien_recibe = $request->doc_quien_dirigido;
+        $detalle->id_envio = $envio->id_envio;
+        $detalle->fecha_traslado = now();
+        $detalle->id_estado_rec = $estadoRecibidoId; // El que recibe (destinatario) inicia en 'Recibido'
+        $detalle->observaciones = $request->observaciones;
+        $detalle->save();
+
+        return back()->with('success', 'Correspondencia interna creada y enviada exitosamente.', ['int_page' => 1]);
+        
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            \Log::error('Error guardando correspondencia interna: ' . $e->getMessage());
+            return back()->with('error', 'Error interno al guardar: ' . $e->getMessage())->withInput();
+        }
         // Create DetalleEnvio (Receiver tracking) for each recipient
         foreach ($request->doc_quien_dirigido as $destinatario_doc) {
             $detalle = new \App\Models\DetalleEnvio();
