@@ -28,20 +28,11 @@ class Recibido extends Model
         'anexo',
         'observaciones',
         'doc_quien_registra',
-        'doc_quien_dirige',
         'id_tipo',
         'id_estado_rec',
         'archivo',
         'nit_empresa'
     ];
-
-    /**
-     * Relación con Empleado (quien dirige)
-     */
-    public function dirigidoA()
-    {
-        return $this->belongsTo(Empleado::class, 'doc_quien_dirige', 'emple_doc');
-    }
 
     /**
      * Relación con Remitente (quien registra)

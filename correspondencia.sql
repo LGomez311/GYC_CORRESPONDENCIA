@@ -2,10 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Servidor: 127.0.0.1
--- Tiempo de generación: 08-03-2026 a las 07:08:36
--- Versión del servidor: 10.4.32-MariaDB
--- Versión de PHP: 8.2.12
+-- Host: 127.0.0.1
+-- Generation Time: Mar 10, 2026 at 07:31 PM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,13 +18,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Base de datos: `correspondencia`
+-- Database: `correspondencia`
 --
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `anexo_envio`
+-- Table structure for table `anexo_envio`
 --
 
 CREATE TABLE `anexo_envio` (
@@ -35,19 +35,22 @@ CREATE TABLE `anexo_envio` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `anexo_envio`
+-- Dumping data for table `anexo_envio`
 --
 
 INSERT INTO `anexo_envio` (`id_anexo`, `id_envio`, `ruta_archivo`, `nombre_original`) VALUES
 (3, 7, 'archivos/unSMNxx6XdLhqb7bh1Hx5waaiVmvaiu98iIHNQNY.pdf', 'LEGALIZACION 2586-2026 (3) (1) (1).pdf'),
 (4, 7, 'archivos/5mxVv0ix5paQrOtU7Yz8Yjq0Ownk2SUS7iNu6Lq7.pdf', 'EVALUACION (1).PDF'),
 (5, 8, 'archivos/0kclb2r2uAb8bb6iHbVN3ZOkpo8yMlKWt3m1Ci3W.pdf', 'CO1_PCCNTR_9148107_En ejecución (2).pdf'),
-(6, 8, 'archivos/fj5HcBzaPcPvZQH8M8QaVi8pHXhkAm8GMEwZ4CN0.pdf', 'CO1_PCCNTR_9148107_Firmado (1).pdf');
+(6, 8, 'archivos/fj5HcBzaPcPvZQH8M8QaVi8pHXhkAm8GMEwZ4CN0.pdf', 'CO1_PCCNTR_9148107_Firmado (1).pdf'),
+(7, 9, 'archivos/gc6qlPyUlZhPNQSEcmFbrdjNXp08iLBGfSRjofpa.pdf', 'Coursera Como Resolver Problemas.pdf'),
+(8, 9, 'archivos/cRLr9nx0FqkAJcTNhoy8eNS2MP24f5pzOWYZtYRk.pdf', 'Coursera Generative IA.pdf'),
+(9, 9, 'archivos/pR72DJdDBBa2TDuJyCC4uMt1SC2Obze2lMfjWJ0l.pdf', 'ACTIVITY COMPARATIVE AND SUPERLATIVE.pdf');
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `anexo_recibido`
+-- Table structure for table `anexo_recibido`
 --
 
 CREATE TABLE `anexo_recibido` (
@@ -57,10 +60,20 @@ CREATE TABLE `anexo_recibido` (
   `nombre_original` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `anexo_recibido`
+--
+
+INSERT INTO `anexo_recibido` (`id_anexo`, `id_recibido`, `ruta_archivo`, `nombre_original`) VALUES
+(1, 4, 'correspondencia/OGeGdHbG0Q2AluON4C2zDhrsvbSaiYVYf3nLe0WT.pdf', 'cedula.pdf'),
+(2, 5, 'correspondencia/6Na9vbl7kNdXXG4nmMvB5Bztr3BwIVZ5Wsxdu5X8.pdf', 'cedula.pdf'),
+(3, 5, 'correspondencia/3O1NBZ0s4Eh8eYjNHqZHICVvRpat2fDEgQREv83E.pdf', '2.pdf'),
+(4, 5, 'correspondencia/MhK4u9WEzrdQ9a9CCtS03LDelXTNfFIgV5WXkwM3.pdf', '1.pdf');
+
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `anexo_respuesta`
+-- Table structure for table `anexo_respuesta`
 --
 
 CREATE TABLE `anexo_respuesta` (
@@ -71,18 +84,20 @@ CREATE TABLE `anexo_respuesta` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `anexo_respuesta`
+-- Dumping data for table `anexo_respuesta`
 --
 
 INSERT INTO `anexo_respuesta` (`id_anexo_resp`, `id_detalle`, `ruta_archivo`, `nombre_original`) VALUES
 (1, 23, 'archivos/3L4zvedcK82TMhrY46WMYuv8TDX9sniI6PsLMiMz.pdf', 'ds08001136720892600011e0a.pdf'),
 (2, 26, 'archivos/0qgWgVnTYK44xvgw92pQz4brgElValSzX89cLbkG.pdf', 'pagos (1).pdf'),
-(3, 26, 'archivos/VMPNjduOJzVdbi4p0H47251L8Rsk2DLTyhbjZH5Y.pdf', 'empresas_sistema.pdf');
+(3, 26, 'archivos/VMPNjduOJzVdbi4p0H47251L8Rsk2DLTyhbjZH5Y.pdf', 'empresas_sistema.pdf'),
+(4, 29, 'archivos/lRmMfpZM1ZLzKkeV5VlCdQk6pKECVg6S6wAHTJAv.pdf', 'DOCUMENTOS COMPLETOS DANIEL.pdf'),
+(5, 29, 'archivos/0lLxVJCGKSxvDjcXkAfpMl65NAIWT7V37s12QpGr.pdf', 'CARRO SEGUIDOR DE LINEA DANIEL GOMEZ Y RAMIRO GOMEZ.pdf');
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `area`
+-- Table structure for table `area`
 --
 
 CREATE TABLE `area` (
@@ -91,7 +106,7 @@ CREATE TABLE `area` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `area`
+-- Dumping data for table `area`
 --
 
 INSERT INTO `area` (`id_area`, `area_nom`) VALUES
@@ -106,7 +121,7 @@ INSERT INTO `area` (`id_area`, `area_nom`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `cache`
+-- Table structure for table `cache`
 --
 
 CREATE TABLE `cache` (
@@ -118,7 +133,7 @@ CREATE TABLE `cache` (
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `cache_locks`
+-- Table structure for table `cache_locks`
 --
 
 CREATE TABLE `cache_locks` (
@@ -130,7 +145,7 @@ CREATE TABLE `cache_locks` (
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `ciudad`
+-- Table structure for table `ciudad`
 --
 
 CREATE TABLE `ciudad` (
@@ -140,7 +155,7 @@ CREATE TABLE `ciudad` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `ciudad`
+-- Dumping data for table `ciudad`
 --
 
 INSERT INTO `ciudad` (`ciudad_cod_post`, `ciudad_nom`, `ciudad_id_dpto`) VALUES
@@ -181,7 +196,7 @@ INSERT INTO `ciudad` (`ciudad_cod_post`, `ciudad_nom`, `ciudad_id_dpto`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `departamento`
+-- Table structure for table `departamento`
 --
 
 CREATE TABLE `departamento` (
@@ -190,7 +205,7 @@ CREATE TABLE `departamento` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `departamento`
+-- Dumping data for table `departamento`
 --
 
 INSERT INTO `departamento` (`dpto_codigo_postal`, `dpto_nombre`) VALUES
@@ -232,7 +247,7 @@ INSERT INTO `departamento` (`dpto_codigo_postal`, `dpto_nombre`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `detalle_envio`
+-- Table structure for table `detalle_envio`
 --
 
 CREATE TABLE `detalle_envio` (
@@ -248,7 +263,7 @@ CREATE TABLE `detalle_envio` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `detalle_envio`
+-- Dumping data for table `detalle_envio`
 --
 
 INSERT INTO `detalle_envio` (`id_detalle`, `id_quien_envie`, `id_quien_recibe`, `id_envio`, `fecha_traslado`, `id_estado_rec`, `observaciones`, `archivo_respuesta`, `folios_respuesta`) VALUES
@@ -257,12 +272,27 @@ INSERT INTO `detalle_envio` (`id_detalle`, `id_quien_envie`, `id_quien_recibe`, 
 (23, '1005912006', '1005912008', 7, '2026-03-08 06:02:41', 9, 'proceso INT-2026-50234 finalizado', 'archivos/rlzxqUpMBGaGYf5zB3kkj0pySMgys2rNn3W1wnK3.pdf', 5),
 (24, '1005912008', '1005912006', 8, '2026-03-08 06:04:56', 7, NULL, NULL, NULL),
 (25, '1005912008', '1005912006', 8, '2026-03-08 06:05:04', 8, NULL, NULL, 0),
-(26, '1005912008', '1005912006', 8, '2026-03-08 06:06:37', 9, 'se dio respuesta a Radicado INT-2026-64218', 'archivos/ZBsGSrmu9o2XcMbEXqQY5NZOCjqcELs2g5svlhLv.pdf', 5);
+(26, '1005912008', '1005912006', 8, '2026-03-08 06:06:37', 9, 'se dio respuesta a Radicado INT-2026-64218', 'archivos/ZBsGSrmu9o2XcMbEXqQY5NZOCjqcELs2g5svlhLv.pdf', 5),
+(27, '1005912008', '1005912006', 9, '2026-03-09 18:18:24', 7, 'Follatón', NULL, NULL),
+(28, '1005912008', '1005912006', 9, '2026-03-09 18:23:14', 8, 'se empezo con el tramite del Radicado INT-2026-65886', NULL, 0),
+(29, '1005912008', '1005912006', 9, '2026-03-09 18:25:44', 9, 'se resolvio  Radicado INT-2026-65886', 'archivos/vNvKCTgdy55RIRaMI7V64r4K4ubgD9JGoj06EHfb.pdf', 5);
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `empleado`
+-- Table structure for table `detalle_recibido`
+--
+
+CREATE TABLE `detalle_recibido` (
+  `id_det_recibido` int(15) NOT NULL,
+  `det_id_recibido` int(20) NOT NULL,
+  `det_doc_empleado` varchar(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `empleado`
 --
 
 CREATE TABLE `empleado` (
@@ -280,20 +310,21 @@ CREATE TABLE `empleado` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `empleado`
+-- Dumping data for table `empleado`
 --
 
 INSERT INTO `empleado` (`emple_doc`, `nit_empresa`, `password`, `emple_nombres`, `emple_apellidos`, `emple_tel`, `emple_correo`, `emple_img`, `emple_estado`, `emple_rol`, `emple_area`) VALUES
 ('1005912003', '4565464564', '$2y$12$Ld5g59zFru6uK2Xr8MDBHeaaqH/DkGvsLc7ws9YU8BnLdteFAOLt6', 'Kevin', 'Villafrade', '3152782654', 'kevindany2222209@gmail.com', NULL, 1, 2, NULL),
 ('1005912004', NULL, '$2y$12$ObwJO1oSYusfcd1QRYO0Z.ZFVsVy.j4w/oiXPUa64GWMecLizJw2a', 'Kevin', 'Villafrade', NULL, 'kevindany2209@gmail.com', NULL, 1, 1, NULL),
 ('1005912005', '4354353454', '$2y$12$dsRE/4pK1lXTVNdR6zZrtORXIj2m9VEhCDjZEuKmj8funIyPz92AO', 'Kevin', 'Villafrade', '3152782654', 'kevindany222209@gmail.com', NULL, 1, 2, NULL),
-('1005912006', '9887978978', '$2y$12$yPm04nkeOykarN33WJEoeOzsk2WEeQKpPxUKiQhnMLPontQc7kSNS', 'Daniel', 'Perez', '545466545465', 'nikolas1993838@gmail.com', NULL, 1, 3, 9),
-('1005912008', '9887978978', '$2y$12$gdPanlYye7fzZMveYoQg4Ojx.lFx5NNFOTjbQc0g409wAF1vgvuMi', 'Humber', 'Perez', '3142808076', 'humber@gmail.com', NULL, 1, 3, 6);
+('1005912006', '9887978978', '$2y$12$OHrgZT0tTor.BZ10PdMIa.5F0tqvEfTKl5hapYaWXDTxRIvMvocBi', 'Daniel', 'Perez', '545466545465', 'nikolas1993838@gmail.com', NULL, 1, 3, 9),
+('1005912008', '9887978978', '$2y$12$gdPanlYye7fzZMveYoQg4Ojx.lFx5NNFOTjbQc0g409wAF1vgvuMi', 'Humber', 'Perez', '3142808076', 'humber@gmail.com', NULL, 1, 3, 6),
+('1070730214', '9887978978', '$2y$12$qTSxTGQa105rqOxqNJHKduU.GchvUS3rOyXjmmtqXF3GuCcpXO2IW', 'Yuber', 'Paez', '3202534042', 'santiagopc333@gmail.com', NULL, 1, 3, 1);
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `empresa`
+-- Table structure for table `empresa`
 --
 
 CREATE TABLE `empresa` (
@@ -307,7 +338,7 @@ CREATE TABLE `empresa` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `empresa`
+-- Dumping data for table `empresa`
 --
 
 INSERT INTO `empresa` (`nit_empresa`, `nomb_empresa`, `doc_representante`, `nomb_representante`, `direccion`, `contacto`, `empresa_correo`) VALUES
@@ -319,7 +350,7 @@ INSERT INTO `empresa` (`nit_empresa`, `nomb_empresa`, `doc_representante`, `nomb
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `envio`
+-- Table structure for table `envio`
 --
 
 CREATE TABLE `envio` (
@@ -339,17 +370,18 @@ CREATE TABLE `envio` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `envio`
+-- Dumping data for table `envio`
 --
 
 INSERT INTO `envio` (`id_envio`, `num_radicado_int`, `asunto`, `doc_quien_dirigido`, `doc_quien_envia`, `fecha`, `destino`, `anexo`, `folio`, `id_tipo_envio`, `id_estado_envio`, `archivo`, `nit_empresa`) VALUES
 (7, 16, 'CUENTAS', NULL, '1005912006', '2026-03-08 06:01:14', 'Interno', NULL, 20, 4, 7, 'archivos/hJlORhHG46cMVdvzTZLejYUSvW2QkLuC7pJXlgAL.pdf', '9887978978'),
-(8, 17, 'Reclamo no me llega tal', NULL, '1005912008', '2026-03-08 06:04:56', 'Interno', NULL, 20, 3, 7, 'archivos/jpluLhMPzQfdalDII5yuMB6Al9whgyiEGGgTQ2wR.pdf', '9887978978');
+(8, 17, 'Reclamo no me llega tal', NULL, '1005912008', '2026-03-08 06:04:56', 'Interno', NULL, 20, 3, 7, 'archivos/jpluLhMPzQfdalDII5yuMB6Al9whgyiEGGgTQ2wR.pdf', '9887978978'),
+(9, 18, 'Follatón', NULL, '1005912008', '2026-03-09 18:18:24', 'Interno', NULL, 8, 4, 7, 'archivos/oSEbDI0eVS16z3waOUKdh5akhj8LeRajEn3D37jX.pdf', '9887978978');
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `estado`
+-- Table structure for table `estado`
 --
 
 CREATE TABLE `estado` (
@@ -358,7 +390,7 @@ CREATE TABLE `estado` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `estado`
+-- Dumping data for table `estado`
 --
 
 INSERT INTO `estado` (`id_estado`, `estado_nomb`) VALUES
@@ -372,12 +404,12 @@ INSERT INTO `estado` (`id_estado`, `estado_nomb`) VALUES
 (9, 'Resuelto'),
 (10, 'Archivado'),
 (11, 'Rechazado'),
-(12, 'Digitalizado');
+(12, 'Enviado');
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `failed_jobs`
+-- Table structure for table `failed_jobs`
 --
 
 CREATE TABLE `failed_jobs` (
@@ -393,7 +425,7 @@ CREATE TABLE `failed_jobs` (
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `jobs`
+-- Table structure for table `jobs`
 --
 
 CREATE TABLE `jobs` (
@@ -409,7 +441,7 @@ CREATE TABLE `jobs` (
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `job_batches`
+-- Table structure for table `job_batches`
 --
 
 CREATE TABLE `job_batches` (
@@ -428,7 +460,7 @@ CREATE TABLE `job_batches` (
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `licencia`
+-- Table structure for table `licencia`
 --
 
 CREATE TABLE `licencia` (
@@ -442,7 +474,7 @@ CREATE TABLE `licencia` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `licencia`
+-- Dumping data for table `licencia`
 --
 
 INSERT INTO `licencia` (`id_licencia`, `id_estado`, `id_pago`, `fecha_inicio`, `fecha_fin`, `tipo_licencia`, `licencia_origen`) VALUES
@@ -455,7 +487,7 @@ INSERT INTO `licencia` (`id_licencia`, `id_estado`, `id_pago`, `fecha_inicio`, `
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `migrations`
+-- Table structure for table `migrations`
 --
 
 CREATE TABLE `migrations` (
@@ -465,7 +497,7 @@ CREATE TABLE `migrations` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Volcado de datos para la tabla `migrations`
+-- Dumping data for table `migrations`
 --
 
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
@@ -477,7 +509,7 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `pagos`
+-- Table structure for table `pagos`
 --
 
 CREATE TABLE `pagos` (
@@ -492,11 +524,10 @@ CREATE TABLE `pagos` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `pagos`
+-- Dumping data for table `pagos`
 --
 
 INSERT INTO `pagos` (`id_pago`, `id_plan`, `comprobante`, `id_admin`, `moneda`, `id_est_pago`, `fecha_pago`, `fecha_inicio`) VALUES
-(54, 10, NULL, '1005912005', 'COP', 4, '2026-02-27 11:58:57', NULL),
 (55, 5, NULL, '1005912006', 'COP', 4, '2026-02-27 11:59:10', NULL),
 (56, 5, NULL, '1005912006', 'COP', 4, '2026-02-27 12:01:04', NULL),
 (57, 6, NULL, '1005912005', 'COP', 4, '2026-02-27 12:01:17', NULL),
@@ -508,7 +539,7 @@ INSERT INTO `pagos` (`id_pago`, `id_plan`, `comprobante`, `id_admin`, `moneda`, 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `password_codes`
+-- Table structure for table `password_codes`
 --
 
 CREATE TABLE `password_codes` (
@@ -520,17 +551,10 @@ CREATE TABLE `password_codes` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Volcado de datos para la tabla `password_codes`
---
-
-INSERT INTO `password_codes` (`id`, `emple_correo`, `code`, `expires_at`, `created_at`, `updated_at`) VALUES
-(8, 'nikolas1993838@gmail.com', '941212', '2026-02-26 10:12:33', '2026-02-26 10:02:33', '2026-02-26 10:02:33');
-
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `password_reset_tokens`
+-- Table structure for table `password_reset_tokens`
 --
 
 CREATE TABLE `password_reset_tokens` (
@@ -542,7 +566,7 @@ CREATE TABLE `password_reset_tokens` (
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `plan`
+-- Table structure for table `plan`
 --
 
 CREATE TABLE `plan` (
@@ -555,7 +579,7 @@ CREATE TABLE `plan` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `plan`
+-- Dumping data for table `plan`
 --
 
 INSERT INTO `plan` (`id_plan`, `nomb_plan`, `valor`, `descripcion`, `duracion`, `es_destacado`) VALUES
@@ -568,7 +592,7 @@ INSERT INTO `plan` (`id_plan`, `nomb_plan`, `valor`, `descripcion`, `duracion`, 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `prioridad`
+-- Table structure for table `prioridad`
 --
 
 CREATE TABLE `prioridad` (
@@ -577,7 +601,7 @@ CREATE TABLE `prioridad` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `prioridad`
+-- Dumping data for table `prioridad`
 --
 
 INSERT INTO `prioridad` (`id_prioridad`, `prioridad_nombre`) VALUES
@@ -589,7 +613,7 @@ INSERT INTO `prioridad` (`id_prioridad`, `prioridad_nombre`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `radicados`
+-- Table structure for table `radicados`
 --
 
 CREATE TABLE `radicados` (
@@ -600,17 +624,22 @@ CREATE TABLE `radicados` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `radicados`
+-- Dumping data for table `radicados`
 --
 
 INSERT INTO `radicados` (`id_radicado`, `num_radicado`, `id_est_radicado`, `nit_empresa`) VALUES
 (16, 'INT-2026-50234', 7, '9887978978'),
-(17, 'INT-2026-64218', 7, '9887978978');
+(17, 'INT-2026-64218', 7, '9887978978'),
+(18, 'INT-2026-65886', 7, '9887978978'),
+(19, 'INT-2026-34564', 1, '9887978978'),
+(20, 'INT-2026-95974', 1, '9887978978'),
+(21, 'INT-2026-64115', 1, '9887978978'),
+(22, 'INT-2026-43279', 1, '9887978978');
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `recibido`
+-- Table structure for table `recibido`
 --
 
 CREATE TABLE `recibido` (
@@ -625,17 +654,27 @@ CREATE TABLE `recibido` (
   `anexo` varchar(500) DEFAULT NULL,
   `observaciones` varchar(250) DEFAULT NULL,
   `doc_quien_registra` int(20) DEFAULT NULL,
-  `doc_quien_dirige` varchar(20) DEFAULT NULL,
   `id_tipo` int(20) DEFAULT NULL,
   `id_estado_rec` int(10) DEFAULT NULL,
   `archivo` varchar(500) DEFAULT NULL,
   `nit_empresa` varchar(25) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `recibido`
+--
+
+INSERT INTO `recibido` (`id_recibido`, `num_radicado_ext`, `num_radicado_int`, `asunto`, `fecha_hora_recib`, `nom_institucion`, `ciudad_proveniente`, `folio`, `anexo`, `observaciones`, `doc_quien_registra`, `id_tipo`, `id_estado_rec`, `archivo`, `nit_empresa`) VALUES
+(1, '12345', 16, 'Follatón', '2026-03-09 13:35:59', 'Alcaldia', '25001', 5, 'pdf', 'ninguna', 1234567888, 1, 7, 'correspondencia/mZBduSfmhO7wcPr5HDLSflksITLoaMdwjuTtUfuZ.pdf', '9887978978'),
+(2, '12345', 19, 'Derecho de peticion', '2026-03-09 14:54:31', 'Alcaldia', '25001', 5, 'ninguno', 'nada', 1234567888, 9, 12, 'correspondencia/5NXH2r6ixLKWf98SwCjFd7JDXzdr1gtmjok4xRvI.pdf', '9887978978'),
+(3, '12345', 20, 'Derecho de peticion', '2026-03-09 16:47:25', 'Alcaldia', '11001', 5, 'nada', 'ninguna', 1234567888, 1, 12, 'correspondencia/pxqE7t9I9a906LDR30HWMzL86qV7GWzrjxqCLvwu.pdf', '9887978978'),
+(4, NULL, 21, 'Derecho de peticion', '2026-03-09 17:20:55', 'Alcaldia', '05001', 6, 'nada', 'nada', 1234567888, 1, 12, 'correspondencia/ninSNDBNasg4jwsHiUXqWKyT2X1esYsMVkTEAOqS.pdf', '9887978978'),
+(5, NULL, 22, 'Derecho de peticion', '2026-03-10 13:07:09', 'Alcaldia', '05001', 15, NULL, NULL, 1234567888, 4, 12, 'correspondencia/AY8DTZb8nVGA3Z0AS0PItTZV8srgOf3u5Dth7sQS.pdf', '9887978978');
+
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `remitente`
+-- Table structure for table `remitente`
 --
 
 CREATE TABLE `remitente` (
@@ -651,16 +690,16 @@ CREATE TABLE `remitente` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `remitente`
+-- Dumping data for table `remitente`
 --
 
 INSERT INTO `remitente` (`rem_doc`, `nit_empresa`, `rem_nombres`, `rem_apellidos`, `rem_correo`, `password`, `rem_tel`, `rem_ciudad`, `rem_estado`) VALUES
-(1234567888, NULL, 'Kevin', 'Daniel', 'kevin.daniel@gmail.com', '$2y$12$V/kBOsNQ33fJEcmod3oG.e2F/VDOtKa3dzc6TQjvpuTBb4WXy6DPe', '3001234567', '11001', 1);
+(1234567888, '9887978978', 'Kevin', 'Daniel', 'kevin.daniel@gmail.com', '$2y$12$V/kBOsNQ33fJEcmod3oG.e2F/VDOtKa3dzc6TQjvpuTBb4WXy6DPe', '3001234567', '11001', 1);
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `rol`
+-- Table structure for table `rol`
 --
 
 CREATE TABLE `rol` (
@@ -669,7 +708,7 @@ CREATE TABLE `rol` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `rol`
+-- Dumping data for table `rol`
 --
 
 INSERT INTO `rol` (`id_rol`, `rol_nom`) VALUES
@@ -680,7 +719,7 @@ INSERT INTO `rol` (`id_rol`, `rol_nom`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `sessions`
+-- Table structure for table `sessions`
 --
 
 CREATE TABLE `sessions` (
@@ -693,17 +732,19 @@ CREATE TABLE `sessions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Volcado de datos para la tabla `sessions`
+-- Dumping data for table `sessions`
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('iZYng4SxKJFxvPcHTrDkKcbZRcaupq0DIcjLpVjZ', 1005912008, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiWm9kNzBnaUV1UnpBa2t3aUJnYURnVEZFMHFiNnhaNEFFS2xyNkZSdSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NTU6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9lbXBsZWFkby9jb3JyZXNwb25kZW5jaWEtcmVjaWJpZGEiO3M6NToicm91dGUiO3M6MzM6ImVtcGxlYWRvLmNvcnJlc3BvbmRlbmNpYV9yZWNpYmlkYSI7fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtzOjEwOiIxMDA1OTEyMDA4Ijt9', 1772949896),
-('XCbwlnsOTNH4JjHAkYn8hGVsasBjoIGKVy5DUTi1', 1005912006, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoia3ZremdMMERHaDNkVGJuZHg2aHUxMFNtTzZlanU2QU5yd3Fib0tIRSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NTU6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9lbXBsZWFkby9jb3JyZXNwb25kZW5jaWEtcmVjaWJpZGEiO3M6NToicm91dGUiO3M6MzM6ImVtcGxlYWRvLmNvcnJlc3BvbmRlbmNpYV9yZWNpYmlkYSI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6MTU6ImxvY2tvdXRfc2Vjb25kcyI7aToyOTc7czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO3M6MTA6IjEwMDU5MTIwMDYiO30=', 1772949998);
+('AUmbFkHK02zkiYMQzDghHjfqQWJx39FCV3KDgql9', 1234567888, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiWmQ5a1FTazNLdmQ4VDRnOUVKSzJLTlJyTXBibDRlNkZoa2hmOG15aiI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDI6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9yZW1pdGVudGUvZXh0ZXJuYXJlYyI7czo1OiJyb3V0ZSI7czoyMDoicmVtaXRlbnRlLmV4dGVybmFyZWMiO31zOjU2OiJsb2dpbl9yZW1pdGVudGVfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToxMjM0NTY3ODg4O30=', 1773095131),
+('HuFWrt2tzeFBwAM198zI9rm71Zg0gxERkR4Y0uzY', 1234567888, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiM0RGbUlXbFFUV0JNTXVDeE1XYUIxVkpVTUZ6N0l3SVZ1OFVDd2NKRiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDI6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC9yZW1pdGVudGUvZXh0ZXJuYXJlYyI7czo1OiJyb3V0ZSI7czoyMDoicmVtaXRlbnRlLmV4dGVybmFyZWMiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjU2OiJsb2dpbl9yZW1pdGVudGVfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToxMjM0NTY3ODg4O30=', 1773094393),
+('vnkV4sC8bq41fx3X5rNvaypECQOaLXDz6bWWq8Lb', 1234567888, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiQk12R0wyS1ZkOGl3SFhVM1ladm5uNjZ5YnhpOWJmVGw5UzBUNEZIRCI7czozOiJ1cmwiO2E6MTp7czo4OiJpbnRlbmRlZCI7czo0MjoiaHR0cDovLzEyNy4wLjAuMTo4MDAwL3JlbWl0ZW50ZS9leHRlcm5hcmVjIjt9czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDI6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9yZW1pdGVudGUvZXh0ZXJuYXJlYyI7czo1OiJyb3V0ZSI7czoyMDoicmVtaXRlbnRlLmV4dGVybmFyZWMiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjU2OiJsb2dpbl9yZW1pdGVudGVfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToxMjM0NTY3ODg4O30=', 1773166030),
+('z1Dq4UxTOKgmsCgvnxBIJa9SNmKTcvc00q40xh4v', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoibllzbm45c09ZcGZlWmZhMEJhM1NaNTdaZUhiNTFCVmZMUEt6cmNoSyI7czozOiJ1cmwiO2E6MTp7czo4OiJpbnRlbmRlZCI7czo0MjoiaHR0cDovLzEyNy4wLjAuMTo4MDAwL3JlbWl0ZW50ZS9leHRlcm5hcmVjIjt9czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9sb2dpbiI7czo1OiJyb3V0ZSI7czo1OiJsb2dpbiI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6MTU6ImxvY2tvdXRfc2Vjb25kcyI7aTozMDA7fQ==', 1773094189);
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `tipo`
+-- Table structure for table `tipo`
 --
 
 CREATE TABLE `tipo` (
@@ -714,7 +755,7 @@ CREATE TABLE `tipo` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `tipo`
+-- Dumping data for table `tipo`
 --
 
 INSERT INTO `tipo` (`id_tipo`, `tipo_nombre`, `id_prioridad`, `dias_respuesta`) VALUES
@@ -731,7 +772,7 @@ INSERT INTO `tipo` (`id_tipo`, `tipo_nombre`, `id_prioridad`, `dias_respuesta`) 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `users`
+-- Table structure for table `users`
 --
 
 CREATE TABLE `users` (
@@ -746,72 +787,72 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Volcado de datos para la tabla `users`
+-- Dumping data for table `users`
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `remember_token`, `created_at`, `updated_at`) VALUES
 (1, 'Test User', 'test@example.com', '2026-02-04 19:18:51', '$2y$12$pORhz2NEzasz12jNPTbBGuoiwM0BYLMMsNZohKEEo7.llJt3qazoS', 'D29faiXApN', '2026-02-04 19:18:54', '2026-02-04 19:18:54');
 
 --
--- Índices para tablas volcadas
+-- Indexes for dumped tables
 --
 
 --
--- Indices de la tabla `anexo_envio`
+-- Indexes for table `anexo_envio`
 --
 ALTER TABLE `anexo_envio`
   ADD PRIMARY KEY (`id_anexo`),
   ADD KEY `id_envio` (`id_envio`);
 
 --
--- Indices de la tabla `anexo_recibido`
+-- Indexes for table `anexo_recibido`
 --
 ALTER TABLE `anexo_recibido`
   ADD PRIMARY KEY (`id_anexo`),
   ADD KEY `id_recibido_idx` (`id_recibido`);
 
 --
--- Indices de la tabla `anexo_respuesta`
+-- Indexes for table `anexo_respuesta`
 --
 ALTER TABLE `anexo_respuesta`
   ADD PRIMARY KEY (`id_anexo_resp`),
   ADD KEY `id_detalle_idx` (`id_detalle`);
 
 --
--- Indices de la tabla `area`
+-- Indexes for table `area`
 --
 ALTER TABLE `area`
   ADD PRIMARY KEY (`id_area`);
 
 --
--- Indices de la tabla `cache`
+-- Indexes for table `cache`
 --
 ALTER TABLE `cache`
   ADD PRIMARY KEY (`key`),
   ADD KEY `cache_expiration_index` (`expiration`);
 
 --
--- Indices de la tabla `cache_locks`
+-- Indexes for table `cache_locks`
 --
 ALTER TABLE `cache_locks`
   ADD PRIMARY KEY (`key`),
   ADD KEY `cache_locks_expiration_index` (`expiration`);
 
 --
--- Indices de la tabla `ciudad`
+-- Indexes for table `ciudad`
 --
 ALTER TABLE `ciudad`
   ADD PRIMARY KEY (`ciudad_cod_post`),
   ADD KEY `ciudad_id_dpto` (`ciudad_id_dpto`);
 
 --
--- Indices de la tabla `departamento`
+-- Indexes for table `departamento`
 --
 ALTER TABLE `departamento`
   ADD PRIMARY KEY (`dpto_codigo_postal`);
 
 --
--- Indices de la tabla `detalle_envio`
+-- Indexes for table `detalle_envio`
 --
 ALTER TABLE `detalle_envio`
   ADD PRIMARY KEY (`id_detalle`),
@@ -821,7 +862,15 @@ ALTER TABLE `detalle_envio`
   ADD KEY `id_estado_rec` (`id_estado_rec`);
 
 --
--- Indices de la tabla `empleado`
+-- Indexes for table `detalle_recibido`
+--
+ALTER TABLE `detalle_recibido`
+  ADD PRIMARY KEY (`id_det_recibido`),
+  ADD KEY `det_doc_empleado` (`det_doc_empleado`),
+  ADD KEY `det_id_recibido` (`det_id_recibido`);
+
+--
+-- Indexes for table `empleado`
 --
 ALTER TABLE `empleado`
   ADD PRIMARY KEY (`emple_doc`),
@@ -831,14 +880,14 @@ ALTER TABLE `empleado`
   ADD KEY `nit_empresa` (`nit_empresa`);
 
 --
--- Indices de la tabla `empresa`
+-- Indexes for table `empresa`
 --
 ALTER TABLE `empresa`
   ADD PRIMARY KEY (`nit_empresa`),
   ADD KEY `id_representante` (`doc_representante`);
 
 --
--- Indices de la tabla `envio`
+-- Indexes for table `envio`
 --
 ALTER TABLE `envio`
   ADD PRIMARY KEY (`id_envio`),
@@ -850,33 +899,33 @@ ALTER TABLE `envio`
   ADD KEY `fk_empresa_envio` (`nit_empresa`);
 
 --
--- Indices de la tabla `estado`
+-- Indexes for table `estado`
 --
 ALTER TABLE `estado`
   ADD PRIMARY KEY (`id_estado`);
 
 --
--- Indices de la tabla `failed_jobs`
+-- Indexes for table `failed_jobs`
 --
 ALTER TABLE `failed_jobs`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `failed_jobs_uuid_unique` (`uuid`);
 
 --
--- Indices de la tabla `jobs`
+-- Indexes for table `jobs`
 --
 ALTER TABLE `jobs`
   ADD PRIMARY KEY (`id`),
   ADD KEY `jobs_queue_index` (`queue`);
 
 --
--- Indices de la tabla `job_batches`
+-- Indexes for table `job_batches`
 --
 ALTER TABLE `job_batches`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indices de la tabla `licencia`
+-- Indexes for table `licencia`
 --
 ALTER TABLE `licencia`
   ADD PRIMARY KEY (`id_licencia`),
@@ -884,13 +933,13 @@ ALTER TABLE `licencia`
   ADD KEY `id_pago` (`id_pago`);
 
 --
--- Indices de la tabla `migrations`
+-- Indexes for table `migrations`
 --
 ALTER TABLE `migrations`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indices de la tabla `pagos`
+-- Indexes for table `pagos`
 --
 ALTER TABLE `pagos`
   ADD PRIMARY KEY (`id_pago`),
@@ -899,31 +948,31 @@ ALTER TABLE `pagos`
   ADD KEY `id_admin` (`id_admin`);
 
 --
--- Indices de la tabla `password_codes`
+-- Indexes for table `password_codes`
 --
 ALTER TABLE `password_codes`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indices de la tabla `password_reset_tokens`
+-- Indexes for table `password_reset_tokens`
 --
 ALTER TABLE `password_reset_tokens`
   ADD PRIMARY KEY (`email`);
 
 --
--- Indices de la tabla `plan`
+-- Indexes for table `plan`
 --
 ALTER TABLE `plan`
   ADD PRIMARY KEY (`id_plan`);
 
 --
--- Indices de la tabla `prioridad`
+-- Indexes for table `prioridad`
 --
 ALTER TABLE `prioridad`
   ADD PRIMARY KEY (`id_prioridad`);
 
 --
--- Indices de la tabla `radicados`
+-- Indexes for table `radicados`
 --
 ALTER TABLE `radicados`
   ADD PRIMARY KEY (`id_radicado`),
@@ -931,11 +980,10 @@ ALTER TABLE `radicados`
   ADD KEY `nit_empresa` (`nit_empresa`);
 
 --
--- Indices de la tabla `recibido`
+-- Indexes for table `recibido`
 --
 ALTER TABLE `recibido`
   ADD PRIMARY KEY (`id_recibido`),
-  ADD KEY `doc_quien_dirige` (`doc_quien_dirige`),
   ADD KEY `id_tipo` (`id_tipo`),
   ADD KEY `id_estado_rec` (`id_estado_rec`),
   ADD KEY `doc_quien_registra` (`doc_quien_registra`),
@@ -944,7 +992,7 @@ ALTER TABLE `recibido`
   ADD KEY `fk_empresa_recibido` (`nit_empresa`);
 
 --
--- Indices de la tabla `remitente`
+-- Indexes for table `remitente`
 --
 ALTER TABLE `remitente`
   ADD PRIMARY KEY (`rem_doc`),
@@ -953,13 +1001,13 @@ ALTER TABLE `remitente`
   ADD KEY `nit_empresa` (`nit_empresa`);
 
 --
--- Indices de la tabla `rol`
+-- Indexes for table `rol`
 --
 ALTER TABLE `rol`
   ADD PRIMARY KEY (`id_rol`);
 
 --
--- Indices de la tabla `sessions`
+-- Indexes for table `sessions`
 --
 ALTER TABLE `sessions`
   ADD PRIMARY KEY (`id`),
@@ -967,167 +1015,179 @@ ALTER TABLE `sessions`
   ADD KEY `sessions_last_activity_index` (`last_activity`);
 
 --
--- Indices de la tabla `tipo`
+-- Indexes for table `tipo`
 --
 ALTER TABLE `tipo`
   ADD PRIMARY KEY (`id_tipo`),
   ADD KEY `id_prioridad` (`id_prioridad`);
 
 --
--- Indices de la tabla `users`
+-- Indexes for table `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `users_email_unique` (`email`);
 
 --
--- AUTO_INCREMENT de las tablas volcadas
+-- AUTO_INCREMENT for dumped tables
 --
 
 --
--- AUTO_INCREMENT de la tabla `anexo_envio`
+-- AUTO_INCREMENT for table `anexo_envio`
 --
 ALTER TABLE `anexo_envio`
-  MODIFY `id_anexo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id_anexo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
--- AUTO_INCREMENT de la tabla `anexo_recibido`
+-- AUTO_INCREMENT for table `anexo_recibido`
 --
 ALTER TABLE `anexo_recibido`
-  MODIFY `id_anexo` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_anexo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
--- AUTO_INCREMENT de la tabla `anexo_respuesta`
+-- AUTO_INCREMENT for table `anexo_respuesta`
 --
 ALTER TABLE `anexo_respuesta`
-  MODIFY `id_anexo_resp` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id_anexo_resp` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
--- AUTO_INCREMENT de la tabla `area`
+-- AUTO_INCREMENT for table `area`
 --
 ALTER TABLE `area`
   MODIFY `id_area` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
--- AUTO_INCREMENT de la tabla `detalle_envio`
+-- AUTO_INCREMENT for table `detalle_envio`
 --
 ALTER TABLE `detalle_envio`
-  MODIFY `id_detalle` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `id_detalle` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
--- AUTO_INCREMENT de la tabla `envio`
+-- AUTO_INCREMENT for table `detalle_recibido`
+--
+ALTER TABLE `detalle_recibido`
+  MODIFY `id_det_recibido` int(15) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `envio`
 --
 ALTER TABLE `envio`
-  MODIFY `id_envio` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id_envio` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
--- AUTO_INCREMENT de la tabla `estado`
+-- AUTO_INCREMENT for table `estado`
 --
 ALTER TABLE `estado`
   MODIFY `id_estado` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
--- AUTO_INCREMENT de la tabla `failed_jobs`
+-- AUTO_INCREMENT for table `failed_jobs`
 --
 ALTER TABLE `failed_jobs`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT de la tabla `jobs`
+-- AUTO_INCREMENT for table `jobs`
 --
 ALTER TABLE `jobs`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT de la tabla `licencia`
+-- AUTO_INCREMENT for table `licencia`
 --
 ALTER TABLE `licencia`
   MODIFY `id_licencia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
--- AUTO_INCREMENT de la tabla `migrations`
+-- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
--- AUTO_INCREMENT de la tabla `pagos`
+-- AUTO_INCREMENT for table `pagos`
 --
 ALTER TABLE `pagos`
   MODIFY `id_pago` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
 
 --
--- AUTO_INCREMENT de la tabla `password_codes`
+-- AUTO_INCREMENT for table `password_codes`
 --
 ALTER TABLE `password_codes`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
--- AUTO_INCREMENT de la tabla `plan`
+-- AUTO_INCREMENT for table `plan`
 --
 ALTER TABLE `plan`
   MODIFY `id_plan` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
--- AUTO_INCREMENT de la tabla `prioridad`
+-- AUTO_INCREMENT for table `prioridad`
 --
 ALTER TABLE `prioridad`
   MODIFY `id_prioridad` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
--- AUTO_INCREMENT de la tabla `radicados`
+-- AUTO_INCREMENT for table `radicados`
 --
 ALTER TABLE `radicados`
-  MODIFY `id_radicado` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id_radicado` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
--- AUTO_INCREMENT de la tabla `rol`
+-- AUTO_INCREMENT for table `recibido`
+--
+ALTER TABLE `recibido`
+  MODIFY `id_recibido` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `rol`
 --
 ALTER TABLE `rol`
   MODIFY `id_rol` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
--- AUTO_INCREMENT de la tabla `tipo`
+-- AUTO_INCREMENT for table `tipo`
 --
 ALTER TABLE `tipo`
   MODIFY `id_tipo` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
--- AUTO_INCREMENT de la tabla `users`
+-- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
--- Restricciones para tablas volcadas
+-- Constraints for dumped tables
 --
 
 --
--- Filtros para la tabla `anexo_envio`
+-- Constraints for table `anexo_envio`
 --
 ALTER TABLE `anexo_envio`
   ADD CONSTRAINT `fk_anexo_envio` FOREIGN KEY (`id_envio`) REFERENCES `envio` (`id_envio`) ON DELETE CASCADE;
 
 --
--- Filtros para la tabla `anexo_recibido`
+-- Constraints for table `anexo_recibido`
 --
 ALTER TABLE `anexo_recibido`
   ADD CONSTRAINT `fk_anexo_recibido` FOREIGN KEY (`id_recibido`) REFERENCES `recibido` (`id_recibido`) ON DELETE CASCADE;
 
 --
--- Filtros para la tabla `anexo_respuesta`
+-- Constraints for table `anexo_respuesta`
 --
 ALTER TABLE `anexo_respuesta`
   ADD CONSTRAINT `fk_anexo_respuesta` FOREIGN KEY (`id_detalle`) REFERENCES `detalle_envio` (`id_detalle`) ON DELETE CASCADE;
 
 --
--- Filtros para la tabla `ciudad`
+-- Constraints for table `ciudad`
 --
 ALTER TABLE `ciudad`
   ADD CONSTRAINT `ciudad_ibfk_1` FOREIGN KEY (`ciudad_id_dpto`) REFERENCES `departamento` (`dpto_codigo_postal`);
 
 --
--- Filtros para la tabla `detalle_envio`
+-- Constraints for table `detalle_envio`
 --
 ALTER TABLE `detalle_envio`
   ADD CONSTRAINT `detalle_envio_ibfk_1` FOREIGN KEY (`id_envio`) REFERENCES `envio` (`id_envio`),
@@ -1136,7 +1196,14 @@ ALTER TABLE `detalle_envio`
   ADD CONSTRAINT `detalle_envio_ibfk_4` FOREIGN KEY (`id_estado_rec`) REFERENCES `estado` (`id_estado`);
 
 --
--- Filtros para la tabla `empleado`
+-- Constraints for table `detalle_recibido`
+--
+ALTER TABLE `detalle_recibido`
+  ADD CONSTRAINT `detalle_recibido_ibfk_1` FOREIGN KEY (`det_doc_empleado`) REFERENCES `empleado` (`emple_doc`),
+  ADD CONSTRAINT `detalle_recibido_ibfk_2` FOREIGN KEY (`det_id_recibido`) REFERENCES `recibido` (`id_recibido`);
+
+--
+-- Constraints for table `empleado`
 --
 ALTER TABLE `empleado`
   ADD CONSTRAINT `empleado_ibfk_1` FOREIGN KEY (`emple_estado`) REFERENCES `estado` (`id_estado`),
@@ -1145,7 +1212,7 @@ ALTER TABLE `empleado`
   ADD CONSTRAINT `empleado_ibfk_4` FOREIGN KEY (`nit_empresa`) REFERENCES `empresa` (`nit_empresa`);
 
 --
--- Filtros para la tabla `envio`
+-- Constraints for table `envio`
 --
 ALTER TABLE `envio`
   ADD CONSTRAINT `envio_ibfk_1` FOREIGN KEY (`doc_quien_dirigido`) REFERENCES `remitente` (`rem_doc`),
@@ -1156,14 +1223,14 @@ ALTER TABLE `envio`
   ADD CONSTRAINT `fk_empresa_envio` FOREIGN KEY (`nit_empresa`) REFERENCES `empresa` (`nit_empresa`);
 
 --
--- Filtros para la tabla `licencia`
+-- Constraints for table `licencia`
 --
 ALTER TABLE `licencia`
   ADD CONSTRAINT `licencia_ibfk_3` FOREIGN KEY (`id_estado`) REFERENCES `estado` (`id_estado`),
   ADD CONSTRAINT `licencia_ibfk_6` FOREIGN KEY (`id_pago`) REFERENCES `pagos` (`id_pago`);
 
 --
--- Filtros para la tabla `pagos`
+-- Constraints for table `pagos`
 --
 ALTER TABLE `pagos`
   ADD CONSTRAINT `pagos_ibfk_1` FOREIGN KEY (`id_plan`) REFERENCES `plan` (`id_plan`),
@@ -1171,18 +1238,17 @@ ALTER TABLE `pagos`
   ADD CONSTRAINT `pagos_ibfk_4` FOREIGN KEY (`id_admin`) REFERENCES `empleado` (`emple_doc`);
 
 --
--- Filtros para la tabla `radicados`
+-- Constraints for table `radicados`
 --
 ALTER TABLE `radicados`
   ADD CONSTRAINT `radicados_ibfk_1` FOREIGN KEY (`id_est_radicado`) REFERENCES `estado` (`id_estado`),
   ADD CONSTRAINT `radicados_ibfk_2` FOREIGN KEY (`nit_empresa`) REFERENCES `empresa` (`nit_empresa`);
 
 --
--- Filtros para la tabla `recibido`
+-- Constraints for table `recibido`
 --
 ALTER TABLE `recibido`
   ADD CONSTRAINT `fk_empresa_recibido` FOREIGN KEY (`nit_empresa`) REFERENCES `empresa` (`nit_empresa`),
-  ADD CONSTRAINT `recibido_ibfk_2` FOREIGN KEY (`doc_quien_dirige`) REFERENCES `empleado` (`emple_doc`),
   ADD CONSTRAINT `recibido_ibfk_3` FOREIGN KEY (`id_tipo`) REFERENCES `tipo` (`id_tipo`),
   ADD CONSTRAINT `recibido_ibfk_4` FOREIGN KEY (`id_estado_rec`) REFERENCES `estado` (`id_estado`),
   ADD CONSTRAINT `recibido_ibfk_5` FOREIGN KEY (`doc_quien_registra`) REFERENCES `remitente` (`rem_doc`),
@@ -1190,7 +1256,7 @@ ALTER TABLE `recibido`
   ADD CONSTRAINT `recibido_ibfk_9` FOREIGN KEY (`num_radicado_int`) REFERENCES `radicados` (`id_radicado`);
 
 --
--- Filtros para la tabla `remitente`
+-- Constraints for table `remitente`
 --
 ALTER TABLE `remitente`
   ADD CONSTRAINT `remitente_ibfk_2` FOREIGN KEY (`rem_estado`) REFERENCES `estado` (`id_estado`),
@@ -1198,7 +1264,7 @@ ALTER TABLE `remitente`
   ADD CONSTRAINT `remitente_ibfk_4` FOREIGN KEY (`rem_ciudad`) REFERENCES `ciudad` (`ciudad_cod_post`);
 
 --
--- Filtros para la tabla `tipo`
+-- Constraints for table `tipo`
 --
 ALTER TABLE `tipo`
   ADD CONSTRAINT `tipo_ibfk_1` FOREIGN KEY (`id_prioridad`) REFERENCES `prioridad` (`id_prioridad`);

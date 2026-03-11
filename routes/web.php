@@ -166,7 +166,7 @@ Route::prefix('admin')
         Route::get('/correspondencia', [\App\Http\Controllers\Admin\AdminCorrespondenciaController::class, 'index'])->name('admin.correspondencia');
         Route::get('/correspondencia/export/excel', [\App\Http\Controllers\Admin\AdminCorrespondenciaController::class, 'exportExcel'])->name('admin.correspondencia.export.excel');
         Route::get('/correspondencia/export/pdf', [\App\Http\Controllers\Admin\AdminCorrespondenciaController::class, 'exportPdf'])->name('admin.correspondencia.export.pdf');
-        
+
         // Usuarios (Empleados y Remitentes)
         Route::get('/usuarios', [\App\Http\Controllers\Admin\UsuarioController::class, 'index'])->name('admin.usuarios');
 
@@ -175,7 +175,7 @@ Route::prefix('admin')
         Route::post('/usuarios/remitente', [\App\Http\Controllers\Admin\UsuarioController::class, 'storeRemitente'])->name('admin.remitente.store');
         Route::put('/usuarios/remitente/{rem_doc}', [\App\Http\Controllers\Admin\UsuarioController::class, 'updateRemitente'])->name('admin.remitente.update');
 
-        
+
 
         // Prioridades (CRUD + export)
         Route::get('/prioridad', [PrioridadController::class, 'index'])->name('admin.prioridad.index');
@@ -399,9 +399,6 @@ Route::prefix('remitente')
         Route::post('/externarec', [ExternarecController::class, 'store'])->name('externarec.store');
 
         Route::get('/empleados/buscar', [ExternarecController::class, 'buscarEmpleados'])->name('externarec.empleados.buscar');
+
+        Route::get('/ciudades/buscar', [ExternarecController::class, 'buscarCiudades'])->name('externarec.ciudades.buscar');
     });
-
-
-
-
-    

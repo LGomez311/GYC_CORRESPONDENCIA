@@ -1,4 +1,4 @@
-﻿@extends('remitente.layouts.app')
+@extends('remitente.layouts.app')
 
 
 @section('title', 'Panel de Remitente')
@@ -32,7 +32,7 @@
                             </div>
                         </label>
                     </div>
-                    <div class="flex gap-3 items-center">
+                    <div class="flex gap-3 items-center flex-wrap">
                         <button
                             class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 px-4">
                             <span
@@ -48,6 +48,27 @@
                                 Documento</p>
                             <span class="material-symbols-outlined text-gray-500 dark:text-gray-400">expand_more</span>
                         </button>
+
+                        {{-- Filtro: Tipo de Remitente --}}
+                        <div class="relative" id="filtroRemitenteWrapper">
+                            <button type="button" id="btnFiltroRemitente"
+                                class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 px-4">
+                                <span class="material-symbols-outlined text-gray-500 dark:text-gray-400 text-sm">person_search</span>
+                                <p id="btnFiltroRemitenteLabel" class="text-gray-700 dark:text-gray-300 text-sm font-medium leading-normal">Remitente</p>
+                                <span class="material-symbols-outlined text-gray-500 dark:text-gray-400">expand_more</span>
+                            </button>
+                            <div id="dropdownFiltroRemitente"
+                                class="hidden absolute right-0 z-20 mt-1 w-52 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
+                                <ul class="py-1 text-sm text-gray-700 dark:text-gray-300">
+                                    <li><button type="button" data-tipo="todos"
+                                            class="filtro-remitente-btn w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 font-medium">Todos</button></li>
+                                    <li><button type="button" data-tipo="persona"
+                                            class="filtro-remitente-btn w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">Persona Natural</button></li>
+                                    <li><button type="button" data-tipo="entidad"
+                                            class="filtro-remitente-btn w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">Entidad / Empresa</button></li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div
@@ -65,97 +86,98 @@
                                     <th class="px-6 py-3 font-bold" scope="col">Estado</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr
-                                    class="bg-blue-50/50 dark:bg-blue-900/10 border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer">
-                                    <td class="px-6 py-4 text-center"><span
-                                            class="material-symbols-outlined text-blue-500">picture_as_pdf</span></td>
-                                    <td class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                                        Contrato de Arrendamiento 2024</td>
-                                    <td class="px-6 py-4">Inmobiliaria Central S.A.</td>
-                                    <td class="px-6 py-4">24 Oct, 2023 - 09:30 AM</td>
-                                    <td class="px-6 py-4"><span
-                                            class="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 text-xs font-medium px-2.5 py-0.5 rounded-full">Alta</span>
-                                    </td>
-                                    <td class="px-6 py-4"><span
-                                            class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 text-xs font-medium px-2.5 py-0.5 rounded-full">Pendiente</span>
-                                    </td>
-                                </tr>
-                                <tr
-                                    class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer">
-                                    <td class="px-6 py-4 text-center"><span
-                                            class="material-symbols-outlined text-green-500">description</span></td>
-                                    <td class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                                        Factura Mensual Servicios IT</td>
-                                    <td class="px-6 py-4">TechSolutions S.R.L.</td>
-                                    <td class="px-6 py-4">23 Oct, 2023 - 14:15 PM</td>
-                                    <td class="px-6 py-4"><span
-                                            class="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300 text-xs font-medium px-2.5 py-0.5 rounded-full">Media</span>
-                                    </td>
-                                    <td class="px-6 py-4"><span
-                                            class="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 text-xs font-medium px-2.5 py-0.5 rounded-full">Leído</span>
-                                    </td>
-                                </tr>
-                                <tr
-                                    class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer">
-                                    <td class="px-6 py-4 text-center"><span
-                                            class="material-symbols-outlined text-gray-500">mail</span></td>
-                                    <td class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                                        Invitación Evento Anual</td>
-                                    <td class="px-6 py-4">Cámara de Comercio</td>
-                                    <td class="px-6 py-4">22 Oct, 2023 - 11:00 AM</td>
-                                    <td class="px-6 py-4"><span
-                                            class="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 text-xs font-medium px-2.5 py-0.5 rounded-full">Baja</span>
-                                    </td>
-                                    <td class="px-6 py-4"><span
-                                            class="bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200 text-xs font-medium px-2.5 py-0.5 rounded-full">Archivado</span>
-                                    </td>
-                                </tr>
-                                <tr
-                                    class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer">
-                                    <td class="px-6 py-4 text-center"><span
-                                            class="material-symbols-outlined text-blue-500">picture_as_pdf</span></td>
-                                    <td class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                                        Propuesta Diseño Web</td>
-                                    <td class="px-6 py-4">Creative Studio</td>
-                                    <td class="px-6 py-4">21 Oct, 2023 - 16:45 PM</td>
-                                    <td class="px-6 py-4"><span
-                                            class="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300 text-xs font-medium px-2.5 py-0.5 rounded-full">Media</span>
-                                    </td>
-                                    <td class="px-6 py-4"><span
-                                            class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 text-xs font-medium px-2.5 py-0.5 rounded-full">Pendiente</span>
-                                    </td>
-                                </tr>
-                                <tr
-                                    class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer">
-                                    <td class="px-6 py-4 text-center"><span
-                                            class="material-symbols-outlined text-yellow-500">folder_zip</span></td>
-                                    <td class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                                        Archivos de Proyecto Q3</td>
-                                    <td class="px-6 py-4">Depto. Marketing (Interno)</td>
-                                    <td class="px-6 py-4">20 Oct, 2023 - 08:20 AM</td>
-                                    <td class="px-6 py-4"><span
-                                            class="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 text-xs font-medium px-2.5 py-0.5 rounded-full">Alta</span>
-                                    </td>
-                                    <td class="px-6 py-4"><span
-                                            class="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 text-xs font-medium px-2.5 py-0.5 rounded-full">Leído</span>
-                                    </td>
-                                </tr>
-                                <tr
-                                    class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer">
-                                    <td class="px-6 py-4 text-center"><span
-                                            class="material-symbols-outlined text-green-500">description</span></td>
-                                    <td class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                                        Cotización Equipos Oficina</td>
-                                    <td class="px-6 py-4">Office Depot S.A.</td>
-                                    <td class="px-6 py-4">19 Oct, 2023 - 10:10 AM</td>
-                                    <td class="px-6 py-4"><span
-                                            class="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 text-xs font-medium px-2.5 py-0.5 rounded-full">Baja</span>
-                                    </td>
-                                    <td class="px-6 py-4"><span
-                                            class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 text-xs font-medium px-2.5 py-0.5 rounded-full">Pendiente</span>
-                                    </td>
-                                </tr>
+                            <tbody id="tablaRecibidosBody">
+                                @forelse($recibidos as $rec)
+                                    @php
+                                        // --- Tipo de remitente ---
+                                        $esPersona = !empty($rec->nombre_persona) || !empty($rec->doc_persona);
+                                        $tipoRow   = $esPersona ? 'persona' : 'entidad';
+
+                                        // --- Remitente display ---
+                                        $remitenteDisplay = $esPersona
+                                            ? ($rec->nombre_persona ?: $rec->doc_persona)
+                                            : ($rec->nom_institucion ?: '—');
+
+                                        // --- Estado badge ---
+                                        $estadoNombre = $rec->estado_nomb ?? 'Sin estado';
+                                        $low = strtolower($estadoNombre);
+                                        if (str_contains($low, 'pendiente') || str_contains($low, 'recibido')) {
+                                            $estadoClases = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+                                        } elseif (str_contains($low, 'tramite') || str_contains($low, 'proceso') || str_contains($low, 'tránsito')) {
+                                            $estadoClases = 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+                                        } elseif (str_contains($low, 'finaliz') || str_contains($low, 'complet') || str_contains($low, 'resuel')) {
+                                            $estadoClases = 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+                                        } elseif (str_contains($low, 'rechaz') || str_contains($low, 'cancel')) {
+                                            $estadoClases = 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+                                        } elseif (str_contains($low, 'leido') || str_contains($low, 'leído') || str_contains($low, 'visto')) {
+                                            $estadoClases = 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300';
+                                        } elseif (str_contains($low, 'archiv')) {
+                                            $estadoClases = 'bg-gray-100 text-gray-700 dark:bg-gray-600 dark:text-gray-200';
+                                        } else {
+                                            $estadoClases = 'bg-gray-100 text-gray-700 dark:bg-gray-600 dark:text-gray-200';
+                                        }
+
+                                        // --- Prioridad badge ---
+                                        $priorNombre = $rec->prioridad_nombre ?? null;
+                                        $priorClases = 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300';
+                                        if ($priorNombre) {
+                                            $pl = strtolower($priorNombre);
+                                            if (str_contains($pl, 'alta') || str_contains($pl, 'urgente') || str_contains($pl, 'critica') || str_contains($pl, 'crítica')) {
+                                                $priorClases = 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+                                            } elseif (str_contains($pl, 'media') || str_contains($pl, 'normal') || str_contains($pl, 'moderada')) {
+                                                $priorClases = 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300';
+                                            } elseif (str_contains($pl, 'baja') || str_contains($pl, 'bajo')) {
+                                                $priorClases = 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+                                            }
+                                        }
+
+                                        // --- Fecha ---
+                                        $fechaFormateada = $rec->fecha_hora_recib
+                                            ? \Carbon\Carbon::parse($rec->fecha_hora_recib)->format('d M, Y - H:i')
+                                            : '—';
+                                    @endphp
+                                    <tr data-tipo="{{ $tipoRow }}"
+                                        class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer bg-white dark:bg-gray-800">
+                                        <td class="px-6 py-4 text-center">
+                                            <span class="material-symbols-outlined text-gray-400">description</span>
+                                        </td>
+                                        <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                                            {{ $rec->asunto ?? '(Sin asunto)' }}
+                                            @if($rec->num_radicado_ext)
+                                                <span class="block text-xs text-gray-400 font-normal">Ext: {{ $rec->num_radicado_ext }}</span>
+                                            @endif
+                                            <span class="block text-xs text-gray-400 font-normal">Int: #{{ $rec->num_radicado_int }}</span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="font-medium text-gray-900 dark:text-white">{{ $remitenteDisplay }}</span>
+                                            @if($esPersona && $rec->correo_persona)
+                                                <span class="block text-xs text-gray-400">{{ $rec->correo_persona }}</span>
+                                            @endif
+                                            <span class="flex items-center gap-0.5 text-xs {{ $esPersona ? 'text-purple-500' : 'text-blue-500' }} mt-0.5">
+                                                <span class="material-symbols-outlined" style="font-size:13px">{{ $esPersona ? 'person' : 'business' }}</span>
+                                                {{ $esPersona ? 'Persona Natural' : 'Entidad / Empresa' }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-gray-600 dark:text-gray-300 whitespace-nowrap">{{ $fechaFormateada }}</td>
+                                        <td class="px-6 py-4">
+                                            @if($priorNombre)
+                                                <span class="{{ $priorClases }} text-xs font-medium px-2.5 py-0.5 rounded-full">{{ $priorNombre }}</span>
+                                            @else
+                                                <span class="text-gray-400 text-xs italic">—</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="{{ $estadoClases }} text-xs font-medium px-2.5 py-0.5 rounded-full">{{ $estadoNombre }}</span>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr id="emptyStateRow">
+                                        <td colspan="6" class="px-6 py-14 text-center text-gray-400 dark:text-gray-500">
+                                            <span class="material-symbols-outlined text-5xl mb-3 block">inbox</span>
+                                            <p class="text-sm font-medium">No hay correspondencia registrada aún.</p>
+                                        </td>
+                                    </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
@@ -264,18 +286,6 @@
                     </div>
                 </div>
             </div>
-            {{-- Alerta de éxito --}}
-            @if (session('success'))
-                <div id="alertaExito"
-                    class="mt-4 flex items-center gap-3 p-4 text-green-800 bg-green-100 border border-green-300 rounded-lg dark:bg-green-900/30 dark:text-green-300 dark:border-green-800">
-                    <span class="material-symbols-outlined">check_circle</span>
-                    <span class="font-medium">{{ session('success') }}</span>
-                    <button onclick="document.getElementById('alertaExito').remove()"
-                        class="ml-auto text-green-600 hover:text-green-800 dark:text-green-400">
-                        <span class="material-symbols-outlined text-base">close</span>
-                    </button>
-                </div>
-            @endif
 
             <script>
                 document.addEventListener("DOMContentLoaded", function() {
@@ -290,6 +300,18 @@
                         modal.classList.add('flex');
                         document.body.style.overflow = 'hidden';
                     });
+
+                    // Auto-abrir el modal si hay errores de validación del intento anterior
+                    @if ($errors->any() || session('success'))
+                        modal.classList.remove('hidden');
+                        modal.classList.add('flex');
+                        document.body.style.overflow = 'hidden';
+                        // Scroll al tope del modal para ver el bloque de errores
+                        setTimeout(function() {
+                            const scrollable = modal.querySelector('.overflow-y-auto');
+                            if (scrollable) scrollable.scrollTop = 0;
+                        }, 100);
+                    @endif
 
                     // Función para cerrar el modal desde el botón Cancelar
                     btnCerrar.addEventListener('click', function() {
@@ -309,82 +331,394 @@
                         document.body.style.overflow = '';
                     }
 
-                    // ===== BUSCADOR DE EMPLEADOS (Quien Dirige) =====
-                    const btnToggle = document.getElementById('btnToggleEmpleados');
-                    const dropdown = document.getElementById('empleadosDropdown');
-                    const inputBuscar = document.getElementById('buscarEmpleadoInput');
-                    const listaEl = document.getElementById('listaEmpleados');
-                    const hiddenDoc = document.getElementById('doc_quien_dirige_value');
-                    const labelBtn = document.getElementById('btnToggleEmpleadosLabel');
-                    let debouncer = null;
+                    // ===== BUSCADOR DE CIUDAD PROVENIENTE =====
+                    const btnToggleCiudades = document.getElementById('btnToggleCiudades');
+                    const dropdownCiudades = document.getElementById('ciudadesDropdown');
+                    const inputBuscarCiudad = document.getElementById('buscarCiudadInput');
+                    const listaCiudadesEl = document.getElementById('listaCiudades');
+                    const hiddenCiudad = document.getElementById('ciudad_proveniente_value');
+                    const labelBtnCiudad = document.getElementById('btnToggleCiudadesLabel');
+                    let debouncerCiudad = null;
 
-                    btnToggle.addEventListener('click', function(e) {
+                    btnToggleCiudades.addEventListener('click', function(e) {
                         e.stopPropagation();
-                        dropdown.classList.toggle('hidden');
-                        if (!dropdown.classList.contains('hidden')) {
-                            inputBuscar.focus();
+                        dropdownCiudades.classList.toggle('hidden');
+                        if (!dropdownCiudades.classList.contains('hidden')) {
+                            inputBuscarCiudad.focus();
                         }
                     });
 
-                    // Cerrar dropdown al hacer clic fuera
                     document.addEventListener('click', function(e) {
-                        const wrapper = document.getElementById('quien-dirige-wrapper');
-                        if (wrapper && !wrapper.contains(e.target)) {
-                            dropdown.classList.add('hidden');
+                        const wrapperCiudad = document.getElementById('ciudad-proveniente-wrapper');
+                        if (wrapperCiudad && !wrapperCiudad.contains(e.target)) {
+                            dropdownCiudades.classList.add('hidden');
                         }
                     });
 
-                    inputBuscar.addEventListener('input', function() {
-                        clearTimeout(debouncer);
+                    inputBuscarCiudad.addEventListener('input', function() {
+                        clearTimeout(debouncerCiudad);
                         const q = this.value.trim();
                         if (q.length < 1) {
-                            listaEl.innerHTML =
+                            listaCiudadesEl.innerHTML =
                                 '<li class="px-3 py-2 text-slate-400 italic">Escriba para buscar...</li>';
                             return;
                         }
-                        listaEl.innerHTML = '<li class="px-3 py-2 text-slate-400 italic">Buscando...</li>';
-                        debouncer = setTimeout(function() {
-                            fetch('{{ route('externarec.empleados.buscar') }}?q=' + encodeURIComponent(q), {
+                        listaCiudadesEl.innerHTML = '<li class="px-3 py-2 text-slate-400 italic">Buscando...</li>';
+                        debouncerCiudad = setTimeout(function() {
+                            fetch('{{ route('externarec.ciudades.buscar') }}?q=' + encodeURIComponent(q), {
                                     headers: {
                                         'X-Requested-With': 'XMLHttpRequest'
                                     }
                                 })
                                 .then(r => r.json())
                                 .then(data => {
-                                    listaEl.innerHTML = '';
+                                    listaCiudadesEl.innerHTML = '';
                                     if (data.length === 0) {
-                                        listaEl.innerHTML =
+                                        listaCiudadesEl.innerHTML =
                                             '<li class="px-3 py-2 text-slate-400 italic">Sin resultados</li>';
                                         return;
                                     }
-                                    data.forEach(function(emp) {
+                                    data.forEach(function(ciudad) {
                                         const li = document.createElement('li');
                                         li.className =
                                             'px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer flex items-center gap-2';
                                         li.innerHTML =
-                                            '<span class="material-symbols-outlined text-sm text-slate-400">person</span>' +
+                                            '<span class="material-symbols-outlined text-sm text-slate-400">location_city</span>' +
                                             '<span><span class="font-mono text-xs text-slate-500">' +
-                                            emp.emple_doc + '</span> — ' + emp.emple_nombres +
-                                            ' ' + emp.emple_apellidos + '</span>';
+                                            ciudad.ciudad_cod_post + '</span> — ' + ciudad
+                                            .ciudad_nom + '</span>';
                                         li.addEventListener('click', function() {
-                                            hiddenDoc.value = emp.emple_doc;
-                                            labelBtn.textContent = emp.emple_doc +
-                                                ' — ' + emp.emple_nombres + ' ' + emp
-                                                .emple_apellidos;
-                                            labelBtn.classList.remove('text-slate-400');
-                                            labelBtn.classList.add('text-slate-900',
-                                                'dark:text-white');
-                                            dropdown.classList.add('hidden');
-                                            inputBuscar.value = '';
+                                            hiddenCiudad.value = ciudad.ciudad_cod_post;
+                                            labelBtnCiudad.textContent = ciudad
+                                                .ciudad_nom;
+                                            labelBtnCiudad.classList.remove(
+                                                'text-slate-400');
+                                            labelBtnCiudad.classList.add(
+                                                'text-slate-900', 'dark:text-white');
+                                            dropdownCiudades.classList.add('hidden');
+                                            inputBuscarCiudad.value = '';
                                         });
-                                        listaEl.appendChild(li);
+                                        listaCiudadesEl.appendChild(li);
                                     });
                                 })
                                 .catch(function() {
-                                    listaEl.innerHTML =
+                                    listaCiudadesEl.innerHTML =
                                         '<li class="px-3 py-2 text-red-400 italic">Error al buscar</li>';
                                 });
                         }, 300);
+                    });
+
+                    // ===== BUSCADOR DE DESTINATARIOS (múltiple) =====
+                    const EMPLEADOS_URL = '{{ route('externarec.empleados.buscar') }}';
+
+                    /**
+                     * Inicializa el buscador de empleados dentro de un bloque `.destinatario-block`.
+                     */
+                    function inicializarBuscadorDestinatario(block) {
+                        const btnToggle = block.querySelector('.dest-btn-toggle');
+                        const dropdown = block.querySelector('.dest-dropdown');
+                        const searchInput = block.querySelector('.dest-search-input');
+                        const lista = block.querySelector('.dest-list');
+                        const hidden = block.querySelector('.dest-hidden-input');
+                        const label = block.querySelector('.dest-label');
+                        const btnRemove = block.querySelector('.dest-btn-remove');
+                        let debouncer = null;
+
+                        // Abrir / cerrar dropdown
+                        btnToggle.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            // Cerrar todos los demás dropdowns abiertos
+                            document.querySelectorAll('.dest-dropdown').forEach(function(dd) {
+                                if (dd !== dropdown) dd.classList.add('hidden');
+                            });
+                            dropdown.classList.toggle('hidden');
+                            if (!dropdown.classList.contains('hidden')) searchInput.focus();
+                        });
+
+                        // Cerrar al hacer clic fuera del bloque
+                        document.addEventListener('click', function(e) {
+                            if (!block.contains(e.target)) dropdown.classList.add('hidden');
+                        });
+
+                        // Búsqueda con debounce
+                        searchInput.addEventListener('input', function() {
+                            clearTimeout(debouncer);
+                            const q = this.value.trim();
+                            if (q.length < 1) {
+                                lista.innerHTML =
+                                    '<li class="px-3 py-2 text-slate-400 italic">Escriba para buscar...</li>';
+                                return;
+                            }
+                            lista.innerHTML = '<li class="px-3 py-2 text-slate-400 italic">Buscando...</li>';
+                            debouncer = setTimeout(function() {
+                                fetch(EMPLEADOS_URL + '?q=' + encodeURIComponent(q), {
+                                        headers: {
+                                            'X-Requested-With': 'XMLHttpRequest'
+                                        }
+                                    })
+                                    .then(r => r.json())
+                                    .then(data => {
+                                        lista.innerHTML = '';
+                                        if (data.length === 0) {
+                                            lista.innerHTML =
+                                                '<li class="px-3 py-2 text-slate-400 italic">Sin resultados</li>';
+                                            return;
+                                        }
+                                        data.forEach(function(emp) {
+                                            const li = document.createElement('li');
+                                            li.className =
+                                                'px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer flex items-center gap-2';
+                                            li.innerHTML =
+                                                '<span class="material-symbols-outlined text-sm text-slate-400">person</span>' +
+                                                '<span><span class="font-mono text-xs text-slate-500">' +
+                                                emp.emple_doc +
+                                                '</span> — ' + emp.emple_nombres + ' ' + emp
+                                                .emple_apellidos + '</span>';
+                                            li.addEventListener('click', function() {
+                                                hidden.value = emp.emple_doc;
+                                                label.textContent = emp.emple_doc +
+                                                    ' — ' + emp.emple_nombres + ' ' +
+                                                    emp.emple_apellidos;
+                                                label.classList.remove(
+                                                    'text-slate-400');
+                                                label.classList.add('text-slate-900',
+                                                    'dark:text-white');
+                                                dropdown.classList.add('hidden');
+                                                searchInput.value = '';
+                                            });
+                                            lista.appendChild(li);
+                                        });
+                                    })
+                                    .catch(function() {
+                                        lista.innerHTML =
+                                            '<li class="px-3 py-2 text-red-400 italic">Error al buscar</li>';
+                                    });
+                            }, 300);
+                        });
+
+                        // Botón quitar
+                        if (btnRemove) {
+                            btnRemove.addEventListener('click', function() {
+                                block.remove();
+                            });
+                        }
+                    }
+
+                    // Inicializar el primer bloque
+                    document.querySelectorAll('.destinatario-block').forEach(inicializarBuscadorDestinatario);
+
+                    // Botón "+ Agregar destinatario"
+                    document.getElementById('btnAgregarDestinatario').addEventListener('click', function() {
+                        const container = document.getElementById('destinatarios-container');
+                        const template = container.querySelector('.destinatario-block');
+
+                        // Clonar profundamente el primer bloque
+                        const clone = template.cloneNode(true);
+
+                        // Limpiar valores del clon
+                        clone.querySelector('.dest-hidden-input').value = '';
+                        clone.querySelector('.dest-label').textContent = 'Seleccione un documento o nombre...';
+                        clone.querySelector('.dest-label').classList.add('text-slate-400');
+                        clone.querySelector('.dest-label').classList.remove('text-slate-900', 'dark:text-white');
+                        clone.querySelector('.dest-search-input').value = '';
+                        clone.querySelector('.dest-list').innerHTML =
+                            '<li class="px-3 py-2 text-slate-400 italic">Escriba para buscar...</li>';
+                        clone.querySelector('.dest-dropdown').classList.add('hidden');
+
+                        // Mostrar el botón de quitar en el clon
+                        clone.querySelector('.dest-btn-remove').classList.remove('hidden');
+                        clone.querySelector('.dest-btn-remove').classList.add('flex');
+
+                        container.appendChild(clone);
+                        inicializarBuscadorDestinatario(clone);
+                    });
+
+                    // ===== MANEJADOR DE ANEXOS MÚLTIPLES =====
+                    /**
+                     * Muestra un "pill" por cada archivo seleccionado.
+                     * Al hacer clic en la X del pill, el archivo se elimina de la lista.
+                     */
+                    // ===== MANEJADOR DE ANEXOS MÚLTIPLES =====
+
+                    // 1. Declaramos el acumulador FUERA de la función para que no se reinicie
+                    window.dtAcumulador = new DataTransfer();
+
+                    window.handleFileSelect = function(event, listId, inputId) {
+                        const input = document.getElementById(inputId);
+                        const container = document.getElementById(listId);
+
+                        // 2. Agregamos los archivos recién elegidos al acumulador existente
+                        Array.from(event.target.files).forEach(f => window.dtAcumulador.items.add(f));
+
+                        // 3. Actualizamos el input con TODOS los archivos acumulados
+                        input.files = window.dtAcumulador.files;
+
+                        renderPills(input, container);
+                    };
+
+                    function renderPills(input, container) {
+                        container.innerHTML = '';
+                        Array.from(input.files).forEach((file, index) => {
+                            const pill = document.createElement('div');
+                            pill.className =
+                                'flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-full px-3 py-1 text-xs text-blue-700 dark:text-blue-300';
+                            pill.innerHTML =
+                                '<span class="material-symbols-outlined text-xs">description</span>' +
+                                '<span class="max-w-[120px] truncate" title="' + file.name + '">' + file.name +
+                                '</span>' +
+                                '<button type="button" class="ml-1 text-blue-400 hover:text-red-500 transition-colors" aria-label="Quitar archivo">' +
+                                '<span class="material-symbols-outlined text-sm">close</span></button>';
+
+                            pill.querySelector('button').addEventListener('click', function() {
+                                const newDt = new DataTransfer();
+                                Array.from(input.files).forEach((f, i) => {
+                                    if (i !== index) newDt.items.add(f);
+                                });
+                                input.files = newDt.files;
+
+                                // 4. MUY IMPORTANTE: Sincronizar el acumulador al borrar un archivo
+                                window.dtAcumulador = newDt;
+
+                                renderPills(input, container);
+                            });
+
+                            container.appendChild(pill);
+                        });
+                    }
+                });
+
+                document.addEventListener('DOMContentLoaded', function() {
+                    const tabEmpresa = document.getElementById('tabEmpresa');
+                    const tabPersona = document.getElementById('tabPersona');
+
+                    const bloqueEmpresa = document.getElementById('bloqueEmpresa');
+                    const bloquePersona = document.getElementById('bloquePersona');
+
+                    const tipoRemitenteInput = document.getElementById('tipoRemitente');
+
+                    // Inputs que cambian su estado "required"
+                    const inputsEmpresa = document.querySelectorAll('.input-empresa');
+                    const inputsPersona = document.querySelectorAll('.input-persona');
+
+                    function activarTab(tipo) {
+                        if (tipo === 'empresa') {
+                            // Estilos del Tab
+                            tabEmpresa.classList.add('font-bold', 'text-primary', 'border-b-2', 'border-primary');
+                            tabEmpresa.classList.remove('font-medium', 'text-slate-500', 'dark:text-slate-400');
+
+                            tabPersona.classList.remove('font-bold', 'text-primary', 'border-b-2', 'border-primary');
+                            tabPersona.classList.add('font-medium', 'text-slate-500', 'dark:text-slate-400');
+
+                            // Mostrar/Ocultar
+                            bloqueEmpresa.classList.remove('hidden');
+                            bloquePersona.classList.add('hidden');
+
+                            // Limpiar inputs del bloque oculto (persona)
+                            bloquePersona.querySelectorAll('input, select, textarea').forEach(function(el) {
+                                el.value = '';
+                            });
+
+                            // Valor al form
+                            tipoRemitenteInput.value = 'empresa';
+
+                            // Manejo de Required (evita que inputs ocultos bloqueen el submit)
+                            inputsEmpresa.forEach(input => input.setAttribute('required', 'required'));
+                            inputsPersona.forEach(input => input.removeAttribute('required'));
+
+                        } else {
+                            // Estilos del Tab
+                            tabPersona.classList.add('font-bold', 'text-primary', 'border-b-2', 'border-primary');
+                            tabPersona.classList.remove('font-medium', 'text-slate-500', 'dark:text-slate-400');
+
+                            tabEmpresa.classList.remove('font-bold', 'text-primary', 'border-b-2', 'border-primary');
+                            tabEmpresa.classList.add('font-medium', 'text-slate-500', 'dark:text-slate-400');
+
+                            // Mostrar/Ocultar
+                            bloquePersona.classList.remove('hidden');
+                            bloqueEmpresa.classList.add('hidden');
+
+                            // Limpiar inputs del bloque oculto (empresa)
+                            bloqueEmpresa.querySelectorAll('input, select, textarea').forEach(function(el) {
+                                el.value = '';
+                            });
+
+                            // Valor al form
+                            tipoRemitenteInput.value = 'persona';
+
+                            // Manejo de Required
+                            inputsPersona.forEach(input => input.setAttribute('required', 'required'));
+                            inputsEmpresa.forEach(input => input.removeAttribute('required'));
+                        }
+                    }
+
+                    // Event Listeners
+                    if (tabEmpresa && tabPersona) {
+                        tabEmpresa.addEventListener('click', () => activarTab('empresa'));
+                        tabPersona.addEventListener('click', () => activarTab('persona'));
+                    }
+                });
+
+                // ===== FILTRO DE REMITENTE (Persona Natural / Entidad) =====
+                document.addEventListener('DOMContentLoaded', function () {
+                    const btnFiltro = document.getElementById('btnFiltroRemitente');
+                    const dropdown  = document.getElementById('dropdownFiltroRemitente');
+                    const label     = document.getElementById('btnFiltroRemitenteLabel');
+                    const wrapper   = document.getElementById('filtroRemitenteWrapper');
+
+                    if (!btnFiltro) return;
+
+                    // Toggle dropdown
+                    btnFiltro.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        dropdown.classList.toggle('hidden');
+                    });
+
+                    // Cerrar si se hace clic fuera
+                    document.addEventListener('click', function (e) {
+                        if (wrapper && !wrapper.contains(e.target)) {
+                            dropdown.classList.add('hidden');
+                        }
+                    });
+
+                    // Opciones del filtro
+                    document.querySelectorAll('.filtro-remitente-btn').forEach(function (btn) {
+                        btn.addEventListener('click', function () {
+                            const tipo = btn.dataset.tipo;
+
+                            // Actualizar label del botón
+                            const labels = { todos: 'Remitente', persona: 'Persona Natural', entidad: 'Entidad / Empresa' };
+                            label.textContent = labels[tipo] || 'Remitente';
+                            dropdown.classList.add('hidden');
+
+                            // Filtrar filas
+                            const filas = document.querySelectorAll('#tablaRecibidosBody tr[data-tipo]');
+                            let visibles = 0;
+                            filas.forEach(function (fila) {
+                                if (tipo === 'todos' || fila.dataset.tipo === tipo) {
+                                    fila.classList.remove('hidden');
+                                    visibles++;
+                                } else {
+                                    fila.classList.add('hidden');
+                                }
+                            });
+
+                            // Mostrar/ocultar empty-state dinámico
+                            let emptyDyn = document.getElementById('emptyDynamicRow');
+                            if (visibles === 0) {
+                                if (!emptyDyn) {
+                                    emptyDyn = document.createElement('tr');
+                                    emptyDyn.id = 'emptyDynamicRow';
+                                    emptyDyn.innerHTML = '<td colspan="6" class="px-6 py-14 text-center text-gray-400 dark:text-gray-500">' +
+                                        '<span class="material-symbols-outlined text-5xl mb-3 block">search_off</span>' +
+                                        '<p class="text-sm font-medium">No hay registros de tipo "' + (labels[tipo] || tipo) + '".</p>' +
+                                        '</td>';
+                                    document.getElementById('tablaRecibidosBody').appendChild(emptyDyn);
+                                }
+                                emptyDyn.classList.remove('hidden');
+                            } else if (emptyDyn) {
+                                emptyDyn.classList.add('hidden');
+                            }
+                        });
                     });
                 });
             </script>
@@ -400,6 +734,10 @@
                     <form action="{{ route('externarec.store') }}" method="POST" class="relative"
                         enctype="multipart/form-data">
                         @csrf
+
+                        {{-- Campo oculto para saber qué tipo de formulario se envió --}}
+                        <input type="hidden" name="tipo_remitente" id="tipoRemitente" value="empresa">
+
                         <div
                             class="space-y-8 bg-white dark:bg-slate-900 p-8 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xl max-h-[90vh] overflow-y-auto">
 
@@ -409,27 +747,40 @@
                                     Correspondencia</h3>
                             </div>
 
-                            <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2">
-                                <div class="sm:col-span-1">
-                                    <label class="flex flex-col">
-                                        <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
-                                            Núm. Radicado Interno *
-                                        </p>
-                                        <select name="num_radicado_int" required
-                                            class="form-select flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal">
-
-                                            <option value="" disabled selected>Seleccione un radicado...</option>
-                                            @foreach ($radicados as $radicado)
-                                                <option value="{{ $radicado->id_radicado }}">{{ $radicado->num_radicado }}
-                                                </option>
-                                            @endforeach
-
-                                        </select>
-                                        @error('num_radicado_int')
-                                            <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
-                                        @enderror
-                                    </label>
+                            {{-- Bloque de errores de validación --}}
+                            @if ($errors->any())
+                                <div
+                                    class="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4">
+                                    <div class="flex items-start gap-3">
+                                        <span class="material-symbols-outlined text-red-500 flex-shrink-0">error</span>
+                                        <div>
+                                            <p class="text-sm font-semibold text-red-700 dark:text-red-400 mb-1">Por favor
+                                                corrige los siguientes errores:</p>
+                                            <ul
+                                                class="list-disc list-inside text-sm text-red-600 dark:text-red-300 space-y-0.5">
+                                                @foreach ($errors->all() as $error)
+                                                    <li>{{ $error }}</li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    </div>
                                 </div>
+                            @endif
+
+                            {{-- ===== TABS DE SELECCIÓN ===== --}}
+                            <div class="flex space-x-6 border-b border-slate-200 dark:border-slate-800">
+                                <button type="button" id="tabEmpresa"
+                                    class="pb-3 text-sm font-bold text-primary border-b-2 border-primary transition-colors">
+                                    Entidad / Empresa
+                                </button>
+                                <button type="button" id="tabPersona"
+                                    class="pb-3 text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors">
+                                    Persona Natural
+                                </button>
+                            </div>
+
+                            {{-- ===== BLOQUE 1: EMPRESA (Visible por defecto) ===== --}}
+                            <div id="bloqueEmpresa" class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2">
                                 <div class="sm:col-span-1">
                                     <label class="flex flex-col">
                                         <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
@@ -440,52 +791,76 @@
                                             placeholder="Opcional" />
                                     </label>
                                 </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2">
                                 <div class="sm:col-span-1">
                                     <label class="flex flex-col">
                                         <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
                                             Nombre Institución *</p>
                                         <input type="text" name="nom_institucion" required maxlength="150"
-                                            class="form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal"
+                                            class="input-empresa form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal"
                                             placeholder="Nombre de la entidad" />
-                                    </label>
-                                </div>
-                                <div class="sm:col-span-1">
-                                    <label class="flex flex-col">
-                                        <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
-                                            Ciudad Proveniente *
-                                        </p>
-                                        <select name="ciudad_proveniente" required
-                                            class="form-select flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal">
-
-                                            <option value="" disabled selected>Seleccione una ciudad...</option>
-                                            @foreach ($ciudades as $ciudad)
-                                                <option value="{{ $ciudad->ciudad_cod_post }}">{{ $ciudad->ciudad_nom }}
-                                                </option>
-                                            @endforeach
-
-                                        </select>
                                     </label>
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-3">
+                            {{-- ===== BLOQUE 2: PERSONA NATURAL (Oculto por defecto) ===== --}}
+                            <div id="bloquePersona" class="hidden space-y-8">
+                                <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2">
+                                    <div class="sm:col-span-1">
+                                        <label class="flex flex-col">
+                                            <p
+                                                class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
+                                                Nombre Completo *</p>
+                                            <input type="text" name="nombre_persona" maxlength="150"
+                                                class="input-persona form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal"
+                                                placeholder="Nombres y apellidos" />
+                                        </label>
+                                    </div>
+                                    <div class="sm:col-span-1">
+                                        <label class="flex flex-col">
+                                            <p
+                                                class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
+                                                Documento de Identidad *</p>
+                                            <input type="text" name="documento_persona" maxlength="20"
+                                                class="input-persona form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal"
+                                                placeholder="Cédula, NIT, etc." />
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2">
+                                    <div class="sm:col-span-1">
+                                        <label class="flex flex-col">
+                                            <p
+                                                class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
+                                                Correo Electrónico</p>
+                                            <input type="email" name="correo_persona" maxlength="100"
+                                                class="form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal"
+                                                placeholder="correo@ejemplo.com" />
+                                        </label>
+                                    </div>
+                                    <div class="sm:col-span-1">
+                                        <label class="flex flex-col">
+                                            <p
+                                                class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
+                                                Teléfono</p>
+                                            <input type="text" name="telefono_persona" maxlength="20"
+                                                class="form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal"
+                                                placeholder="Opcional" />
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
 
-                                <div class="sm:col-span-1 relative" id="quien-dirige-wrapper">
-                                    {{-- Campo oculto que guarda el doc seleccionado --}}
-                                    <input type="hidden" name="doc_quien_dirige" id="doc_quien_dirige_value">
-
+                            {{-- ===== CAMPOS COMPARTIDOS (Siempre visibles) ===== --}}
+                            <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2">
+                                <div class="sm:col-span-1 relative" id="ciudad-proveniente-wrapper">
+                                    <input type="hidden" name="ciudad_proveniente" id="ciudad_proveniente_value">
                                     <label class="flex flex-col">
                                         <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
-                                            Quien Dirige (Doc)
-                                        </p>
-
-                                        <button type="button" id="btnToggleEmpleados"
+                                            Ciudad Proveniente *</p>
+                                        <button type="button" id="btnToggleCiudades"
                                             class="form-input flex items-center justify-between w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal text-left">
-                                            <span id="btnToggleEmpleadosLabel" class="text-slate-400">Seleccione un
-                                                documento o nombre...</span>
+                                            <span id="btnToggleCiudadesLabel" class="text-slate-400">Seleccione una
+                                                ciudad...</span>
                                             <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor"
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -494,9 +869,8 @@
                                         </button>
                                     </label>
 
-                                    <div id="empleadosDropdown"
+                                    <div id="ciudadesDropdown"
                                         class="hidden absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg shadow-lg overflow-hidden">
-
                                         <div class="p-2 border-b border-slate-200 dark:border-slate-700">
                                             <div class="relative">
                                                 <div
@@ -508,19 +882,77 @@
                                                             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                                     </svg>
                                                 </div>
-                                                <input type="text" id="buscarEmpleadoInput"
+                                                <input type="text" id="buscarCiudadInput"
                                                     class="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-900 text-slate-900 dark:text-white py-2 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                                    placeholder="Buscar por cédula o nombre..." />
+                                                    placeholder="Buscar por código o nombre..." />
                                             </div>
                                         </div>
-
-                                        <ul id="listaEmpleados"
+                                        <ul id="listaCiudades"
                                             class="max-h-48 overflow-y-auto py-1 text-sm text-slate-700 dark:text-slate-200">
                                             <li class="px-3 py-2 text-slate-400 italic">Escriba para buscar...</li>
                                         </ul>
-
                                     </div>
                                 </div>
+                            </div>
+
+                            {{-- ===== SECCIÓN DESTINATARIOS ===== --}}
+                            <div class="space-y-3">
+                                <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal">
+                                    Destinatario(s) <span class="text-red-500">*</span>
+                                </p>
+                                <div id="destinatarios-container" class="space-y-2">
+                                    <div class="destinatario-block flex items-start gap-2" data-index="0">
+                                        <input type="hidden" name="destinatarios[]" class="dest-hidden-input">
+                                        <div class="relative flex-1" style="min-width:0">
+                                            <button type="button"
+                                                class="dest-btn-toggle form-input flex items-center justify-between w-full rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal text-left">
+                                                <span class="dest-label text-slate-400">Seleccione un documento o
+                                                    nombre...</span>
+                                                <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none"
+                                                    stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M19 9l-7 7-7-7"></path>
+                                                </svg>
+                                            </button>
+                                            <div
+                                                class="dest-dropdown hidden absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg shadow-lg overflow-hidden">
+                                                <div class="p-2 border-b border-slate-200 dark:border-slate-700">
+                                                    <div class="relative">
+                                                        <div
+                                                            class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                                            <svg class="w-4 h-4 text-slate-400" fill="none"
+                                                                stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    stroke-width="2"
+                                                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                                            </svg>
+                                                        </div>
+                                                        <input type="text"
+                                                            class="dest-search-input w-full rounded-md border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-900 text-slate-900 dark:text-white py-2 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                                            placeholder="Buscar por cédula o nombre..." />
+                                                    </div>
+                                                </div>
+                                                <ul
+                                                    class="dest-list max-h-48 overflow-y-auto py-1 text-sm text-slate-700 dark:text-slate-200">
+                                                    <li class="px-3 py-2 text-slate-400 italic">Escriba para buscar...</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <button type="button"
+                                            class="dest-btn-remove hidden mt-1 flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-lg border border-red-200 dark:border-red-800 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+                                            title="Quitar destinatario">
+                                            <span class="material-symbols-outlined text-sm">close</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <button type="button" id="btnAgregarDestinatario"
+                                    class="flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors mt-1">
+                                    <span class="material-symbols-outlined text-base">person_add</span>
+                                    + Agregar destinatario
+                                </button>
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-3">
                                 <div class="sm:col-span-1">
                                     <label class="flex flex-col">
                                         <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
@@ -530,9 +962,6 @@
                                             placeholder="Resumen del documento" />
                                     </label>
                                 </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-3">
                                 <div class="sm:col-span-1">
                                     <label class="flex flex-col">
                                         <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
@@ -546,41 +975,9 @@
                                         </select>
                                     </label>
                                 </div>
-                                <div class="sm:col-span-1">
-                                    <label class="flex flex-col">
-                                        <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
-                                            Estado</p>
-                                        <select name="id_estado_rec"
-                                            class="form-select flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal">
-                                            <option value="">Seleccione estado</option>
-                                            @foreach ($estados as $estado)
-                                                <option value="{{ $estado->id_estado }}">{{ $estado->estado_nomb }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </label>
-                                </div>
-                                <div class="sm:col-span-1">
-                                    <label class="flex flex-col">
-                                        <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
-                                            Folios *</p>
-                                        <input type="number" name="folio" required
-                                            class="form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal"
-                                            placeholder="Número de hojas" />
-                                    </label>
-                                </div>
                             </div>
 
                             <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2">
-                                <div class="sm:col-span-1">
-                                    <label class="flex flex-col">
-                                        <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
-                                            Anexos</p>
-                                        <textarea name="anexo" rows="3" maxlength="500"
-                                            class="form-textarea flex w-full min-w-0 flex-1 resize-y rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 p-3.5 text-base font-normal"
-                                            placeholder="CDs, carpetas, etc."></textarea>
-                                    </label>
-                                </div>
                                 <div class="sm:col-span-1">
                                     <label class="flex flex-col h-full">
                                         <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
@@ -592,70 +989,41 @@
                                 </div>
                             </div>
 
-                            <div>
-                                <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
-                                    Documento Digitalizado (PDF/Imagen)
-                                </p>
-
-                                <div class="flex items-center justify-center w-full">
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-3 gap-5 p-4 bg-gray-50 dark:bg-slate-800/30 rounded-lg border border-gray-200 dark:border-gray-700">
+                                <div class="md:col-span-1">
                                     <label
-                                        class="flex flex-col items-center justify-center w-full h-32 border-2 border-slate-300 dark:border-slate-700 border-dashed rounded-lg cursor-pointer bg-background-light dark:bg-slate-800 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors">
-                                        <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                                            <span
-                                                class="material-symbols-outlined text-3xl text-slate-500 dark:text-slate-400">upload_file</span>
-                                            <p class="text-sm text-slate-500 dark:text-slate-400"><span
-                                                    class="font-semibold">Subir archivo</span> para el campo 'archivo'</p>
-                                        </div>
-                                        <input type="file" id="file-input" name="archivo" class="hidden"
-                                            accept=".pdf, image/*" />
+                                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Documento
+                                        Principal (PDF, JPG, PNG)</label>
+                                    <input type="file" name="archivo" accept=".pdf,.jpg,.jpeg,.png"
+                                        class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-blue-700 file:cursor-pointer cursor-pointer border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900">
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Tamaño máximo: 5MB</p>
+                                </div>
+
+                                <div class="md:col-span-1">
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Anexos
+                                        (PDFs Opcionales)</label>
+                                    <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-3 text-center hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors cursor-pointer relative"
+                                        onclick="document.getElementById('anexos_nuevos_input').click()">
+                                        <span class="material-symbols-outlined text-gray-400 text-2xl mb-1">note_add</span>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">Clic aquí para añadir PDFs</p>
+                                        <input type="file" id="anexos_nuevos_input" name="anexos[]" multiple
+                                            accept=".pdf" class="hidden"
+                                            onchange="handleFileSelect(event, 'anexosNuevosList', 'anexos_nuevos_input')">
+                                    </div>
+                                    <div id="anexosNuevosList" class="mt-2 flex flex-wrap gap-2 empty:hidden"></div>
+                                </div>
+
+                                <div class="md:col-span-1">
+                                    <label class="flex flex-col">
+                                        <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
+                                            Folios *</p>
+                                        <input type="number" name="folio" required
+                                            class="form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal"
+                                            placeholder="Número de hojas" />
                                     </label>
                                 </div>
-
-                                <div id="file-preview-container"
-                                    class="hidden mt-4 flex items-center justify-between p-3 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                                    <div class="flex items-center space-x-3 overflow-hidden">
-                                        <span
-                                            class="material-symbols-outlined text-slate-500 dark:text-slate-400">description</span>
-                                        <span id="file-name"
-                                            class="text-sm text-slate-700 dark:text-slate-300 truncate max-w-[200px] md:max-w-xs"></span>
-                                    </div>
-                                    <button type="button" id="remove-file-btn"
-                                        class="text-red-500 hover:text-red-700 focus:outline-none p-1 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-                                        <span class="material-symbols-outlined text-xl">delete</span>
-                                    </button>
-                                </div>
                             </div>
-
-                            <script>
-                                // Referencias a los elementos del DOM
-                                const fileInput = document.getElementById('file-input');
-                                const previewContainer = document.getElementById('file-preview-container');
-                                const fileNameDisplay = document.getElementById('file-name');
-                                const removeFileBtn = document.getElementById('remove-file-btn');
-
-                                // Escuchar el evento cuando el usuario selecciona un archivo
-                                fileInput.addEventListener('change', function(event) {
-                                    const file = event.target.files[0];
-
-                                    if (file) {
-                                        // Si hay un archivo, mostramos el nombre y el contenedor
-                                        fileNameDisplay.textContent = file.name;
-                                        previewContainer.classList.remove('hidden');
-                                    } else {
-                                        // Si el usuario cancela, ocultamos el contenedor
-                                        previewContainer.classList.add('hidden');
-                                    }
-                                });
-
-                                // Escuchar el evento de clic en el botón de la papelera
-                                removeFileBtn.addEventListener('click', function() {
-                                    // Limpiamos el valor del input
-                                    fileInput.value = '';
-                                    // Ocultamos el contenedor de previsualización
-                                    previewContainer.classList.add('hidden');
-                                    fileNameDisplay.textContent = '';
-                                });
-                            </script>
 
                             <div
                                 class="flex items-center justify-end gap-4 pt-6 border-t border-slate-200 dark:border-slate-800">
@@ -672,4 +1040,5 @@
                     </form>
                 </div>
             </div>
+
         @endsection
