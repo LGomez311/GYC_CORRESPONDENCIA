@@ -25,6 +25,7 @@ class CorrespondenciaExport implements FromCollection, WithHeadings, WithMapping
     public function headings(): array
     {
         return [
+            'Origen',
             'Radicado EXT',
             'Radicado INT',
             'Institución / Origen',
@@ -42,17 +43,18 @@ class CorrespondenciaExport implements FromCollection, WithHeadings, WithMapping
     public function map($cor): array
     {
         return [
+            $cor->origen,
             $cor->num_radicado_ext ?? 'N/A',
             $cor->num_radicado_int,
             $cor->nom_institucion,
-            $cor->ciudad->ciudad_nom ?? $cor->ciudad_proveniente,
+            $cor->ciudad,
             $cor->asunto,
-            Carbon::parse($cor->fecha_hora_recib)->format('d/m/Y H:i'),
-            trim(($cor->dirigidoA->emple_nombres ?? 'N/A') . ' ' . ($cor->dirigidoA->emple_apellidos ?? '')),
-            $cor->doc_quien_dirige,
+            Carbon::parse($cor->fecha)->format('d/m/Y H:i'),
+            $cor->destinatario_nombre,
+            $cor->doc_destinatario,
             $cor->folio,
             $cor->anexo ?? 'Ninguno',
-            $cor->estado->estado_nomb ?? 'Desconocido',
+            $cor->estado_nomb,
         ];
     }
 }

@@ -166,7 +166,7 @@ class UsuarioController extends Controller
         $empleado->emple_tel = $request->emple_tel;
         $empleado->emple_correo = $request->emple_correo;
         $empleado->emple_estado = $request->emple_estado ?? 1;
-        $empleado->emple_rol = 2; // Fixed Empleado rol
+        $empleado->emple_rol = 3; // 3 = Empleado
         $empleado->emple_area = $request->emple_area;
         $empleado->password = Hash::make($request->password);
 

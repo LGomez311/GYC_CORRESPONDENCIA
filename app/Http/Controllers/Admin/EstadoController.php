@@ -14,7 +14,7 @@ class EstadoController extends Controller
     public function index()
     {
         $estados = Estado::whereIn('id_estado', [1, 2])
-                        ->orWhere('id_estado', '>', 5)
+                        ->orWhere('id_estado', '>', 12)
                         ->paginate(10);
         return view('admin.otros.estado', compact('estados'));
     }
@@ -80,7 +80,7 @@ class EstadoController extends Controller
     public function exportPdf()
     {
         $estados = Estado::whereIn('id_estado', [1, 2])
-                        ->orWhere('id_estado', '>', 5)
+                        ->orWhere('id_estado', '>', 12)
                         ->get();
         $pdf = Pdf::loadView('admin.pdf.estado_pdf', compact('estados'));
         return $pdf->download('estados.pdf');

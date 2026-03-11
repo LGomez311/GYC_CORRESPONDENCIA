@@ -110,6 +110,7 @@
 
 
     {{-- ======= MODALES ======= --}}
+    @include('admin.layouts.profile_modal')
     @yield('modals')
 
 

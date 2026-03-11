@@ -33,7 +33,17 @@ class CiudadController extends Controller
                 'max:100',
                 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/'
             ],
-            'ciudad_cod_post' => 'required|max:10|unique:ciudad,ciudad_cod_post',
+            'ciudad_cod_post' => [
+                'required',
+                'max:10',
+                'unique:ciudad,ciudad_cod_post',
+                function ($attribute, $value, $fail) use ($request) {
+                    $dpto = $request->ciudad_id_dpto;
+                    if ($dpto && strpos($value, $dpto) !== 0) {
+                        $fail('El código de la ciudad debe iniciar con el código del departamento seleccionado (' . $dpto . ').');
+                    }
+                }
+            ],
             'ciudad_id_dpto' => 'required|exists:departamento,dpto_codigo_postal'
         ], [
             'ciudad_nom.required' => 'El nombre de la ciudad es obligatorio.',
@@ -67,7 +77,17 @@ class CiudadController extends Controller
                 'max:100',
                 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/'
             ],
-            'ciudad_cod_post' => 'required|max:10|unique:ciudad,ciudad_cod_post,' . $id . ',ciudad_cod_post',
+            'ciudad_cod_post' => [
+                'required',
+                'max:10',
+                'unique:ciudad,ciudad_cod_post,' . $id . ',ciudad_cod_post',
+                function ($attribute, $value, $fail) use ($request) {
+                    $dpto = $request->ciudad_id_dpto;
+                    if ($dpto && strpos($value, $dpto) !== 0) {
+                        $fail('El código de la ciudad debe iniciar con el código del departamento seleccionado (' . $dpto . ').');
+                    }
+                }
+            ],
             'ciudad_id_dpto' => 'required|exists:departamento,dpto_codigo_postal'
         ], [
             'ciudad_nom.required' => 'El nombre de la ciudad es obligatorio.',

@@ -90,6 +90,7 @@
         <thead>
             <tr>
                 <th style="width: 5%">#</th>
+                <th style="width: 8%">Ori</th>
                 <th style="width: 10%">EXT</th>
                 <th style="width: 10%">INT</th>
                 <th style="width: 15%">Institución</th>
@@ -104,14 +105,15 @@
             @foreach ($correspondencias as $index => $cor)
                 <tr>
                     <td style="text-align:center;">{{ $index + 1 }}</td>
-                    <td style="text-align:center;">{{ $cor->num_radicado_ext ?? 'N/A' }}</td>
+                    <td style="text-align:center;">{{ substr($cor->origen, 0, 3) }}</td>
+                    <td style="text-align:center;">{{ $cor->num_radicado_ext }}</td>
                     <td style="text-align:center;">{{ $cor->num_radicado_int }}</td>
-                    <td>{{ $cor->nom_institucion }}<br><small>{{ $cor->ciudad->ciudad_nom ?? $cor->ciudad_proveniente }}</small></td>
+                    <td>{{ $cor->nom_institucion }}<br><small>{{ $cor->ciudad }}</small></td>
                     <td>{{ $cor->asunto }}</td>
-                    <td style="text-align:center;">{{ \Carbon\Carbon::parse($cor->fecha_hora_recib)->format('d/m/Y H:i') }}</td>
-                    <td>{{ $cor->dirigidoA->emple_nombres ?? 'N/A' }} {{ $cor->dirigidoA->emple_apellidos ?? '' }}<br><small>Doc: {{ $cor->doc_quien_dirige }}</small></td>
+                    <td style="text-align:center;">{{ \Carbon\Carbon::parse($cor->fecha)->format('d/m/Y H:i') }}</td>
+                    <td>{{ $cor->destinatario_nombre }}<br><small>Doc: {{ $cor->doc_destinatario }}</small></td>
                     <td>F: {{ $cor->folio }}<br>A: {{ $cor->anexo ?? 'Ninguno' }}</td>
-                    <td style="text-align:center;">{{ $cor->estado->estado_nomb ?? 'N/A' }}</td>
+                    <td style="text-align:center;">{{ $cor->estado_nomb }}</td>
                 </tr>
             @endforeach
         </tbody>

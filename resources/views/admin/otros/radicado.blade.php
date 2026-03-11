@@ -170,6 +170,8 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+
+
             // ================= ALERTS DE SESIÓN Y ERRORES =================
             @if(session('success'))
                 Swal.fire({
@@ -376,6 +378,8 @@
                     });
                 }
             });
+
+
 
             document.querySelectorAll('.btn-view-radicado').forEach(btn => {
                 btn.addEventListener('click', function() {
