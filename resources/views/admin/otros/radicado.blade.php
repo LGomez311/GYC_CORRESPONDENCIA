@@ -142,7 +142,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-<<<<<<< HEAD
+
 
             // ================= ALERTS DE SESIÓN Y ERRORES =================
             @if(session('success'))
@@ -363,7 +363,7 @@
             });
 
 
-=======
+
             document.querySelectorAll('.btn-view-radicado').forEach(btn => {
                 btn.addEventListener('click', function() {
                     document.getElementById('detRadId').textContent = btn.dataset.id;
@@ -374,7 +374,7 @@
                     modal.classList.add('flex');
                 });
             });
->>>>>>> origin/Luis
+
         });
     </script>
 

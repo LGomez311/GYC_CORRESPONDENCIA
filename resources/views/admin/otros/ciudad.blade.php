@@ -368,7 +368,15 @@
             const editCodigo = document.getElementById('edit_ciudad_cod_post');
             const editDepartamento = document.getElementById('edit_ciudad_id_dpto');
             const btnEdit = document.querySelector('#editModal button[type="submit"]');
-            
+
+            // Inicializar select2
+            if (typeof jQuery !== 'undefined') {
+                $('#ciudad_id_dpto').select2({ placeholder: "Seleccione un departamento", allowClear: true, width: '100%', dropdownParent: $('#createModal') });
+                $('#edit_ciudad_id_dpto').select2({ placeholder: "Seleccione un departamento", allowClear: true, width: '100%', dropdownParent: $('#editModal') });
+                
+                $('#ciudad_id_dpto').on('change', function() { this.dispatchEvent(new Event('change')); });
+                $('#edit_ciudad_id_dpto').on('change', function() { this.dispatchEvent(new Event('change')); });
+            }
 
             // ============================
             // EVENTOS CREAR
@@ -397,6 +405,7 @@
                 function validateDeptoEv() {
                     departamento.dataset.dirty = 'true';
                     actualizarBoton(btnCreate, false, nombre, codigo, departamento);
+                    if (codigo.value) codigo.dispatchEvent(new Event('input'));
                 }
                 departamento.addEventListener('change', validateDeptoEv);
                 if(departamento.value) validateDeptoEv();
@@ -427,6 +436,7 @@
                 function validateEditDeptoEv() {
                     editDepartamento.dataset.dirty = 'true';
                     actualizarBoton(btnEdit, true, editNombre, editCodigo, editDepartamento);
+                    if (editCodigo.value) editCodigo.dispatchEvent(new Event('input'));
                 }
                 editDepartamento.addEventListener('change', validateEditDeptoEv);
             }
@@ -634,6 +644,14 @@
 
             if (valor.length < 4 || valor.length > 10) {
                 mostrarError(input, "Debe tener de 4 a 10 dígitos.");
+                if(isEdit) codigoValidoEdit = false; else codigoValidoCreate = false;
+                if(statusLabel) statusLabel.textContent = "";
+                actualizarBoton(btnToUpdate, isEdit, inputNom, input, inputSelect);
+                return;
+            }
+
+            if (inputSelect && inputSelect.value && !valor.startsWith(inputSelect.value)) {
+                mostrarError(input, "El código debe iniciar con el departamento (" + inputSelect.value + ").");
                 if(isEdit) codigoValidoEdit = false; else codigoValidoCreate = false;
                 if(statusLabel) statusLabel.textContent = "";
                 actualizarBoton(btnToUpdate, isEdit, inputNom, input, inputSelect);

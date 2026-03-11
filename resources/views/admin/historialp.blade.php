@@ -20,31 +20,21 @@
         </div>
 
         {{-- TABLA --}}
-        <div
-            class="bg-white dark:bg-[#161d2b] rounded-xl border border-[#cfd7e7] dark:border-gray-800 overflow-hidden shadow-sm">
-            <div class="overflow-x-auto">
-                <div
-                    class="bg-white dark:bg-[#161d2b] rounded-xl border border-[#cfd7e7] dark:border-gray-800 overflow-hidden shadow-sm">
-                    <div
-                        class="p-6 border-b border-[#cfd7e7] dark:border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <h2 class="text-[#0d121b] dark:text-white text-lg font-bold leading-tight">Listado Detallado de
-                            Pagos</h2>
-                        <div class="flex gap-2">
-                            {{-- <button
-                                class="px-3 py-1.5 text-xs font-bold border border-[#cfd7e7] dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-1 dark:text-white">
-                                <span class="material-symbols-outlined text-sm">filter_list</span> Filtrar
-                            </button> --}}
-                            <button onclick="openExportModal()"
-                                class="px-3 py-1.5 text-xs font-bold border border-[#cfd7e7] dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-1 dark:text-white">
-                                <span class="material-symbols-outlined text-sm">download</span>
-                                Exportar
-                            </button>
+        <div class="bg-white dark:bg-[#161d2b] rounded-xl border border-[#cfd7e7] dark:border-gray-800 overflow-hidden shadow-sm">
+            <div class="p-6 border-b border-[#cfd7e7] dark:border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <h2 class="text-[#0d121b] dark:text-white text-lg font-bold leading-tight">Listado Detallado de Pagos</h2>
+                <div class="flex gap-2">
+                    <button onclick="openExportModal()"
+                        class="px-3 py-1.5 text-xs font-bold border border-[#cfd7e7] dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-1 dark:text-white">
+                        <span class="material-symbols-outlined text-sm">download</span>
+                        Exportar
+                    </button>
+                </div>
+            </div>
+            <div class="overflow-x-auto w-full">
+                <table class="w-full text-left border-collapse min-w-full whitespace-nowrap">
 
-                        </div>
-                    </div>
-                    <table class="w-full text-left border-collapse">
-
-                        {{-- THEAD --}}
+                    {{-- THEAD --}}
                         <thead class="bg-background-light dark:bg-background-dark/50">
                             <tr>
                                 <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">ID Pago</th>
@@ -121,10 +111,9 @@
 
                     </table>
                 </div>
-                <div class="flex gap-1">
+                <div class="p-4 bg-slate-50 dark:bg-background-dark/30 border-t border-[#cfd7e7] dark:border-gray-800">
                     {{ $pagos->links('') }}
                 </div>
-            </div>
         </div>
 
         <script>

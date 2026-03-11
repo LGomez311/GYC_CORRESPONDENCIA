@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
@@ -167,9 +167,13 @@ Route::prefix('admin')
         Route::get('/correspondencia/export/excel', [\App\Http\Controllers\Admin\AdminCorrespondenciaController::class, 'exportExcel'])->name('admin.correspondencia.export.excel');
         Route::get('/correspondencia/export/pdf', [\App\Http\Controllers\Admin\AdminCorrespondenciaController::class, 'exportPdf'])->name('admin.correspondencia.export.pdf');
         
+        // Perfil / Ajustes de cuenta
+        Route::post('/perfil/actualizar', [\App\Http\Controllers\Admin\ProfileController::class, 'updateProfile'])->name('admin.profile.update');
+        Route::post('/perfil/enviar-codigo', [\App\Http\Controllers\Admin\ProfileController::class, 'sendVerificationCode'])->name('admin.profile.send_code');
+        Route::post('/perfil/actualizar-password', [\App\Http\Controllers\Admin\ProfileController::class, 'updatePassword'])->name('admin.profile.update_password');
+
         // Usuarios (Empleados y Remitentes)
         Route::get('/usuarios', [\App\Http\Controllers\Admin\UsuarioController::class, 'index'])->name('admin.usuarios');
-
         Route::post('/usuarios/empleado', [\App\Http\Controllers\Admin\UsuarioController::class, 'storeEmpleado'])->name('admin.empleado.store');
         Route::put('/usuarios/empleado/{emple_doc}', [\App\Http\Controllers\Admin\UsuarioController::class, 'updateEmpleado'])->name('admin.empleado.update');
         Route::post('/usuarios/remitente', [\App\Http\Controllers\Admin\UsuarioController::class, 'storeRemitente'])->name('admin.remitente.store');

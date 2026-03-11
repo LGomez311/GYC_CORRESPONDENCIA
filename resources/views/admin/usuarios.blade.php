@@ -81,8 +81,8 @@
                         class="pl-10 pr-4 py-2 bg-white dark:bg-[#0d121b] border border-[#cfd7e7] dark:border-gray-800 rounded-lg text-sm focus:outline-none focus:border-primary transition-all w-full shadow-sm">
                 </div>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse min-w-[700px]">
+            <div class="overflow-x-auto w-full">
+                <table class="w-full text-left border-collapse min-w-full whitespace-nowrap">
                     <thead>
                         <tr class="bg-slate-50 dark:bg-background-dark/50 border-b border-[#cfd7e7] dark:border-gray-800">
                             <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Nombre Completo</th>
@@ -99,9 +99,13 @@
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" data-doc="{{ $empleado->emple_doc }}">
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-gray-800 flex items-center justify-center font-bold text-xs text-[#4c669a]">
-                                        {{ strtoupper(substr($empleado->emple_nombres, 0, 1) . substr($empleado->emple_apellidos, 0, 1)) }}
-                                    </div>
+                                    @if($empleado->emple_img)
+                                        <img src="{{ asset('storage/' . $empleado->emple_img) }}" alt="Foto" class="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-gray-700">
+                                    @else
+                                        <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-gray-800 flex items-center justify-center font-bold text-xs text-[#4c669a]">
+                                            {{ strtoupper(substr($empleado->emple_nombres, 0, 1) . substr($empleado->emple_apellidos, 0, 1)) }}
+                                        </div>
+                                    @endif
                                     <div class="flex flex-col">
                                         <span class="text-sm font-bold text-[#0d121b] dark:text-white">{{ $empleado->emple_nombres }} {{ $empleado->emple_apellidos }} </span>
                                         <span class="text-xs text-[#4c669a] dark:text-gray-400">Documento: {{ $empleado->emple_doc }}</span>
@@ -204,8 +208,8 @@
                         class="pl-10 pr-4 py-2 bg-white dark:bg-[#0d121b] border border-[#cfd7e7] dark:border-gray-800 rounded-lg text-sm focus:outline-none focus:border-primary transition-all w-full shadow-sm">
                 </div>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse min-w-[700px]">
+            <div class="overflow-x-auto w-full">
+                <table class="w-full text-left border-collapse min-w-full whitespace-nowrap">
                     <thead>
                         <tr class="bg-slate-50 dark:bg-background-dark/50 border-b border-[#cfd7e7] dark:border-gray-800">
                             <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Nombre Completo</th>
@@ -413,7 +417,12 @@
                 <!-- CONTRASEÑA -->
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Contraseña (*)</label>
-                    <input name="password" id="pass_empleado" type="password" maxlength="64" oninput="this.value = this.value.replace(/\s/g, '')" placeholder="Ingrese contraseña segura..." class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-[#0d121b] dark:text-white">
+                    <div class="relative w-full">
+                        <input name="password" id="pass_empleado" type="password" maxlength="64" oninput="this.value = this.value.replace(/\s/g, '')" placeholder="Ingrese contraseña segura..." class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-[#0d121b] dark:text-white pr-10">
+                        <button type="button" class="btn-toggle-password absolute right-3 top-1/2 -translate-y-1/2 mt-[2px] text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white focus:outline-none" tabindex="-1">
+                            <span class="material-symbols-outlined text-[20px]">visibility</span>
+                        </button>
+                    </div>
                     <p id="error-pass-emp" class="text-sm text-red-600 hidden"></p>
                 </div>
 
@@ -609,7 +618,12 @@
                 <!-- CONTRASEÑA -->
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Contraseña (*)</label>
-                    <input name="password" id="pass_remitente" type="password" maxlength="64" oninput="this.value = this.value.replace(/\s/g, '')" placeholder="Ingrese contraseña segura..." class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-[#0d121b] dark:text-white">
+                    <div class="relative w-full">
+                        <input name="password" id="pass_remitente" type="password" maxlength="64" oninput="this.value = this.value.replace(/\s/g, '')" placeholder="Ingrese contraseña segura..." class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-[#0d121b] dark:text-white pr-10">
+                        <button type="button" class="btn-toggle-password absolute right-3 top-1/2 -translate-y-1/2 mt-[2px] text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white focus:outline-none" tabindex="-1">
+                            <span class="material-symbols-outlined text-[20px]">visibility</span>
+                        </button>
+                    </div>
                     <p id="error-pass-rem" class="text-sm text-red-600 hidden"></p>
                 </div>
             </div>
@@ -836,6 +850,30 @@
         if (btnOpenRemitente) {
             btnOpenRemitente.addEventListener('click', () => modalRemitente.classList.remove('hidden'));
         }
+
+        // Toggle eye button for passwords
+        document.querySelectorAll('.btn-toggle-password').forEach(btn => {
+            const input = btn.previousElementSibling;
+            const icon = btn.querySelector('.material-symbols-outlined');
+            
+            const showPassword = () => {
+                input.type = 'text';
+                icon.textContent = 'visibility_off';
+            };
+            
+            const hidePassword = () => {
+                input.type = 'password';
+                icon.textContent = 'visibility';
+            };
+
+            btn.addEventListener('mousedown', showPassword);
+            btn.addEventListener('mouseup', hidePassword);
+            btn.addEventListener('mouseleave', hidePassword);
+            
+            // For mobile
+            btn.addEventListener('touchstart', showPassword, {passive: true});
+            btn.addEventListener('touchend', hidePassword, {passive: true});
+        });
 
         document.querySelectorAll('.btn-close').forEach(btn => {
             btn.addEventListener('click', () => {

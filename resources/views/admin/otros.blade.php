@@ -141,7 +141,7 @@
                 </a>
             </div>
 
-            <!-- 7. Rol  -->
+            {{-- <!-- 7. Rol  -->
             <div
                 class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 transition-all group flex flex-col h-full">
                 <div
@@ -157,9 +157,9 @@
                     <span>Administrar</span>
                     <span class="material-symbols-outlined text-sm">arrow_forward</span>
                 </a>
-            </div>
+            </div> --}}
 
-            <!-- 8. Radicados -->
+            {{-- <!-- 8. Radicados -->
             <div
                 class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 transition-all group flex flex-col h-full">
                 <div
@@ -175,7 +175,7 @@
                     <span>Administrar</span>
                     <span class="material-symbols-outlined text-sm">arrow_forward</span>
                 </a>
-            </div>
+            </div> --}}
 
         </div>
 

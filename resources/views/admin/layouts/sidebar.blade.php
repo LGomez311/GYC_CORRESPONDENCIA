@@ -72,10 +72,12 @@
                     Gestión Central
                 </h1>
             @else
-                <!-- Usuarios -->
+                <!-- Home -->
                 <a href="{{ route('admin.home') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-            text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                    {{ request()->routeIs('admin.home*') 
+                        ? 'bg-primary/10 text-primary' 
+                        : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
                     <span class="material-symbols-outlined">home</span>
                     <p class="text-sm font-medium">Home</p>
                 </a>
@@ -83,7 +85,9 @@
                 <!-- Usuarios -->
                 <a href="{{ route('admin.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-            text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                    {{ request()->routeIs('admin.index*') || request()->routeIs('admin.usuarios*') || request()->routeIs('admin.empleado*') || request()->routeIs('admin.remitente*')
+                        ? 'bg-primary/10 text-primary' 
+                        : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
                     <span class="material-symbols-outlined">group</span>
                     <p class="text-sm font-medium">Usuarios</p>
                 </a>
@@ -91,7 +95,9 @@
                 <!-- Correspondencia -->
                 <a href="{{ route('admin.correspondencia') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-            text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                    {{ request()->routeIs('admin.correspondencia*') 
+                        ? 'bg-primary/10 text-primary' 
+                        : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
                     <span class="material-symbols-outlined">mail</span>
                     <p class="text-sm font-medium">Correspondencia</p>
                 </a>
@@ -99,7 +105,9 @@
                 <!-- Pagar planes -->
                 <a href="{{ route('admin.planes') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-            text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                    {{ request()->routeIs('admin.planes*') 
+                        ? 'bg-primary/10 text-primary' 
+                        : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
                     <span class="material-symbols-outlined">payments</span>
                     <p class="text-sm font-medium leading-normal">Pagar planes</p>
                 </a>
@@ -107,7 +115,9 @@
                 <!-- Historial -->
                 <a href="{{ route('admin.historialp') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-            text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                    {{ request()->routeIs('admin.historialp*') 
+                        ? 'bg-primary/10 text-primary' 
+                        : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
                     <span class="material-symbols-outlined">corporate_fare</span>
                     <p class="text-sm font-medium">Historial de pagos</p>
                 </a>
@@ -115,7 +125,9 @@
                 <!-- Otros -->
                 <a href="{{ route('admin.otros') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-   text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                    {{ request()->routeIs('admin.otros*') || request()->routeIs('admin.area*') || request()->routeIs('admin.departamento*') || request()->routeIs('admin.ciudad*') || request()->routeIs('admin.prioridad*') || request()->routeIs('admin.tipo*') || request()->routeIs('admin.estado*') || request()->routeIs('admin.rol*') || request()->routeIs('admin.radicado*')
+                        ? 'bg-primary/10 text-primary' 
+                        : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
 
                     <span class="material-symbols-outlined">
                         format_list_bulleted
@@ -128,12 +140,12 @@
 
 
                 <!-- Configuración -->
-                {{-- <a href="#"
-                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-            text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
-                    <span class="material-symbols-outlined">settings</span>
-                    <p class="text-sm font-medium">Configuración</p>
-                </a> --}}
+                <button type="button" onclick="openUserProfileModal()"
+                    class="w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
+                           text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                    <span class="material-symbols-outlined">manage_accounts</span>
+                    <p class="text-sm font-medium">Mi Perfil</p>
+                </button>
             @endif
 
         </div>
