@@ -327,10 +327,6 @@ class CorrespondenciaController extends Controller
         // Create Radicado (using a logical numbering for internal, you could customize this)
         $radicado = new \App\Models\Radicado();
         $radicado->num_radicado = 'INT-' . date('Y') . '-' . str_pad(rand(1, 99999), 5, '0', STR_PAD_LEFT);
-<<<<<<< Updated upstream
-        $radicado->id_est_radicado = $estadoActivoId;
-=======
->>>>>>> Stashed changes
         $radicado->nit_empresa = $user->nit_empresa;
         $radicado->save();
 
@@ -368,26 +364,6 @@ class CorrespondenciaController extends Controller
             }
         }
 
-<<<<<<< Updated upstream
-        // Create DetalleEnvio (Receiver tracking)
-        $detalle = new \App\Models\DetalleEnvio();
-        $detalle->id_quien_envie = $user->emple_doc;
-        $detalle->id_quien_recibe = $request->doc_quien_dirigido;
-        $detalle->id_envio = $envio->id_envio;
-        $detalle->fecha_traslado = now();
-        $detalle->id_estado_rec = $estadoRecibidoId; // El que recibe (destinatario) inicia en 'Recibido'
-        $detalle->observaciones = $request->observaciones;
-        $detalle->save();
-
-        return back()->with('success', 'Correspondencia interna creada y enviada exitosamente.', ['int_page' => 1]);
-        
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return back()->withErrors($e->errors())->withInput();
-        } catch (\Exception $e) {
-            \Log::error('Error guardando correspondencia interna: ' . $e->getMessage());
-            return back()->with('error', 'Error interno al guardar: ' . $e->getMessage())->withInput();
-        }
-=======
         // Create DetalleEnvio (Receiver tracking) for each recipient
         foreach ($request->doc_quien_dirigido as $destinatario_doc) {
             $detalle = new \App\Models\DetalleEnvio();
@@ -401,6 +377,5 @@ class CorrespondenciaController extends Controller
         }
 
         return back()->with('success', 'Correspondencia interna creada y enviada exitosamente a los destinatarios seleccionados.', ['int_page' => 1]);
->>>>>>> Stashed changes
     }
 }
