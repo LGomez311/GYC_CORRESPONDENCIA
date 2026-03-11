@@ -160,66 +160,69 @@
                                 <div class="font-medium text-gray-900 dark:text-gray-100 mb-1 max-w-[200px] whitespace-normal break-words" title="{{ $item->asunto }}">
                                     {{ $item->asunto }}
                                 </div>
-                                <div class="flex flex-col gap-1.5 text-xs mt-2">
-                                    <div class="flex items-center gap-3 text-gray-500 dark:text-gray-400">
-                                        <span class="flex items-center gap-1" title="Tipo Documento">
-                                            <span class="material-symbols-outlined text-[14px]">description</span>
-                                            {{ $item->tipo ? $item->tipo->tipo_nombre : 'N/A' }}
-                                        </span>
-                                        <span class="flex items-center gap-1" title="Folios">
-                                            <span class="material-symbols-outlined text-[14px]">layers</span>
-                                            Folios: {{ $item->folio ?? 0 }}
-                                        </span>
-                                    </div>
-                                    @if($item->tipo)
-                                        <div class="flex flex-col gap-1 mt-0.5">
-                                            <!-- Prioridad Info -->
-                                            <span class="flex items-center gap-1 {{ ($item->tipo->id_prioridad == 3) ? 'text-red-600 dark:text-red-400 font-medium' : (($item->tipo->id_prioridad == 2) ? 'text-yellow-600 dark:text-yellow-400 font-medium' : 'text-green-600 dark:text-green-400') }}" title="Prioridad">
-                                                <span class="material-symbols-outlined text-[14px]">flag</span>
-                                                Prioridad: {{ $item->tipo->prioridad->prioridad_nombre ?? 'N/A' }}
-                                            </span>
+                                <div class="font-medium text-gray-900 dark:text-gray-100 mb-1 max-w-[200px] whitespace-normal break-words" title="{{ $item->asunto }}">
+                                    {{ $item->asunto }}
+                                </div>
+                                <div class="mt-2">
+                                    @php
+                                        // Prioridad
+                                        $prioNombre = $item->tipo->prioridad->prioridad_nombre ?? 'N/A';
+                                        
+                                        // Días
+                                        $diasTotales = $item->tipo->dias_respuesta ?? 0;
+                                        $diasRestantes = 0;
+                                        $vencido = false;
+                                        $msgTiempo = 'Sin tiempo límite';
+                                        $diasClass = 'text-gray-500';
+                                        $iconoDias = 'timer_off';
+                                        
+                                        $estadoNombExt = $item->estado ? strtolower($item->estado->estado_nomb) : '';
+                                        $isFinalizedExt = str_contains($estadoNombExt, 'finalizado') || str_contains($estadoNombExt, 'resuelto') || str_contains($estadoNombExt, 'archivado') || str_contains($estadoNombExt, 'rechazado');
+                                        
+                                        if ($isFinalizedExt) {
+                                            $msgTiempo = 'Proceso Finalizado';
+                                            $diasClass = 'text-blue-600 dark:text-blue-400 font-bold';
+                                            $iconoDias = 'task_alt';
+                                        } elseif($diasTotales > 0) {
+                                            $fechaBase = \Carbon\Carbon::parse($item->fecha_hora_recib);
+                                            $hoy = \Carbon\Carbon::now();
+                                            $diasTranscurridos = $fechaBase->diffInDaysFiltered(function(\Carbon\Carbon $date) {
+                                                return $date->isWeekday();
+                                            }, $hoy);
                                             
-                                            <!-- Días de Respuesta de la DB -->
-                                            <span class="flex items-center gap-1 text-gray-500 dark:text-gray-400" title="Días Asignados">
-                                                <span class="material-symbols-outlined text-[14px]">event_note</span>
-                                                Días de Respuesta: {{ $item->tipo->dias_respuesta ?? 'N/A' }}
-                                            </span>
+                                            $diasRestantes = $diasTotales - $diasTranscurridos;
                                             
-                                            <!-- Cálculo Días Restantes -->
-                                            @php
-                                                $fechaBase = \Carbon\Carbon::parse($item->fecha_hora_recib);
-                                                $hoy = \Carbon\Carbon::now();
-                                                
-                                                // Calcular días hábiles transcurridos (Lunes a Viernes)
-                                                $diasTranscurridos = $fechaBase->diffInDaysFiltered(function(\Carbon\Carbon $date) {
-                                                    return $date->isWeekday();
-                                                }, $hoy);
-                                                
-                                                $diasTotales = $item->tipo->dias_respuesta ?? 15;
-                                                $diasRestantes = $diasTotales - $diasTranscurridos;
-                                                
-                                                // Colores según días restantes
-                                                $diasClass = 'text-green-600 dark:text-green-400 font-medium'; // Tiempo de sobra
+                                            if ($diasRestantes < 0) {
+                                                $vencido = true;
+                                                $msgTiempo = '¡Vencido por ' . abs($diasRestantes) . ' días!';
+                                                $diasClass = 'text-red-600 dark:text-red-400 font-bold';
+                                                $iconoDias = 'warning';
+                                            } elseif ($diasRestantes <= 2) {
+                                                $msgTiempo = 'Quedan ' . $diasRestantes . ' días hábiles';
+                                                $diasClass = 'text-yellow-600 dark:text-yellow-400 font-bold';
+                                                $iconoDias = 'hourglass_empty';
+                                            } else {
+                                                $msgTiempo = 'Quedan ' . $diasRestantes . ' días hábiles';
+                                                $diasClass = 'text-green-600 dark:text-green-400 font-medium';
                                                 $iconoDias = 'schedule';
-                                                
-                                                if ($diasRestantes < 0) {
-                                                    $diasClass = 'text-red-600 dark:text-red-400 font-bold'; // Vencido
-                                                    $iconoDias = 'warning';
-                                                } elseif ($diasRestantes <= 2) {
-                                                    $diasClass = 'text-yellow-600 dark:text-yellow-400 font-bold'; // Por vencer
-                                                    $iconoDias = 'hourglass_empty';
-                                                }
-                                            @endphp
-                                            <span class="flex items-center gap-1 {{ $diasClass }} mt-0.5" title="Días Hábiles Restantes">
-                                                <span class="material-symbols-outlined text-[14px]">{{ $iconoDias }}</span>
-                                                @if($diasRestantes < 0)
-                                                    ¡Vencido por {{ abs($diasRestantes) }} días!
-                                                @else
-                                                    Quedan: {{ $diasRestantes }} días hábiles
-                                                @endif
-                                            </span>
-                                        </div>
-                                    @endif
+                                            }
+                                        }
+
+                                        $detallesData = [
+                                            'tipo' => $item->tipo ? $item->tipo->tipo_nombre : 'N/A',
+                                            'folios' => $item->folio ?? 0,
+                                            'prioridad' => $prioNombre,
+                                            'diasTotales' => $diasTotales,
+                                            'msgTiempo' => $msgTiempo,
+                                            'diasClass' => $diasClass,
+                                            'iconoDias' => $iconoDias,
+                                            'vencido' => $vencido
+                                        ];
+                                    @endphp
+                                    <button type="button" onclick="abrirModalDetalles(this.dataset.info)" data-info="{{ json_encode($detallesData) }}" class="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded border border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-slate-800 transition-colors shadow-sm">
+                                        <span class="material-symbols-outlined text-[16px]">info</span>
+                                        Ver Detalles
+                                    </button>
                                 </div>
                             </td>
                             
@@ -414,8 +417,8 @@
                                 <th class="px-6 py-3 font-medium">Radicados</th>
                                 <th class="px-6 py-3 font-medium">Remitente Interno</th>
                                 <th class="px-6 py-3 font-medium">Detalles Documento</th>
-                                <th class="px-6 py-3 font-medium hidden lg:table-cell">Observaciones</th>
-                                <th class="px-6 py-3 font-medium hidden md:table-cell">Fecha Traslado</th>
+                                <th class="px-6 py-3 font-medium hidden lg:table-cell">Detalles Técnicos</th>
+                                <th class="px-6 py-3 font-medium hidden md:table-cell">Fecha</th>
                                 <th class="px-6 py-3 font-medium">Documentos <br> y Anexos</th>
                                 <th class="px-6 py-3 font-medium">Estado</th>
                                 <th class="px-6 py-3 font-medium text-right">Acciones</th>
@@ -455,74 +458,101 @@
                                     <td class="px-6 py-4 text-sm max-w-[200px] whitespace-normal break-words">
                                         <div class="font-medium text-gray-900 dark:text-gray-100 mb-1">{{ $int->envio->asunto ?? 'Sin Asunto' }}</div>
                                         
-                                        <div class="flex flex-col gap-1.5 text-xs mt-2">
-                                            <div class="flex items-center gap-3 text-gray-500 dark:text-gray-400">
-                                                <span class="flex items-center gap-1" title="Tipo Documento">
-                                                    <span class="material-symbols-outlined text-[14px]">description</span> 
-                                                    {{ $int->envio->tipoEnvio ? $int->envio->tipoEnvio->tipo_nombre : 'Interno' }}
-                                                </span>
-                                            </div>
-                                            
-                                            @if($int->envio->tipoEnvio)
-                                                <div class="flex flex-col gap-1 mt-0.5">
-                                                    <!-- Prioridad Info -->
-                                                    <span class="flex items-center gap-1 {{ ($int->envio->tipoEnvio->id_prioridad == 3) ? 'text-red-600 dark:text-red-400 font-medium' : (($int->envio->tipoEnvio->id_prioridad == 2) ? 'text-yellow-600 dark:text-yellow-400 font-medium' : 'text-green-600 dark:text-green-400') }}" title="Prioridad">
-                                                        <span class="material-symbols-outlined text-[14px]">flag</span>
-                                                        Prioridad: {{ $int->envio->tipoEnvio->prioridad->prioridad_nombre ?? 'N/A' }}
-                                                    </span>
-
-                                                    <!-- Días de Respuesta de la DB -->
-                                                    <span class="flex items-center gap-1 text-gray-500 dark:text-gray-400" title="Días Asignados">
-                                                        <span class="material-symbols-outlined text-[14px]">event_note</span>
-                                                        Días de Respuesta: {{ $int->envio->tipoEnvio->dias_respuesta ?? 'N/A' }}
-                                                    </span>
-                                                    
-                                                    <!-- Días de Respuesta -->
-                                                    @php
-                                                        // Usamos la fecha de traslado (cuando el remitente interno lo pasó al empleado actual)
-                                                        $fechaBaseInt = \Carbon\Carbon::parse($int->fecha_traslado ?? $int->envio->fecha);
-                                                        $hoyInt = \Carbon\Carbon::now();
-                                                        
-                                                        // Calcular días hábiles transcurridos (Lunes a Viernes)
-                                                        $diasTranscurridosInt = $fechaBaseInt->diffInDaysFiltered(function(\Carbon\Carbon $date) {
-                                                            return $date->isWeekday();
-                                                        }, $hoyInt);
-                                                        
-                                                        $diasTotalesInt = $int->envio->tipoEnvio->dias_respuesta ?? 15;
-                                                        $diasRestantesInt = $diasTotalesInt - $diasTranscurridosInt;
-                                                        
-                                                        // Colores según días restantes
-                                                        $diasClassInt = 'text-green-600 dark:text-green-400 font-medium'; // Tiempo de sobra
-                                                        $iconoDiasInt = 'schedule';
-                                                        
-                                                        if ($diasRestantesInt < 0) {
-                                                            $diasClassInt = 'text-red-600 dark:text-red-400 font-bold'; // Vencido
-                                                            $iconoDiasInt = 'warning';
-                                                        } elseif ($diasRestantesInt <= 2) {
-                                                            $diasClassInt = 'text-yellow-600 dark:text-yellow-400 font-bold'; // Por vencer
-                                                            $iconoDiasInt = 'hourglass_empty';
-                                                        }
-                                                    @endphp
-                                                    <span class="flex items-center gap-1 {{ $diasClassInt }} mt-0.5" title="Días Hábiles Restantes">
-                                                        <span class="material-symbols-outlined text-[14px]">{{ $iconoDiasInt }}</span>
-                                                        @if($diasRestantesInt < 0)
-                                                            ¡Vencido por {{ abs($diasRestantesInt) }} d!
-                                                        @else
-                                                            Quedan {{ $diasRestantesInt }} días hábiles
-                                                        @endif
-                                                    </span>
-                                                </div>
+                                        <div class="mt-2 text-xs">
+                                            @if($int->observaciones && trim(strtoupper($int->observaciones)) !== 'NINGUNO' && trim(strtoupper($int->observaciones)) !== 'NINGUNA')
+                                                <button onclick="openObservacionModal('{{ addslashes($int->observaciones) }}')" class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-purple-700 bg-purple-50 border border-purple-200 hover:bg-purple-100 rounded transition-colors w-fit">
+                                                    <span class="material-symbols-outlined text-[14px]">visibility</span> Observaciones
+                                                </button>
                                             @endif
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 hidden lg:table-cell">
-                                        @if($int->observaciones)
-                                            <button onclick="openObservacionModal('{{ addslashes($int->observaciones) }}')" class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-purple-700 bg-purple-50 border border-purple-200 hover:bg-purple-100 rounded-md transition-colors w-fit">
-                                                <span class="material-symbols-outlined text-[16px]">visibility</span> Ver Nota
-                                            </button>
-                                        @else
-                                            <span class="text-xs text-gray-400 italic">Sin observaciones</span>
-                                        @endif
+                                        <div class="flex flex-col gap-1.5 text-[11px] leading-tight text-gray-600 dark:text-gray-400">
+                                            <div class="flex items-center gap-2">
+                                                <span class="material-symbols-outlined text-[14px]">description</span> 
+                                                <span class="truncate max-w-[150px]" title="{{ $int->envio->tipoEnvio ? $int->envio->tipoEnvio->tipo_nombre : 'Interno' }}">{{ $int->envio->tipoEnvio ? $int->envio->tipoEnvio->tipo_nombre : 'Interno' }}</span>
+                                            </div>
+                                            
+                                            <div class="flex items-center gap-2">
+                                                <span class="material-symbols-outlined text-[14px]">layers</span> 
+                                                <span>Folios: {{ $int->envio->folio ?? 0 }}</span>
+                                            </div>
+
+                                            @if($int->envio->tipoEnvio)
+                                                <!-- Prioridad -->
+                                                @php
+                                                    $prioColorInt = 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
+                                                    $prioNombreInt = $int->envio->tipoEnvio->prioridad->prioridad_nombre ?? 'N/A';
+                                                    $prioNombreIntUpper = strtoupper($prioNombreInt);
+                                                    
+                                                    if (str_contains($prioNombreIntUpper, 'URGENTE') || $int->envio->tipoEnvio->id_prioridad == 4) {
+                                                        $prioColorInt = 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+                                                    } elseif (str_contains($prioNombreIntUpper, 'ALTA') || $int->envio->tipoEnvio->id_prioridad == 3) {
+                                                        $prioColorInt = 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400';
+                                                    } elseif (str_contains($prioNombreIntUpper, 'MEDIA') || $int->envio->tipoEnvio->id_prioridad == 2) {
+                                                        $prioColorInt = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
+                                                    } elseif (str_contains($prioNombreIntUpper, 'BAJA') || $int->envio->tipoEnvio->id_prioridad == 1) {
+                                                        $prioColorInt = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+                                                    }
+                                                @endphp
+                                                <div class="flex items-center gap-2 mt-0.5" title="Prioridad">
+                                                    <span class="material-symbols-outlined text-[14px] opacity-70">flag</span>
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider {{ $prioColorInt }}">
+                                                        {{ $prioNombreInt }}
+                                                    </span>
+                                                </div>
+
+                                                <!-- Días Restantes -->
+                                                @php
+                                                    $estadoNombIntCheck = $int->estado ? strtolower($int->estado->estado_nomb) : '';
+                                                    $isFinalizedIntCheck = str_contains($estadoNombIntCheck, 'finalizado') || str_contains($estadoNombIntCheck, 'resuelto') || str_contains($estadoNombIntCheck, 'archivado') || str_contains($estadoNombIntCheck, 'rechazado');
+                                                @endphp
+
+                                                @if($isFinalizedIntCheck)
+                                                    <div class="flex items-center gap-2 mt-0.5 text-blue-600 dark:text-blue-400 font-bold" title="Proceso Completado">
+                                                        <span class="material-symbols-outlined text-[14px]">task_alt</span>
+                                                        <span>Proceso Finalizado</span>
+                                                    </div>
+                                                @elseif(!empty($int->envio->tipoEnvio->dias_respuesta) && $int->envio->tipoEnvio->dias_respuesta > 0)
+                                                    @php
+                                                        $fechaBaseInt = \Carbon\Carbon::parse($int->fecha_traslado ?? $int->envio->fecha);
+                                                        $hoyInt = \Carbon\Carbon::now();
+                                                        $diasTranscurridosInt = $fechaBaseInt->diffInDaysFiltered(function(\Carbon\Carbon $date) {
+                                                            return $date->isWeekday();
+                                                        }, $hoyInt);
+                                                        
+                                                        $diasTotalesInt = $int->envio->tipoEnvio->dias_respuesta;
+                                                        $diasRestantesInt = $diasTotalesInt - $diasTranscurridosInt;
+                                                        
+                                                        $diasClassInt = 'text-green-600 dark:text-green-400 font-medium';
+                                                        $iconoDiasInt = 'schedule';
+                                                        
+                                                        if ($diasRestantesInt < 0) {
+                                                            $diasClassInt = 'text-red-600 dark:text-red-400 font-bold';
+                                                            $iconoDiasInt = 'warning';
+                                                        } elseif ($diasRestantesInt <= 2) {
+                                                            $diasClassInt = 'text-yellow-600 dark:text-yellow-400 font-bold';
+                                                            $iconoDiasInt = 'hourglass_empty';
+                                                        }
+                                                    @endphp
+                                                    <div class="flex items-center gap-2 mt-0.5 {{ $diasClassInt }}" title="Días Asignados: {{ $diasTotalesInt }}">
+                                                        <span class="material-symbols-outlined text-[14px]">{{ $iconoDiasInt }}</span>
+                                                        <span>
+                                                            @if($diasRestantesInt < 0)
+                                                                ¡Vencido: {{ abs($diasRestantesInt) }} d!
+                                                            @else
+                                                                Le quedan {{ $diasRestantesInt }} días
+                                                            @endif
+                                                        </span>
+                                                    </div>
+                                                @else
+                                                    <div class="flex items-center gap-2 mt-0.5 text-gray-400 dark:text-gray-500 italic">
+                                                        <span class="material-symbols-outlined text-[14px]">timer_off</span>
+                                                        <span>Sin límite</span>
+                                                    </div>
+                                                @endif
+                                            @endif
+                                        </div>
                                     </td>
                                     <td class="px-6 py-4 hidden md:table-cell">
                                         <div class="font-medium text-gray-900 dark:text-white">
@@ -1494,6 +1524,71 @@
 
         container.innerHTML = html;
         toggleModal('modalArchivos');
+    }
+
+    function abrirModalDetalles(datosJson) {
+        const data = JSON.parse(datosJson);
+        
+        let priorityColorClass = 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700';
+        const prioUpper = (data.prioridad || '').toUpperCase();
+        
+        if (prioUpper.includes('URGENTE')) priorityColorClass = 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800';
+        else if (prioUpper.includes('ALTA')) priorityColorClass = 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800';
+        else if (prioUpper.includes('MEDIA')) priorityColorClass = 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800';
+        else if (prioUpper.includes('BAJA')) priorityColorClass = 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800';
+
+        let htmlContent = `
+            <div class="flex flex-col gap-4 text-left">
+                <!-- Data display grid -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-gray-50 dark:bg-slate-800 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
+                        <span class="block text-xs text-gray-500 uppercase tracking-wider mb-1">Tipo de Documento</span>
+                        <div class="font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-1.5 text-sm">
+                            <span class="material-symbols-outlined text-[16px] text-blue-500">description</span>
+                            ${data.tipo}
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-slate-800 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
+                        <span class="block text-xs text-gray-500 uppercase tracking-wider mb-1">Folios Físicos</span>
+                        <div class="font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-1.5 text-sm">
+                            <span class="material-symbols-outlined text-[16px] text-gray-400">layers</span>
+                            ${data.folios}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Priority badge box -->
+                <div class="flex items-center justify-between p-3 rounded-lg border ${priorityColorClass}">
+                    <span class="text-sm font-medium">Nivel de Prioridad:</span>
+                    <span class="text-xs font-bold tracking-wider uppercase px-2 py-0.5 rounded-full bg-white dark:bg-slate-900/50 shadow-sm">${data.prioridad}</span>
+                </div>
+
+                <!-- Time limit tracking -->
+                <div class="bg-gray-50 dark:bg-slate-800 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
+                    <div class="flex justify-between items-center mb-2 leading-none">
+                        <span class="text-xs text-gray-500 uppercase tracking-wider">Límite de Respuesta</span>
+                        <span class="text-xs font-semibold text-gray-600 dark:text-gray-400">${data.diasTotales > 0 ? data.diasTotales + ' días hábiles' : 'No Aplica'}</span>
+                    </div>
+                    <div class="flex items-center gap-2 mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                        <span class="material-symbols-outlined text-[18px] ${data.diasClass.split(' ')[0]}">${data.iconoDias}</span>
+                        <span class="${data.diasClass} text-sm">${data.msgTiempo}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        Swal.fire({
+            title: '<h3 class="text-lg font-bold text-gray-800 dark:text-white mb-2 pt-2">Detalles del Documento</h3>',
+            html: htmlContent,
+            showCloseButton: true,
+            showConfirmButton: false,
+            focusConfirm: false,
+            customClass: {
+                popup: 'rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 dark:bg-slate-900',
+                closeButton: 'text-gray-400 hover:text-gray-600 dark:hover:text-white mt-2 mr-2',
+                content: 'p-0 text-left'
+            }
+        });
     }
 
 </script>

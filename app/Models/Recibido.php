@@ -28,6 +28,7 @@ class Recibido extends Model
         'anexo',
         'observaciones',
         'doc_quien_registra',
+        'doc_quien_dirige',
         'id_tipo',
         'id_estado_rec',
         'archivo',
@@ -35,11 +36,19 @@ class Recibido extends Model
     ];
 
     /**
+     * Relación con Empleado a quien va dirigido
+     */
+    public function dirigidoA()
+    {
+        return $this->belongsTo(Empleado::class , 'doc_quien_dirige', 'emple_doc');
+    }
+
+    /**
      * Relación con Remitente (quien registra)
      */
     public function registradoPor()
     {
-        return $this->belongsTo(Remitente::class, 'doc_quien_registra', 'rem_doc');
+        return $this->belongsTo(Remitente::class , 'doc_quien_registra', 'rem_doc');
     }
 
     /**
@@ -47,7 +56,7 @@ class Recibido extends Model
      */
     public function tipo()
     {
-        return $this->belongsTo(Tipo::class, 'id_tipo', 'id_tipo');
+        return $this->belongsTo(Tipo::class , 'id_tipo', 'id_tipo');
     }
 
     /**
@@ -55,7 +64,7 @@ class Recibido extends Model
      */
     public function estado()
     {
-        return $this->belongsTo(Estado::class, 'id_estado_rec', 'id_estado');
+        return $this->belongsTo(Estado::class , 'id_estado_rec', 'id_estado');
     }
 
     /**
@@ -63,7 +72,7 @@ class Recibido extends Model
      */
     public function ciudad()
     {
-        return $this->belongsTo(Ciudad::class, 'ciudad_proveniente', 'ciudad_cod_post');
+        return $this->belongsTo(Ciudad::class , 'ciudad_proveniente', 'ciudad_cod_post');
     }
 
     /**
@@ -71,7 +80,7 @@ class Recibido extends Model
      */
     public function radicado()
     {
-        return $this->belongsTo(Radicado::class, 'num_radicado_int', 'id_radicado');
+        return $this->belongsTo(Radicado::class , 'num_radicado_int', 'id_radicado');
 
     }
 
@@ -80,7 +89,7 @@ class Recibido extends Model
      */
     public function anexos()
     {
-        return $this->hasMany(AnexoRecibido::class, 'id_recibido', 'id_recibido');
+        return $this->hasMany(AnexoRecibido::class , 'id_recibido', 'id_recibido');
 
     }
 }

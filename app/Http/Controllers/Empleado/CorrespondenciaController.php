@@ -14,7 +14,7 @@ class CorrespondenciaController extends Controller
     {
         // Get the current user
         $user = Auth::user();
-        
+
         // Fetch real data. We assume the user has a nit_empresa attribute based on the database schema.
         // Fetch stats
         // Fetch stats using grouping subqueries to avoid duplicate history traces
@@ -25,19 +25,43 @@ class CorrespondenciaController extends Controller
         $queryBandejaUnicaExt = Recibido::whereIn('id_recibido', $latestRecibidoSubquery);
 
         $totalRecibidas = (clone $queryBandejaUnicaExt)->count();
-        $enTramite = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 8)->count(); 
+        $enTramite = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 8)->count();
         $finalizadas = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 9)->count();
         $archivadas = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 10)->count();
         $vencidas = 0; // Se puede implementar luego la logica o join para buscar vencimiento de radicados. 
-        
-        $correspondencias = (clone $queryBandejaUnicaExt)->with(['radicado', 'estado', 'dirigidoA', 'registradoPor', 'tipo.prioridad', 'ciudad', 'anexos'])
-            ->orderBy('id_recibido', 'desc')
+
+        // Custom Sorting:
+        // Estado: Recibido (7) -> En Tramite (8) -> Others (Resuelto 9, Archivado 10, Rechazado 11)
+        // Prioridad: Urgente (4) -> Alta (1) -> Media (2) -> Baja (3)
+        $correspondencias = (clone $queryBandejaUnicaExt)
+            ->with(['radicado', 'estado', 'dirigidoA', 'registradoPor', 'tipo.prioridad', 'ciudad', 'anexos'])
+            ->leftJoin('estado', 'recibido.id_estado_rec', '=', 'estado.id_estado')
+            ->leftJoin('tipo', 'recibido.id_tipo', '=', 'tipo.id_tipo')
+            ->leftJoin('prioridad', 'tipo.id_prioridad', '=', 'prioridad.id_prioridad')
+            ->select('recibido.*') // Ensure we only get the main table columns to avoid ID conflicts
+            ->orderByRaw("
+                CASE 
+                    WHEN recibido.id_estado_rec = 7 THEN 1
+                    WHEN recibido.id_estado_rec = 8 THEN 2
+                    ELSE 3
+                END ASC
+            ")
+            ->orderByRaw("
+                CASE 
+                    WHEN prioridad.prioridad_nombre LIKE '%Urgente%' OR tipo.id_prioridad = 4 THEN 1
+                    WHEN prioridad.prioridad_nombre LIKE '%Alta%' OR tipo.id_prioridad = 1 THEN 2
+                    WHEN prioridad.prioridad_nombre LIKE '%Media%' OR tipo.id_prioridad = 2 THEN 3
+                    WHEN prioridad.prioridad_nombre LIKE '%Baja%' OR tipo.id_prioridad = 3 THEN 4
+                    ELSE 5
+                END ASC
+            ")
+            ->orderBy('recibido.id_recibido', 'desc')
             ->paginate(10, ['*'], 'ext_page');
 
         // Start query for BANDEJA INTERNA
         $queryInterna = DetalleEnvio::with(['envio', 'envio.tipoEnvio', 'envio.radicado', 'quienEnvia', 'quienEnvia.area', 'estado', 'anexosRespuesta'])
             ->where('id_quien_recibe', $user->emple_doc);
-            
+
         // Fix counters using grouping subquery so we don't count history duplicates
         $latestDetalleSubqueryInt = clone $queryInterna;
         $latestDetalleSubqueryInt = $latestDetalleSubqueryInt->select(\Illuminate\Support\Facades\DB::raw('MAX(id_detalle) as id_detalle'))->groupBy('id_envio');
@@ -50,9 +74,31 @@ class CorrespondenciaController extends Controller
         $archivadasInt = (clone $queryBandejaUnicaInt)->where('id_estado_rec', 10)->count();
         $vencidasInt = 0; // Same, placeholder for overdue.
 
+        // Custom Sorting for Internas
         $correspondenciasInternas = clone $queryBandejaUnicaInt;
-        $correspondenciasInternas = $correspondenciasInternas->with(['envio', 'envio.tipoEnvio.prioridad', 'envio.radicado', 'quienEnvia', 'quienEnvia.area', 'estado', 'anexosRespuesta'])
-            ->orderBy('id_detalle', 'desc')
+        $correspondenciasInternas = $correspondenciasInternas
+            ->with(['envio', 'envio.tipoEnvio.prioridad', 'envio.radicado', 'quienEnvia', 'quienEnvia.area', 'estado', 'anexosRespuesta'])
+            ->leftJoin('envio', 'detalle_envio.id_envio', '=', 'envio.id_envio')
+            ->leftJoin('tipo', 'envio.id_tipo_envio', '=', 'tipo.id_tipo')
+            ->leftJoin('prioridad', 'tipo.id_prioridad', '=', 'prioridad.id_prioridad')
+            ->select('detalle_envio.*') // Prevent column overlap
+            ->orderByRaw("
+                CASE 
+                    WHEN detalle_envio.id_estado_rec = 7 THEN 1
+                    WHEN detalle_envio.id_estado_rec = 8 THEN 2
+                    ELSE 3 
+                END ASC
+            ")
+            ->orderByRaw("
+                CASE 
+                    WHEN prioridad.prioridad_nombre LIKE '%Urgente%' OR tipo.id_prioridad = 4 THEN 1
+                    WHEN prioridad.prioridad_nombre LIKE '%Alta%' OR tipo.id_prioridad = 1 THEN 2
+                    WHEN prioridad.prioridad_nombre LIKE '%Media%' OR tipo.id_prioridad = 2 THEN 3
+                    WHEN prioridad.prioridad_nombre LIKE '%Baja%' OR tipo.id_prioridad = 3 THEN 4
+                    ELSE 5
+                END ASC
+            ")
+            ->orderBy('detalle_envio.id_detalle', 'desc')
             ->paginate(10, ['*'], 'int_page');
 
         // Fetch all active employees for the reassignment modal
@@ -93,7 +139,8 @@ class CorrespondenciaController extends Controller
 
         // Find state ID
         $estado = \App\Models\Estado::where('estado_nomb', $request->estado_nomb)->first();
-        if(!$estado) return back()->with('error', 'Estado no válido');
+        if (!$estado)
+            return back()->with('error', 'Estado no válido');
 
         // Prevent going backwards
         if ($estado->id_estado < $recibidoAntiguo->id_estado_rec) {
@@ -152,15 +199,16 @@ class CorrespondenciaController extends Controller
         // VERY IMPORTANT: Check the latest ID strictly for this recipient's thread 
         // because an internal document can be sent to multiple users at once.
         $latestDetalleId = DetalleEnvio::where('id_envio', $detalleAntiguo->id_envio)
-                                       ->where('id_quien_recibe', $detalleAntiguo->id_quien_recibe)
-                                       ->max('id_detalle');
+            ->where('id_quien_recibe', $detalleAntiguo->id_quien_recibe)
+            ->max('id_detalle');
         if ($detalleAntiguo->id_detalle != $latestDetalleId) {
             return back()->with('error', 'No se puede modificar un historial pasado. Solo el estado más reciente puede ser actualizado.');
         }
 
         // Find state ID
         $estado = \App\Models\Estado::where('estado_nomb', $request->estado_nomb)->first();
-        if(!$estado) return back()->with('error', 'Estado no válido');
+        if (!$estado)
+            return back()->with('error', 'Estado no válido');
 
         // Prevent going backwards
         if ($estado->id_estado < $detalleAntiguo->id_estado_rec) {
@@ -181,7 +229,8 @@ class CorrespondenciaController extends Controller
         if ($request->hasFile('archivo_respuesta')) {
             $path = $request->file('archivo_respuesta')->store('correspondencia', 'public');
             $nuevoRegistro->archivo_respuesta = $path;
-        } else {
+        }
+        else {
             // Mantener el archivo previo si existe o dejar nulo (depende la regla de negocio, 
             // usualmente el archivo de respuesta es único al finalizar, pero lo propagamos por si acaso)
             $nuevoRegistro->archivo_respuesta = $detalleAntiguo->archivo_respuesta;
@@ -251,7 +300,7 @@ class CorrespondenciaController extends Controller
         // State for "Reasignado" might not exist explicitly in typical systems, 
         // but let's see if we should just mark it "En Tramite" for the new person.
         $estadoEnTramite = \App\Models\Estado::where('estado_nomb', 'En Tramite')->first();
-        
+
         // 1. Mark current row as somewhat archived or just keep its trace. 
         // We will create the NEW row for the NEW employee.
         $nuevoRegistro = new Recibido();
@@ -265,10 +314,10 @@ class CorrespondenciaController extends Controller
         $nuevoRegistro->anexo = $recibidoAntiguo->anexo;
         $nuevoRegistro->observaciones = 'Reasignado: ' . $request->observaciones;
         $nuevoRegistro->doc_quien_registra = $recibidoAntiguo->doc_quien_registra;
-        
+
         // ✨ This is the core of reassignment
-        $nuevoRegistro->doc_quien_dirige = $request->doc_quien_dirige; 
-        
+        $nuevoRegistro->doc_quien_dirige = $request->doc_quien_dirige;
+
         $nuevoRegistro->id_tipo = $recibidoAntiguo->id_tipo;
         $nuevoRegistro->id_estado_rec = $estadoEnTramite ? $estadoEnTramite->id_estado : $recibidoAntiguo->id_estado_rec; // Reset to En Tramite
         $nuevoRegistro->archivo = $recibidoAntiguo->archivo;
@@ -301,99 +350,109 @@ class CorrespondenciaController extends Controller
     {
         try {
             $request->validate([
-            'asunto' => 'required|string|max:100',
-            'doc_quien_dirigido' => 'required|array|min:1',
-            'doc_quien_dirigido.*' => 'exists:empleado,emple_doc',
-            'id_tipo_envio' => 'required|exists:tipo,id_tipo',
-            'observaciones' => 'nullable|string',
-            'archivo' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120', // Max 5MB
-            'anexos.*' => 'nullable|file|mimes:pdf|max:5120', // Array de Archivos, Max 5MB
-            'folio' => 'nullable|integer'
-        ]);
+                'asunto' => 'required|string|max:100',
+                'doc_quien_dirigido' => 'required|array|min:1',
+                'doc_quien_dirigido.*' => 'exists:empleado,emple_doc',
+                'id_tipo_envio' => 'required|exists:tipo,id_tipo',
+                'observaciones' => 'nullable|string',
+                'archivo' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120', // Max 5MB
+                'anexos.*' => 'nullable|file|mimes:pdf|max:5120', // Array de Archivos, Max 5MB
+                'folio' => 'nullable|integer'
+            ]);
 
-        $user = Auth::user();
+            $user = Auth::user();
 
-        // Let's create a fake or generated radicado_int since internal requires it
-        // Depending on your actual process you might use the radicados table. 
-        // We will insert a new Radicado automatically for internal to maintain consistency.
-        
-        $estadoRecibido = \App\Models\Estado::where('estado_nomb', 'Recibido')->first();
-        $estadoEnviado = \App\Models\Estado::where('estado_nomb', 'Enviado')->first();
-        
-        $estadoRecibidoId = $estadoRecibido ? $estadoRecibido->id_estado : 7; // Fallback
-        $estadoEnviadoId = $estadoEnviado ? $estadoEnviado->id_estado : 7; // Fallback if not found
-        $estadoActivoId = 1; // ID 1 = Activo (basado en EstadoSeeder)
+            // Let's create a fake or generated radicado_int since internal requires it
+            // Depending on your actual process you might use the radicados table. 
+            // We will insert a new Radicado automatically for internal to maintain consistency.
 
-        // Create Radicado (using a logical numbering for internal, you could customize this)
-        $radicado = new \App\Models\Radicado();
-        $radicado->num_radicado = 'INT-' . date('Y') . '-' . str_pad(rand(1, 99999), 5, '0', STR_PAD_LEFT);
-        $radicado->nit_empresa = $user->nit_empresa;
-        $radicado->save();
+            $estadoRecibido = \App\Models\Estado::where('estado_nomb', 'Recibido')->first();
+            $estadoEnviado = \App\Models\Estado::where('estado_nomb', 'Enviado')->first();
 
-        $envio = new \App\Models\Envio();
-        $envio->num_radicado_int = $radicado->id_radicado;
-        $envio->asunto = $request->asunto;
-        $envio->doc_quien_envia = $user->emple_doc;
-        $envio->doc_quien_dirigido = null; // Internal, not a remitente
-        $envio->fecha = now();
-        $envio->anexo = $request->has('anexo') ? $request->anexo : null;
-        $envio->folio = $request->folio ?? 0;
-        $envio->id_tipo_envio = $request->id_tipo_envio;
-        $envio->id_estado_envio = $estadoEnviadoId; // El que envía (remitente) inicia en 'Enviado'
-        $envio->nit_empresa = $user->nit_empresa;
-        $envio->destino = 'Interno';
+            $estadoRecibidoId = $estadoRecibido ? $estadoRecibido->id_estado : 7; // Fallback
+            $estadoEnviadoId = $estadoEnviado ? $estadoEnviado->id_estado : 7; // Fallback if not found
+            $estadoActivoId = 1; // ID 1 = Activo (basado en EstadoSeeder)
 
-        if ($request->hasFile('archivo')) {
-            $path = $request->file('archivo')->store('correspondencia', 'public');
-            $envio->archivo = $path;
-        } else {
-            $envio->archivo = '';
-        }
+            // Create Radicado (using sequential numbering INT-YYYY-00001)
+            $currentYear = date('Y');
 
-        $envio->save();
+            // Find the latest internal radicado for this year and company
+            $latestRadicado = \App\Models\Radicado::where('nit_empresa', $user->nit_empresa)
+                ->where('num_radicado', 'like', 'INT-' . $currentYear . '-%')
+                ->orderBy('num_radicado', 'desc')
+                ->first();
 
-        // Procesar los Anexos Múltiples
-        if ($request->hasFile('anexos')) {
-            foreach ($request->file('anexos') as $file) {
-                $pathAnexo = $file->store('correspondencia', 'public');
-                \App\Models\AnexoEnvio::create([
-                    'id_envio' => $envio->id_envio,
-                    'ruta_archivo' => $pathAnexo,
-                    'nombre_original' => $file->getClientOriginalName(),
-                ]);
+            if ($latestRadicado) {
+                // Extract the last 5 digits and increment
+                $lastNumber = intval(substr($latestRadicado->num_radicado, -5));
+                $newNumber = $lastNumber + 1;
             }
+            else {
+                // Start at 1 if no previous radicado exists for this year
+                $newNumber = 1;
+            }
+
+            $radicado = new \App\Models\Radicado();
+            $radicado->num_radicado = 'INT-' . $currentYear . '-' . str_pad($newNumber, 5, '0', STR_PAD_LEFT);
+            $radicado->nit_empresa = $user->nit_empresa;
+            $radicado->save();
+
+            $envio = new \App\Models\Envio();
+            $envio->num_radicado_int = $radicado->id_radicado;
+            $envio->asunto = $request->asunto;
+            $envio->doc_quien_envia = $user->emple_doc;
+            $envio->doc_quien_dirigido = null; // Internal, not a remitente
+            $envio->fecha = now();
+            $envio->anexo = $request->has('anexo') ? $request->anexo : null;
+            $envio->folio = $request->folio ?? 0;
+            $envio->id_tipo_envio = $request->id_tipo_envio;
+            $envio->id_estado_envio = $estadoEnviadoId; // El que envía (remitente) inicia en 'Enviado'
+            $envio->nit_empresa = $user->nit_empresa;
+            $envio->destino = 'Interno';
+
+            if ($request->hasFile('archivo')) {
+                $path = $request->file('archivo')->store('correspondencia', 'public');
+                $envio->archivo = $path;
+            }
+            else {
+                $envio->archivo = '';
+            }
+
+            $envio->save();
+
+            // Procesar los Anexos Múltiples
+            if ($request->hasFile('anexos')) {
+                foreach ($request->file('anexos') as $file) {
+                    $pathAnexo = $file->store('correspondencia', 'public');
+                    \App\Models\AnexoEnvio::create([
+                        'id_envio' => $envio->id_envio,
+                        'ruta_archivo' => $pathAnexo,
+                        'nombre_original' => $file->getClientOriginalName(),
+                    ]);
+                }
+            }
+
+            // Create DetalleEnvio (Receiver tracking) for each recipient
+            foreach ($request->doc_quien_dirigido as $destinatario_doc) {
+                $detalle = new \App\Models\DetalleEnvio();
+                $detalle->id_quien_envie = $user->emple_doc;
+                $detalle->id_quien_recibe = $destinatario_doc;
+                $detalle->id_envio = $envio->id_envio;
+                $detalle->fecha_traslado = now();
+                $detalle->id_estado_rec = $estadoRecibidoId; // El que recibe (destinatario) inicia en 'Recibido'
+                $detalle->observaciones = $request->observaciones;
+                $detalle->save();
+            }
+
+            return back()->with('success', 'Correspondencia interna creada y enviada exitosamente a los destinatarios seleccionados.', ['int_page' => 1]);
+
         }
-
-        // Create DetalleEnvio (Receiver tracking)
-        $detalle = new \App\Models\DetalleEnvio();
-        $detalle->id_quien_envie = $user->emple_doc;
-        $detalle->id_quien_recibe = $request->doc_quien_dirigido;
-        $detalle->id_envio = $envio->id_envio;
-        $detalle->fecha_traslado = now();
-        $detalle->id_estado_rec = $estadoRecibidoId; // El que recibe (destinatario) inicia en 'Recibido'
-        $detalle->observaciones = $request->observaciones;
-        $detalle->save();
-
-        return back()->with('success', 'Correspondencia interna creada y enviada exitosamente.', ['int_page' => 1]);
-        
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             \Log::error('Error guardando correspondencia interna: ' . $e->getMessage());
             return back()->with('error', 'Error interno al guardar: ' . $e->getMessage())->withInput();
         }
-        // Create DetalleEnvio (Receiver tracking) for each recipient
-        foreach ($request->doc_quien_dirigido as $destinatario_doc) {
-            $detalle = new \App\Models\DetalleEnvio();
-            $detalle->id_quien_envie = $user->emple_doc;
-            $detalle->id_quien_recibe = $destinatario_doc;
-            $detalle->id_envio = $envio->id_envio;
-            $detalle->fecha_traslado = now();
-            $detalle->id_estado_rec = $estadoId;
-            $detalle->observaciones = $request->observaciones;
-            $detalle->save();
-        }
-
-        return back()->with('success', 'Correspondencia interna creada y enviada exitosamente a los destinatarios seleccionados.', ['int_page' => 1]);
     }
 }
