@@ -943,32 +943,24 @@
 
                 <!-- Archivo y Anexos -->
                 <div class="p-4 bg-gray-50 dark:bg-slate-800/30 rounded-xl border border-gray-200 dark:border-gray-700 space-y-4">
-                    <!-- Principal Full Width so it doesn't truncate long names -->
+                    <!-- Documento Principal -->
                     <div class="w-full">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Documento Principal (PDF, JPG, PNG)</label>
-                        <input type="file" name="archivo" accept=".pdf,.jpg,.jpeg,.png" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-blue-700 file:cursor-pointer cursor-pointer border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 transition-colors">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Documento Principal (Solo PDF)</label>
+                        <input type="file" name="archivo" id="archivo_principal_input" accept=".pdf" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-blue-700 file:cursor-pointer cursor-pointer border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 transition-colors" onchange="actualizarContadorFolios()">
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Tamaño máximo: 5MB. Este archivo es el oficio principal.</p>
                     </div>
 
-                    <!-- Anexos y Folios Side by Side -->
+                    <!-- Anexo único y Folios -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Anexos Extras (PDFs)</label>
-                            
-                            <!-- Custom Multiple File Upload Area for Nuevos Anexos -->
-                            <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-3 text-center hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors cursor-pointer relative" onclick="document.getElementById('anexos_nuevos_input').click()">
-                                <span class="material-symbols-outlined text-gray-400 text-2xl mb-1">note_add</span>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Clic aquí para añadir PDFs adicionales</p>
-                                <!-- Actual Hidden Input -->
-                                <input type="file" id="anexos_nuevos_input" name="anexos[]" multiple accept=".pdf" class="hidden" onchange="handleFileSelect(event, 'anexosNuevosList', 'anexos_nuevos_input')">
-                            </div>
-                            
-                            <!-- Container for Selected Files Pills -->
-                            <div id="anexosNuevosList" class="mt-2 flex flex-wrap gap-2 empty:hidden"></div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Anexo (Solo 1 PDF)</label>
+                            <input type="file" name="anexos[]" id="anexo_unico_input" accept=".pdf" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900/30 dark:file:text-blue-400 file:cursor-pointer cursor-pointer border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 transition-colors" onchange="actualizarContadorFolios()">
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Máximo 1 archivo PDF adicional.</p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Total de Folios</label>
-                            <input type="number" name="folio" min="0" placeholder="Ej. 3" class="w-full border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 dark:text-white py-2 px-3 text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors">
+                            <input type="number" name="folio" id="total_folios_input" readonly placeholder="Calculado automáticamente..." class="w-full border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-slate-800 dark:text-gray-400 py-2 px-3 text-sm focus:outline-none cursor-not-allowed transition-colors">
+                            <p id="folio_auto_msg" class="mt-1 text-[10px] text-blue-600 dark:text-blue-400 hidden">Autocalculado según PDFs seleccionados.</p>
                         </div>
                     </div>
                 </div>
@@ -1024,6 +1016,17 @@
 
 @section('scripts')
 <script>
+    // Configurar PDF.js worker (con guard por si la librería aún no cargó)
+    if (typeof pdfjsLib !== 'undefined') {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    } else {
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof pdfjsLib !== 'undefined') {
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            }
+        });
+    }
+
     function toggleModal(modalId) {
         const modal = document.getElementById(modalId);
         if (modal.classList.contains('hidden')) {
@@ -1197,6 +1200,11 @@
         
         // Render the UI
         renderFilePills(inputId, listContainerId);
+        
+        // Auto-count internal folios if relevant
+        if (inputId === 'anexos_nuevos_input') {
+            actualizarContadorFolios();
+        }
     }
 
     function removeFile(inputId, listContainerId, fileName, fileSize) {
@@ -1218,8 +1226,67 @@
         
         // Render UI
         renderFilePills(inputId, listContainerId);
+        
+        // Auto-count internal folios if relevant
+        if (inputId === 'anexos_nuevos_input') {
+            actualizarContadorFolios();
+        }
     }
 
+    function getPdfPageCount(file) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const typedArray = new Uint8Array(e.target.result);
+                    const pdf = await pdfjsLib.getDocument({ data: typedArray }).promise;
+                    resolve(pdf.numPages);
+                } catch (err) {
+                    console.error('PDF.js error counting pages:', err);
+                    resolve(0);
+                }
+            };
+            reader.onerror = () => resolve(0);
+            reader.readAsArrayBuffer(file);
+        });
+    }
+
+    async function actualizarContadorFolios() {
+        const principalInput = document.getElementById('archivo_principal_input');
+        const anexoInput = document.getElementById('anexo_unico_input');
+        const totalInput = document.getElementById('total_folios_input');
+        const autoMsg = document.getElementById('folio_auto_msg');
+
+        let filePromises = [];
+
+        // 1. Promesa para el documento principal
+        if (principalInput && principalInput.files.length > 0) {
+            const file = principalInput.files[0];
+            if (file.type === 'application/pdf') {
+                filePromises.push(getPdfPageCount(file));
+            }
+        }
+
+        // 2. Promesa para el anexo único
+        if (anexoInput && anexoInput.files.length > 0) {
+            const file = anexoInput.files[0];
+            if (file.type === 'application/pdf') {
+                filePromises.push(getPdfPageCount(file));
+            }
+        }
+
+        if (filePromises.length > 0) {
+            totalInput.placeholder = "Contando...";
+            const counts = await Promise.all(filePromises);
+            const total = counts.reduce((a, b) => a + b, 0);
+            totalInput.value = total;
+            totalInput.placeholder = "Calculado automáticamente...";
+            autoMsg.classList.remove('hidden');
+        } else {
+            totalInput.value = "";
+            autoMsg.classList.add('hidden');
+        }
+    }
     function renderFilePills(inputId, listContainerId) {
         const container = document.getElementById(listContainerId);
         const dt = customFilesState[inputId];
@@ -1424,10 +1491,28 @@
         }
     }
 
-    // Call validation on modal open to ensure state is clean
+    // Validar destinatarios solo al intentar enviar el formulario
     document.addEventListener('DOMContentLoaded', () => {
-        // Wait for DOM to load before setting initial validity
-        setTimeout(validarDestinatariosMinimos, 500);
+        const form = document.querySelector('#modalNuevaInterna form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const checkboxes = document.querySelectorAll('.destinatario-checkbox');
+                let checkedCount = 0;
+                checkboxes.forEach(cb => { if (cb.checked) checkedCount++; });
+
+                if (checkedCount === 0) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Destinatario requerido',
+                        text: 'Debe seleccionar al menos un destinatario.',
+                    });
+                }
+            });
+        }
+
+        // Limpiar cualquier validación custom que pueda estar bloqueando
+        document.querySelectorAll('.destinatario-checkbox').forEach(cb => cb.setCustomValidity(''));
     });
 
     function abrirModalArchivos(datosJson) {

@@ -34,6 +34,7 @@ class CorrespondenciaController extends Controller
         // Estado: Recibido (7) -> En Tramite (8) -> Others (Resuelto 9, Archivado 10, Rechazado 11)
         // Prioridad: Urgente (4) -> Alta (1) -> Media (2) -> Baja (3)
         $correspondencias = (clone $queryBandejaUnicaExt)
+            ->whereIn('recibido.id_estado_rec', [7, 8])
             ->with(['radicado', 'estado', 'dirigidoA', 'registradoPor', 'tipo.prioridad', 'ciudad', 'anexos'])
             ->leftJoin('estado', 'recibido.id_estado_rec', '=', 'estado.id_estado')
             ->leftJoin('tipo', 'recibido.id_tipo', '=', 'tipo.id_tipo')
@@ -77,6 +78,7 @@ class CorrespondenciaController extends Controller
         // Custom Sorting for Internas
         $correspondenciasInternas = clone $queryBandejaUnicaInt;
         $correspondenciasInternas = $correspondenciasInternas
+            ->whereIn('detalle_envio.id_estado_rec', [7, 8])
             ->with(['envio', 'envio.tipoEnvio.prioridad', 'envio.radicado', 'quienEnvia', 'quienEnvia.area', 'estado', 'anexosRespuesta'])
             ->leftJoin('envio', 'detalle_envio.id_envio', '=', 'envio.id_envio')
             ->leftJoin('tipo', 'envio.id_tipo_envio', '=', 'tipo.id_tipo')
@@ -110,6 +112,75 @@ class CorrespondenciaController extends Controller
         $tipos = \App\Models\Tipo::all();
 
         return view('empleado.correspondencia_recibida', compact(
+            'correspondencias', 'totalRecibidas', 'enTramite', 'finalizadas', 'archivadas', 'vencidas',
+            'correspondenciasInternas', 'totalInternas', 'enTramiteInt', 'finalizadasInt', 'archivadasInt', 'vencidasInt',
+            'empleados', 'tipos'
+        ));
+    }
+
+    public function finalizada()
+    {
+        // Get the current user
+        $user = Auth::user();
+
+        // Fetch stats using grouping subqueries to avoid duplicate history traces
+        $queryBase = Recibido::query();
+
+        $latestRecibidoSubquery = clone $queryBase;
+        $latestRecibidoSubquery = $latestRecibidoSubquery->select(\Illuminate\Support\Facades\DB::raw('MAX(id_recibido) as id_recibido'))->groupBy('num_radicado_ext', 'num_radicado_int');
+        $queryBandejaUnicaExt = Recibido::whereIn('id_recibido', $latestRecibidoSubquery);
+
+        $totalRecibidas = (clone $queryBandejaUnicaExt)->count();
+        $enTramite = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 8)->count();
+        $finalizadas = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 9)->count();
+        $archivadas = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 10)->count();
+        $vencidas = 0; 
+
+        $correspondencias = (clone $queryBandejaUnicaExt)
+            ->where('recibido.id_estado_rec', '>', 8)
+            ->with(['radicado', 'estado', 'dirigidoA', 'registradoPor', 'tipo.prioridad', 'ciudad', 'anexos'])
+            ->leftJoin('estado', 'recibido.id_estado_rec', '=', 'estado.id_estado')
+            ->leftJoin('tipo', 'recibido.id_tipo', '=', 'tipo.id_tipo')
+            ->leftJoin('prioridad', 'tipo.id_prioridad', '=', 'prioridad.id_prioridad')
+            ->select('recibido.*') 
+            ->orderBy('recibido.id_recibido', 'desc')
+            ->paginate(10, ['*'], 'ext_page');
+
+        // Start query for BANDEJA INTERNA
+        $queryInterna = DetalleEnvio::with(['envio', 'envio.tipoEnvio', 'envio.radicado', 'quienEnvia', 'quienEnvia.area', 'estado', 'anexosRespuesta'])
+            ->where('id_quien_recibe', $user->emple_doc);
+
+        $latestDetalleSubqueryInt = clone $queryInterna;
+        $latestDetalleSubqueryInt = $latestDetalleSubqueryInt->select(\Illuminate\Support\Facades\DB::raw('MAX(id_detalle) as id_detalle'))->groupBy('id_envio');
+
+        $queryBandejaUnicaInt = DetalleEnvio::whereIn('id_detalle', $latestDetalleSubqueryInt)->where('id_quien_recibe', $user->emple_doc);
+
+        $totalInternas = (clone $queryBandejaUnicaInt)->count();
+        $enTramiteInt = (clone $queryBandejaUnicaInt)->where('id_estado_rec', 8)->count();
+        $finalizadasInt = (clone $queryBandejaUnicaInt)->where('id_estado_rec', 9)->count();
+        $archivadasInt = (clone $queryBandejaUnicaInt)->where('id_estado_rec', 10)->count();
+        $vencidasInt = 0;
+
+        $correspondenciasInternas = clone $queryBandejaUnicaInt;
+        $correspondenciasInternas = $correspondenciasInternas
+            ->where('detalle_envio.id_estado_rec', '>', 8)
+            ->with(['envio', 'envio.tipoEnvio.prioridad', 'envio.radicado', 'quienEnvia', 'quienEnvia.area', 'estado', 'anexosRespuesta'])
+            ->leftJoin('envio', 'detalle_envio.id_envio', '=', 'envio.id_envio')
+            ->leftJoin('tipo', 'envio.id_tipo_envio', '=', 'tipo.id_tipo')
+            ->leftJoin('prioridad', 'tipo.id_prioridad', '=', 'prioridad.id_prioridad')
+            ->select('detalle_envio.*')
+            ->orderBy('detalle_envio.id_detalle', 'desc')
+            ->paginate(10, ['*'], 'int_page');
+
+        // Fetch all active employees for the reassignment modal
+        $empleados = \App\Models\Empleado::where('emple_estado', 1)
+            ->where('nit_empresa', $user->nit_empresa)
+            ->get();
+
+        // Fetch document types
+        $tipos = \App\Models\Tipo::all();
+
+        return view('empleado.correspondencia_finalizada', compact(
             'correspondencias', 'totalRecibidas', 'enTramite', 'finalizadas', 'archivadas', 'vencidas',
             'correspondenciasInternas', 'totalInternas', 'enTramiteInt', 'finalizadasInt', 'archivadasInt', 'vencidasInt',
             'empleados', 'tipos'
@@ -257,19 +328,6 @@ class CorrespondenciaController extends Controller
                     'ruta_archivo' => $pathAnexoResp,
                     'nombre_original' => $file->getClientOriginalName(),
                 ]);
-            }
-        }
-
-        // Si el estado es finalizado (9=Archivado, 10=Resuelto, u otros considerados finales en tu negocio)
-        // marcamos el radicado asociado como "Inactivo" (id_estado = 2 asumiendo Activo=1 e Inactivo=2 del EstadoSeeder)
-        if (in_array($estado->id_estado, [9, 10]) || stripos($estado->estado_nomb, 'rechazado') !== false) {
-            $envioAsociado = \App\Models\Envio::find($detalleAntiguo->id_envio);
-            if ($envioAsociado && $envioAsociado->num_radicado_int) {
-                $radicadoInt = \App\Models\Radicado::find($envioAsociado->num_radicado_int);
-                if ($radicadoInt) {
-                    $radicadoInt->id_est_radicado = 2; // Inactivo
-                    $radicadoInt->save();
-                }
             }
         }
 

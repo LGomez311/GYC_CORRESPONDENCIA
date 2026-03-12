@@ -72,6 +72,14 @@
                     <p class="text-sm font-medium">Correspondencia Recibida</p>
                 </a>
 
+                <!-- Correspondencia Finalizada -->
+                <a href="{{ route('empleado.correspondencia_finalizada') }}"
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
+            text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                    <span class="material-symbols-outlined">inventory_2</span>
+                    <p class="text-sm font-medium">Correspondencia Finalizada</p>
+                </a>
+
                 <!-- Reportes -->
                 <a href="{{ route('empleado.reportes') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
