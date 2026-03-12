@@ -732,10 +732,10 @@
                 </div>
                 
                 <div id="archivoRespuestaContainer" class="hidden">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Archivo de Respuesta (Opcional, Solo PDF)</label>
-                    <input type="file" name="archivo_respuesta" accept=".pdf" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-600 file:text-white hover:file:bg-green-700 file:cursor-pointer cursor-pointer border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 mb-4">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Archivo de Respuesta (Opcional, Solo unPDF)</label>
+                    <input type="file" id="archivo_respuesta_input" name="archivo_respuesta" accept=".pdf" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-600 file:text-white hover:file:bg-green-700 file:cursor-pointer cursor-pointer border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 mb-4" onchange="actualizarContadorFoliosRespuesta()">
 
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Anexos de Respuesta (Opcional, Múltiples PDFs)</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Anexos de Respuesta (Opcional, Solo un PDF)</label>
                     
                     <!-- Custom Multiple File Upload Area for Respuestas -->
                     <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors cursor-pointer relative" onclick="document.getElementById('archivos_respuesta_input').click()">
@@ -743,15 +743,15 @@
                         <p class="text-sm text-gray-600 dark:text-gray-400">Clic aquí para añadir anexos (PDF)</p>
                         <p class="text-xs text-gray-500 mt-1">Puedes agregar varios archivos uno por uno sin usar la tecla Ctrl.</p>
                         <!-- Actual Hidden Input -->
-                        <input type="file" id="archivos_respuesta_input" name="archivos_respuesta[]" multiple accept=".pdf" class="hidden" onchange="handleFileSelect(event, 'respuestasList', 'archivos_respuesta_input')">
+                        <input type="file" id="archivos_respuesta_input" name="archivos_respuesta[]" multiple accept=".pdf" class="hidden" onchange="handleFileSelect(event, 'respuestasList', 'archivos_respuesta_input'); actualizarContadorFoliosRespuesta()">
                     </div>
                     
                     <!-- Container for Selected Files Pills -->
                     <div id="respuestasList" class="mt-3 flex flex-wrap gap-2 empty:hidden"></div>
 
                     <div class="mt-4">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Folios de la Respuesta (Opcional, Número)</label>
-                        <input type="number" name="folios_respuesta" min="0" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 dark:text-white py-2 px-3 text-sm focus:ring-2 focus:ring-green-600/50 focus:border-green-600 transition-colors" placeholder="Ej: 5">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Folios de la Respuesta</label>
+                        <input type="number" id="folios_respuesta_input" name="folios_respuesta" min="0" value="0" readonly class="w-full border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-100 dark:bg-slate-800 dark:text-gray-300 text-gray-600 py-2 px-3 text-sm cursor-not-allowed" placeholder="Se calcula automáticamente...">
                     </div>
                 </div>
 
@@ -1205,6 +1205,41 @@
         if (inputId === 'anexos_nuevos_input') {
             actualizarContadorFolios();
         }
+    }
+
+    // Contar páginas de TODOS los PDFs de respuesta: archivo principal + anexos múltiples
+    async function actualizarContadorFoliosRespuesta() {
+        const foliosInput = document.getElementById('folios_respuesta_input');
+        if (!foliosInput) return;
+
+        const promesas = [];
+
+        // 1. Archivo de respuesta principal (input simple)
+        const archivoInput = document.getElementById('archivo_respuesta_input');
+        if (archivoInput && archivoInput.files.length > 0) {
+            promesas.push(getPdfPageCount(archivoInput.files[0]));
+        }
+
+        // 2. Anexos de respuesta múltiples (custom multi-upload)
+        const dt = customFilesState['archivos_respuesta_input'];
+        if (dt) {
+            for (let i = 0; i < dt.files.length; i++) {
+                promesas.push(getPdfPageCount(dt.files[i]));
+            }
+        }
+
+        if (promesas.length === 0) {
+            foliosInput.value = 0;
+            return;
+        }
+
+        foliosInput.placeholder = 'Contando páginas...';
+
+        const resultados = await Promise.all(promesas);
+        const total = resultados.reduce((a, b) => a + b, 0);
+
+        foliosInput.value = total;
+        foliosInput.placeholder = 'Se calcula automáticamente...';
     }
 
     function removeFile(inputId, listContainerId, fileName, fileSize) {
@@ -1677,4 +1712,6 @@
     }
 
 </script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 @endsection

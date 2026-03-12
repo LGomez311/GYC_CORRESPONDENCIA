@@ -17,7 +17,6 @@ class Envio extends Model
         'doc_quien_envia',
         'fecha',
         'destino',
-        'anexo',
         'folio',
         'id_tipo_envio',
         'id_estado_envio',

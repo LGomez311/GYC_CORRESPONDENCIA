@@ -728,10 +728,10 @@
                 </div>
                 
                 <div id="archivoRespuestaContainer" class="hidden">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Archivo de Respuesta (Opcional, Solo PDF)</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Archivo de Respuesta (Opcional, Solo un PDF)</label>
                     <input type="file" name="archivo_respuesta" accept=".pdf" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-600 file:text-white hover:file:bg-green-700 file:cursor-pointer cursor-pointer border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 mb-4">
 
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Anexos de Respuesta (Opcional, Múltiples PDFs)</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Anexos de Respuesta (Opcional, Solo un PDF)</label>
                     
                     <!-- Custom Multiple File Upload Area for Respuestas -->
                     <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors cursor-pointer relative" onclick="document.getElementById('archivos_respuesta_input').click()">
@@ -739,15 +739,26 @@
                         <p class="text-sm text-gray-600 dark:text-gray-400">Clic aquí para añadir anexos (PDF)</p>
                         <p class="text-xs text-gray-500 mt-1">Puedes agregar varios archivos uno por uno sin usar la tecla Ctrl.</p>
                         <!-- Actual Hidden Input -->
-                        <input type="file" id="archivos_respuesta_input" name="archivos_respuesta[]" multiple accept=".pdf" class="hidden" onchange="handleFileSelect(event, 'respuestasList', 'archivos_respuesta_input')">
+                        <input type="file" id="archivos_respuesta_input" name="archivos_respuesta[]" multiple accept=".pdf" class="hidden" onchange="handleFileSelectAndCount(event, 'respuestasList', 'archivos_respuesta_input', 'folios_respuesta_input')">
                     </div>
                     
                     <!-- Container for Selected Files Pills -->
                     <div id="respuestasList" class="mt-3 flex flex-wrap gap-2 empty:hidden"></div>
+                </div>
 
-                    <div class="mt-4">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Folios de la Respuesta (Opcional, Número)</label>
-                        <input type="number" name="folios_respuesta" min="0" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 dark:text-white py-2 px-3 text-sm focus:ring-2 focus:ring-green-600/50 focus:border-green-600 transition-colors" placeholder="Ej: 5">
+                <!-- Folios de Respuesta — siempre visible para correspondencia interna -->
+                <div id="foliosRespuestaWrapper">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Folios de la Respuesta
+                        <span class="text-xs font-normal text-gray-500 dark:text-gray-400 ml-1">(se actualiza automáticamente al añadir anexos)</span>
+                    </label>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="cambiarFoliosResp(-1)" class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700 text-lg font-bold transition-colors select-none">−</button>
+                        <input type="number" id="folios_respuesta_input" name="folios_respuesta" min="0" value="0"
+                            class="w-20 text-center border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 dark:text-white py-2 px-3 text-sm focus:ring-2 focus:ring-green-600/50 focus:border-green-600 transition-colors"
+                            placeholder="0">
+                        <button type="button" onclick="cambiarFoliosResp(1)" class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700 text-lg font-bold transition-colors select-none">+</button>
+                        <span class="text-xs text-gray-500 dark:text-gray-400 ml-1">folios</span>
                     </div>
                 </div>
 
@@ -1120,6 +1131,10 @@
         
         currentModalType = tipo;
         
+        // Resetear el contador de folios de respuesta al abrir el modal
+        const foliosRespInput = document.getElementById('folios_respuesta_input');
+        if (foliosRespInput) foliosRespInput.value = 0;
+
         toggleModal('modalEstado');
     }
 
@@ -1193,6 +1208,53 @@
         
         // Render the UI
         renderFilePills(inputId, listContainerId);
+    }
+
+    // Cuenta las páginas de un PDF usando PDF.js y devuelve una promesa con el número
+    async function contarPaginasPDF(file) {
+        try {
+            const arrayBuffer = await file.arrayBuffer();
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            return pdf.numPages;
+        } catch (e) {
+            console.warn('No se pudo leer el PDF:', file.name, e);
+            return 1; // Fallback: contar como 1 página si falla
+        }
+    }
+
+    // Igual que handleFileSelect pero también cuenta páginas reales con PDF.js
+    async function handleFileSelectAndCount(event, listContainerId, inputId, foliosInputId) {
+        handleFileSelect(event, listContainerId, inputId);
+
+        const foliosInput = document.getElementById(foliosInputId);
+        if (!foliosInput) return;
+
+        // Mostrar indicador de carga
+        foliosInput.value = '...';
+        foliosInput.disabled = true;
+
+        // Contar páginas de TODOS los archivos acumulados
+        const dt = customFilesState[inputId];
+        let totalPaginas = 0;
+        const conteos = [];
+        for (let i = 0; i < dt.files.length; i++) {
+            conteos.push(contarPaginasPDF(dt.files[i]));
+        }
+        const resultados = await Promise.all(conteos);
+        resultados.forEach(n => { totalPaginas += n; });
+
+        foliosInput.disabled = false;
+        foliosInput.value = totalPaginas;
+    }
+
+    // Botones +/- para folios de respuesta
+    function cambiarFoliosResp(delta) {
+        const input = document.getElementById('folios_respuesta_input');
+        if (!input) return;
+        let val = parseInt(input.value) || 0;
+        val = Math.max(0, val + delta);
+        input.value = val;
     }
 
     function removeFile(inputId, listContainerId, fileName, fileSize) {
@@ -1588,4 +1650,6 @@
     }
 
 </script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 @endsection

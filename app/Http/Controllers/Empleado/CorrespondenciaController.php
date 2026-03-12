@@ -134,7 +134,7 @@ class CorrespondenciaController extends Controller
         $enTramite = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 8)->count();
         $finalizadas = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 9)->count();
         $archivadas = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 10)->count();
-        $vencidas = 0; 
+        $vencidas = 0;
 
         $correspondencias = (clone $queryBandejaUnicaExt)
             ->where('recibido.id_estado_rec', '>', 8)
@@ -142,7 +142,7 @@ class CorrespondenciaController extends Controller
             ->leftJoin('estado', 'recibido.id_estado_rec', '=', 'estado.id_estado')
             ->leftJoin('tipo', 'recibido.id_tipo', '=', 'tipo.id_tipo')
             ->leftJoin('prioridad', 'tipo.id_prioridad', '=', 'prioridad.id_prioridad')
-            ->select('recibido.*') 
+            ->select('recibido.*')
             ->orderBy('recibido.id_recibido', 'desc')
             ->paginate(10, ['*'], 'ext_page');
 
@@ -461,7 +461,6 @@ class CorrespondenciaController extends Controller
             $envio->doc_quien_envia = $user->emple_doc;
             $envio->doc_quien_dirigido = null; // Internal, not a remitente
             $envio->fecha = now();
-            $envio->anexo = $request->has('anexo') ? $request->anexo : null;
             $envio->folio = $request->folio ?? 0;
             $envio->id_tipo_envio = $request->id_tipo_envio;
             $envio->id_estado_envio = $estadoEnviadoId; // El que envía (remitente) inicia en 'Enviado'
