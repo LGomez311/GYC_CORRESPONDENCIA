@@ -4,9 +4,8 @@
 @section('title', 'Panel de Remitente')
 <!-- Main Content -->
 @section('content')
-    <div class="flex h-screen w-full">
-        <main class="flex-1 flex overflow-hidden">
-            <div class="flex-1 flex flex-col p-6 overflow-y-auto">
+    {{-- Ãrea principal con scroll --}}
+    <div class="flex-1 flex flex-col p-6 overflow-y-auto min-w-0">
                 <div class="flex flex-wrap justify-between items-center gap-3">
                     <h1 class="text-gray-900 dark:text-white text-3xl font-black leading-tight tracking-[-0.033em]">
                         Correspondencia Externa Recibida
@@ -19,18 +18,27 @@
                     </button>
                 </div>
                 <div class="mt-6 flex flex-col sm:flex-row gap-4">
-                    <div class="flex-grow">
-                        <label class="flex flex-col min-w-40 h-10 w-full">
+                    <div class="flex-grow">                        <form id="formSearchGlobal" method="GET" action="{{ url()->current() }}" class="flex flex-col min-w-40 h-10 w-full" onsubmit="return false;">
+                            @if(request('tipo') && request('tipo') !== 'todos')
+                                <input type="hidden" name="tipo" value="{{ request('tipo') }}">
+                            @endif
                             <div class="flex w-full flex-1 items-stretch rounded-lg h-full">
-                                <div
-                                    class="text-gray-500 dark:text-gray-400 flex border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 items-center justify-center pl-4 rounded-l-lg border-r-0">
-                                    <span class="material-symbols-outlined">search</span>
+                                <div class="text-gray-500 dark:text-gray-400 flex border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 items-center justify-center pl-4 rounded-l-lg border-r-0">
+                                    <span id="searchIconGlobal" class="material-symbols-outlined">search</span>
+                                    <span id="searchSpinnerGlobal" class="material-symbols-outlined animate-spin hidden text-primary">progress_activity</span>
                                 </div>
                                 <input
-                                    class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 h-full placeholder:text-gray-500 dark:placeholder:text-gray-400 px-4 rounded-l-none border-l-0 pl-2 text-sm font-normal leading-normal"
-                                    placeholder="Buscar documento..." value="" />
+                                    id="searchInputGlobal"
+                                    name="search"
+                                    type="text"
+                                    autocomplete="off"
+                                    class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden {{ request('search') ? '' : 'rounded-r-lg' }} text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 h-full placeholder:text-gray-500 dark:placeholder:text-gray-400 px-4 rounded-l-none border-l-0 pl-2 text-sm font-normal leading-normal"
+                                    placeholder="Buscar documento..." value="{{ request('search') }}" />
+                                <button type="button" id="btnClearSearchGlobal" class="{{ request('search') ? 'flex' : 'hidden' }} items-center justify-center px-4 border border-gray-200 border-l-0 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-r-lg transition-colors" title="Limpiar búsqueda">
+                                    <span class="material-symbols-outlined text-sm">close</span>
+                                </button>
                             </div>
-                        </label>
+                        </form>
                     </div>
                     <div class="flex gap-3 items-center flex-wrap">
                         <button
@@ -40,47 +48,64 @@
                             <p class="text-gray-700 dark:text-gray-300 text-sm font-medium leading-normal">Prioridad</p>
                             <span class="material-symbols-outlined text-gray-500 dark:text-gray-400">expand_more</span>
                         </button>
-                        <button
+                        {{-- <button
                             class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 px-4">
                             <span
                                 class="material-symbols-outlined text-gray-500 dark:text-gray-400 text-sm">description</span>
                             <p class="text-gray-700 dark:text-gray-300 text-sm font-medium leading-normal">Tipo de
                                 Documento</p>
                             <span class="material-symbols-outlined text-gray-500 dark:text-gray-400">expand_more</span>
-                        </button>
+                        </button> --}}
 
                         {{-- Filtro: Tipo de Remitente --}}
                         <div class="relative" id="filtroRemitenteWrapper">
                             <button type="button" id="btnFiltroRemitente"
-                                class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 px-4">
-                                <span class="material-symbols-outlined text-gray-500 dark:text-gray-400 text-sm">person_search</span>
-                                <p id="btnFiltroRemitenteLabel" class="text-gray-700 dark:text-gray-300 text-sm font-medium leading-normal">Remitente</p>
-                                <span class="material-symbols-outlined text-gray-500 dark:text-gray-400">expand_more</span>
+                                class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg px-4 border transition-colors
+                                    {{ $tipoFiltro !== 'todos'
+                                        ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300'
+                                        : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                                <span class="material-symbols-outlined text-sm
+                                    {{ $tipoFiltro !== 'todos' ? 'text-blue-500' : 'text-gray-500 dark:text-gray-400' }}">person_search</span>
+                                <p id="btnFiltroRemitenteLabel"
+                                    class="text-sm font-medium leading-normal
+                                    {{ $tipoFiltro !== 'todos' ? 'text-blue-700 dark:text-blue-300 font-semibold' : 'text-gray-700 dark:text-gray-300' }}">
+                                    @if($tipoFiltro === 'persona') Persona Natural
+                                    @elseif($tipoFiltro === 'entidad') Entidad / Empresa
+                                    @else Remitente
+                                    @endif
+                                </p>
+                                <span class="material-symbols-outlined {{ $tipoFiltro !== 'todos' ? 'text-blue-400' : 'text-gray-500 dark:text-gray-400' }}">expand_more</span>
                             </button>
                             <div id="dropdownFiltroRemitente"
                                 class="hidden absolute right-0 z-20 mt-1 w-52 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
                                 <ul class="py-1 text-sm text-gray-700 dark:text-gray-300">
                                     <li><button type="button" data-tipo="todos"
-                                            class="filtro-remitente-btn w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 font-medium">Todos</button></li>
+                                            class="filtro-remitente-btn w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700
+                                                {{ $tipoFiltro === 'todos' ? 'font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'font-medium' }}">Todos</button>
+                                    </li>
                                     <li><button type="button" data-tipo="persona"
-                                            class="filtro-remitente-btn w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">Persona Natural</button></li>
+                                            class="filtro-remitente-btn w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700
+                                                {{ $tipoFiltro === 'persona' ? 'font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' : '' }}">Persona
+                                            Natural</button></li>
                                     <li><button type="button" data-tipo="entidad"
-                                            class="filtro-remitente-btn w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">Entidad / Empresa</button></li>
+                                            class="filtro-remitente-btn w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700
+                                                {{ $tipoFiltro === 'entidad' ? 'font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' : '' }}">Entidad
+                                            / Empresa</button></li>
                                 </ul>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div
-                    class="mt-6 flex-1 flex flex-col bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
-                    <div class="overflow-x-auto flex-1">
+                    class="mt-6 flex flex-col bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+                    <div class="overflow-x-auto overflow-y-auto max-h-[calc(100vh-280px)]">
                         <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                             <thead
                                 class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-50 dark:bg-gray-700 sticky top-0">
                                 <tr>
-                                    <th class="px-6 py-3 font-bold w-12 text-center" scope="col">Tipo</th>
                                     <th class="px-6 py-3 font-bold" scope="col">Asunto</th>
                                     <th class="px-6 py-3 font-bold" scope="col">Remitente</th>
+                                    <th class="px-6 py-3 font-bold" scope="col">Destinatarios</th>
                                     <th class="px-6 py-3 font-bold" scope="col">Fecha de Recepción</th>
                                     <th class="px-6 py-3 font-bold" scope="col">Prioridad</th>
                                     <th class="px-6 py-3 font-bold" scope="col">Estado</th>
@@ -91,30 +116,50 @@
                                     @php
                                         // --- Tipo de remitente ---
                                         $esPersona = !empty($rec->nombre_persona) || !empty($rec->doc_persona);
-                                        $tipoRow   = $esPersona ? 'persona' : 'entidad';
+                                        $tipoRow = $esPersona ? 'persona' : 'entidad';
 
                                         // --- Remitente display ---
                                         $remitenteDisplay = $esPersona
-                                            ? ($rec->nombre_persona ?: $rec->doc_persona)
-                                            : ($rec->nom_institucion ?: '—');
+                                            ? ($rec->nombre_persona ?:
+                                            $rec->doc_persona)
+                                            : ($rec->nom_institucion ?:
+                                            '—');
 
                                         // --- Estado badge ---
                                         $estadoNombre = $rec->estado_nomb ?? 'Sin estado';
                                         $low = strtolower($estadoNombre);
                                         if (str_contains($low, 'pendiente') || str_contains($low, 'recibido')) {
-                                            $estadoClases = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
-                                        } elseif (str_contains($low, 'tramite') || str_contains($low, 'proceso') || str_contains($low, 'tránsito')) {
-                                            $estadoClases = 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
-                                        } elseif (str_contains($low, 'finaliz') || str_contains($low, 'complet') || str_contains($low, 'resuel')) {
-                                            $estadoClases = 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+                                            $estadoClases =
+                                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+                                        } elseif (
+                                            str_contains($low, 'tramite') ||
+                                            str_contains($low, 'proceso') ||
+                                            str_contains($low, 'tránsito')
+                                        ) {
+                                            $estadoClases =
+                                                'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+                                        } elseif (
+                                            str_contains($low, 'finaliz') ||
+                                            str_contains($low, 'complet') ||
+                                            str_contains($low, 'resuel')
+                                        ) {
+                                            $estadoClases =
+                                                'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
                                         } elseif (str_contains($low, 'rechaz') || str_contains($low, 'cancel')) {
                                             $estadoClases = 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
-                                        } elseif (str_contains($low, 'leido') || str_contains($low, 'leído') || str_contains($low, 'visto')) {
-                                            $estadoClases = 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300';
+                                        } elseif (
+                                            str_contains($low, 'leido') ||
+                                            str_contains($low, 'leído') ||
+                                            str_contains($low, 'visto')
+                                        ) {
+                                            $estadoClases =
+                                                'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300';
                                         } elseif (str_contains($low, 'archiv')) {
-                                            $estadoClases = 'bg-gray-100 text-gray-700 dark:bg-gray-600 dark:text-gray-200';
+                                            $estadoClases =
+                                                'bg-gray-100 text-gray-700 dark:bg-gray-600 dark:text-gray-200';
                                         } else {
-                                            $estadoClases = 'bg-gray-100 text-gray-700 dark:bg-gray-600 dark:text-gray-200';
+                                            $estadoClases =
+                                                'bg-gray-100 text-gray-700 dark:bg-gray-600 dark:text-gray-200';
                                         }
 
                                         // --- Prioridad badge ---
@@ -122,12 +167,24 @@
                                         $priorClases = 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300';
                                         if ($priorNombre) {
                                             $pl = strtolower($priorNombre);
-                                            if (str_contains($pl, 'alta') || str_contains($pl, 'urgente') || str_contains($pl, 'critica') || str_contains($pl, 'crítica')) {
-                                                $priorClases = 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
-                                            } elseif (str_contains($pl, 'media') || str_contains($pl, 'normal') || str_contains($pl, 'moderada')) {
-                                                $priorClases = 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300';
+                                            if (
+                                                str_contains($pl, 'alta') ||
+                                                str_contains($pl, 'urgente') ||
+                                                str_contains($pl, 'critica') ||
+                                                str_contains($pl, 'crítica')
+                                            ) {
+                                                $priorClases =
+                                                    'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+                                            } elseif (
+                                                str_contains($pl, 'media') ||
+                                                str_contains($pl, 'normal') ||
+                                                str_contains($pl, 'moderada')
+                                            ) {
+                                                $priorClases =
+                                                    'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300';
                                             } elseif (str_contains($pl, 'baja') || str_contains($pl, 'bajo')) {
-                                                $priorClases = 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+                                                $priorClases =
+                                                    'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
                                             }
                                         }
 
@@ -137,37 +194,66 @@
                                             : '—';
                                     @endphp
                                     <tr data-tipo="{{ $tipoRow }}"
-                                        class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer bg-white dark:bg-gray-800">
-                                        <td class="px-6 py-4 text-center">
-                                            <span class="material-symbols-outlined text-gray-400">description</span>
-                                        </td>
+                                        data-id="{{ $rec->id_recibido }}"
+                                        data-asunto="{{ $rec->asunto ?? '' }}"
+                                        data-radicado-ext="{{ $rec->num_radicado_ext ?? '' }}"
+                                        data-radicado-int="{{ $rec->num_radicado ?? '' }}"
+                                        data-remitente="{{ $remitenteDisplay }}"
+                                        data-correo="{{ $rec->correo_persona ?? '' }}"
+                                        data-telefono="{{ $rec->tel_persona ?? '' }}"
+                                        data-fecha="{{ $fechaFormateada }}"
+                                        data-prioridad="{{ $priorNombre ?? '' }}"
+                                        data-prioridad-clases="{{ $priorClases }}"
+                                        data-estado="{{ $estadoNombre }}"
+                                        data-estado-clases="{{ $estadoClases }}"
+                                        data-tipo-remitente="{{ $esPersona ? 'persona' : 'entidad' }}"
+                                        data-tipo-doc="{{ $rec->tipo_nombre ?? '' }}"
+                                        data-archivo="{{ $rec->archivo ?? '' }}"
+                                        data-destinatarios="{{ $rec->destinatarios_nombres ?? '—' }}"
+                                        data-observaciones="{{ $rec->observaciones ?? '' }}"
+                                        class="fila-registro border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer bg-white dark:bg-gray-800 transition-colors">
                                         <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
                                             {{ $rec->asunto ?? '(Sin asunto)' }}
-                                            @if($rec->num_radicado_ext)
-                                                <span class="block text-xs text-gray-400 font-normal">Ext: {{ $rec->num_radicado_ext }}</span>
+                                            @if ($rec->num_radicado_ext)
+                                                <span class="block text-xs text-blue-600 font-normal">Ext:
+                                                    {{ $rec->num_radicado_ext }}</span>
                                             @endif
-                                            <span class="block text-xs text-gray-400 font-normal">Int: #{{ $rec->num_radicado_int }}</span>
+                                            <span class="block text-xs text-blue-600 font-normal">Int:
+                                                {{ $rec->num_radicado }}</span>
                                         </td>
                                         <td class="px-6 py-4">
-                                            <span class="font-medium text-gray-900 dark:text-white">{{ $remitenteDisplay }}</span>
-                                            @if($esPersona && $rec->correo_persona)
+                                            <span
+                                                class="font-medium text-gray-900 dark:text-white">{{ $remitenteDisplay }}</span>
+                                            @if ($esPersona && $rec->correo_persona)
                                                 <span class="block text-xs text-gray-400">{{ $rec->correo_persona }}</span>
                                             @endif
-                                            <span class="flex items-center gap-0.5 text-xs {{ $esPersona ? 'text-purple-500' : 'text-blue-500' }} mt-0.5">
-                                                <span class="material-symbols-outlined" style="font-size:13px">{{ $esPersona ? 'person' : 'business' }}</span>
+                                            <span
+                                                class="flex items-center gap-0.5 text-xs {{ $esPersona ? 'text-purple-500' : 'text-blue-500' }} mt-0.5">
+                                                <span class="material-symbols-outlined"
+                                                    style="font-size:13px">{{ $esPersona ? 'person' : 'business' }}</span>
                                                 {{ $esPersona ? 'Persona Natural' : 'Entidad / Empresa' }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4 text-gray-600 dark:text-gray-300 whitespace-nowrap">{{ $fechaFormateada }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-300 max-w-[200px]">
+                                            @if(isset($rec->destinatarios_nombres) && $rec->destinatarios_nombres !== '—' && !empty($rec->destinatarios_nombres))
+                                                {!! str_replace(', ', '<br>', e($rec->destinatarios_nombres)) !!}
+                                            @else
+                                                <span class="text-gray-400 italic">—</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-6 py-4 text-gray-600 dark:text-gray-300 whitespace-nowrap">
+                                            {{ $fechaFormateada }}</td>
                                         <td class="px-6 py-4">
-                                            @if($priorNombre)
-                                                <span class="{{ $priorClases }} text-xs font-medium px-2.5 py-0.5 rounded-full">{{ $priorNombre }}</span>
+                                            @if ($priorNombre)
+                                                <span
+                                                    class="{{ $priorClases }} text-xs font-medium px-2.5 py-0.5 rounded-full">{{ $priorNombre }}</span>
                                             @else
                                                 <span class="text-gray-400 text-xs italic">—</span>
                                             @endif
                                         </td>
                                         <td class="px-6 py-4">
-                                            <span class="{{ $estadoClases }} text-xs font-medium px-2.5 py-0.5 rounded-full">{{ $estadoNombre }}</span>
+                                            <span
+                                                class="{{ $estadoClases }} text-xs font-medium px-2.5 py-0.5 rounded-full">{{ $estadoNombre }}</span>
                                         </td>
                                     </tr>
                                 @empty
@@ -181,111 +267,120 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="border-t border-gray-200 dark:border-gray-700">
-                        <nav aria-label="Table navigation" class="flex items-center justify-between p-4">
-                            <span class="text-sm font-normal text-gray-500 dark:text-gray-400">Mostrando <span
-                                    class="font-semibold text-gray-900 dark:text-white">1-6</span> de <span
-                                    class="font-semibold text-gray-900 dark:text-white">45</span></span>
-                            <ul class="inline-flex -space-x-px text-sm h-8">
-                                <li><a class="flex items-center justify-center px-3 h-8 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                                        href="#">Anterior</a></li>
-                                <li><a aria-current="page"
-                                        class="flex items-center justify-center px-3 h-8 text-primary bg-primary/10 border border-primary hover:bg-primary/20 hover:text-primary-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white"
-                                        href="#">1</a></li>
-                                <li><a class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                                        href="#">2</a></li>
-                                <li><a class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                                        href="#">3</a></li>
-                                <li><a class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-                                        href="#">Siguiente</a></li>
-                            </ul>
-                        </nav>
+                    {{-- Paginación fuera del scroll, pegada al borde inferior de la card --}}
+                    <div id="paginacionRecibidos" class="px-6 py-3 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+                        {{ $recibidos->links() }}
                     </div>
                 </div>
             </div>
-            <div
-                class="w-80 border-l border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex flex-col h-full overflow-hidden">
-                <div class="p-6 flex flex-col h-full">
-                    <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Detalle del Documento</h2>
-                    <div class="flex-1 overflow-y-auto mb-6">
-                        <div
-                            class="bg-gray-50 dark:bg-gray-700/30 rounded-xl p-5 border border-gray-100 dark:border-gray-700">
-                            <div class="flex items-center gap-3 mb-4">
-                                <span class="material-symbols-outlined text-blue-500 text-3xl">picture_as_pdf</span>
-                                <div>
-                                    <h3 class="font-bold text-gray-900 dark:text-white text-base leading-tight">
-                                        Contrato de Arrendamiento 2024</h3>
-                                    <p class="text-xs text-gray-500 mt-1">ID: #DOC-84729</p>
-                                </div>
+
+            <aside id="asideDetalle"
+                class="w-72 shrink-0 border-l border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex flex-col sticky top-0 h-screen overflow-y-auto">
+
+                {{-- Estado vacío --}}
+                <div id="asideVacio" class="flex flex-col items-center justify-center h-full p-6 text-center">
+                    <span class="material-symbols-outlined text-5xl text-gray-300 dark:text-gray-600 mb-3">article</span>
+                    <p class="text-sm font-medium text-gray-400 dark:text-gray-500">Selecciona un registro de la tabla para ver su detalle</p>
+                </div>
+
+                {{-- Contenido dinámico (oculto hasta selección) --}}
+                <div id="asideContenido" class="hidden flex flex-col h-full">
+
+                    {{-- Cabecera del aside --}}
+                    <div class="px-5 pt-5 pb-3 border-b border-gray-100 dark:border-gray-700 flex items-start justify-between gap-2">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <span class="material-symbols-outlined text-blue-500 text-2xl shrink-0">description</span>
+                            <div class="min-w-0">
+                                <h2 id="aside-asunto" class="text-sm font-bold text-gray-900 dark:text-white leading-tight line-clamp-2"></h2>
+                                <p id="aside-radicados" class="text-xs text-blue-500 mt-0.5"></p>
                             </div>
-                            <div class="space-y-3 mt-4">
-                                <div class="flex flex-col">
-                                    <span
-                                        class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Remitente</span>
-                                    <span class="text-sm font-medium text-gray-900 dark:text-white">Inmobiliaria
-                                        Central S.A.</span>
-                                    <span class="text-xs text-gray-500">contacto@inmobiliariacentral.com</span>
-                                </div>
-                                <div class="flex flex-col">
-                                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Fecha
-                                        de Recepción</span>
-                                    <span class="text-sm font-medium text-gray-900 dark:text-white">24 Oct, 2023 -
-                                        09:30 AM</span>
-                                </div>
-                                <div class="flex gap-4">
-                                    <div class="flex flex-col">
-                                        <span
-                                            class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Prioridad</span>
-                                        <span
-                                            class="mt-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 text-xs font-medium px-2 py-0.5 rounded w-max">Alta</span>
-                                    </div>
-                                    <div class="flex flex-col">
-                                        <span
-                                            class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Estado</span>
-                                        <span
-                                            class="mt-1 bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 text-xs font-medium px-2 py-0.5 rounded w-max">Pendiente</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <hr class="my-4 border-gray-200 dark:border-gray-700" />
-                            <div class="flex flex-col">
-                                <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">Mensaje
-                                    / Resumen</span>
-                                <p
-                                    class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed bg-white dark:bg-gray-800 p-3 rounded border border-gray-200 dark:border-gray-700">
-                                    Adjunto enviamos el contrato de arrendamiento para las nuevas oficinas ubicadas en
-                                    el centro financiero. Por favor revisar las cláusulas 4 y 7 referentes a
-                                    modificaciones estructurales. Requiere firma antes del fin de mes.
-                                </p>
-                            </div>
-                            <button
-                                class="mt-4 w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-primary bg-primary/5 rounded-lg border border-primary/20 hover:bg-primary/10 transition-colors">
-                                <span class="material-symbols-outlined text-sm">visibility</span>
-                                Abrir Documento Completo
-                            </button>
                         </div>
-                    </div>
-                    <div class="flex flex-col gap-3 mt-auto pt-4 border-t border-gray-200 dark:border-gray-700">
-                        <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Acciones
-                            Rápidas</span>
-                        <button
-                            class="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold text-white bg-primary rounded-lg hover:bg-primary/90 focus:outline-none focus:ring-4 focus:ring-primary/30 shadow-sm transition-all">
-                            <span class="material-symbols-outlined text-base">assignment_ind</span>
-                            Asignar a Departamento
-                        </button>
-                        <button
-                            class="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-300 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 transition-all">
-                            <span class="material-symbols-outlined text-base">archive</span>
-                            Archivar Documento
-                        </button>
-                        <button
-                            class="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold text-green-700 bg-green-50 border border-green-200 dark:text-green-300 dark:bg-green-900/20 dark:border-green-800 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/40 focus:outline-none transition-all">
-                            <span class="material-symbols-outlined text-base">mark_email_read</span>
-                            Marcar como Leído
+                        <button id="btnCerrarAside" class="shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors" title="Cerrar">
+                            <span class="material-symbols-outlined text-base">close</span>
                         </button>
                     </div>
+
+                    {{-- Información del registro --}}
+                    <div class="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+
+                        {{-- Remitente --}}
+                        <div>
+                            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Remitente</span>
+                            <div class="flex items-center gap-1.5 mt-1">
+                                <span id="aside-tipo-icon" class="material-symbols-outlined text-xs"></span>
+                                <span id="aside-remitente" class="text-sm font-medium text-gray-900 dark:text-white"></span>
+                            </div>
+                            <p id="aside-correo" class="text-xs text-gray-400 mt-0.5 hidden"></p>
+                            <p id="aside-telefono" class="text-xs text-gray-400 hidden"></p>
+                        </div>
+
+                        {{-- Fecha --}}
+                        <div>
+                            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Fecha de Recepción</span>
+                            <p id="aside-fecha" class="text-sm font-medium text-gray-900 dark:text-white mt-1"></p>
+                        </div>
+
+                        {{-- Tipo de documento --}}
+                        <div id="aside-tipo-doc-wrap">
+                            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Tipo Documento</span>
+                            <p id="aside-tipo-doc" class="text-sm font-medium text-gray-900 dark:text-white mt-1"></p>
+                        </div>
+
+                        {{-- Destinatarios --}}
+                        <div id="aside-destinatarios-wrap">
+                            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Dirigido A</span>
+                            <div class="mt-1 flex items-start gap-1.5">
+                                <span class="material-symbols-outlined text-sm text-gray-400 mt-0.5">groups</span>
+                                <p id="aside-destinatarios" class="text-sm font-medium text-gray-900 dark:text-white leading-relaxed"></p>
+                            </div>
+                        </div>
+
+                        {{-- Observaciones --}}
+                        <div id="aside-observaciones-wrap" class="hidden">
+                            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Observaciones</span>
+                            <div class="mt-1 flex items-start gap-1.5">
+                                <span class="material-symbols-outlined text-sm text-gray-400 mt-0.5">comment</span>
+                                <p id="aside-observaciones" class="text-sm font-medium text-gray-900 dark:text-white leading-relaxed"></p>
+                            </div>
+                        </div>
+
+                        {{-- Prioridad + Estado --}}
+                        <div class="flex gap-4">
+                            <div>
+                                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Prioridad</span>
+                                <div class="mt-1">
+                                    <span id="aside-prioridad" class="text-xs font-medium px-2 py-0.5 rounded-full">—</span>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Estado</span>
+                                <div class="mt-1">
+                                    <span id="aside-estado" class="text-xs font-medium px-2 py-0.5 rounded-full"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Archivos Adjuntos --}}
+                        <div class="pt-2">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Documentos Adjuntos</span>
+                                <span id="aside-archivos-spinner" class="hidden material-symbols-outlined animate-spin text-blue-500" style="font-size: 14px;">progress_activity</span>
+                            </div>
+                            
+                            <div id="aside-archivos-lista" class="space-y-2">
+                                {{-- Se llena dinámicamente via JS --}}
+                            </div>
+                            
+                            <div id="aside-archivos-error" class="hidden mt-2 p-2 rounded-lg bg-red-50 text-red-600 text-xs flex items-center gap-1.5 border border-red-100 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400">
+                                <span class="material-symbols-outlined text-sm shrink-0">error</span>
+                                <span>Error al cargar documentos.</span>
+                            </div>
+                        </div>
+
+                    </div>
+
                 </div>
-            </div>
+            </aside>
 
             <script>
                 document.addEventListener("DOMContentLoaded", function() {
@@ -302,7 +397,7 @@
                     });
 
                     // Auto-abrir el modal si hay errores de validación del intento anterior
-                    @if ($errors->any() || session('success'))
+                    @if ($errors->any())
                         modal.classList.remove('hidden');
                         modal.classList.add('flex');
                         document.body.style.overflow = 'hidden';
@@ -331,6 +426,183 @@
                         document.body.style.overflow = '';
                     }
 
+
+                    // ===== ASIDE DETALLE DE REGISTRO =====
+                    const asideVacio     = document.getElementById('asideVacio');
+                    const asideContenido = document.getElementById('asideContenido');
+
+                    function poblarAside(fila) {
+                        const d = fila.dataset;
+                        document.querySelectorAll('.fila-registro').forEach(r => r.classList.remove('bg-blue-50', 'dark:bg-blue-900/10'));
+                        fila.classList.add('bg-blue-50', 'dark:bg-blue-900/10');
+
+                        // Guardamos todo el dataset en sessionStorage para mantenerlo entre páginas
+                        const dataToSave = { ...d };
+                        sessionStorage.setItem('externarec_selected', JSON.stringify(dataToSave));
+                        
+                        renderAsideData(dataToSave);
+                        cargarArchivosAside(d.id, d.archivo);
+                    }
+
+                    function renderAsideData(d) {
+                        document.getElementById('aside-asunto').textContent = d.asunto || '(Sin asunto)';
+                        let radTxt = '';
+                        if (d.radicadoInt) radTxt += 'Int: ' + d.radicadoInt;
+                        if (d.radicadoExt) radTxt += (radTxt ? '  ·  Ext: ' : 'Ext: ') + d.radicadoExt;
+                        document.getElementById('aside-radicados').textContent = radTxt;
+                        const esPersona = d.tipoRemitente === 'persona';
+                        const iconEl = document.getElementById('aside-tipo-icon');
+                        iconEl.textContent = esPersona ? 'person' : 'business';
+                        iconEl.className = 'material-symbols-outlined text-sm ' + (esPersona ? 'text-purple-500' : 'text-blue-500');
+                        document.getElementById('aside-remitente').textContent = d.remitente || '—';
+                        const correoEl = document.getElementById('aside-correo');
+                        if (d.correo) { correoEl.textContent = d.correo; correoEl.classList.remove('hidden'); } else { correoEl.classList.add('hidden'); }
+                        const telEl = document.getElementById('aside-telefono');
+                        if (d.telefono) { telEl.textContent = '📞 ' + d.telefono; telEl.classList.remove('hidden'); } else { telEl.classList.add('hidden'); }
+                        document.getElementById('aside-fecha').textContent = d.fecha || '—';
+                        const tipoDocWrap = document.getElementById('aside-tipo-doc-wrap');
+                        if (d.tipoDoc) { document.getElementById('aside-tipo-doc').textContent = d.tipoDoc; tipoDocWrap.classList.remove('hidden'); } else { tipoDocWrap.classList.add('hidden'); }
+                        
+                        const destWrap = document.getElementById('aside-destinatarios-wrap');
+                        if (d.destinatarios && d.destinatarios !== '—') {
+                            document.getElementById('aside-destinatarios').innerHTML = d.destinatarios.replace(/,/g, '<br>');
+                            destWrap.classList.remove('hidden');
+                        } else {
+                            destWrap.classList.add('hidden');
+                        }
+
+                        const obsWrap = document.getElementById('aside-observaciones-wrap');
+                        if (d.observaciones) {
+                            document.getElementById('aside-observaciones').textContent = d.observaciones;
+                            obsWrap.classList.remove('hidden');
+                        } else {
+                            obsWrap.classList.add('hidden');
+                        }
+
+                        const priorEl = document.getElementById('aside-prioridad');
+                        priorEl.textContent = d.prioridad || '—';
+                        priorEl.className = 'text-xs font-medium px-2 py-0.5 rounded-full ' + (d.prioridadClases || 'bg-gray-100 text-gray-600');
+                        const estadoEl = document.getElementById('aside-estado');
+                        estadoEl.textContent = d.estado || '—';
+                        estadoEl.className = 'text-xs font-medium px-2 py-0.5 rounded-full ' + (d.estadoClases || 'bg-gray-100 text-gray-600');
+                        asideVacio.classList.add('hidden');
+                        asideContenido.classList.remove('hidden');
+
+                        cargarArchivosAside(d.id, d.archivo);
+                    }
+
+                    function cargarArchivosAside(id, archivoPrincipalRow) {
+                        const lista = document.getElementById('aside-archivos-lista');
+                        const spinner = document.getElementById('aside-archivos-spinner');
+                        const errorEl = document.getElementById('aside-archivos-error');
+
+                        lista.innerHTML = '';
+                        errorEl.classList.add('hidden');
+                        spinner.classList.remove('hidden');
+
+                        // Si tenemos el archivo principal en el row de una vez lo mostramos (optimistic UI)
+                        if (archivoPrincipalRow) {
+                            const nombre = archivoPrincipalRow.split('/').pop();
+                            lista.innerHTML = `
+                                <div class="mb-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider mt-2">Documento Principal</div>
+                                <a href="/storage/${archivoPrincipalRow}" target="_blank" rel="noopener noreferrer"
+                                    class="flex items-center gap-2 p-2.5 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors group mb-2 text-left">
+                                    <span class="material-symbols-outlined text-blue-500 text-base flex-shrink-0">picture_as_pdf</span>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-xs font-medium text-blue-700 dark:text-blue-300 truncate group-hover:underline">${nombre}</p>
+                                    </div>
+                                    <span class="material-symbols-outlined text-blue-400 text-xs flex-shrink-0">open_in_new</span>
+                                </a>
+                            `;
+                        }
+
+                        fetch('{{ url('/remitente/externarec') }}/' + id + '/archivos', {
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        })
+                        .then(r => r.json())
+                        .then(data => {
+                            spinner.classList.add('hidden');
+                            
+                            const tienePrincipal = !!data.archivo_principal;
+                            const tieneAnexos = data.anexos && data.anexos.length > 0;
+
+                            if (!tienePrincipal && !tieneAnexos) {
+                                lista.innerHTML = '<div class="text-xs text-gray-400 dark:text-gray-500 italic p-3 text-center bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-dashed border-gray-200 dark:border-gray-700">Sin archivos adjuntos.</div>';
+                                return;
+                            }
+
+                            let html = '';
+
+                            if (tienePrincipal) {
+                                const href = '/storage/' + data.archivo_principal;
+                                const nombre = data.archivo_principal.split('/').pop();
+                                html += `
+                                    <div class="mb-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider mt-2">Documento Principal</div>
+                                    <a href="${href}" target="_blank" rel="noopener noreferrer"
+                                        class="flex items-center gap-2 p-2.5 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors group mb-2 text-left">
+                                        <span class="material-symbols-outlined text-blue-500 text-base flex-shrink-0">picture_as_pdf</span>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-xs font-medium text-blue-700 dark:text-blue-300 truncate group-hover:underline">${nombre}</p>
+                                        </div>
+                                        <span class="material-symbols-outlined text-blue-400 text-xs flex-shrink-0">open_in_new</span>
+                                    </a>
+                                `;
+                            }
+
+                            if (tieneAnexos) {
+                                html += `<div class="mb-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider mt-3">Anexos</div>`;
+                                data.anexos.forEach(a => {
+                                    const href = '/storage/' + a.ruta_archivo;
+                                    html += `
+                                        <a href="${href}" target="_blank" rel="noopener noreferrer"
+                                            class="flex items-center gap-2 p-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group mb-2 text-left">
+                                            <span class="material-symbols-outlined text-gray-400 text-base flex-shrink-0">attach_file</span>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate group-hover:underline">${a.nombre_original}</p>
+                                            </div>
+                                            <span class="material-symbols-outlined text-gray-400 text-xs flex-shrink-0">open_in_new</span>
+                                        </a>
+                                    `;
+                                });
+                            }
+                            
+                            lista.innerHTML = html;
+                        })
+                        .catch(() => {
+                            spinner.classList.add('hidden');
+                            if (!archivoPrincipalRow) {
+                                errorEl.classList.remove('hidden');
+                            }
+                        });
+                    }
+
+                    document.getElementById('tablaRecibidosBody').addEventListener('click', function(e) {
+                        const fila = e.target.closest('.fila-registro');
+                        if (fila) poblarAside(fila);
+                    });
+
+                    document.getElementById('btnCerrarAside').addEventListener('click', function() {
+                        asideVacio.classList.remove('hidden');
+                        asideContenido.classList.add('hidden');
+                        document.querySelectorAll('.fila-registro').forEach(r => r.classList.remove('bg-blue-50', 'dark:bg-blue-900/10'));
+                        sessionStorage.removeItem('externarec_selected');
+                    });
+
+                    // Intentar recuperar el estado previo al cargar la página
+                    const storedAside = sessionStorage.getItem('externarec_selected');
+                    if (storedAside) {
+                        try {
+                            const data = JSON.parse(storedAside);
+                            renderAsideData(data);
+                            // Resaltar la fila si existe en la página actual
+                            const sRow = document.querySelector(`.fila-registro[data-id="${data.id}"]`);
+                            if (sRow) {
+                                sRow.classList.add('bg-blue-50', 'dark:bg-blue-900/10');
+                            }
+                        } catch (e) {
+                            sessionStorage.removeItem('externarec_selected');
+                        }
+                    }
                     // ===== BUSCADOR DE CIUDAD PROVENIENTE =====
                     const btnToggleCiudades = document.getElementById('btnToggleCiudades');
                     const dropdownCiudades = document.getElementById('ciudadesDropdown');
@@ -533,30 +805,26 @@
                         inicializarBuscadorDestinatario(clone);
                     });
 
-                    // ===== MANEJADOR DE ANEXOS MÚLTIPLES =====
-                    /**
-                     * Muestra un "pill" por cada archivo seleccionado.
-                     * Al hacer clic en la X del pill, el archivo se elimina de la lista.
-                     */
-                    // ===== MANEJADOR DE ANEXOS MÚLTIPLES =====
+                    // ===== MANEJADOR DE ANEXO (máximo 1) =====
 
-                    // 1. Declaramos el acumulador FUERA de la función para que no se reinicie
+                    // Acumulador global (solo guardará 1 archivo a la vez)
                     window.dtAcumulador = new DataTransfer();
 
                     window.handleFileSelect = function(event, listId, inputId) {
                         const input = document.getElementById(inputId);
                         const container = document.getElementById(listId);
 
-                        // 2. Agregamos los archivos recién elegidos al acumulador existente
-                        Array.from(event.target.files).forEach(f => window.dtAcumulador.items.add(f));
+                        // Reemplazar siempre por el nuevo archivo (límite = 1)
+                        window.dtAcumulador = new DataTransfer();
+                        const newFile = event.target.files[0];
+                        if (newFile) window.dtAcumulador.items.add(newFile);
 
-                        // 3. Actualizamos el input con TODOS los archivos acumulados
                         input.files = window.dtAcumulador.files;
 
-                        renderPills(input, container);
+                        renderPills(input, container, inputId);
                     };
 
-                    function renderPills(input, container) {
+                    function renderPills(input, container, inputId) {
                         container.innerHTML = '';
                         Array.from(input.files).forEach((file, index) => {
                             const pill = document.createElement('div');
@@ -575,11 +843,16 @@
                                     if (i !== index) newDt.items.add(f);
                                 });
                                 input.files = newDt.files;
-
-                                // 4. MUY IMPORTANTE: Sincronizar el acumulador al borrar un archivo
                                 window.dtAcumulador = newDt;
 
-                                renderPills(input, container);
+                                // Resetear el conteo de folios del archivo quitado
+                                if (inputId === 'anexos_nuevos_input' && typeof window.resetFoliosAnexo === 'function') {
+                                    window.resetFoliosAnexo();
+                                } else if (typeof window.resetFoliosPrincipal === 'function') {
+                                    window.resetFoliosPrincipal();
+                                }
+
+                                renderPills(input, container, inputId);
                             });
 
                             container.appendChild(pill);
@@ -658,68 +931,128 @@
                     }
                 });
 
-                // ===== FILTRO DE REMITENTE (Persona Natural / Entidad) =====
-                document.addEventListener('DOMContentLoaded', function () {
+                // ===== FILTRO DE REMITENTE — navegación por URL =====
+                document.addEventListener('DOMContentLoaded', function() {
                     const btnFiltro = document.getElementById('btnFiltroRemitente');
                     const dropdown  = document.getElementById('dropdownFiltroRemitente');
-                    const label     = document.getElementById('btnFiltroRemitenteLabel');
                     const wrapper   = document.getElementById('filtroRemitenteWrapper');
 
                     if (!btnFiltro) return;
 
                     // Toggle dropdown
-                    btnFiltro.addEventListener('click', function (e) {
+                    btnFiltro.addEventListener('click', function(e) {
                         e.stopPropagation();
                         dropdown.classList.toggle('hidden');
                     });
 
                     // Cerrar si se hace clic fuera
-                    document.addEventListener('click', function (e) {
+                    document.addEventListener('click', function(e) {
                         if (wrapper && !wrapper.contains(e.target)) {
                             dropdown.classList.add('hidden');
                         }
                     });
 
-                    // Opciones del filtro
-                    document.querySelectorAll('.filtro-remitente-btn').forEach(function (btn) {
-                        btn.addEventListener('click', function () {
+                    // Al seleccionar opción â†’ navegar a URL con ?tipo=
+                    document.querySelectorAll('.filtro-remitente-btn').forEach(function(btn) {
+                        btn.addEventListener('click', function() {
                             const tipo = btn.dataset.tipo;
+                            const url  = new URL(window.location.href);
 
-                            // Actualizar label del botón
-                            const labels = { todos: 'Remitente', persona: 'Persona Natural', entidad: 'Entidad / Empresa' };
-                            label.textContent = labels[tipo] || 'Remitente';
-                            dropdown.classList.add('hidden');
-
-                            // Filtrar filas
-                            const filas = document.querySelectorAll('#tablaRecibidosBody tr[data-tipo]');
-                            let visibles = 0;
-                            filas.forEach(function (fila) {
-                                if (tipo === 'todos' || fila.dataset.tipo === tipo) {
-                                    fila.classList.remove('hidden');
-                                    visibles++;
-                                } else {
-                                    fila.classList.add('hidden');
-                                }
-                            });
-
-                            // Mostrar/ocultar empty-state dinámico
-                            let emptyDyn = document.getElementById('emptyDynamicRow');
-                            if (visibles === 0) {
-                                if (!emptyDyn) {
-                                    emptyDyn = document.createElement('tr');
-                                    emptyDyn.id = 'emptyDynamicRow';
-                                    emptyDyn.innerHTML = '<td colspan="6" class="px-6 py-14 text-center text-gray-400 dark:text-gray-500">' +
-                                        '<span class="material-symbols-outlined text-5xl mb-3 block">search_off</span>' +
-                                        '<p class="text-sm font-medium">No hay registros de tipo "' + (labels[tipo] || tipo) + '".</p>' +
-                                        '</td>';
-                                    document.getElementById('tablaRecibidosBody').appendChild(emptyDyn);
-                                }
-                                emptyDyn.classList.remove('hidden');
-                            } else if (emptyDyn) {
-                                emptyDyn.classList.add('hidden');
+                            if (tipo === 'todos') {
+                                url.searchParams.delete('tipo');
+                            } else {
+                                url.searchParams.set('tipo', tipo);
                             }
+
+                            // Siempre volver a la página 1 al cambiar filtro
+                            url.searchParams.delete('page');
+
+                            window.location.href = url.toString();
                         });
                     });
+
+                    // ===== BUSQUEDA GLOBAL EN TIEMPO REAL =====
+                    const searchInputGlobal = document.getElementById('searchInputGlobal');
+                    const formSearchGlobal = document.getElementById('formSearchGlobal');
+                    const btnClearSearchGlobal = document.getElementById('btnClearSearchGlobal');
+                    const searchIconGlobal = document.getElementById('searchIconGlobal');
+                    const searchSpinnerGlobal = document.getElementById('searchSpinnerGlobal');
+                    const tablaRecibidosBody = document.getElementById('tablaRecibidosBody');
+                    const paginacionRecibidos = document.getElementById('paginacionRecibidos');
+                    const asideVacioForm = document.getElementById('asideVacio');
+                    const asideContenidoForm = document.getElementById('asideContenido');
+
+                    if (searchInputGlobal) {
+                        let debounceTimer;
+
+                        searchInputGlobal.addEventListener('input', function() {
+                            clearTimeout(debounceTimer);
+                            const query = this.value;
+
+                            // Mostrar/Ocultar botón de limpiar
+                            if (query.length > 0) {
+                                btnClearSearchGlobal.classList.remove('hidden');
+                                btnClearSearchGlobal.classList.add('flex');
+                                searchInputGlobal.classList.remove('rounded-r-lg');
+                            } else {
+                                btnClearSearchGlobal.classList.add('hidden');
+                                btnClearSearchGlobal.classList.remove('flex');
+                                searchInputGlobal.classList.add('rounded-r-lg');
+                            }
+
+                            // Cerrar el aside al buscar para evitar desincronización
+                            if(asideVacioForm && asideContenidoForm) {
+                                asideVacioForm.classList.remove('hidden');
+                                asideContenidoForm.classList.add('hidden');
+                            }
+
+                            debounceTimer = setTimeout(() => {
+                                // Mostrar spinner
+                                searchIconGlobal.classList.add('hidden');
+                                searchSpinnerGlobal.classList.remove('hidden');
+
+                                // Construir URL con los parámetros actuales
+                                const url = new URL(window.location.href);
+                                url.searchParams.set('search', query);
+                                url.searchParams.delete('page'); // reset pagination
+
+                                fetch(url.toString(), {
+                                    headers: {
+                                        'X-Requested-With': 'XMLHttpRequest'
+                                    }
+                                })
+                                .then(response => response.text())
+                                .then(html => {
+                                    // Parse HTML
+                                    const parser = new DOMParser();
+                                    const doc = parser.parseFromString(html, 'text/html');
+
+                                    // Extraer nuevas filas y nueva paginación
+                                    const newTbody = doc.getElementById('tablaRecibidosBody');
+                                    const newPagination = doc.getElementById('paginacionRecibidos');
+
+                                    if (newTbody) tablaRecibidosBody.innerHTML = newTbody.innerHTML;
+                                    if (newPagination) paginacionRecibidos.innerHTML = newPagination.innerHTML;
+
+                                    // Actualizar URL sin recargar
+                                    window.history.pushState({}, '', url.toString());
+                                })
+                                .catch(err => console.error('Error al buscar:', err))
+                                .finally(() => {
+                                    // Ocultar spinner
+                                    searchSpinnerGlobal.classList.add('hidden');
+                                    searchIconGlobal.classList.remove('hidden');
+                                });
+                            }, 400); // 400ms delay
+                        });
+
+                        if (btnClearSearchGlobal) {
+                            btnClearSearchGlobal.addEventListener('click', function() {
+                                searchInputGlobal.value = '';
+                                searchInputGlobal.dispatchEvent(new Event('input', { bubbles: true }));
+                            });
+                        }
+                    }
                 });
             </script>
         @endsection
@@ -994,36 +1327,124 @@
                                 <div class="md:col-span-1">
                                     <label
                                         class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Documento
-                                        Principal (PDF, JPG, PNG)</label>
-                                    <input type="file" name="archivo" accept=".pdf,.jpg,.jpeg,.png"
+                                        Principal (PDF)</label>
+                                    <input type="file" name="archivo" accept=".pdf"
                                         class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-blue-700 file:cursor-pointer cursor-pointer border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900">
-                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Tamaño máximo: 5MB</p>
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Solo PDF · Tamaño máximo: 5MB
+                                    </p>
                                 </div>
 
                                 <div class="md:col-span-1">
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Anexos
-                                        (PDFs Opcionales)</label>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Anexo
+                                        Adicional (PDF opcional)</label>
                                     <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-3 text-center hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors cursor-pointer relative"
                                         onclick="document.getElementById('anexos_nuevos_input').click()">
                                         <span class="material-symbols-outlined text-gray-400 text-2xl mb-1">note_add</span>
-                                        <p class="text-sm text-gray-600 dark:text-gray-400">Clic aquí para añadir PDFs</p>
-                                        <input type="file" id="anexos_nuevos_input" name="anexos[]" multiple
-                                            accept=".pdf" class="hidden"
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">Clic aquí para añadir 1 PDF</p>
+                                        <input type="file" id="anexos_nuevos_input" name="anexos[]" accept=".pdf"
+                                            class="hidden"
                                             onchange="handleFileSelect(event, 'anexosNuevosList', 'anexos_nuevos_input')">
                                     </div>
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Máximo 1 anexo · 5 MB</p>
                                     <div id="anexosNuevosList" class="mt-2 flex flex-wrap gap-2 empty:hidden"></div>
                                 </div>
 
                                 <div class="md:col-span-1">
                                     <label class="flex flex-col">
                                         <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
-                                            Folios *</p>
-                                        <input type="number" name="folio" required
-                                            class="form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal"
-                                            placeholder="Número de hojas" />
+                                            Folios
+                                            <span class="text-xs font-normal text-slate-400 dark:text-slate-500 ml-1">(calculado automáticamente)</span>
+                                        </p>
+                                        <div class="relative">
+                                            <input type="text" name="folio" id="inputFolios" readonly
+                                                class="form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-700/50 h-12 px-3.5 text-base font-semibold text-center cursor-not-allowed select-none"
+                                                placeholder="—" />
+                                            <span id="foliosSpinner"
+                                                class="hidden absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined animate-spin text-blue-400 text-lg">progress_activity</span>
+                                        </div>
+                                        <p class="mt-1 text-xs text-slate-400 dark:text-slate-500">Se suma al adjuntar PDFs</p>
                                     </label>
                                 </div>
                             </div>
+
+                            <script>
+                                document.addEventListener('DOMContentLoaded', () => {
+                                    // â”€â”€ Configurar PDF.js worker â”€â”€
+                                    pdfjsLib.GlobalWorkerOptions.workerSrc =
+                                        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+                                    const inputPrincipal = document.querySelector('input[name="archivo"]');
+                                    const inputAnexos    = document.getElementById('anexos_nuevos_input');
+                                    const inputFolios    = document.getElementById('inputFolios');
+                                    const spinner        = document.getElementById('foliosSpinner');
+
+                                    // Estado de páginas por tipo de archivo
+                                    let paginasPrincipal = 0;
+                                    let paginasAnexo     = 0;
+                                    let cargando         = 0; // contador de operaciones async en curso
+
+                                    // â”€â”€ UI helpers â”€â”€
+                                    const iniciarCarga = () => {
+                                        cargando++;
+                                        spinner.classList.remove('hidden');
+                                    };
+                                    const finalizarCarga = () => {
+                                        cargando = Math.max(0, cargando - 1);
+                                        if (cargando === 0) spinner.classList.add('hidden');
+                                    };
+
+                                    // â”€â”€ Actualizar el valor del input â”€â”€
+                                    const actualizar = () => {
+                                        const total = paginasPrincipal + paginasAnexo;
+                                        inputFolios.value = total > 0 ? total : '';
+                                    };
+
+                                    // â”€â”€ Contar páginas de un PDF â”€â”€
+                                    const contarPaginas = async (file) => {
+                                        if (!file || file.type !== 'application/pdf') return 0;
+                                        try {
+                                            const buf = await file.arrayBuffer();
+                                            const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+                                            return pdf.numPages;
+                                        } catch (err) {
+                                            console.error('[PDF.js] Error al leer:', err);
+                                            return 0;
+                                        }
+                                    };
+
+                                    // â”€â”€ Listener: documento principal â”€â”€
+                                    if (inputPrincipal) {
+                                        inputPrincipal.addEventListener('change', async (e) => {
+                                            const file = e.target.files[0];
+                                            iniciarCarga();
+                                            paginasPrincipal = file ? await contarPaginas(file) : 0;
+                                            finalizarCarga();
+                                            actualizar();
+                                        });
+                                    }
+
+                                    // â”€â”€ Listener: anexo â”€â”€
+                                    if (inputAnexos) {
+                                        inputAnexos.addEventListener('change', async (e) => {
+                                            const file = e.target.files[0];
+                                            iniciarCarga();
+                                            paginasAnexo = file ? await contarPaginas(file) : 0;
+                                            finalizarCarga();
+                                            actualizar();
+                                        });
+                                    }
+
+                                    // â”€â”€ Funciones globales llamadas desde renderPills al pulsar X â”€â”€
+                                    window.resetFoliosPrincipal = () => {
+                                        paginasPrincipal = 0;
+                                        actualizar();
+                                    };
+                                    window.resetFoliosAnexo = () => {
+                                        paginasAnexo = 0;
+                                        actualizar();
+                                    };
+                                });
+                            </script>
 
                             <div
                                 class="flex items-center justify-end gap-4 pt-6 border-t border-slate-200 dark:border-slate-800">

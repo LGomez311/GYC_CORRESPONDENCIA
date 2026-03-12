@@ -8,6 +8,8 @@
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
     <link href="https://fonts.googleapis.com" rel="preconnect" />
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,100..900;1,100..900&display=swap"
@@ -85,7 +87,7 @@
             </div>
 
             {{-- Contenido --}}
-            <main class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+            <main class="flex-1 flex overflow-hidden">
                 @yield('content')
             </main>
 

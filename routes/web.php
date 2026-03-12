@@ -407,4 +407,6 @@ Route::prefix('remitente')
         Route::get('/empleados/buscar', [ExternarecController::class, 'buscarEmpleados'])->name('externarec.empleados.buscar');
 
         Route::get('/ciudades/buscar', [ExternarecController::class, 'buscarCiudades'])->name('externarec.ciudades.buscar');
+
+        Route::get('/externarec/{id}/archivos', [ExternarecController::class, 'getArchivos'])->name('externarec.archivos');
     });
