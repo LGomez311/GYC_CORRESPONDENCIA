@@ -27,11 +27,11 @@ class AdminCorrespondenciaController extends Controller
         $nitEmpresa = $user->nit_empresa;
 
         // Recibido (Externa)
-        $recibidos = Recibido::with(['dirigidoA', 'registradoPor', 'estado', 'ciudad'])
+        $recibidos = Recibido::with(['destinatarios', 'registradoPor', 'estado', 'ciudad'])
             ->whereHas('registradoPor', function($query) use ($nitEmpresa) {
                 $query->where('nit_empresa', $nitEmpresa);
             })
-            ->orWhereHas('dirigidoA', function($query) use ($nitEmpresa) {
+            ->orWhereHas('destinatarios', function($query) use ($nitEmpresa) {
                 $query->where('nit_empresa', $nitEmpresa);
             })
             ->get()
@@ -44,8 +44,8 @@ class AdminCorrespondenciaController extends Controller
                     'ciudad' => $item->ciudad ? $item->ciudad->ciudad_nom : $item->ciudad_proveniente,
                     'asunto' => $item->asunto,
                     'fecha' => $item->fecha_hora_recib,
-                    'destinatario_nombre' => $item->dirigidoA ? $item->dirigidoA->emple_nombres . ' ' . $item->dirigidoA->emple_apellidos : 'N/A',
-                    'doc_destinatario' => $item->doc_quien_dirige,
+                    'destinatario_nombre' => $item->destinatarios->count() > 0 ? $item->destinatarios->first()->emple_nombres . ' ' . $item->destinatarios->first()->emple_apellidos : 'N/A',
+                    'doc_destinatario' => $item->destinatarios->count() > 0 ? $item->destinatarios->first()->emple_doc : null,
                     'folio' => $item->folio,
                     'anexo' => $item->anexo,
                     'estado_nomb' => $item->estado ? $item->estado->estado_nomb : 'Desconocido',

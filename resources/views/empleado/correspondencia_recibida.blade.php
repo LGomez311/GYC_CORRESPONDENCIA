@@ -238,10 +238,10 @@
                                     Remitente: {{ $item->registradoPor->rem_nombres }} {{ $item->registradoPor->rem_apellidos }}
                                 </div>
                                 @endif
-                                @if($item->dirigidoA)
+                                @if($item->destinatarios && $item->destinatarios->count() > 0)
                                 <div class="text-xs text-blue-600 dark:text-blue-400 flex items-center gap-1 mt-1" title="Dirigido a">
                                     <span class="material-symbols-outlined text-[14px]">forward_to_inbox</span>
-                                    Para: {{ $item->dirigidoA->emple_nombres }} {{ $item->dirigidoA->emple_apellidos }}
+                                    Para: {{ $item->destinatarios->first()->emple_nombres }} {{ $item->destinatarios->first()->emple_apellidos }}
                                 </div>
                                 @endif
                             </td>

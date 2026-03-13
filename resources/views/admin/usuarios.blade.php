@@ -97,44 +97,58 @@
                     <tbody id="tableEmpleados" class="divide-y divide-[#cfd7e7] dark:divide-gray-800">
                         @forelse($empleados as $empleado)
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" data-doc="{{ $empleado->emple_doc }}">
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4" data-label="Usuario">
                                 <div class="flex items-center gap-3">
                                     @if($empleado->emple_img)
                                         <img src="{{ asset('storage/' . $empleado->emple_img) }}" alt="Foto" class="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-gray-700">
                                     @else
-                                        <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-gray-800 flex items-center justify-center font-bold text-xs text-[#4c669a]">
-                                            {{ strtoupper(substr($empleado->emple_nombres, 0, 1) . substr($empleado->emple_apellidos, 0, 1)) }}
+                                        <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                                            {{ substr($empleado->emple_nombres, 0, 1) }}
                                         </div>
                                     @endif
                                     <div class="flex flex-col">
-                                        <span class="text-sm font-bold text-[#0d121b] dark:text-white">{{ $empleado->emple_nombres }} {{ $empleado->emple_apellidos }} </span>
-                                        <span class="text-xs text-[#4c669a] dark:text-gray-400">Documento: {{ $empleado->emple_doc }}</span>
+                                        <span class="text-sm font-bold dark:text-white">
+                                            {{ $empleado->emple_nombres }} {{ $empleado->emple_apellidos }}
+                                        </span>
+                                        <span class="text-xs text-[#4c669a]">
+                                            {{ $empleado->emple_correo }}
+                                        </span>
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-sm text-[#4c669a]">
-                                {{ $empleado->emple_correo }}
+                            <td class="px-6 py-4" data-label="Documento">
+                                <div class="flex flex-col">
+                                    <span class="text-sm text-[#0d121b] dark:text-white font-medium">
+                                        {{ implode(' ', str_split($empleado->emple_doc, 3)) }}
+                                    </span>
+                                </div>
                             </td>
-                            <td class="px-6 py-4">
-                                <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
-                                    {{ $empleado->rol->rol_nom ?? 'Sin Rol' }}
+                            <td class="px-6 py-4" data-label="Rol / Área">
+                                <div class="flex flex-col gap-1">
+                                    <span
+                                        class="inline-flex w-max items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase
+                                        {{ $empleado->rol->rol_nom === 'sadmin'
+                                            ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400'
+                                            : ($empleado->rol->rol_nom === 'admin'
+                                                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400'
+                                                : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400') }}">
+                                        {{ $empleado->rol->rol_nom }}
+                                    </span>
+                                    <span class="text-xs text-[#4c669a]">
+                                        {{ optional($empleado->area)->area_nom ?? 'Sin área' }}
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4" data-label="Estado">
+                                <span
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border
+                                    {{ $empleado->emple_estado == 'activo'
+                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800'
+                                        : 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800' }}">
+                                    <span
+                                        class="w-1.5 h-1.5 rounded-full {{ $empleado->emple_estado == 'activo' ? 'bg-emerald-500' : 'bg-red-500' }}"></span>
+                                    {{ ucfirst($empleado->emple_estado) }}
                                 </span>
-                            </td>
-                            <td class="px-6 py-4 text-sm text-[#4c669a]">{{ $empleado->area->area_nom ?? 'N/A' }}</td>
-                            <td class="px-6 py-4 text-xs text-[#4c669a]">
-                                <div class="font-bold text-[#0d121b] dark:text-white">{{ $empleado->empresa->nomb_empresa ?? 'N/A' }}</div>
-                                <div>NIT: {{ $empleado->nit_empresa ?? 'N/A' }}</div>
-                            </td>
-                            <td class="px-6 py-4">
-                                @if($empleado->emple_estado == 1)
-                                    <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
-                                        {{ $empleado->estado->estado_nomb ?? 'Activo' }}
-                                    </span>
-                                @else
-                                    <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">
-                                        {{ $empleado->estado->estado_nomb ?? 'Inactivo' }}
-                                    </span>
-                                @endif
                             </td>
                             <td class="px-6 py-4 text-right">
                                 <div class="flex items-center justify-end gap-2">
@@ -209,7 +223,7 @@
                 </div>
             </div>
             <div class="overflow-x-auto w-full">
-                <table class="w-full text-left border-collapse min-w-full whitespace-nowrap">
+                <table class="w-full text-left border-collapse min-w-full whitespace-nowrap responsive-table">
                     <thead>
                         <tr class="bg-slate-50 dark:bg-background-dark/50 border-b border-[#cfd7e7] dark:border-gray-800">
                             <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Nombre Completo</th>
@@ -242,20 +256,45 @@
                             <td class="px-6 py-4 text-sm text-[#4c669a]">{{ $rem->rem_tel }}</td>
                             <td class="px-6 py-4 text-xs text-[#4c669a]">
                                 <div class="font-bold text-[#0d121b] dark:text-white">{{ $rem->empresa->nomb_empresa ?? 'N/A' }}</div>
-                                <div>NIT: {{ $rem->nit_empresa ?? 'N/A' }}</div>
+                            <td class="px-6 py-4" data-label="Nombre Completo">
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-bold text-[#0d121b] dark:text-white">{{ $rem->rem_nombres }} {{ $rem->rem_apellidos }}</span>
+                                    <span class="text-xs text-[#4c669a] dark:text-gray-400">Documento: {{ $rem->rem_doc }}</span>
+                                </div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4" data-label="Correo Electrónico">
+                                <div class="flex flex-col">
+                                    <span class="text-sm text-[#4c669a] dark:text-gray-300">{{ $rem->rem_correo }}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4" data-label="Ciudad">
+                                <span class="px-2.5 py-1 text-xs font-medium rounded border border-[#cfd7e7] dark:border-gray-700 bg-white dark:bg-[#161d2b] text-[#4c669a] dark:text-gray-300">
+                                    {{ $rem->ciudad->ciudad_nom ?? 'No definida' }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-[#0d121b] dark:text-white" data-label="Teléfono">
+                                {{ $rem->rem_tel ?: 'No registrado' }}
+                            </td>
+                            <td class="px-6 py-4" data-label="Empresa">
+                                <div class="flex flex-col">
+                                    <span class="font-bold text-[#0d121b] dark:text-white text-sm">{{ $rem->empresa->nomb_empresa ?? 'Ninguna' }}</span>
+                                    @if($rem->empresa)
+                                    <span class="text-xs text-[#4c669a] dark:text-gray-400">NIT: {{ $rem->empresa->nit_empresa }}</span>
+                                    @endif
+                                </div>
+                            </td>
+                            <td class="px-6 py-4" data-label="Estado">
                                 @if($rem->rem_estado == 1)
-                                    <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
-                                        Activo
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Activo
                                     </span>
                                 @else
-                                    <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">
-                                        Inactivo
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> Inactivo
                                     </span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-right">
+                            <td class="px-6 py-4 text-right actions-cell" data-label="Acciones">
                                 <div class="flex items-center justify-end gap-2">
                                     <button class="p-2 text-[#4c669a] hover:text-primary transition-colors btn-view-details" title="Ver Detalles"
                                         data-type="remitente"
