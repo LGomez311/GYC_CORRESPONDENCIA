@@ -18,7 +18,7 @@ class ExternarecController extends Controller
     {
         $tipos     = Tipo::all();
         $estados   = Estado::all();
-        $ciudades  = Ciudad::orderBy('ciudad_nom')->get();
+        $ciudades  = Ciudad::with('departamento')->orderBy('ciudad_nom')->get();
         $radicados = DB::table('radicados')->orderBy('id_radicado')->get();
 
         // Fetch the logged-in remitente to scope records
@@ -100,7 +100,29 @@ class ExternarecController extends Controller
 
         $recibidos = $query->paginate(4)->appends(['tipo' => $tipoFiltro, 'search' => $searchQuery]);
 
-        return view('remitente.externarec', compact('tipos', 'estados', 'ciudades', 'radicados', 'recibidos', 'tipoFiltro'));
+        $empleadosList = Empleado::with('area')->where('emple_rol', '!=', 1)->get()->map(function($e) {
+            return [
+                'emple_doc' => (string) $e->emple_doc,
+                'emple_nombres' => $e->emple_nombres,
+                'emple_apellidos' => $e->emple_apellidos,
+                'tipo' => 'empleado',
+                'area_nombre' => $e->area ? $e->area->area_nom : null
+            ];
+        });
+
+        $remitentesList = DB::table('remitente')->get()->map(function($r) {
+            return [
+               'emple_doc' => (string) $r->rem_doc,
+               'emple_nombres' => $r->rem_nombres,
+               'emple_apellidos' => $r->rem_apellidos,
+               'tipo' => 'remitente',
+               'area_nombre' => null
+            ];
+        });
+
+        $todosDestinatarios = $empleadosList->concat($remitentesList)->sortBy('emple_nombres')->values();
+
+        return view('remitente.externarec', compact('tipos', 'estados', 'ciudades', 'radicados', 'recibidos', 'tipoFiltro', 'todosDestinatarios'));
     }
 
     /**
@@ -298,6 +320,17 @@ class ExternarecController extends Controller
                     'det_doc_empleado' => $docEmpleado,
                 ]);
             }
+
+            // 9. Registro adicional indicando que el documento fue recibido
+            // Asignamos el estado al primer destinatario para evitar errores de clave foránea
+            // ya que $docQuienRegistra es un remitente y no existe en la tabla empleado
+            DB::table('detalle_recibido')->insert([
+                'det_id_recibido'  => $idRecibido,
+                'det_doc_empleado' => $destinatarios[0],
+                'fecha_re'         => now(),
+                'id_estado_rec'    => 7, // Estado: Recibido
+                'observaciones'    => 'Documento recibido (Registro Externo)'
+            ]);
 
             // Si todo salió bien, confirmamos los cambios en la BD
             DB::commit();

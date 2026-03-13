@@ -604,13 +604,66 @@
                         }
                     }
                     // ===== BUSCADOR DE CIUDAD PROVENIENTE =====
+                    const TODAS_CIUDADES = @json($ciudades);
                     const btnToggleCiudades = document.getElementById('btnToggleCiudades');
                     const dropdownCiudades = document.getElementById('ciudadesDropdown');
                     const inputBuscarCiudad = document.getElementById('buscarCiudadInput');
                     const listaCiudadesEl = document.getElementById('listaCiudades');
                     const hiddenCiudad = document.getElementById('ciudad_proveniente_value');
                     const labelBtnCiudad = document.getElementById('btnToggleCiudadesLabel');
-                    let debouncerCiudad = null;
+                    function renderCiudades(ciudadesMostrar) {
+                        listaCiudadesEl.innerHTML = '';
+                        if (ciudadesMostrar.length === 0) {
+                            listaCiudadesEl.innerHTML = '<li class="px-3 py-2 text-slate-400 italic">Sin resultados</li>';
+                            return;
+                        }
+
+                        // Protect against massive DOM updates, limit to 100 max
+                        const totalMostrados = Math.min(ciudadesMostrar.length, 100);
+
+                        for (let i = 0; i < totalMostrados; i++) {
+                            const ciudad = ciudadesMostrar[i];
+                            const li = document.createElement('li');
+                            li.className = 'px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer flex flex-col gap-0.5';
+
+                            // Added department to display
+                            const deptoText = ciudad.departamento && ciudad.departamento.dpto_nombre ? ciudad.departamento.dpto_nombre : 'N/A';
+                            
+                            li.innerHTML = `
+                                <div class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-sm text-slate-400">location_city</span>
+                                    <span>
+                                        <span class="font-mono text-xs text-slate-500">${ciudad.ciudad_cod_post}</span> — ${ciudad.ciudad_nom}
+                                    </span>
+                                </div>
+                                <div class="text-[10px] text-slate-400 font-medium pl-6">
+                                    Dpto: ${deptoText}
+                                </div>
+                            `;
+
+                            li.addEventListener('click', function() {
+                                hiddenCiudad.value = ciudad.ciudad_cod_post;
+                                labelBtnCiudad.textContent = ciudad.ciudad_nom;
+                                labelBtnCiudad.classList.remove('text-slate-400');
+                                labelBtnCiudad.classList.add('text-slate-900', 'dark:text-white');
+                                dropdownCiudades.classList.add('hidden');
+                                inputBuscarCiudad.value = '';
+                                // Re-render initial state for next open
+                                renderCiudades(TODAS_CIUDADES);
+                            });
+                            listaCiudadesEl.appendChild(li);
+                        }
+
+                        if (ciudadesMostrar.length > 100) {
+                            const liMore = document.createElement('li');
+                            liMore.className = 'px-3 py-2 text-slate-400 italic text-xs text-center border-t border-slate-100 dark:border-slate-700/50';
+                            liMore.textContent = `Mostrando 100 de ${ciudadesMostrar.length} resultados. Escriba para filtrar más.`;
+                            listaCiudadesEl.appendChild(liMore);
+                        }
+                    }
+
+                    // Render initial state when DOM is loaded
+                    renderCiudades(TODAS_CIUDADES);
 
                     btnToggleCiudades.addEventListener('click', function(e) {
                         e.stopPropagation();
@@ -628,60 +681,29 @@
                     });
 
                     inputBuscarCiudad.addEventListener('input', function() {
-                        clearTimeout(debouncerCiudad);
-                        const q = this.value.trim();
-                        if (q.length < 1) {
-                            listaCiudadesEl.innerHTML =
-                                '<li class="px-3 py-2 text-slate-400 italic">Escriba para buscar...</li>';
+                        const q = this.value.trim().toLowerCase();
+                        
+                        // If empty, reset list to all cities
+                        if (q.length === 0) {
+                            renderCiudades(TODAS_CIUDADES);
                             return;
                         }
-                        listaCiudadesEl.innerHTML = '<li class="px-3 py-2 text-slate-400 italic">Buscando...</li>';
-                        debouncerCiudad = setTimeout(function() {
-                            fetch('{{ route('externarec.ciudades.buscar') }}?q=' + encodeURIComponent(q), {
-                                    headers: {
-                                        'X-Requested-With': 'XMLHttpRequest'
-                                    }
-                                })
-                                .then(r => r.json())
-                                .then(data => {
-                                    listaCiudadesEl.innerHTML = '';
-                                    if (data.length === 0) {
-                                        listaCiudadesEl.innerHTML =
-                                            '<li class="px-3 py-2 text-slate-400 italic">Sin resultados</li>';
-                                        return;
-                                    }
-                                    data.forEach(function(ciudad) {
-                                        const li = document.createElement('li');
-                                        li.className =
-                                            'px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer flex items-center gap-2';
-                                        li.innerHTML =
-                                            '<span class="material-symbols-outlined text-sm text-slate-400">location_city</span>' +
-                                            '<span><span class="font-mono text-xs text-slate-500">' +
-                                            ciudad.ciudad_cod_post + '</span> — ' + ciudad
-                                            .ciudad_nom + '</span>';
-                                        li.addEventListener('click', function() {
-                                            hiddenCiudad.value = ciudad.ciudad_cod_post;
-                                            labelBtnCiudad.textContent = ciudad
-                                                .ciudad_nom;
-                                            labelBtnCiudad.classList.remove(
-                                                'text-slate-400');
-                                            labelBtnCiudad.classList.add(
-                                                'text-slate-900', 'dark:text-white');
-                                            dropdownCiudades.classList.add('hidden');
-                                            inputBuscarCiudad.value = '';
-                                        });
-                                        listaCiudadesEl.appendChild(li);
-                                    });
-                                })
-                                .catch(function() {
-                                    listaCiudadesEl.innerHTML =
-                                        '<li class="px-3 py-2 text-red-400 italic">Error al buscar</li>';
-                                });
-                        }, 300);
+
+                        // Instant client-side filtering without debounce
+                        const filtradas = TODAS_CIUDADES.filter(c => {
+                            const matchCod = String(c.ciudad_cod_post).toLowerCase().includes(q);
+                            const matchNom = String(c.ciudad_nom).toLowerCase().includes(q);
+                            const matchDep = c.departamento && c.departamento.dpto_nombre 
+                                            ? String(c.departamento.dpto_nombre).toLowerCase().includes(q) 
+                                            : false;
+                            return matchCod || matchNom || matchDep;
+                        });
+
+                        renderCiudades(filtradas);
                     });
 
                     // ===== BUSCADOR DE DESTINATARIOS (múltiple) =====
-                    const EMPLEADOS_URL = '{{ route('externarec.empleados.buscar') }}';
+                    const TODOS_DESTINATARIOS = @json($todosDestinatarios);
 
                     /**
                      * Inicializa el buscador de empleados dentro de un bloque `.destinatario-block`.
@@ -694,7 +716,55 @@
                         const hidden = block.querySelector('.dest-hidden-input');
                         const label = block.querySelector('.dest-label');
                         const btnRemove = block.querySelector('.dest-btn-remove');
-                        let debouncer = null;
+
+                        function renderDestinatarios(destMostrar) {
+                            lista.innerHTML = '';
+                            if (destMostrar.length === 0) {
+                                lista.innerHTML = '<li class="px-3 py-2 text-slate-400 italic">Sin resultados</li>';
+                                return;
+                            }
+
+                            const totalMostrados = Math.min(destMostrar.length, 100);
+
+                            for (let i = 0; i < totalMostrados; i++) {
+                                const emp = destMostrar[i];
+                                const li = document.createElement('li');
+                                li.className = 'px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer flex flex-col gap-0.5';
+                                
+                                const areaHtml = emp.area_nombre ? `<div class="text-[10px] text-slate-400 font-medium pl-6">Área: ${emp.area_nombre}</div>` : '';
+
+                                li.innerHTML = `
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-sm text-slate-400">person</span>
+                                        <span>
+                                            <span class="font-mono text-xs text-slate-500">${emp.emple_doc}</span> — ${emp.emple_nombres} ${emp.emple_apellidos}
+                                        </span>
+                                    </div>
+                                    ${areaHtml}
+                                `;
+                                
+                                li.addEventListener('click', function() {
+                                    hidden.value = emp.emple_doc;
+                                    label.textContent = emp.emple_doc + ' — ' + emp.emple_nombres + ' ' + emp.emple_apellidos;
+                                    label.classList.remove('text-slate-400');
+                                    label.classList.add('text-slate-900', 'dark:text-white');
+                                    dropdown.classList.add('hidden');
+                                    searchInput.value = '';
+                                    renderDestinatarios(TODOS_DESTINATARIOS);
+                                });
+                                lista.appendChild(li);
+                            }
+
+                            if (destMostrar.length > 100) {
+                                const liMore = document.createElement('li');
+                                liMore.className = 'px-3 py-2 text-slate-400 italic text-xs text-center border-t border-slate-100 dark:border-slate-700/50';
+                                liMore.textContent = `Mostrando 100 de ${destMostrar.length} resultados. Escriba para filtrar.`;
+                                lista.appendChild(liMore);
+                            }
+                        }
+
+                        // Render initial state
+                        renderDestinatarios(TODOS_DESTINATARIOS);
 
                         // Abrir / cerrar dropdown
                         btnToggle.addEventListener('click', function(e) {
@@ -712,60 +782,25 @@
                             if (!block.contains(e.target)) dropdown.classList.add('hidden');
                         });
 
-                        // Búsqueda con debounce
+                        // Búsqueda instantánea
                         searchInput.addEventListener('input', function() {
-                            clearTimeout(debouncer);
-                            const q = this.value.trim();
-                            if (q.length < 1) {
-                                lista.innerHTML =
-                                    '<li class="px-3 py-2 text-slate-400 italic">Escriba para buscar...</li>';
+                            const q = this.value.trim().toLowerCase();
+                            
+                            if (q.length === 0) {
+                                renderDestinatarios(TODOS_DESTINATARIOS);
                                 return;
                             }
-                            lista.innerHTML = '<li class="px-3 py-2 text-slate-400 italic">Buscando...</li>';
-                            debouncer = setTimeout(function() {
-                                fetch(EMPLEADOS_URL + '?q=' + encodeURIComponent(q), {
-                                        headers: {
-                                            'X-Requested-With': 'XMLHttpRequest'
-                                        }
-                                    })
-                                    .then(r => r.json())
-                                    .then(data => {
-                                        lista.innerHTML = '';
-                                        if (data.length === 0) {
-                                            lista.innerHTML =
-                                                '<li class="px-3 py-2 text-slate-400 italic">Sin resultados</li>';
-                                            return;
-                                        }
-                                        data.forEach(function(emp) {
-                                            const li = document.createElement('li');
-                                            li.className =
-                                                'px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer flex items-center gap-2';
-                                            li.innerHTML =
-                                                '<span class="material-symbols-outlined text-sm text-slate-400">person</span>' +
-                                                '<span><span class="font-mono text-xs text-slate-500">' +
-                                                emp.emple_doc +
-                                                '</span> — ' + emp.emple_nombres + ' ' + emp
-                                                .emple_apellidos + '</span>';
-                                            li.addEventListener('click', function() {
-                                                hidden.value = emp.emple_doc;
-                                                label.textContent = emp.emple_doc +
-                                                    ' — ' + emp.emple_nombres + ' ' +
-                                                    emp.emple_apellidos;
-                                                label.classList.remove(
-                                                    'text-slate-400');
-                                                label.classList.add('text-slate-900',
-                                                    'dark:text-white');
-                                                dropdown.classList.add('hidden');
-                                                searchInput.value = '';
-                                            });
-                                            lista.appendChild(li);
-                                        });
-                                    })
-                                    .catch(function() {
-                                        lista.innerHTML =
-                                            '<li class="px-3 py-2 text-red-400 italic">Error al buscar</li>';
-                                    });
-                            }, 300);
+
+                            const filtrados = TODOS_DESTINATARIOS.filter(emp => {
+                                const matchDoc = String(emp.emple_doc).toLowerCase().includes(q);
+                                const matchNom = String(emp.emple_nombres).toLowerCase().includes(q);
+                                const matchApe = String(emp.emple_apellidos).toLowerCase().includes(q);
+                                const matchArea = emp.area_nombre ? String(emp.area_nombre).toLowerCase().includes(q) : false;
+                                
+                                return matchDoc || matchNom || matchApe || matchArea;
+                            });
+
+                            renderDestinatarios(filtrados);
                         });
 
                         // Botón quitar
@@ -1450,9 +1485,6 @@
                                 class="flex items-center justify-end gap-4 pt-6 border-t border-slate-200 dark:border-slate-800">
                                 <button id="btnCerrarModal" type="button"
                                     class="flex items-center justify-center h-11 px-6 rounded-lg text-sm font-bold bg-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Cancelar</button>
-                                <button type="button"
-                                    class="flex items-center justify-center h-11 px-6 rounded-lg text-sm font-bold bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-100 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">Guardar
-                                    Borrador</button>
                                 <button type="submit"
                                     class="flex items-center justify-center h-11 px-6 rounded-lg text-sm font-bold bg-primary text-white hover:bg-primary/90 transition-colors shadow-sm">Enviar
                                     Correspondencia</button>
