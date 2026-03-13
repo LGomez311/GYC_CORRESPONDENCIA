@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Recibido;
 use App\Models\DetalleEnvio;
+use App\Models\DetalleRecibido;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -16,43 +17,40 @@ class CorrespondenciaController extends Controller
         // Get the current user
         $user = Auth::user();
 
-        // Fetch real data. We assume the user has a nit_empresa attribute based on the database schema.
-        // Fetch stats
-        // Fetch stats using grouping subqueries to avoid duplicate history traces
-        // Filter by the current user being a recipient
-        $queryBase = Recibido::whereHas('destinatarios', function ($query) use ($user) {
-            $query->where('det_doc_empleado', $user->emple_doc);
-        });
+        // ============================================================
+        // BANDEJA EXTERNA: basada en detalle_recibido del empleado.
+        // El estado en 'recibido' lo maneja el recepcionista (Enviado=12).
+        // El estado del empleado se almacena en 'detalle_recibido.id_estado_rec'.
+        // ============================================================
+        $queryExt = DetalleRecibido::where('det_doc_empleado', $user->emple_doc);
 
-        $latestRecibidoSubquery = clone $queryBase;
-        $latestRecibidoSubquery = $latestRecibidoSubquery->select(\Illuminate\Support\Facades\DB::raw('MAX(id_recibido) as id_recibido'))->groupBy('num_radicado_ext', 'num_radicado_int');
+        // Para evitar duplicados de historial: solo el último detalle por id_recibido
+        $latestExtSubquery = clone $queryExt;
+        $latestExtSubquery = $latestExtSubquery
+            ->select(\Illuminate\Support\Facades\DB::raw('MAX(id_det_recibido) as id_det_recibido'))
+            ->groupBy('det_id_recibido');
 
-        // We must re-apply the filter here for safety, or join. 
-        // A simple way is to use whereIn on id_recibido but also ensure it matches the user.
-        $queryBandejaUnicaExt = Recibido::whereIn('id_recibido', $latestRecibidoSubquery)
-            ->whereHas('destinatarios', function ($query) use ($user) {
-            $query->where('det_doc_empleado', $user->emple_doc);
-        });
+        $queryBandejaUnicaExt = DetalleRecibido::whereIn('id_det_recibido', $latestExtSubquery)
+            ->where('det_doc_empleado', $user->emple_doc);
 
         $totalRecibidas = (clone $queryBandejaUnicaExt)->count();
-        $enTramite = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 8)->count();
-        $finalizadas = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 9)->count();
-        $archivadas = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 10)->count();
-        $vencidas = 0; // Se puede implementar luego la logica o join para buscar vencimiento de radicados. 
-        // Custom Sorting:
-        // Estado: Recibido (7) -> En Tramite (8) -> Others (Resuelto 9, Archivado 10, Rechazado 11)
-        // Prioridad: Urgente (4) -> Alta (1) -> Media (2) -> Baja (3)
+        $enTramite      = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 8)->count();
+        $finalizadas    = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 9)->count();
+        $archivadas     = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 10)->count();
+        $vencidas       = 0;
+
+        // Solo mostramos los que el empleado aún tiene activos (Recibido=7, En Tramite=8)
         $correspondencias = (clone $queryBandejaUnicaExt)
-            ->whereIn('recibido.id_estado_rec', [7, 8])
-            ->with(['radicado', 'estado', 'dirigidoA', 'destinatarios', 'registradoPor', 'tipo.prioridad', 'ciudad', 'anexos'])
-            ->leftJoin('estado', 'recibido.id_estado_rec', '=', 'estado.id_estado')
+            ->whereIn('detalle_recibido.id_estado_rec', [7, 8])
+            ->with(['recibido.radicado', 'recibido.tipo.prioridad', 'recibido.ciudad', 'recibido.anexos', 'estado', 'anexosRespuesta'])
+            ->leftJoin('recibido', 'detalle_recibido.det_id_recibido', '=', 'recibido.id_recibido')
             ->leftJoin('tipo', 'recibido.id_tipo', '=', 'tipo.id_tipo')
             ->leftJoin('prioridad', 'tipo.id_prioridad', '=', 'prioridad.id_prioridad')
-            ->select('recibido.*') // Ensure we only get the main table columns to avoid ID conflicts
+            ->select('detalle_recibido.*')
             ->orderByRaw("
                 CASE 
-                    WHEN recibido.id_estado_rec = 7 THEN 1
-                    WHEN recibido.id_estado_rec = 8 THEN 2
+                    WHEN detalle_recibido.id_estado_rec = 7 THEN 1
+                    WHEN detalle_recibido.id_estado_rec = 8 THEN 2
                     ELSE 3
                 END ASC
             ")
@@ -65,7 +63,7 @@ class CorrespondenciaController extends Controller
                     ELSE 5
                 END ASC
             ")
-            ->orderBy('recibido.id_recibido', 'desc')
+            ->orderBy('detalle_recibido.id_det_recibido', 'desc')
             ->paginate(10, ['*'], 'ext_page');
 
         // Start query for BANDEJA INTERNA
@@ -132,27 +130,33 @@ class CorrespondenciaController extends Controller
         // Get the current user
         $user = Auth::user();
 
-        // Fetch stats using grouping subqueries to avoid duplicate history traces
-        $queryBase = Recibido::query();
+        // BANDEJA EXTERNA FINALIZADA: filtramos por el estado del empleado en detalle_recibido
+        $queryExtFin = DetalleRecibido::where('det_doc_empleado', $user->emple_doc);
 
-        $latestRecibidoSubquery = clone $queryBase;
-        $latestRecibidoSubquery = $latestRecibidoSubquery->select(\Illuminate\Support\Facades\DB::raw('MAX(id_recibido) as id_recibido'))->groupBy('num_radicado_ext', 'num_radicado_int');
-        $queryBandejaUnicaExt = Recibido::whereIn('id_recibido', $latestRecibidoSubquery);
+        $latestExtFinSubquery = clone $queryExtFin;
+        $latestExtFinSubquery = $latestExtFinSubquery
+            ->select(\Illuminate\Support\Facades\DB::raw('MAX(id_det_recibido) as id_det_recibido'))
+            ->groupBy('det_id_recibido');
+
+        $queryBandejaUnicaExt = DetalleRecibido::whereIn('id_det_recibido', $latestExtFinSubquery)
+            ->where('det_doc_empleado', $user->emple_doc);
 
         $totalRecibidas = (clone $queryBandejaUnicaExt)->count();
-        $enTramite = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 8)->count();
-        $finalizadas = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 9)->count();
-        $archivadas = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 10)->count();
-        $vencidas = 0;
+        $enTramite      = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 8)->count();
+        $finalizadas    = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 9)->count();
+        $archivadas     = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 10)->count();
+        $vencidas       = 0;
+        $queryBandejaUnicaExtFin = DetalleRecibido::whereIn('id_det_recibido', $latestExtFinSubquery)
+            ->where('det_doc_empleado', $user->emple_doc);
 
-        $correspondencias = (clone $queryBandejaUnicaExt)
-            ->where('recibido.id_estado_rec', '>', 8)
-            ->with(['radicado', 'estado', 'dirigidoA', 'registradoPor', 'tipo.prioridad', 'ciudad', 'anexos'])
-            ->leftJoin('estado', 'recibido.id_estado_rec', '=', 'estado.id_estado')
+        $correspondencias = (clone $queryBandejaUnicaExtFin)
+            ->whereIn('detalle_recibido.id_estado_rec', [9, 10, 11])
+            ->with(['recibido.radicado', 'recibido.tipo.prioridad', 'recibido.ciudad', 'recibido.anexos', 'estado', 'anexosRespuesta'])
+            ->leftJoin('recibido', 'detalle_recibido.det_id_recibido', '=', 'recibido.id_recibido')
             ->leftJoin('tipo', 'recibido.id_tipo', '=', 'tipo.id_tipo')
             ->leftJoin('prioridad', 'tipo.id_prioridad', '=', 'prioridad.id_prioridad')
-            ->select('recibido.*')
-            ->orderBy('recibido.id_recibido', 'desc')
+            ->select('detalle_recibido.*')
+            ->orderBy('detalle_recibido.id_det_recibido', 'desc')
             ->paginate(10, ['*'], 'ext_page');
 
         // Start query for BANDEJA INTERNA
@@ -199,73 +203,73 @@ class CorrespondenciaController extends Controller
     public function actualizarEstado(Request $request, $id)
     {
         $request->validate([
-            'estado_nomb' => 'required',
-            'observaciones' => 'nullable|string'
+            'estado_nomb'        => 'required',
+            'observaciones'      => 'nullable|string',
+            'archivo_respuesta'  => 'nullable|file|mimes:pdf|max:5120',
+            'archivos_respuesta.*' => 'nullable|file|mimes:pdf|max:25600',
+            'folios_respuesta'   => 'nullable|integer',
         ]);
 
-        $recibidoAntiguo = Recibido::with('estado')->findOrFail($id);
+        // $id es ahora id_det_recibido (el registro personal del empleado)
+        $detalleAntiguo = DetalleRecibido::with('estado')->findOrFail($id);
 
-        if (in_array($recibidoAntiguo->id_estado_rec, [9, 10]) || stripos($recibidoAntiguo->estado->estado_nomb, 'rechazado') !== false) {
+        if (in_array($detalleAntiguo->id_estado_rec, [9, 10]) || stripos($detalleAntiguo->estado?->estado_nomb ?? '', 'rechazado') !== false) {
             return back()->with('error', 'Esta correspondencia ya se encuentra finalizada, archivada o rechazada.');
         }
 
-        // Prevent updating historical records via API manipulation
-        if ($recibidoAntiguo->num_radicado_int) {
-            $latestId = Recibido::where('num_radicado_int', $recibidoAntiguo->num_radicado_int)->max('id_recibido');
-            if ($recibidoAntiguo->id_recibido != $latestId) {
-                return back()->with('error', 'No se puede modificar un historial pasado. Solo el estado más reciente puede ser actualizado o finalizado.');
-            }
+        $estado = \App\Models\Estado::where('estado_nomb', $request->estado_nomb)->first();
+        if (!$estado) {
+            return back()->with('error', 'Estado no válido.');
         }
 
-        // Find state ID
-        $estado = \App\Models\Estado::where('estado_nomb', $request->estado_nomb)->first();
-        if (!$estado)
-            return back()->with('error', 'Estado no válido');
-
-        // Prevent going backwards
-        if ($estado->id_estado < $recibidoAntiguo->id_estado_rec) {
+        if ($estado->id_estado < $detalleAntiguo->id_estado_rec) {
             return back()->with('error', 'No está permitido regresar la correspondencia a un estado anterior.');
         }
 
-        // Create new row to keep history trace
-        $nuevoRegistro = new Recibido();
-        $nuevoRegistro->num_radicado_ext = $recibidoAntiguo->num_radicado_ext;
-        $nuevoRegistro->num_radicado_int = $recibidoAntiguo->num_radicado_int;
-        $nuevoRegistro->asunto = $recibidoAntiguo->asunto;
-        $nuevoRegistro->fecha_hora_recib = now();
-        $nuevoRegistro->nom_institucion = $recibidoAntiguo->nom_institucion;
-        $nuevoRegistro->ciudad_proveniente = $recibidoAntiguo->ciudad_proveniente;
-        $nuevoRegistro->folio = $recibidoAntiguo->folio;
-        $nuevoRegistro->anexo = $recibidoAntiguo->anexo;
-        $nuevoRegistro->observaciones = $request->observaciones ?? 'Cambio de estado';
-        $nuevoRegistro->doc_quien_registra = $recibidoAntiguo->doc_quien_registra;
-        $nuevoRegistro->id_tipo = $recibidoAntiguo->id_tipo;
+        // Crear un NUEVO registro para la trazabilidad
+        $nuevoRegistro = new DetalleRecibido();
+        $nuevoRegistro->det_id_recibido = $detalleAntiguo->det_id_recibido;
+        $nuevoRegistro->det_doc_empleado = $detalleAntiguo->det_doc_empleado;
+        $nuevoRegistro->fecha_re = now();
         $nuevoRegistro->id_estado_rec = $estado->id_estado;
-        $nuevoRegistro->archivo = $recibidoAntiguo->archivo;
-        $nuevoRegistro->nit_empresa = $recibidoAntiguo->nit_empresa;
+        $nuevoRegistro->observaciones = $request->observaciones;
+
+        // Propagar el archivo de respuesta anterior si no se sube uno nuevo
+        $nuevoRegistro->archivo_res = $detalleAntiguo->archivo_res;
+        if ($request->hasFile('archivo_respuesta')) {
+            $nuevoRegistro->archivo_res = $request->file('archivo_respuesta')->store('correspondencia', 'public');
+        }
+
+        // Propagar los folios de respuesta o actualizar
+        $nuevoRegistro->folios_res = $request->filled('folios_respuesta') ? $request->folios_respuesta : ($detalleAntiguo->folios_res ?? 0);
+
         $nuevoRegistro->save();
 
-        // Duplicar también los destinatarios en detalle_recibido para este nuevo registro
-        $destinatariosAntiguos = \App\Models\DetalleRecibido::where('det_id_recibido', $recibidoAntiguo->id_recibido)->get();
-        foreach ($destinatariosAntiguos as $dest) {
-            \App\Models\DetalleRecibido::create([
-                'det_id_recibido' => $nuevoRegistro->id_recibido,
-                'det_doc_empleado' => $dest->det_doc_empleado,
+        // Duplicar los Anexos de Respuesta previos para el nuevo registro usando id_detalle
+        $anexosPrevios = \App\Models\AnexoRespuesta::where('id_detalle', $detalleAntiguo->id_det_recibido)->get();
+        foreach ($anexosPrevios as $anexo) {
+            \App\Models\AnexoRespuesta::create([
+                'id_detalle'      => $nuevoRegistro->id_det_recibido,
+                'ruta_archivo'    => $anexo->ruta_archivo,
+                'nombre_original' => $anexo->nombre_original
             ]);
         }
 
-        // Duplicate any Anexos for the new trace
-        $anexosAntiguos = \App\Models\AnexoRecibido::where('id_recibido', $recibidoAntiguo->id_recibido)->get();
-        foreach ($anexosAntiguos as $anexo) {
-            \App\Models\AnexoRecibido::create([
-                'id_recibido' => $nuevoRegistro->id_recibido,
-                'ruta_archivo' => $anexo->ruta_archivo,
-                'nombre_original' => $anexo->nombre_original,
-            ]);
+        // Guardar nuevos anexos si se subieron usando id_detalle
+        if ($request->hasFile('archivos_respuesta')) {
+            foreach ($request->file('archivos_respuesta') as $file) {
+                $pathAnexoResp = $file->store('correspondencia', 'public');
+                \App\Models\AnexoRespuesta::create([
+                    'id_detalle'      => $nuevoRegistro->id_det_recibido,
+                    'ruta_archivo'    => $pathAnexoResp,
+                    'nombre_original' => $file->getClientOriginalName()
+                ]);
+            }
         }
 
-        return back()->with('success', 'Estado de correspondencia externa actualizado correctamente.');
+        return back()->with('success', 'Estado de correspondencia externa actualizado correctamente con trazabilidad.');
     }
+
 
     public function actualizarEstadoInterna(Request $request, $id)
     {
@@ -326,22 +330,22 @@ class CorrespondenciaController extends Controller
 
         $nuevoRegistro->save();
 
-        // Duplicate any existing AnexosRespuesta
-        $anexosAntiguos = \App\Models\AnexoRespuesta::where('id_detalle', $detalleAntiguo->id_detalle)->get();
+        // Duplicate any existing AnexosRespuesta (Interna usa id_det_interna)
+        $anexosAntiguos = \App\Models\AnexoRespuesta::where('id_det_interna', $detalleAntiguo->id_detalle)->get();
         foreach ($anexosAntiguos as $anexo) {
             \App\Models\AnexoRespuesta::create([
-                'id_detalle' => $nuevoRegistro->id_detalle,
+                'id_det_interna' => $nuevoRegistro->id_detalle,
                 'ruta_archivo' => $anexo->ruta_archivo,
                 'nombre_original' => $anexo->nombre_original,
             ]);
         }
 
-        // Process new Anexos Respuesta Múltiples as part of the overall Envio thread
+        // Process new Anexos Respuesta Múltiples as part of the overall Envio thread (Usa id_det_interna)
         if ($request->hasFile('archivos_respuesta')) {
             foreach ($request->file('archivos_respuesta') as $file) {
                 $pathAnexoResp = $file->store('correspondencia', 'public');
                 \App\Models\AnexoRespuesta::create([
-                    'id_detalle' => $nuevoRegistro->id_detalle,
+                    'id_det_interna' => $nuevoRegistro->id_detalle,
                     'ruta_archivo' => $pathAnexoResp,
                     'nombre_original' => $file->getClientOriginalName(),
                 ]);

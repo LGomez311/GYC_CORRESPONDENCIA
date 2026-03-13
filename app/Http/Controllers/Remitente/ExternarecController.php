@@ -10,7 +10,6 @@ use App\Models\Tipo;
 use App\Models\Estado;
 use App\Models\Ciudad;
 use App\Models\Empleado;
-use App\Models\DetalleRecibido;
 
 class ExternarecController extends Controller
 {
@@ -313,24 +312,19 @@ class ExternarecController extends Controller
                 }
             }
 
-            // 8. Registrar los destinatarios en detalle_recibido
+            // 8. Registrar cada destinatario en detalle_recibido con estado Recibido (7)
+            // Un único registro por destinatario con todos los datos completos.
+            // Esto replica el flujo empleado→empleado y garantiza que TODOS los destinatarios
+            // reciban el documento correctamente sin registros nulos duplicados.
             foreach ($destinatarios as $docEmpleado) {
-                DetalleRecibido::create([
+                DB::table('detalle_recibido')->insert([
                     'det_id_recibido'  => $idRecibido,
                     'det_doc_empleado' => $docEmpleado,
+                    'fecha_re'         => now(),
+                    'id_estado_rec'    => 7, // Estado: Recibido
+                    'observaciones'    => 'Documento recibido (Registro Externo)',
                 ]);
             }
-
-            // 9. Registro adicional indicando que el documento fue recibido
-            // Asignamos el estado al primer destinatario para evitar errores de clave foránea
-            // ya que $docQuienRegistra es un remitente y no existe en la tabla empleado
-            DB::table('detalle_recibido')->insert([
-                'det_id_recibido'  => $idRecibido,
-                'det_doc_empleado' => $destinatarios[0],
-                'fecha_re'         => now(),
-                'id_estado_rec'    => 7, // Estado: Recibido
-                'observaciones'    => 'Documento recibido (Registro Externo)'
-            ]);
 
             // Si todo salió bien, confirmamos los cambios en la BD
             DB::commit();

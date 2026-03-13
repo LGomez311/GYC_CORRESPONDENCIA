@@ -49,9 +49,9 @@ class DetalleEnvio extends Model
         return $this->belongsTo(Estado::class, 'id_estado_rec', 'id_estado');
     }
 
-    // Archivos Respuesta Multiples
+    // Archivos Respuesta Multiples (Interna usa id_det_interna)
     public function anexosRespuesta()
     {
-        return $this->hasMany(AnexoRespuesta::class, 'id_detalle', 'id_detalle');
+        return $this->hasMany(AnexoRespuesta::class, 'id_det_interna', 'id_detalle');
     }
 }

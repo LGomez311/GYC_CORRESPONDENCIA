@@ -107,165 +107,145 @@
                         <th class="px-6 py-3 font-medium">Radicados</th>
                         <th class="px-6 py-3 font-medium">Procedencia</th>
                         <th class="px-6 py-3 font-medium">Detalles Documento</th>
+                        <th class="px-6 py-3 font-medium hidden lg:table-cell">Detalles Técnicos</th>
                         <th class="px-6 py-3 font-medium hidden lg:table-cell">Ingreso / Registro</th>
                         <th class="px-6 py-3 font-medium">Archivos / Anexos</th>
-                        <th class="px-6 py-3 font-medium hidden md:table-cell">Observaciones</th>
                         <th class="px-6 py-3 font-medium">Estado</th>
                         <th class="px-6 py-3 font-medium text-right">Acciones</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                    @php 
-                        $radicadosProcesadosExterna = []; 
-                    @endphp
                     @forelse($correspondencias as $item)
                         @php
-                            // Check if this is the latest row for this radicado
-                            $isLatestExterna = false;
-                            $radicadoStr = $item->radicado ? $item->radicado->num_radicado : $item->id_recibido;
-                            if (!in_array($radicadoStr, $radicadosProcesadosExterna)) {
-                                $isLatestExterna = true;
-                                $radicadosProcesadosExterna[] = $radicadoStr;
-                            }
-                            // Also lock if state is Rechazado
-                            $estadoNombL = strtolower($item->estado ? $item->estado->estado_nomb : '');
+                            $rec = $item->recibido;
+                            $estadoNombL = strtolower($item->estado?->estado_nomb ?? '');
                             $isRechazado = str_contains($estadoNombL, 'rechazado');
+                            $isFinalizedExt = str_contains($estadoNombL, 'finalizado') || str_contains($estadoNombL, 'resuelto') || str_contains($estadoNombL, 'archivado') || $isRechazado;
+                            $esPersona = !empty($rec?->nombre_persona) || !empty($rec?->doc_persona);
+                            $procedencia = $esPersona
+                                ? ($rec?->nombre_persona ?? $rec?->doc_persona ?? '—')
+                                : ($rec?->nom_institucion ?? '—');
                         @endphp
                         <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors align-top">
-                            <!-- Radicados -->
+                            <!-- 1. Radicados -->
                             <td class="px-6 py-4">
-                                <div class="font-medium text-primary dark:text-blue-400" title="Radicado Interno">
-                                    {{ $item->radicado ? $item->radicado->num_radicado : 'S/R' }}
+                                <div class="font-medium text-primary dark:text-blue-400">
+                                    {{ $rec?->radicado?->num_radicado ?? 'S/R' }}
                                 </div>
-                                @if($item->num_radicado_ext)
-                                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1" title="Radicado Externo">
-                                    EXT: {{ $item->num_radicado_ext }}
+                                @if($rec?->num_radicado_ext)
+                                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    EXT: {{ $rec->num_radicado_ext }}
                                 </div>
                                 @endif
                             </td>
                             
-                            <!-- Procedencia -->
+                            <!-- 2. Procedencia -->
                             <td class="px-6 py-4">
-                                <div class="font-medium dark:text-white max-w-[180px] break-words whitespace-normal">{{ $item->nom_institucion }}</div>
-                                @if($item->ciudad)
+                                <div class="font-medium dark:text-white max-w-[180px] break-words whitespace-normal">{{ $procedencia }}</div>
+                                <span class="inline-flex items-center gap-0.5 text-xs {{ $esPersona ? 'text-purple-500' : 'text-blue-500' }} mt-0.5">
+                                    <span class="material-symbols-outlined" style="font-size:13px">{{ $esPersona ? 'person' : 'business' }}</span>
+                                    {{ $esPersona ? 'Persona Natural' : 'Entidad / Empresa' }}
+                                </span>
+                                @if($rec?->ciudad)
                                 <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
                                     <span class="material-symbols-outlined text-[14px]">location_on</span>
-                                    {{ $item->ciudad->ciudad_nom ?? 'Desconocida' }}
+                                    {{ $rec->ciudad->ciudad_nom ?? '—' }}
                                 </div>
                                 @endif
                             </td>
                             
-                            <!-- Detalles Documento -->
                             <td class="px-6 py-4 text-sm">
-                                <div class="font-medium text-gray-900 dark:text-gray-100 mb-1 max-w-[200px] whitespace-normal break-words" title="{{ $item->asunto }}">
-                                    {{ $item->asunto }}
-                                </div>
-                                <div class="font-medium text-gray-900 dark:text-gray-100 mb-1 max-w-[200px] whitespace-normal break-words" title="{{ $item->asunto }}">
-                                    {{ $item->asunto }}
-                                </div>
-                                <div class="mt-2">
-                                    @php
-                                        // Prioridad
-                                        $prioNombre = $item->tipo->prioridad->prioridad_nombre ?? 'N/A';
-                                        
-                                        // Días
-                                        $diasTotales = $item->tipo->dias_respuesta ?? 0;
-                                        $diasRestantes = 0;
-                                        $vencido = false;
-                                        $msgTiempo = 'Sin tiempo límite';
-                                        $diasClass = 'text-gray-500';
-                                        $iconoDias = 'timer_off';
-                                        
-                                        $estadoNombExt = $item->estado ? strtolower($item->estado->estado_nomb) : '';
-                                        $isFinalizedExt = str_contains($estadoNombExt, 'finalizado') || str_contains($estadoNombExt, 'resuelto') || str_contains($estadoNombExt, 'archivado') || str_contains($estadoNombExt, 'rechazado');
-                                        
-                                        if ($isFinalizedExt) {
-                                            $msgTiempo = 'Proceso Finalizado';
-                                            $diasClass = 'text-blue-600 dark:text-blue-400 font-bold';
-                                            $iconoDias = 'task_alt';
-                                        } elseif($diasTotales > 0) {
-                                            $fechaBase = \Carbon\Carbon::parse($item->fecha_hora_recib);
-                                            $hoy = \Carbon\Carbon::now();
-                                            $diasTranscurridos = $fechaBase->diffInDaysFiltered(function(\Carbon\Carbon $date) {
-                                                return $date->isWeekday();
-                                            }, $hoy);
-                                            
-                                            $diasRestantes = $diasTotales - $diasTranscurridos;
-                                            
-                                            if ($diasRestantes < 0) {
-                                                $vencido = true;
-                                                $msgTiempo = '¡Vencido por ' . abs($diasRestantes) . ' días!';
-                                                $diasClass = 'text-red-600 dark:text-red-400 font-bold';
-                                                $iconoDias = 'warning';
-                                            } elseif ($diasRestantes <= 2) {
-                                                $msgTiempo = 'Quedan ' . $diasRestantes . ' días hábiles';
-                                                $diasClass = 'text-yellow-600 dark:text-yellow-400 font-bold';
-                                                $iconoDias = 'hourglass_empty';
-                                            } else {
-                                                $msgTiempo = 'Quedan ' . $diasRestantes . ' días hábiles';
-                                                $diasClass = 'text-green-600 dark:text-green-400 font-medium';
-                                                $iconoDias = 'schedule';
-                                            }
-                                        }
+                                <div class="font-medium text-gray-900 dark:text-gray-100 mb-1 max-w-[200px] whitespace-normal break-words">{{ $rec?->asunto }}</div>
+                                @if($item->observaciones && trim(strtoupper($item->observaciones)) !== 'NINGUNO' && trim(strtoupper($item->observaciones)) !== 'NINGUNA')
+                                    <div class="mt-2">
+                                        <button onclick="openObservacionModal('{{ addslashes($item->observaciones) }}')" class="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-amber-700 bg-amber-50 border border-amber-200 hover:bg-amber-100 rounded transition-colors w-fit shadow-sm">
+                                            <span class="material-symbols-outlined text-[14px]">visibility</span> Ver Observaciones
+                                        </button>
+                                    </div>
+                                @endif
+                            </td>
 
-                                        $detallesData = [
-                                            'tipo' => $item->tipo ? $item->tipo->tipo_nombre : 'N/A',
-                                            'folios' => $item->folio ?? 0,
-                                            'prioridad' => $prioNombre,
-                                            'diasTotales' => $diasTotales,
-                                            'msgTiempo' => $msgTiempo,
-                                            'diasClass' => $diasClass,
-                                            'iconoDias' => $iconoDias,
-                                            'vencido' => $vencido
-                                        ];
-                                    @endphp
-                                    <button type="button" onclick="abrirModalDetalles(this.dataset.info)" data-info="{{ json_encode($detallesData) }}" class="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded border border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-slate-800 transition-colors shadow-sm">
-                                        <span class="material-symbols-outlined text-[16px]">info</span>
-                                        Ver Detalles
-                                    </button>
+                            <!-- 4. Detalles Técnicos (Inline) -->
+                            <td class="px-6 py-4 hidden lg:table-cell">
+                                <div class="flex flex-col gap-1.5 text-[11px] leading-tight text-gray-600 dark:text-gray-400">
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-[14px]">description</span> 
+                                        <span class="truncate max-w-[150px]" title="{{ $rec?->tipo?->tipo_nombre ?? 'Externo' }}">{{ $rec?->tipo?->tipo_nombre ?? 'Externo' }}</span>
+                                    </div>
+                                    
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-[14px]">layers</span> 
+                                        <span>Folios: {{ $rec?->folio ?? 0 }}</span>
+                                    </div>
+
+                                    @if($rec?->tipo)
+                                        @php
+                                            $prioColor = 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
+                                            $prioNombre = $rec->tipo->prioridad->prioridad_nombre ?? 'N/A';
+                                            $prioNombreUpper = strtoupper($prioNombre);
+                                            
+                                            if (str_contains($prioNombreUpper, 'URGENTE')) {
+                                                $prioColor = 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+                                            } elseif (str_contains($prioNombreUpper, 'ALTA')) {
+                                                $prioColor = 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400';
+                                            } elseif (str_contains($prioNombreUpper, 'MEDIA')) {
+                                                $prioColor = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
+                                            } elseif (str_contains($prioNombreUpper, 'BAJA')) {
+                                                $prioColor = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+                                            }
+                                        @endphp
+                                        <div class="flex items-center gap-2" title="Prioridad">
+                                            <span class="material-symbols-outlined text-[14px] opacity-70">flag</span>
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider {{ $prioColor }}">
+                                                {{ $prioNombre }}
+                                            </span>
+                                        </div>
+
+                                        <div class="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-bold">
+                                            <span class="material-symbols-outlined text-[14px]">task_alt</span>
+                                            <span>Proceso Finalizado</span>
+                                        </div>
+                                    @endif
                                 </div>
                             </td>
                             
-                            <!-- Ingreso / Registro -->
+                            <!-- 5. Ingreso / Registro -->
                             <td class="px-6 py-4 hidden lg:table-cell">
                                 <div class="font-medium text-gray-900 dark:text-white">
-                                    {{ $item->fecha_hora_recib ? \Carbon\Carbon::parse($item->fecha_hora_recib)->format('d M Y') : 'N/A' }}
+                                    {{ $item->fecha_re ? \Carbon\Carbon::parse($item->fecha_re)->format('d M Y') : 'N/A' }}
                                 </div>
                                 <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
                                     <span class="material-symbols-outlined text-[14px]">schedule</span>
-                                    {{ $item->fecha_hora_recib ? \Carbon\Carbon::parse($item->fecha_hora_recib)->format('h:i A') : '' }}
+                                    {{ $item->fecha_re ? \Carbon\Carbon::parse($item->fecha_re)->format('h:i A') : '' }}
                                 </div>
-                                @if($item->registradoPor)
-                                <div class="text-xs text-gray-600 dark:text-gray-300 flex items-center gap-1 mt-2" title="Registrado por (Remitente)">
-                                    <span class="material-symbols-outlined text-[14px]">person</span>
-                                    Remitente: {{ $item->registradoPor->rem_nombres }} {{ $item->registradoPor->rem_apellidos }}
-                                </div>
-                                @endif
-                                @if($item->dirigidoA)
-                                <div class="text-xs text-blue-600 dark:text-blue-400 flex items-center gap-1 mt-1" title="Dirigido a">
-                                    <span class="material-symbols-outlined text-[14px]">forward_to_inbox</span>
-                                    Para: {{ $item->dirigidoA->emple_nombres }} {{ $item->dirigidoA->emple_apellidos }}
-                                </div>
-                                @endif
                             </td>
                             
-                            <!-- Archivos / Anexos -->
+                            <!-- 6. Archivos / Anexos -->
                             <td class="px-6 py-4 align-top">
                                 @php
                                     $archivosDatos = [
-                                        'principal' => $item->archivo ? asset('storage/' . $item->archivo) : null,
-                                        'anexos' => [],
-                                        'anexo_texto' => $item->anexo,
-                                        'folios' => $item->folio,
-                                        'respuesta_principal' => null,
-                                        'respuestas_anexos' => [],
-                                        'folios_respuesta' => 0
+                                        'principal'          => $rec?->archivo ? asset('storage/' . $rec->archivo) : null,
+                                        'anexos'             => [],
+                                        'anexo_texto'        => $rec?->anexo,
+                                        'folios'             => $rec?->folio,
+                                        'respuesta_principal'=> $item->archivo_res ? asset('storage/' . $item->archivo_res) : null,
+                                        'respuestas_anexos'  => [],
+                                        'folios_respuesta'   => $item->folios_res ?? 0
                                     ];
-                                    if($item->anexos) {
-                                        foreach($item->anexos as $ax) {
+                                    if ($rec?->anexos) {
+                                        foreach ($rec->anexos as $ax) {
                                             $archivosDatos['anexos'][] = [
                                                 'nombre' => $ax->nombre_original,
-                                                'ruta' => asset('storage/' . $ax->ruta_archivo)
+                                                'ruta'   => asset('storage/' . $ax->ruta_archivo)
+                                            ];
+                                        }
+                                    }
+                                    // Anexos de respuesta
+                                    if ($item->anexosRespuesta) {
+                                        foreach ($item->anexosRespuesta as $ra) {
+                                            $archivosDatos['respuestas_anexos'][] = [
+                                                'nombre' => $ra->nombre_original,
+                                                'ruta'   => asset('storage/' . $ra->ruta_archivo)
                                             ];
                                         }
                                     }
@@ -275,54 +255,27 @@
                                     Ver Documentos
                                 </button>
                             </td>
-
-                            <!-- Observaciones -->
-                            <td class="px-6 py-4 text-sm max-w-[200px] align-top hidden md:table-cell">
-                                @if($item->observaciones && strtoupper($item->observaciones) !== 'NINGUNO' && strtoupper($item->observaciones) !== 'NINGUNA')
-                                    <div class="whitespace-normal text-xs text-gray-600 dark:text-gray-400 italic border-l-2 border-yellow-400 dark:border-yellow-600 pl-2">
-                                        {{ $item->observaciones }}
-                                    </div>
-                                @else
-                                    <span class="text-xs text-gray-400 dark:text-gray-500">-</span>
-                                @endif
-                            </td>
                             
-                            <!-- Estado -->
+                            <!-- 7. Estado (del empleado) -->
                             <td class="px-6 py-4">
                                 @php
-                                    $estadoNomb = $item->estado ? strtolower($item->estado->estado_nomb) : '';
+                                    $estadoNomb = strtolower($item->estado?->estado_nomb ?? '');
                                     $bgClass = 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
-                                    if(str_contains($estadoNomb, 'recibido')) {
-                                        $bgClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
-                                    } elseif(str_contains($estadoNomb, 'tramite') || str_contains($estadoNomb, 'trámite')) {
-                                        $bgClass = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
-                                    } elseif(str_contains($estadoNomb, 'finalizado') || str_contains($estadoNomb, 'resuelto')) {
-                                        $bgClass = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
-                                    }
+                                    if (str_contains($estadoNomb, 'recibido')) $bgClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
+                                    elseif (str_contains($estadoNomb, 'tramite') || str_contains($estadoNomb, 'trámite')) $bgClass = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
+                                    elseif (str_contains($estadoNomb, 'finalizado') || str_contains($estadoNomb, 'resuelto')) $bgClass = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+                                    elseif (str_contains($estadoNomb, 'archivado')) $bgClass = 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300';
                                 @endphp
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $bgClass }}">
-                                    {{ $item->estado ? $item->estado->estado_nomb : 'Sin estado' }}
+                                    {{ $item->estado?->estado_nomb ?? 'Sin estado' }}
                                 </span>
                             </td>
                             
-                            <!-- Acciones -->
+                            <!-- 8. Acciones (bloqueadas en finalizada) -->
                             <td class="px-6 py-4 text-right">
-                                <button title="Ver y añadir seguimiento" onclick="toggleModal('modalSeguimiento')" class="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-blue-400 p-1">
-                                    <span class="material-symbols-outlined text-xl">timeline</span>
+                                <button title="Registro Bloqueado (Solo Lectura)" class="text-gray-300 dark:text-gray-600 p-1 cursor-not-allowed">
+                                    <span class="material-symbols-outlined text-xl">lock</span>
                                 </button>
-                                
-                                @if(in_array($item->id_estado_rec, [9, 10]) || $isRechazado || !$isLatestExterna)
-                                    <button title="Registro Bloqueado (Solo Lectura)" class="text-gray-300 dark:text-gray-600 p-1 cursor-not-allowed">
-                                        <span class="material-symbols-outlined text-xl">lock</span>
-                                    </button>
-                                @else
-                                    <button title="Actualizar estado" onclick="openEstadoModal({{ $item->id_recibido }}, '{{ $item->estado ? $item->estado->estado_nomb : '' }}', '{{ $item->radicado ? $item->radicado->num_radicado : '' }}', 'externa')" class="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-blue-400 p-1">
-                                        <span class="material-symbols-outlined text-xl">edit_document</span>
-                                    </button>
-                                    <button title="Reasignar a otro empleado" onclick="openReasignarModal({{ $item->id_recibido }}, '{{ $item->radicado ? $item->radicado->num_radicado : '' }}')" class="text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 p-1">
-                                        <span class="material-symbols-outlined text-xl">forward</span>
-                                    </button>
-                                @endif
                             </td>
                         </tr>
                     @empty
@@ -1161,6 +1114,10 @@
             stateSelect.value = "";
         }
         
+        // Limpiar campo de observaciones al abrir
+        const obsField = form.querySelector('textarea[name="observaciones"]');
+        if (obsField) obsField.value = "";
+
         currentModalType = tipo;
         
         // Resetear el contador de folios de respuesta al abrir el modal
