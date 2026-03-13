@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Recibido;
 use App\Models\DetalleEnvio;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class CorrespondenciaController extends Controller
 {
@@ -18,11 +19,20 @@ class CorrespondenciaController extends Controller
         // Fetch real data. We assume the user has a nit_empresa attribute based on the database schema.
         // Fetch stats
         // Fetch stats using grouping subqueries to avoid duplicate history traces
-        $queryBase = Recibido::query();
+        // Filter by the current user being a recipient
+        $queryBase = Recibido::whereHas('destinatarios', function($query) use ($user) {
+            $query->where('det_doc_empleado', $user->emple_doc);
+        });
 
         $latestRecibidoSubquery = clone $queryBase;
         $latestRecibidoSubquery = $latestRecibidoSubquery->select(\Illuminate\Support\Facades\DB::raw('MAX(id_recibido) as id_recibido'))->groupBy('num_radicado_ext', 'num_radicado_int');
-        $queryBandejaUnicaExt = Recibido::whereIn('id_recibido', $latestRecibidoSubquery);
+        
+        // We must re-apply the filter here for safety, or join. 
+        // A simple way is to use whereIn on id_recibido but also ensure it matches the user.
+        $queryBandejaUnicaExt = Recibido::whereIn('id_recibido', $latestRecibidoSubquery)
+            ->whereHas('destinatarios', function($query) use ($user) {
+                $query->where('det_doc_empleado', $user->emple_doc);
+            });
 
         $totalRecibidas = (clone $queryBandejaUnicaExt)->count();
         $enTramite = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 8)->count(); 
@@ -30,7 +40,7 @@ class CorrespondenciaController extends Controller
         $archivadas = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 10)->count();
         $vencidas = 0; // Se puede implementar luego la logica o join para buscar vencimiento de radicados. 
         
-        $correspondencias = (clone $queryBandejaUnicaExt)->with(['radicado', 'estado', 'dirigidoA', 'registradoPor', 'tipo.prioridad', 'ciudad', 'anexos'])
+        $correspondencias = (clone $queryBandejaUnicaExt)->with(['radicado', 'estado', 'destinatarios', 'registradoPor', 'tipo.prioridad', 'ciudad', 'anexos'])
             ->orderBy('id_recibido', 'desc')
             ->paginate(10, ['*'], 'ext_page');
 
@@ -112,12 +122,20 @@ class CorrespondenciaController extends Controller
         $nuevoRegistro->anexo = $recibidoAntiguo->anexo;
         $nuevoRegistro->observaciones = $request->observaciones ?? 'Cambio de estado';
         $nuevoRegistro->doc_quien_registra = $recibidoAntiguo->doc_quien_registra;
-        $nuevoRegistro->doc_quien_dirige = $recibidoAntiguo->doc_quien_dirige;
         $nuevoRegistro->id_tipo = $recibidoAntiguo->id_tipo;
         $nuevoRegistro->id_estado_rec = $estado->id_estado;
         $nuevoRegistro->archivo = $recibidoAntiguo->archivo;
         $nuevoRegistro->nit_empresa = $recibidoAntiguo->nit_empresa;
         $nuevoRegistro->save();
+
+        // Duplicar también los destinatarios en detalle_recibido para este nuevo registro
+        $destinatariosAntiguos = \App\Models\DetalleRecibido::where('det_id_recibido', $recibidoAntiguo->id_recibido)->get();
+        foreach ($destinatariosAntiguos as $dest) {
+            \App\Models\DetalleRecibido::create([
+                'det_id_recibido' => $nuevoRegistro->id_recibido,
+                'det_doc_empleado' => $dest->det_doc_empleado,
+            ]);
+        }
 
         // Duplicate any Anexos for the new trace
         $anexosAntiguos = \App\Models\AnexoRecibido::where('id_recibido', $recibidoAntiguo->id_recibido)->get();
@@ -265,15 +283,17 @@ class CorrespondenciaController extends Controller
         $nuevoRegistro->anexo = $recibidoAntiguo->anexo;
         $nuevoRegistro->observaciones = 'Reasignado: ' . $request->observaciones;
         $nuevoRegistro->doc_quien_registra = $recibidoAntiguo->doc_quien_registra;
-        
-        // ✨ This is the core of reassignment
-        $nuevoRegistro->doc_quien_dirige = $request->doc_quien_dirige; 
-        
         $nuevoRegistro->id_tipo = $recibidoAntiguo->id_tipo;
         $nuevoRegistro->id_estado_rec = $estadoEnTramite ? $estadoEnTramite->id_estado : $recibidoAntiguo->id_estado_rec; // Reset to En Tramite
         $nuevoRegistro->archivo = $recibidoAntiguo->archivo;
         $nuevoRegistro->nit_empresa = $recibidoAntiguo->nit_empresa;
         $nuevoRegistro->save();
+
+        // ✨ Insert the new recipient into the pivot table
+        \App\Models\DetalleRecibido::create([
+            'det_id_recibido' => $nuevoRegistro->id_recibido,
+            'det_doc_empleado' => $request->doc_quien_dirige,
+        ]);
 
         // Duplicate any Anexos for the new trace
         $anexosAntiguos = \App\Models\AnexoRecibido::where('id_recibido', $recibidoAntiguo->id_recibido)->get();
@@ -364,24 +384,6 @@ class CorrespondenciaController extends Controller
             }
         }
 
-        // Create DetalleEnvio (Receiver tracking)
-        $detalle = new \App\Models\DetalleEnvio();
-        $detalle->id_quien_envie = $user->emple_doc;
-        $detalle->id_quien_recibe = $request->doc_quien_dirigido;
-        $detalle->id_envio = $envio->id_envio;
-        $detalle->fecha_traslado = now();
-        $detalle->id_estado_rec = $estadoRecibidoId; // El que recibe (destinatario) inicia en 'Recibido'
-        $detalle->observaciones = $request->observaciones;
-        $detalle->save();
-
-        return back()->with('success', 'Correspondencia interna creada y enviada exitosamente.', ['int_page' => 1]);
-        
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return back()->withErrors($e->errors())->withInput();
-        } catch (\Exception $e) {
-            \Log::error('Error guardando correspondencia interna: ' . $e->getMessage());
-            return back()->with('error', 'Error interno al guardar: ' . $e->getMessage())->withInput();
-        }
         // Create DetalleEnvio (Receiver tracking) for each recipient
         foreach ($request->doc_quien_dirigido as $destinatario_doc) {
             $detalle = new \App\Models\DetalleEnvio();
@@ -389,11 +391,18 @@ class CorrespondenciaController extends Controller
             $detalle->id_quien_recibe = $destinatario_doc;
             $detalle->id_envio = $envio->id_envio;
             $detalle->fecha_traslado = now();
-            $detalle->id_estado_rec = $estadoId;
+            $detalle->id_estado_rec = $estadoRecibidoId; // El que recibe (destinatario) inicia en 'Recibido'
             $detalle->observaciones = $request->observaciones;
             $detalle->save();
         }
 
         return back()->with('success', 'Correspondencia interna creada y enviada exitosamente a los destinatarios seleccionados.', ['int_page' => 1]);
+        
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            Log::error('Error guardando correspondencia interna: ' . $e->getMessage());
+            return back()->with('error', 'Error interno al guardar: ' . $e->getMessage())->withInput();
+        }
     }
 }

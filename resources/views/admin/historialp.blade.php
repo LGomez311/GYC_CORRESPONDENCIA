@@ -32,7 +32,7 @@
                 </div>
             </div>
             <div class="overflow-x-auto w-full">
-                <table class="w-full text-left border-collapse min-w-full whitespace-nowrap">
+                <table class="w-full text-left border-collapse min-w-full whitespace-nowrap responsive-table">
 
                     {{-- THEAD --}}
                         <thead class="bg-background-light dark:bg-background-dark/50">
@@ -54,16 +54,16 @@
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
 
                                     {{-- ID PAGO --}}
-                                    <td class="px-6 py-4 text-sm font-bold">
+                                    <td class="px-6 py-4 text-sm font-bold" data-label="ID Pago">
                                         {{ $pago->id_pago }}
                                     </td>
 
                                     {{-- PLAN --}}
-                                    <td class="px-6 py-4 text-sm">
+                                    <td class="px-6 py-4 text-sm" data-label="Plan">
                                         {{ $pago->plan->nomb_plan }}
                                     </td>
 
-                                    <td class="px-6 py-4 text-sm">
+                                    <td class="px-6 py-4 text-sm" data-label="Pagado por">
                                         <div class="flex flex-col">
                                             <span class="font-semibold">{{ $pago->admin?->emple_nombres }}
                                                 {{ $pago->admin?->emple_apellidos }}</span>
@@ -74,7 +74,7 @@
 
 
                                     {{-- FECHA --}}
-                                    <td class="px-6 py-4 text-sm">
+                                    <td class="px-6 py-4 text-sm" data-label="Fecha de Pago">
                                         <div class="flex flex-col">
                                             <span class="text-gray-500 text-xs">
                                                 {{ \Carbon\Carbon::parse($pago->fecha_pago)->format('Y-m-d') }}
@@ -85,15 +85,15 @@
                                         </div>
                                     </td>
 
-                                    <td class="px-6 py-4 text-sm">
+                                    <td class="px-6 py-4 text-sm" data-label="Inicio de licencia">
                                         {{ $pago->fecha_inicio ? \Carbon\Carbon::parse($pago->fecha_inicio)->format('Y-m-d') : '—' }}
                                     </td>
 
-                                    <td class="px-6 py-4 text-sm font-bold">
+                                    <td class="px-6 py-4 text-sm font-bold" data-label="Estado">
                                         {{ $pago->estado->estado_nomb }}
                                     </td>
 
-                                    <td class="px-6 py-4">
+                                    <td class="px-6 py-4 actions-cell" data-label="Comprobante">
                                         <button
                                             class="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-[#0d121b] dark:text-white text-xs font-bold rounded flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                                             onclick="abrirModal('{{ asset('storage/' . $pago->comprobante) }}')">

@@ -41,7 +41,7 @@
             </div>
 
             <div class="overflow-x-auto w-full">
-                <table class="w-full text-left min-w-full whitespace-nowrap">
+                <table class="w-full text-left min-w-full whitespace-nowrap responsive-table">
                     <thead>
                         <tr class="bg-slate-50/30 dark:bg-background-dark/10 border-b border-[#cfd7e7] dark:border-gray-800">
                             <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Radicados</th>
@@ -57,7 +57,7 @@
                         @forelse($recibidos as $cor)
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" 
                             data-search="{{ strtolower($cor->num_radicado_ext . ' ' . $cor->num_radicado_int . ' ' . $cor->asunto) }}">
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4" data-label="Radicados">
                                 <div class="flex flex-col">
                                     <span class="inline-flex items-center w-max px-2 py-0.5 rounded text-[10px] uppercase font-bold {{ $cor->origen == 'Interna' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400' : 'bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-900/40 dark:text-fuchsia-400' }} mb-1">
                                         {{ $cor->origen }}
@@ -66,7 +66,7 @@
                                     <span class="text-xs text-[#4c669a] font-mono">INT: {{ $cor->num_radicado_int }}</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4" data-label="Origen / Institución">
                                 <div class="flex items-center gap-3">
                                     <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-gray-800 flex items-center justify-center text-[#4c669a] shrink-0">
                                         <span class="material-symbols-outlined text-[18px]">business</span>
@@ -77,7 +77,7 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4" data-label="Asunto">
                                 <div class="flex flex-col">
                                     <span class="text-sm text-[#0d121b] dark:text-white font-medium" title="{{ $cor->asunto }}">
                                         {{ $cor->asunto }}
@@ -85,19 +85,19 @@
                                     <span class="text-xs text-[#4c669a]">{{ CarbonCarbon::parse($cor->fecha)->format('d M, Y H:i') }}</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4" data-label="Destinatario">
                                 <div class="flex flex-col">
                                     <span class="text-sm font-bold dark:text-white">{{ $cor->destinatario_nombre }}</span>
                                     <span class="text-xs text-[#4c669a]">Doc: {{ $cor->doc_destinatario }}</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4" data-label="Folios / Anexos">
                                 <div class="flex flex-col text-xs text-[#4c669a]">
                                     <span>Folios: {{ $cor->folio }}</span>
                                     <span>Anexos: {{ $cor->anexo ?? 'Ninguno' }}</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4" data-label="Estado">
                                 @php
                                     $estadoNom = $cor->estado_nomb;
                                     $bgColor = 'bg-slate-100 text-slate-700 dark:bg-gray-800 dark:text-gray-300';
@@ -111,7 +111,7 @@
                                     {{ $estadoNom }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-right">
+                            <td class="px-6 py-4 text-right actions-cell" data-label="Acciones">
                                 <div class="flex justify-end gap-1">
                                     <button class="p-2 text-[#4c669a] hover:text-primary transition-colors btn-view-cor" title="Ver detalle"
                                         data-ext="{{ $cor->num_radicado_ext }}"
@@ -183,7 +183,7 @@
             </div>
 
             <div class="overflow-x-auto w-full">
-                <table class="w-full text-left min-w-full whitespace-nowrap">
+                <table class="w-full text-left min-w-full whitespace-nowrap responsive-table">
                     <thead>
                         <tr class="bg-slate-50/30 dark:bg-background-dark/10 border-b border-[#cfd7e7] dark:border-gray-800">
                             <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Radicados</th>
@@ -199,27 +199,21 @@
                         @forelse($envios as $cor)
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" 
                             data-search="{{ strtolower($cor->num_radicado_ext . ' ' . $cor->num_radicado_int . ' ' . $cor->asunto) }}">
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4" data-label="Radicados">
                                 <div class="flex flex-col">
-                                    <span class="inline-flex items-center w-max px-2 py-0.5 rounded text-[10px] uppercase font-bold {{ $cor->origen == 'Interna' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400' : 'bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-900/40 dark:text-fuchsia-400' }} mb-1">
+                                    <span class="inline-flex items-center w-max px-2 py-0.5 rounded text-[10px] uppercase font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400 mb-1">
                                         {{ $cor->origen }}
                                     </span>
-                                    <span class="font-bold text-[#0d121b] dark:text-white">EXT: {{ $cor->num_radicado_ext }}</span>
-                                    <span class="text-xs text-[#4c669a] font-mono">INT: {{ $cor->num_radicado_int }}</span>
+                                    <span class="font-bold text-[#0d121b] dark:text-white">INT: {{ $cor->num_radicado_int }}</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-gray-800 flex items-center justify-center text-[#4c669a] shrink-0">
-                                        <span class="material-symbols-outlined text-[18px]">business</span>
-                                    </div>
-                                    <div class="flex flex-col">
-                                        <span class="text-sm font-bold dark:text-white">{{ $cor->nom_institucion }}</span>
-                                        <span class="text-xs text-[#4c669a]">{{ $cor->ciudad }}</span>
-                                    </div>
+                            <td class="px-6 py-4" data-label="Creado Por">
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-bold dark:text-white">{{ $cor->registrado_por_nombre }}</span>
+                                    <span class="text-xs text-[#4c669a]">Doc: {{ $cor->doc_registra }}</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4" data-label="Asunto">
                                 <div class="flex flex-col">
                                     <span class="text-sm text-[#0d121b] dark:text-white font-medium" title="{{ $cor->asunto }}">
                                         {{ $cor->asunto }}
@@ -227,19 +221,29 @@
                                     <span class="text-xs text-[#4c669a]">{{ CarbonCarbon::parse($cor->fecha)->format('d M, Y H:i') }}</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4" data-label="Destinatarios">
                                 <div class="flex flex-col">
-                                    <span class="text-sm font-bold dark:text-white">{{ $cor->destinatario_nombre }}</span>
-                                    <span class="text-xs text-[#4c669a]">Doc: {{ $cor->doc_destinatario }}</span>
+                                    <span class="text-sm font-bold dark:text-white">
+                                        @if($cor->destinatarios->count() > 0)
+                                            {{ $cor->destinatarios->count() }} destinatario(s)
+                                        @else
+                                            No asignado
+                                        @endif
+                                    </span>
+                                    @if($cor->destinatarios->isNotEmpty())
+                                      <span class="text-xs text-[#4c669a] truncate max-w-[150px]" title="{{ $cor->destinatarios->pluck('emple_nombres')->join(', ') }}">
+                                          {{ $cor->destinatarios->first()->emple_nombres }}...
+                                      </span>
+                                    @endif
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4" data-label="Folios / Anexos">
                                 <div class="flex flex-col text-xs text-[#4c669a]">
                                     <span>Folios: {{ $cor->folio }}</span>
                                     <span>Anexos: {{ $cor->anexo ?? 'Ninguno' }}</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4" data-label="Estado">
                                 @php
                                     $estadoNom = $cor->estado_nomb;
                                     $bgColor = 'bg-slate-100 text-slate-700 dark:bg-gray-800 dark:text-gray-300';
@@ -253,7 +257,7 @@
                                     {{ $estadoNom }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-right">
+                            <td class="px-6 py-4 text-right actions-cell" data-label="Acciones">
                                 <div class="flex justify-end gap-1">
                                     <button class="p-2 text-[#4c669a] hover:text-primary transition-colors btn-view-cor" title="Ver detalle"
                                         data-ext="{{ $cor->num_radicado_ext }}"

@@ -195,6 +195,71 @@
             border-color: #135bec !important;
             box-shadow: 0 0 0 2px rgba(19, 91, 236, 0.2) !important;
         }
+
+        /* TABLAS RESPONSIVAS (Tipo Tarjetas en Móviles) */
+        @media (max-width: 768px) {
+            .responsive-table {
+                display: block;
+                width: 100%;
+            }
+            .responsive-table thead {
+                display: none; /* Ocultar encabezados en móvil */
+            }
+            .responsive-table tbody {
+                display: block;
+                width: 100%;
+            }
+            .responsive-table tr {
+                display: flex;
+                flex-direction: column;
+                margin-bottom: 1rem;
+                background-color: transparent;
+                border: 1px solid #cfd7e7;
+                border-radius: 0.75rem; /* rounded-xl */
+                overflow: hidden;
+            }
+            .dark .responsive-table tr {
+                border-color: #1f2937; /* gray-800 */
+                background-color: #161d2b;
+            }
+            .responsive-table td {
+                display: flex;
+                flex-direction: column; /* Etiqueta arriba, valor abajo en vertical para mejor lectura o en row */
+                /* flex-direction: row; align-items: center; justify-content: space-between; */
+                /* Alternativa tipo row (etiqueta a izquierda, dato a derecha): */
+                flex-direction: row; 
+                justify-content: space-between;
+                align-items: center;
+                gap: 1rem;
+                padding: 0.75rem 1rem;
+                text-align: right; /* Alinear contenido a la derecha */
+                border-bottom: 1px solid #e5e7eb; /* gray-200 */
+                white-space: normal; /* Permitir que el texto baje si es largo */
+            }
+            .dark .responsive-table td {
+                border-bottom-color: #1f2937; /* gray-800 */
+            }
+            .responsive-table td:last-child {
+                border-bottom: none;
+            }
+            /* Generar el "encabezado" dinámico con data-label */
+            .responsive-table td::before {
+                content: attr(data-label);
+                font-weight: 700;
+                font-size: 0.75rem; /* text-xs */
+                text-transform: uppercase;
+                color: #4c669a;
+                text-align: left;
+                flex-shrink: 0;
+            }
+            /* Ajuste de botones al final */
+            .responsive-table td.actions-cell {
+                justify-content: flex-end; /* Acelerar a la derecha */
+            }
+            .responsive-table td.actions-cell::before {
+                display: none; /* Ocultar etiqueta "Acciones" en móvil si los botones son auto-explicativos o la mantenemos */
+            }
+        }
     </style>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
