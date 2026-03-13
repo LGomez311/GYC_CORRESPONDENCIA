@@ -1068,13 +1068,45 @@
             extBtn.classList.add(...inactiveClasses);
             extBtn.classList.remove(...activeClasses);
         }
+
+        // Persistir pestaña activa
+        sessionStorage.setItem('activeCorrespondenceTabFinalizada', tab);
     }
 
     document.addEventListener('DOMContentLoaded', () => {
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('int_page')) {
+        
+        // Prioridad: 1. URL (?tab=...) 2. URL (?int_page=...) 3. SessionStorage
+        const tabFromUrl = urlParams.get('tab');
+        const savedTab = sessionStorage.getItem('activeCorrespondenceTabFinalizada');
+
+        if (tabFromUrl === 'interna' || urlParams.has('int_page')) {
             switchTab('interna');
+        } else if (tabFromUrl === 'externa' || urlParams.has('ext_page')) {
+            switchTab('externa');
+        } else if (savedTab) {
+            switchTab(savedTab);
         }
+
+        // Restaurar posición de scroll
+        const scrollPos = sessionStorage.getItem('scrollPositionFinalizada');
+        if (scrollPos) {
+            window.scrollTo(0, parseInt(scrollPos));
+            sessionStorage.removeItem('scrollPositionFinalizada');
+        }
+
+        // Interceptar envíos de formulario (si los hay en esta vista)
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            form.addEventListener('submit', () => {
+                sessionStorage.setItem('scrollPositionFinalizada', window.scrollY);
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.classList.add('opacity-50', 'pointer-events-none');
+                    submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin align-middle mr-1 text-[18px]">sync</span> Procesando...';
+                }
+            });
+        });
     });
 
     let currentModalType = '';

@@ -255,8 +255,8 @@ class CorrespondenciaController extends Controller
         $request->validate([
             'estado_nomb' => 'required',
             'observaciones' => 'nullable|string',
-            'archivo_respuesta' => 'nullable|file|mimes:pdf|max:5120',
-            'archivos_respuesta.*' => 'nullable|file|mimes:pdf|max:5120', // Array de PDFs opcional
+            'archivo_respuesta' => 'nullable|file|mimes:pdf|max:5120',           // Max 5MB
+            'archivos_respuesta.*' => 'nullable|file|mimes:pdf|max:25600',        // Max 25MB
             'folios_respuesta' => 'nullable|integer'
         ]);
 
@@ -331,7 +331,7 @@ class CorrespondenciaController extends Controller
             }
         }
 
-        return back()->with('success', 'Estado de correspondencia interna actualizado correctamente.', ['int_page' => request('int_page')]);
+        return back()->with('success', 'Estado de correspondencia interna actualizado correctamente.');
     }
 
     public function reasignar(Request $request, $id)
@@ -413,8 +413,8 @@ class CorrespondenciaController extends Controller
                 'doc_quien_dirigido.*' => 'exists:empleado,emple_doc',
                 'id_tipo_envio' => 'required|exists:tipo,id_tipo',
                 'observaciones' => 'nullable|string',
-                'archivo' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120', // Max 5MB
-                'anexos.*' => 'nullable|file|mimes:pdf|max:5120', // Array de Archivos, Max 5MB
+                'archivo' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',  // Max 5MB
+                'anexos.*' => 'nullable|file|mimes:pdf|max:25600',               // Max 25MB
                 'folio' => 'nullable|integer'
             ]);
 
@@ -501,7 +501,8 @@ class CorrespondenciaController extends Controller
                 $detalle->save();
             }
 
-            return back()->with('success', 'Correspondencia interna creada y enviada exitosamente a los destinatarios seleccionados.', ['int_page' => 1]);
+            return back()->with('success', 'Correspondencia interna creada y enviada exitosamente.');
+
 
         }
         catch (\Illuminate\Validation\ValidationException $e) {

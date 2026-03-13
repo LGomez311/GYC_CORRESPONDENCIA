@@ -20,6 +20,12 @@ return Application::configure(basePath: dirname(__DIR__))
 
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Manejar archivos demasiado grandes (exceden límites de PHP en php.ini)
+        $exceptions->render(function (\Illuminate\Http\Exceptions\PostTooLargeException $e, $request) {
+            if ($request->expectsJson()) {
+                return response()->json(['error' => 'El archivo enviado es demasiado pesado para ser procesado por el servidor.'], 413);
+            }
+            return back()->with('error', 'El archivo enviado supera el límite máximo permitido por el servidor. Por favor, reduzca el tamaño del archivo e intente de nuevo.');
+        });
     })
     ->create();

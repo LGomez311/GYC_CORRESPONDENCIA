@@ -732,24 +732,27 @@
                 </div>
                 
                 <div id="archivoRespuestaContainer" class="hidden">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Archivo de Respuesta (Opcional, Solo unPDF)</label>
-                    <input type="file" id="archivo_respuesta_input" name="archivo_respuesta" accept=".pdf" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-600 file:text-white hover:file:bg-green-700 file:cursor-pointer cursor-pointer border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 mb-4" onchange="actualizarContadorFoliosRespuesta()">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Archivo de Respuesta
+                        <span class="ml-1 text-xs font-normal text-green-600 dark:text-green-400">(Opcional · 1 PDF · Máx. 5 MB)</span>
+                    </label>
+                    <input type="file" id="archivo_respuesta_input" name="archivo_respuesta" accept=".pdf"
+                           class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-600 file:text-white hover:file:bg-green-700 file:cursor-pointer cursor-pointer border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 mb-1"
+                           onchange="validarArchivoRespuesta(this)">
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Solo <strong>1 PDF</strong> como oficio de respuesta con peso máximo de <strong>5 MB</strong>.</p>
+                    <p id="error_archivo_respuesta" class="hidden mb-3 text-xs text-red-600 dark:text-red-400 font-medium flex items-center gap-1"><span class="material-symbols-outlined text-[13px]">error</span> <span id="error_archivo_respuesta_msg"></span></p>
 
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Anexos de Respuesta (Opcional, Solo un PDF)</label>
-                    
-                    <!-- Custom Multiple File Upload Area for Respuestas -->
-                    <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors cursor-pointer relative" onclick="document.getElementById('archivos_respuesta_input').click()">
-                        <span class="material-symbols-outlined text-gray-400 text-3xl mb-2">upload_file</span>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">Clic aquí para añadir anexos (PDF)</p>
-                        <p class="text-xs text-gray-500 mt-1">Puedes agregar varios archivos uno por uno sin usar la tecla Ctrl.</p>
-                        <!-- Actual Hidden Input -->
-                        <input type="file" id="archivos_respuesta_input" name="archivos_respuesta[]" multiple accept=".pdf" class="hidden" onchange="handleFileSelect(event, 'respuestasList', 'archivos_respuesta_input'); actualizarContadorFoliosRespuesta()">
-                    </div>
-                    
-                    <!-- Container for Selected Files Pills -->
-                    <div id="respuestasList" class="mt-3 flex flex-wrap gap-2 empty:hidden"></div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Anexo de Respuesta
+                        <span class="ml-1 text-xs font-normal text-green-600 dark:text-green-400">(Opcional · 1 PDF · Máx. 25 MB)</span>
+                    </label>
+                    <input type="file" id="archivos_respuesta_input" name="archivos_respuesta[]" accept=".pdf"
+                           class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 dark:file:bg-teal-900/30 dark:file:text-teal-400 file:cursor-pointer cursor-pointer border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 mb-1"
+                           onchange="validarAnexoRespuesta(this)">
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Solo <strong>1 PDF</strong> como anexo de respuesta con peso máximo de <strong>25 MB</strong>.</p>
+                    <p id="error_anexo_respuesta" class="hidden mb-3 text-xs text-red-600 dark:text-red-400 font-medium flex items-center gap-1"><span class="material-symbols-outlined text-[13px]">error</span> <span id="error_anexo_respuesta_msg"></span></p>
 
-                    <div class="mt-4">
+                    <div class="mt-2">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Folios de la Respuesta</label>
                         <input type="number" id="folios_respuesta_input" name="folios_respuesta" min="0" value="0" readonly class="w-full border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-100 dark:bg-slate-800 dark:text-gray-300 text-gray-600 py-2 px-3 text-sm cursor-not-allowed" placeholder="Se calcula automáticamente...">
                     </div>
@@ -891,7 +894,10 @@
                         <div id="listaDestinatarios" class="flex flex-col">
                             @foreach($empleados ?? [] as $emp)
                                 @if($emp->emple_doc != Auth::user()->emple_doc)
-                                    <label class="destinatario-item flex items-center justify-between px-4 py-2 hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0 transition-colors" data-nombre="{{ strtolower($emp->emple_nombres . ' ' . $emp->emple_apellidos) }}" data-area="{{ strtolower($emp->area->area_nom ?? 'sin área') }}">
+                                    <label class="destinatario-item flex items-center justify-between px-4 py-2 hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0 transition-colors" 
+                                           data-nombre="{{ strtolower($emp->emple_nombres . ' ' . $emp->emple_apellidos) }}" 
+                                           data-area="{{ strtolower($emp->area->area_nom ?? 'sin área') }}"
+                                           data-doc="{{ $emp->emple_doc }}">
                                         <div class="flex items-center gap-3 w-full">
                                             <div class="relative flex items-center justify-center">
                                                 <input type="checkbox" name="doc_quien_dirigido[]" value="{{ $emp->emple_doc }}" 
@@ -899,7 +905,7 @@
                                                     onchange="actualizarPillsDestinatarios(this, '{{ addslashes($emp->emple_nombres . ' ' . $emp->emple_apellidos) }}', '{{ $emp->emple_doc }}')">
                                             </div>
                                             <div class="flex flex-col">
-                                                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ $emp->emple_nombres }} {{ $emp->emple_apellidos }}</span>
+                                                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ $emp->emple_nombres }} {{ $emp->emple_apellidos }} <span class="text-xs text-gray-400 font-normal"> Documento: {{ $emp->emple_doc }}</span></span>
                                                 <span class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                                                     <span class="material-symbols-outlined text-[12px]">work</span>
                                                     {{ $emp->area->area_nom ?? 'Sin Área' }}
@@ -945,17 +951,29 @@
                 <div class="p-4 bg-gray-50 dark:bg-slate-800/30 rounded-xl border border-gray-200 dark:border-gray-700 space-y-4">
                     <!-- Documento Principal -->
                     <div class="w-full">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Documento Principal (Solo PDF)</label>
-                        <input type="file" name="archivo" id="archivo_principal_input" accept=".pdf" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-blue-700 file:cursor-pointer cursor-pointer border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 transition-colors" onchange="actualizarContadorFolios()">
-                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Tamaño máximo: 5MB. Este archivo es el oficio principal.</p>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Documento Principal
+                            <span class="ml-1 text-xs font-normal text-blue-600 dark:text-blue-400">(Solo 1 PDF · Máx. 5 MB)</span>
+                        </label>
+                        <input type="file" name="archivo" id="archivo_principal_input" accept=".pdf"
+                               class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-blue-700 file:cursor-pointer cursor-pointer border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 transition-colors"
+                               onchange="validarArchivoPrincipal(this)">
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Solo se permite <strong>1 archivo PDF</strong> como oficio principal con un peso máximo de <strong>5 MB</strong>.</p>
+                        <p id="error_archivo_principal" class="hidden mt-1 text-xs text-red-600 dark:text-red-400 font-medium flex items-center gap-1"><span class="material-symbols-outlined text-[13px]">error</span> <span id="error_archivo_principal_msg"></span></p>
                     </div>
 
                     <!-- Anexo único y Folios -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Anexo (Solo 1 PDF)</label>
-                            <input type="file" name="anexos[]" id="anexo_unico_input" accept=".pdf" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900/30 dark:file:text-blue-400 file:cursor-pointer cursor-pointer border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 transition-colors" onchange="actualizarContadorFolios()">
-                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Máximo 1 archivo PDF adicional.</p>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Anexo
+                                <span class="ml-1 text-xs font-normal text-blue-600 dark:text-blue-400">(Solo 1 PDF · Máx. 25 MB)</span>
+                            </label>
+                            <input type="file" name="anexos[]" id="anexo_unico_input" accept=".pdf"
+                                   class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900/30 dark:file:text-blue-400 file:cursor-pointer cursor-pointer border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 transition-colors"
+                                   onchange="validarAnexoUnico(this)">
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Solo se permite <strong>1 archivo PDF</strong> como anexo con un peso máximo de <strong>25 MB</strong>.</p>
+                            <p id="error_anexo_unico" class="hidden mt-1 text-xs text-red-600 dark:text-red-400 font-medium flex items-center gap-1"><span class="material-symbols-outlined text-[13px]">error</span> <span id="error_anexo_unico_msg"></span></p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Total de Folios</label>
@@ -1064,13 +1082,47 @@
             extBtn.classList.add(...inactiveClasses);
             extBtn.classList.remove(...activeClasses);
         }
+
+        // Persistir pestaña activa
+        sessionStorage.setItem('activeCorrespondenceTab', tab);
     }
 
     document.addEventListener('DOMContentLoaded', () => {
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('int_page')) {
+        
+        // Prioridad: 1. URL (?tab=...) 2. URL (?int_page=...) 3. SessionStorage
+        const tabFromUrl = urlParams.get('tab');
+        const savedTab = sessionStorage.getItem('activeCorrespondenceTab');
+
+        if (tabFromUrl === 'interna' || urlParams.has('int_page')) {
             switchTab('interna');
+        } else if (tabFromUrl === 'externa' || urlParams.has('ext_page')) {
+            switchTab('externa');
+        } else if (savedTab) {
+            switchTab(savedTab);
         }
+
+        // Restaurar posición de scroll si existe
+        const scrollPos = sessionStorage.getItem('scrollPosition');
+        if (scrollPos) {
+            window.scrollTo(0, parseInt(scrollPos));
+            sessionStorage.removeItem('scrollPosition');
+        }
+
+        // Interceptar envíos de formulario para guardar estado y mostrar loading
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            form.addEventListener('submit', () => {
+                sessionStorage.setItem('scrollPosition', window.scrollY);
+                
+                // Mostrar un loader simple (opcional, mejora la percepción)
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.classList.add('opacity-50', 'pointer-events-none');
+                    submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin align-middle mr-1 text-[18px]">sync</span> Procesando...';
+                }
+            });
+        });
     });
 
     let currentModalType = '';
@@ -1156,76 +1208,98 @@
                 
                 // Clear the main answer file
                 const fileInputMain = fileContainer.querySelector('input[name="archivo_respuesta"]');
-                if(fileInputMain) fileInputMain.value = '';
-                
-                // Clear custom anexos responses
-                clearCustomFileInput('archivos_respuesta_input', 'respuestasList');
+                if (fileInputMain) fileInputMain.value = '';
+                limpiarErrorArchivo('error_archivo_respuesta');
+
+                // Clear single anexo de respuesta
+                clearCustomFileInput('archivos_respuesta_input');
+                limpiarErrorArchivo('error_anexo_respuesta');
+
+                // Reset folio count
+                const foliosInput = document.getElementById('folios_respuesta_input');
+                if (foliosInput) foliosInput.value = 0;
             }
         }
     }
 
     // ==========================================
-    // CUSTOM MULTIPLE FILE UPLOAD LOGIC
+    // VALIDACION Y LIMITES DE ARCHIVOS
     // ==========================================
-    
-    // Dictionary to store the selected files for each input ID
-    const customFilesState = {
-        'archivos_respuesta_input': new DataTransfer(),
-        'anexos_nuevos_input': new DataTransfer()
-    };
 
-    function handleFileSelect(event, listContainerId, inputId) {
-        const input = event.target;
-        const newFiles = input.files;
-        const dt = customFilesState[inputId];
-        
-        // Loop through selected files and add them to our DataTransfer object
-        for (let i = 0; i < newFiles.length; i++) {
-            // Prevent duplicate files by checking name & size
-            let isDuplicate = false;
-            for (let j = 0; j < dt.items.length; j++) {
-                if (dt.items[j].getAsFile().name === newFiles[i].name && dt.items[j].getAsFile().size === newFiles[i].size) {
-                    isDuplicate = true;
-                    break;
-                }
-            }
-            
-            if (!isDuplicate) {
-                dt.items.add(newFiles[i]);
-            }
-        }
-        
-        // Sync the true input with our accumulated files
-        input.files = dt.files;
-        
-        // Render the UI
-        renderFilePills(inputId, listContainerId);
-        
-        // Auto-count internal folios if relevant
-        if (inputId === 'anexos_nuevos_input') {
-            actualizarContadorFolios();
+    const MAX_PRINCIPAL_MB = 5;   // Documento principal: máx 5 MB
+    const MAX_ANEXO_MB     = 25;  // Anexo: máx 25 MB
+
+    function mostrarErrorArchivo(containerId, msgId, mensaje) {
+        const el = document.getElementById(containerId);
+        const msg = document.getElementById(msgId);
+        if (el && msg) {
+            msg.textContent = mensaje;
+            el.classList.remove('hidden');
         }
     }
 
-    // Contar páginas de TODOS los PDFs de respuesta: archivo principal + anexos múltiples
+    function limpiarErrorArchivo(containerId) {
+        const el = document.getElementById(containerId);
+        if (el) el.classList.add('hidden');
+    }
+
+    function validarArchivo(input, maxMB, errorContainerId, errorMsgId, callbackOk) {
+        limpiarErrorArchivo(errorContainerId);
+        if (!input || input.files.length === 0) {
+            if (callbackOk) callbackOk();
+            return true;
+        }
+        if (input.files.length > 1) {
+            input.value = '';
+            mostrarErrorArchivo(errorContainerId, errorMsgId, 'Solo se permite subir 1 archivo PDF en este campo.');
+            Swal.fire({ icon: 'error', title: 'Solo 1 PDF permitido', text: 'Este campo solo acepta un (1) archivo PDF. Por favor seleccione únicamente un PDF.' });
+            return false;
+        }
+        const file = input.files[0];
+        const sizeMB = file.size / (1024 * 1024);
+        if (sizeMB > maxMB) {
+            input.value = '';
+            mostrarErrorArchivo(errorContainerId, errorMsgId, `El archivo pesa ${sizeMB.toFixed(1)} MB y supera el límite de ${maxMB} MB.`);
+            Swal.fire({ icon: 'error', title: 'Archivo demasiado pesado', text: `El PDF seleccionado pesa ${sizeMB.toFixed(1)} MB y supera el límite permitido de ${maxMB} MB. Por favor, reduzca el tamaño del archivo e intente de nuevo.` });
+            return false;
+        }
+        if (callbackOk) callbackOk();
+        return true;
+    }
+
+    function validarArchivoPrincipal(input) {
+        validarArchivo(input, MAX_PRINCIPAL_MB, 'error_archivo_principal', 'error_archivo_principal_msg', actualizarContadorFolios);
+    }
+
+    function validarAnexoUnico(input) {
+        validarArchivo(input, MAX_ANEXO_MB, 'error_anexo_unico', 'error_anexo_unico_msg', actualizarContadorFolios);
+    }
+
+    function validarArchivoRespuesta(input) {
+        validarArchivo(input, MAX_PRINCIPAL_MB, 'error_archivo_respuesta', 'error_archivo_respuesta_msg', actualizarContadorFoliosRespuesta);
+    }
+
+    function validarAnexoRespuesta(input) {
+        validarArchivo(input, MAX_ANEXO_MB, 'error_anexo_respuesta', 'error_anexo_respuesta_msg', actualizarContadorFoliosRespuesta);
+    }
+
+    // Contar páginas de los PDFs de respuesta (archivo principal + anexo único)
     async function actualizarContadorFoliosRespuesta() {
         const foliosInput = document.getElementById('folios_respuesta_input');
         if (!foliosInput) return;
 
         const promesas = [];
 
-        // 1. Archivo de respuesta principal (input simple)
+        // 1. Archivo de respuesta principal
         const archivoInput = document.getElementById('archivo_respuesta_input');
         if (archivoInput && archivoInput.files.length > 0) {
             promesas.push(getPdfPageCount(archivoInput.files[0]));
         }
 
-        // 2. Anexos de respuesta múltiples (custom multi-upload)
-        const dt = customFilesState['archivos_respuesta_input'];
-        if (dt) {
-            for (let i = 0; i < dt.files.length; i++) {
-                promesas.push(getPdfPageCount(dt.files[i]));
-            }
+        // 2. Anexo único de respuesta
+        const anexoRespInput = document.getElementById('archivos_respuesta_input');
+        if (anexoRespInput && anexoRespInput.files.length > 0) {
+            promesas.push(getPdfPageCount(anexoRespInput.files[0]));
         }
 
         if (promesas.length === 0) {
@@ -1234,39 +1308,12 @@
         }
 
         foliosInput.placeholder = 'Contando páginas...';
-
         const resultados = await Promise.all(promesas);
-        const total = resultados.reduce((a, b) => a + b, 0);
-
-        foliosInput.value = total;
+        foliosInput.value = resultados.reduce((a, b) => a + b, 0);
         foliosInput.placeholder = 'Se calcula automáticamente...';
     }
 
-    function removeFile(inputId, listContainerId, fileName, fileSize) {
-        const input = document.getElementById(inputId);
-        const dt = customFilesState[inputId];
-        const newDt = new DataTransfer();
-        
-        for (let i = 0; i < dt.items.length; i++) {
-            const file = dt.items[i].getAsFile();
-            if (file.name !== fileName || file.size !== fileSize) {
-                newDt.items.add(file);
-            }
-        }
-        
-        // Update our state
-        customFilesState[inputId] = newDt;
-        // Sync with actual input
-        input.files = newDt.files;
-        
-        // Render UI
-        renderFilePills(inputId, listContainerId);
-        
-        // Auto-count internal folios if relevant
-        if (inputId === 'anexos_nuevos_input') {
-            actualizarContadorFolios();
-        }
-    }
+
 
     function getPdfPageCount(file) {
         return new Promise((resolve) => {
@@ -1322,42 +1369,9 @@
             autoMsg.classList.add('hidden');
         }
     }
-    function renderFilePills(inputId, listContainerId) {
-        const container = document.getElementById(listContainerId);
-        const dt = customFilesState[inputId];
-        
-        container.innerHTML = '';
-        
-        for (let i = 0; i < dt.items.length; i++) {
-            const file = dt.items[i].getAsFile();
-            
-            // Truncate name for display
-            let display = file.name;
-            if (display.length > 20) {
-                display = display.substring(0, 15) + '...' + display.substring(display.lastIndexOf('.'));
-            }
-            
-            const pill = document.createElement('div');
-            pill.className = 'flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 px-2 py-1 rounded text-xs font-medium dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800';
-            
-            pill.innerHTML = `
-                <span class="material-symbols-outlined text-[14px]">description</span>
-                <span title="${file.name}">${display}</span>
-                <button type="button" class="text-blue-500 hover:text-red-500 hover:bg-red-50 rounded-full w-4 h-4 flex items-center justify-center transition-colors ml-1 focus:outline-none" onclick="event.stopPropagation(); removeFile('${inputId}', '${listContainerId}', '${file.name}', ${file.size})">
-                    <span class="material-symbols-outlined text-[12px]">close</span>
-                </button>
-            `;
-            
-            container.appendChild(pill);
-        }
-    }
-    
-    function clearCustomFileInput(inputId, listContainerId) {
-        customFilesState[inputId] = new DataTransfer();
+    function clearCustomFileInput(inputId) {
         const input = document.getElementById(inputId);
-        if(input) input.files = customFilesState[inputId].files;
-        const container = document.getElementById(listContainerId);
-        if(container) container.innerHTML = '';
+        if (input) input.value = '';
     }
 
     // ==========================================
@@ -1400,9 +1414,10 @@
         items.forEach(item => {
             const nombre = item.getAttribute('data-nombre');
             const area = item.getAttribute('data-area');
+            const doc = item.getAttribute('data-doc');
             
             // Si no hay texto, mostramos todos
-            if (input.length === 0 || nombre.includes(input) || area.includes(input)) {
+            if (input.length === 0 || nombre.includes(input) || area.includes(input) || doc.includes(input)) {
                 item.classList.remove('hidden');
                 item.classList.add('flex');
                 visibleCount++;
