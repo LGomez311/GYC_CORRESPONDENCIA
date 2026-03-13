@@ -67,7 +67,7 @@
 
 
             <div class="overflow-x-auto">
-                <table class="min-w-full text-sm text-left border-collapse">
+                <table class="min-w-full text-sm text-left border-collapse responsive-table">
                     <thead class="bg-background-light dark:bg-background-dark/50">
                         <tr>
                             <th class="px-4 sm:px-6 py-3 sm:py-4 text-xs font-bold text-[#4c669a] uppercase text-center">ID
@@ -84,15 +84,15 @@
                         @foreach ($areas as $area)
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
 
-                                <td class="px-4 sm:px-6 py-3 sm:py-4 text-center dark:text-gray-300">
+                                <td class="px-4 sm:px-6 py-3 sm:py-4 text-center dark:text-gray-300" data-label="ID">
                                     {{ $area->id_area }}
                                 </td>
 
-                                <td class="px-4 sm:px-6 py-3 sm:py-4 text-center font-bold text-[#0d121b] dark:text-white">
+                                <td class="px-4 sm:px-6 py-3 sm:py-4 text-center font-bold text-[#0d121b] dark:text-white" data-label="Nombre">
                                     {{ $area->area_nom }}
                                 </td>
 
-                                <td class="px-4 sm:px-6 py-3 sm:py-4 text-center">
+                                <td class="px-4 sm:px-6 py-3 sm:py-4 text-center actions-cell" data-label="Acciones">
                                     <div class="flex items-center justify-center gap-2">
                                         <button onclick="openEditModal('{{ $area->id_area }}','{{ $area->area_nom }}')"
                                             class="p-2 text-[#4c669a] hover:text-primary transition">

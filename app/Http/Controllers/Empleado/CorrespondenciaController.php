@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Recibido;
 use App\Models\DetalleEnvio;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class CorrespondenciaController extends Controller
 {
@@ -18,24 +19,32 @@ class CorrespondenciaController extends Controller
         // Fetch real data. We assume the user has a nit_empresa attribute based on the database schema.
         // Fetch stats
         // Fetch stats using grouping subqueries to avoid duplicate history traces
-        $queryBase = Recibido::query();
+        // Filter by the current user being a recipient
+        $queryBase = Recibido::whereHas('destinatarios', function ($query) use ($user) {
+            $query->where('det_doc_empleado', $user->emple_doc);
+        });
 
         $latestRecibidoSubquery = clone $queryBase;
         $latestRecibidoSubquery = $latestRecibidoSubquery->select(\Illuminate\Support\Facades\DB::raw('MAX(id_recibido) as id_recibido'))->groupBy('num_radicado_ext', 'num_radicado_int');
-        $queryBandejaUnicaExt = Recibido::whereIn('id_recibido', $latestRecibidoSubquery);
+
+        // We must re-apply the filter here for safety, or join. 
+        // A simple way is to use whereIn on id_recibido but also ensure it matches the user.
+        $queryBandejaUnicaExt = Recibido::whereIn('id_recibido', $latestRecibidoSubquery)
+            ->whereHas('destinatarios', function ($query) use ($user) {
+            $query->where('det_doc_empleado', $user->emple_doc);
+        });
 
         $totalRecibidas = (clone $queryBandejaUnicaExt)->count();
         $enTramite = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 8)->count();
         $finalizadas = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 9)->count();
         $archivadas = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 10)->count();
         $vencidas = 0; // Se puede implementar luego la logica o join para buscar vencimiento de radicados. 
-
         // Custom Sorting:
         // Estado: Recibido (7) -> En Tramite (8) -> Others (Resuelto 9, Archivado 10, Rechazado 11)
         // Prioridad: Urgente (4) -> Alta (1) -> Media (2) -> Baja (3)
         $correspondencias = (clone $queryBandejaUnicaExt)
             ->whereIn('recibido.id_estado_rec', [7, 8])
-            ->with(['radicado', 'estado', 'dirigidoA', 'registradoPor', 'tipo.prioridad', 'ciudad', 'anexos'])
+            ->with(['radicado', 'estado', 'dirigidoA', 'destinatarios', 'registradoPor', 'tipo.prioridad', 'ciudad', 'anexos'])
             ->leftJoin('estado', 'recibido.id_estado_rec', '=', 'estado.id_estado')
             ->leftJoin('tipo', 'recibido.id_tipo', '=', 'tipo.id_tipo')
             ->leftJoin('prioridad', 'tipo.id_prioridad', '=', 'prioridad.id_prioridad')
@@ -230,12 +239,20 @@ class CorrespondenciaController extends Controller
         $nuevoRegistro->anexo = $recibidoAntiguo->anexo;
         $nuevoRegistro->observaciones = $request->observaciones ?? 'Cambio de estado';
         $nuevoRegistro->doc_quien_registra = $recibidoAntiguo->doc_quien_registra;
-        $nuevoRegistro->doc_quien_dirige = $recibidoAntiguo->doc_quien_dirige;
         $nuevoRegistro->id_tipo = $recibidoAntiguo->id_tipo;
         $nuevoRegistro->id_estado_rec = $estado->id_estado;
         $nuevoRegistro->archivo = $recibidoAntiguo->archivo;
         $nuevoRegistro->nit_empresa = $recibidoAntiguo->nit_empresa;
         $nuevoRegistro->save();
+
+        // Duplicar también los destinatarios en detalle_recibido para este nuevo registro
+        $destinatariosAntiguos = \App\Models\DetalleRecibido::where('det_id_recibido', $recibidoAntiguo->id_recibido)->get();
+        foreach ($destinatariosAntiguos as $dest) {
+            \App\Models\DetalleRecibido::create([
+                'det_id_recibido' => $nuevoRegistro->id_recibido,
+                'det_doc_empleado' => $dest->det_doc_empleado,
+            ]);
+        }
 
         // Duplicate any Anexos for the new trace
         $anexosAntiguos = \App\Models\AnexoRecibido::where('id_recibido', $recibidoAntiguo->id_recibido)->get();
@@ -255,8 +272,8 @@ class CorrespondenciaController extends Controller
         $request->validate([
             'estado_nomb' => 'required',
             'observaciones' => 'nullable|string',
-            'archivo_respuesta' => 'nullable|file|mimes:pdf|max:5120',           // Max 5MB
-            'archivos_respuesta.*' => 'nullable|file|mimes:pdf|max:25600',        // Max 25MB
+            'archivo_respuesta' => 'nullable|file|mimes:pdf|max:5120', // Max 5MB
+            'archivos_respuesta.*' => 'nullable|file|mimes:pdf|max:25600', // Max 25MB
             'folios_respuesta' => 'nullable|integer'
         ]);
 
@@ -372,15 +389,19 @@ class CorrespondenciaController extends Controller
         $nuevoRegistro->anexo = $recibidoAntiguo->anexo;
         $nuevoRegistro->observaciones = 'Reasignado: ' . $request->observaciones;
         $nuevoRegistro->doc_quien_registra = $recibidoAntiguo->doc_quien_registra;
-
         // ✨ This is the core of reassignment
         $nuevoRegistro->doc_quien_dirige = $request->doc_quien_dirige;
-
         $nuevoRegistro->id_tipo = $recibidoAntiguo->id_tipo;
         $nuevoRegistro->id_estado_rec = $estadoEnTramite ? $estadoEnTramite->id_estado : $recibidoAntiguo->id_estado_rec; // Reset to En Tramite
         $nuevoRegistro->archivo = $recibidoAntiguo->archivo;
         $nuevoRegistro->nit_empresa = $recibidoAntiguo->nit_empresa;
         $nuevoRegistro->save();
+
+        // ✨ Insert the new recipient into the pivot table
+        \App\Models\DetalleRecibido::create([
+            'det_id_recibido' => $nuevoRegistro->id_recibido,
+            'det_doc_empleado' => $request->doc_quien_dirige,
+        ]);
 
         // Duplicate any Anexos for the new trace
         $anexosAntiguos = \App\Models\AnexoRecibido::where('id_recibido', $recibidoAntiguo->id_recibido)->get();
@@ -413,8 +434,8 @@ class CorrespondenciaController extends Controller
                 'doc_quien_dirigido.*' => 'exists:empleado,emple_doc',
                 'id_tipo_envio' => 'required|exists:tipo,id_tipo',
                 'observaciones' => 'nullable|string',
-                'archivo' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',  // Max 5MB
-                'anexos.*' => 'nullable|file|mimes:pdf|max:25600',               // Max 25MB
+                'archivo' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120', // Max 5MB
+                'anexos.*' => 'nullable|file|mimes:pdf|max:25600', // Max 25MB
                 'folio' => 'nullable|integer'
             ]);
 

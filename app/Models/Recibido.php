@@ -36,7 +36,7 @@ class Recibido extends Model
     ];
 
     /**
-     * Relación con Empleado a quien va dirigido
+     * Relación con Empleado a quien va dirigido (Legacy/Single)
      */
     public function dirigidoA()
     {
@@ -44,11 +44,19 @@ class Recibido extends Model
     }
 
     /**
-     * Relación con Remitente (quien registra)
+     * Relación con Empleado (quien registra)
      */
     public function registradoPor()
     {
-        return $this->belongsTo(Remitente::class , 'doc_quien_registra', 'rem_doc');
+        return $this->belongsTo(Empleado::class , 'doc_quien_registra', 'emple_doc');
+    }
+
+    /**
+     * Relación con Empleados (a quienes se dirige) a través de detalle_recibido (N:N)
+     */
+    public function destinatarios()
+    {
+        return $this->belongsToMany(Empleado::class , 'detalle_recibido', 'det_id_recibido', 'det_doc_empleado');
     }
 
     /**

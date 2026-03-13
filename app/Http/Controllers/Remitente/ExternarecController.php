@@ -14,28 +14,32 @@ use App\Models\DetalleRecibido;
 
 class ExternarecController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $tipos     = Tipo::all();
         $estados   = Estado::all();
-        $ciudades  = Ciudad::orderBy('ciudad_nom')->get();
+        $ciudades  = Ciudad::with('departamento')->orderBy('ciudad_nom')->get();
         $radicados = DB::table('radicados')->orderBy('id_radicado')->get();
 
         // Fetch the logged-in remitente to scope records
         $remitente = Auth::guard('remitente')->user();
         $nitEmpresa = $remitente ? $remitente->nit_empresa : null;
 
+        // Filtro de tipo recibido desde la URL (?tipo=persona|entidad)
+        $tipoFiltro = $request->input('tipo', 'todos');
+
         // Pull recibido records for this company, joined with tipo, prioridad and estado
-        $recibidos = DB::table('recibido as r')
+        $query = DB::table('recibido as r')
             ->leftJoin('tipo as t',      'r.id_tipo',       '=', 't.id_tipo')
             ->leftJoin('prioridad as p', 't.id_prioridad',  '=', 'p.id_prioridad')
             ->leftJoin('estado as e',    'r.id_estado_rec', '=', 'e.id_estado')
+            ->leftJoin('radicados as rad', 'r.num_radicado_int', '=', 'rad.id_radicado')
             ->where('r.nit_empresa', $nitEmpresa)
             ->orderByDesc('r.fecha_hora_recib')
             ->select(
                 'r.id_recibido',
                 'r.num_radicado_ext',
-                'r.num_radicado_int',
+                'rad.num_radicado',
                 'r.asunto',
                 'r.fecha_hora_recib',
                 'r.nom_institucion',
@@ -44,13 +48,81 @@ class ExternarecController extends Controller
                 'r.correo_persona',
                 'r.tel_persona',
                 'r.archivo',
+                'r.observaciones',
                 't.tipo_nombre',
                 'p.prioridad_nombre',
-                'e.estado_nomb'
-            )
-            ->get();
+                'e.estado_nomb',
+                DB::raw("(
+                    SELECT GROUP_CONCAT(COALESCE(CONCAT(emp.emple_nombres, ' ', emp.emple_apellidos), CONCAT(rem.rem_nombres, ' ', rem.rem_apellidos)) SEPARATOR ', ')
+                    FROM detalle_recibido dr
+                    LEFT JOIN empleado emp ON dr.det_doc_empleado = emp.emple_doc
+                    LEFT JOIN remitente rem ON dr.det_doc_empleado = rem.rem_doc
+                    WHERE dr.det_id_recibido = r.id_recibido
+                ) as destinatarios_nombres")
+            );
 
-        return view('remitente.externarec', compact('tipos', 'estados', 'ciudades', 'radicados', 'recibidos'));
+        // Filtro de recibido enviado desde el campo de busqueda
+        $searchQuery = $request->input('search', '');
+
+        // Aplicar filtro por tipo de remitente
+        if ($tipoFiltro === 'persona') {
+            $query->where(function ($q) {
+                $q->whereNotNull('r.nombre_persona')->orWhereNotNull('r.doc_persona');
+            });
+        } elseif ($tipoFiltro === 'entidad') {
+            $query->whereNull('r.nombre_persona')->whereNull('r.doc_persona');
+        }
+
+        // Aplicar filtro de búsqueda
+        if (!empty($searchQuery)) {
+            $query->where(function ($q) use ($searchQuery) {
+                $q->where('r.asunto', 'like', "%{$searchQuery}%")
+                  ->orWhere('r.num_radicado_ext', 'like', "%{$searchQuery}%")
+                  ->orWhere('rad.num_radicado', 'like', "%{$searchQuery}%")
+                  ->orWhere('r.nom_institucion', 'like', "%{$searchQuery}%")
+                  ->orWhere('r.nombre_persona', 'like', "%{$searchQuery}%")
+                  ->orWhere('r.doc_persona', 'like', "%{$searchQuery}%")
+                  ->orWhere('r.correo_persona', 'like', "%{$searchQuery}%")
+                  ->orWhere('r.tel_persona', 'like', "%{$searchQuery}%")
+                  ->orWhere('t.tipo_nombre', 'like', "%{$searchQuery}%")
+                  ->orWhere('p.prioridad_nombre', 'like', "%{$searchQuery}%")
+                  ->orWhere('e.estado_nomb', 'like', "%{$searchQuery}%")
+                  ->orWhereRaw("EXISTS (
+                      SELECT 1 FROM detalle_recibido dr 
+                      LEFT JOIN empleado emp ON dr.det_doc_empleado = emp.emple_doc 
+                      LEFT JOIN remitente rem ON dr.det_doc_empleado = rem.rem_doc 
+                      WHERE dr.det_id_recibido = r.id_recibido 
+                      AND (CONCAT(emp.emple_nombres, ' ', emp.emple_apellidos) LIKE ? 
+                           OR CONCAT(rem.rem_nombres, ' ', rem.rem_apellidos) LIKE ?)
+                  )", ["%{$searchQuery}%", "%{$searchQuery}%"]);
+            });
+        }
+
+        $recibidos = $query->paginate(4)->appends(['tipo' => $tipoFiltro, 'search' => $searchQuery]);
+
+        $empleadosList = Empleado::with('area')->where('emple_rol', '!=', 1)->get()->map(function($e) {
+            return [
+                'emple_doc' => (string) $e->emple_doc,
+                'emple_nombres' => $e->emple_nombres,
+                'emple_apellidos' => $e->emple_apellidos,
+                'tipo' => 'empleado',
+                'area_nombre' => $e->area ? $e->area->area_nom : null
+            ];
+        });
+
+        $remitentesList = DB::table('remitente')->get()->map(function($r) {
+            return [
+               'emple_doc' => (string) $r->rem_doc,
+               'emple_nombres' => $r->rem_nombres,
+               'emple_apellidos' => $r->rem_apellidos,
+               'tipo' => 'remitente',
+               'area_nombre' => null
+            ];
+        });
+
+        $todosDestinatarios = $empleadosList->concat($remitentesList)->sortBy('emple_nombres')->values();
+
+        return view('remitente.externarec', compact('tipos', 'estados', 'ciudades', 'radicados', 'recibidos', 'tipoFiltro', 'todosDestinatarios'));
     }
 
     /**
@@ -130,11 +202,11 @@ class ExternarecController extends Controller
             'doc_quien_dirige'   => 'nullable|string|max:20',
             'asunto'             => 'nullable|string|max:100',
             'id_tipo'            => 'nullable|integer',
-            'folio'              => 'required|integer|min:1',
+            'folio'              => 'nullable|integer|min:1',
             'anexo'              => 'nullable|string|max:500',
             'observaciones'      => 'nullable|string|max:250',
-            'archivo'            => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'anexos'             => 'nullable|array|max:10',
+            'archivo'            => 'nullable|file|mimes:pdf|max:5120',
+            'anexos'             => 'nullable|array|max:1',
             'anexos.*'           => 'file|mimes:pdf|max:5120',
             'destinatarios'      => 'nullable|array',
             'destinatarios.*'    => 'nullable|string|max:20',
@@ -178,8 +250,23 @@ class ExternarecController extends Controller
 
         try {
             // 5. Creación automática del Radicado
+            $currentYear = date('Y');
+            $latestRadicado = \App\Models\Radicado::where('nit_empresa', $nitEmpresa)
+                ->where('num_radicado', 'like', 'INT-' . $currentYear . '-%')
+                ->orderBy('num_radicado', 'desc')
+                ->first();
+
+            if ($latestRadicado) {
+                // Extract the last 5 digits and increment
+                $lastNumber = intval(substr($latestRadicado->num_radicado, -5));
+                $newNumber = $lastNumber + 1;
+            } else {
+                // Start at 1 if no previous radicado exists for this year
+                $newNumber = 1;
+            }
+
             $radicado = new \App\Models\Radicado();
-            $radicado->num_radicado = 'INT-' . date('Y') . '-' . str_pad(rand(1, 99999), 5, '0', STR_PAD_LEFT);
+            $radicado->num_radicado = 'INT-' . $currentYear . '-' . str_pad($newNumber, 5, '0', STR_PAD_LEFT);
             $radicado->nit_empresa  = $nitEmpresa;
             $radicado->save();
 
@@ -234,6 +321,17 @@ class ExternarecController extends Controller
                 ]);
             }
 
+            // 9. Registro adicional indicando que el documento fue recibido
+            // Asignamos el estado al primer destinatario para evitar errores de clave foránea
+            // ya que $docQuienRegistra es un remitente y no existe en la tabla empleado
+            DB::table('detalle_recibido')->insert([
+                'det_id_recibido'  => $idRecibido,
+                'det_doc_empleado' => $destinatarios[0],
+                'fecha_re'         => now(),
+                'id_estado_rec'    => 7, // Estado: Recibido
+                'observaciones'    => 'Documento recibido (Registro Externo)'
+            ]);
+
             // Si todo salió bien, confirmamos los cambios en la BD
             DB::commit();
 
@@ -243,5 +341,36 @@ class ExternarecController extends Controller
 
             return redirect()->back()->withInput()->withErrors(['error' => 'Ocurrió un error al guardar el registro: ' . $e->getMessage()]);
         }
+    }
+
+    /**
+     * Endpoint AJAX: devuelve el archivo principal y los anexos de un recibido.
+     */
+    public function getArchivos(Request $request, $id)
+    {
+        $remitente  = Auth::guard('remitente')->user();
+        $nitEmpresa = $remitente ? $remitente->nit_empresa : null;
+
+        // Verificar que el registro pertenezca a la empresa
+        $recibido = DB::table('recibido')
+            ->where('id_recibido', $id)
+            ->where('nit_empresa', $nitEmpresa)
+            ->select('id_recibido', 'archivo', 'asunto')
+            ->first();
+
+        if (!$recibido) {
+            return response()->json(['error' => 'No encontrado'], 404);
+        }
+
+        $anexos = DB::table('anexo_recibido')
+            ->where('id_recibido', $id)
+            ->select('ruta_archivo', 'nombre_original')
+            ->get();
+
+        return response()->json([
+            'archivo_principal' => $recibido->archivo,
+            'asunto'            => $recibido->asunto,
+            'anexos'            => $anexos,
+        ]);
     }
 }

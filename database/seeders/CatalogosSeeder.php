@@ -52,12 +52,12 @@ class CatalogosSeeder extends Seeder
             ['nombre' => 'Derecho de Peticion', 'prioridad' => 'Urgente', 'dias' => 15],
             ['nombre' => 'Queja', 'prioridad' => 'Alta', 'dias' => 15],
             ['nombre' => 'Reclamo', 'prioridad' => 'Alta', 'dias' => 15],
-            ['nombre' => 'Solicitud', 'prioridad' => 'Media', 'dias' => 10],
-            ['nombre' => 'Carta', 'prioridad' => 'Baja', 'dias' => 5],
+            ['nombre' => 'Solicitud', 'prioridad' => 'Media', 'dias' => 15],
+            ['nombre' => 'Carta', 'prioridad' => 'Media', 'dias' => 15],
             ['nombre' => 'Memorando', 'prioridad' => 'Media', 'dias' => 5],
-            ['nombre' => 'Circular', 'prioridad' => 'Baja', 'dias' => 5],
-            ['nombre' => 'Resolucion', 'prioridad' => 'Media', 'dias' => 15],
-            ['nombre' => 'Contrato', 'prioridad' => 'Alta', 'dias' => 10],
+            ['nombre' => 'Circular', 'prioridad' => 'Baja', 'dias' => 0],
+            ['nombre' => 'Resolucion', 'prioridad' => 'Baja', 'dias' => 0],
+            ['nombre' => 'Contrato', 'prioridad' => 'Alta', 'dias' => 5],
         ];
         
         foreach ($tipos as $t) {
@@ -73,22 +73,22 @@ class CatalogosSeeder extends Seeder
         }
 
         // 6. Radicados de ejemplo (formato AGN colombiano)
-        $estadoRecibido = Estado::where('estado_nomb', 'Recibido')->first();
-        $estadoTramite = Estado::where('estado_nomb', 'En Tramite')->first();
-        $estadoResuelto = Estado::where('estado_nomb', 'Resuelto')->first();
+        $radicados = [
+            '20261000000001',
+            '20261000000002',
+            '20261000000003',
+            '20261000000004',
+            '20261000000005',
+        ];
 
-        if ($estadoRecibido && $estadoTramite && $estadoResuelto) {
-            $radicados = [
-                ['num_radicado' => '20261000000001', 'id_est_radicado' => $estadoRecibido->id_estado],
-                ['num_radicado' => '20261000000002', 'id_est_radicado' => $estadoTramite->id_estado],
-                ['num_radicado' => '20261000000003', 'id_est_radicado' => $estadoResuelto->id_estado],
-                ['num_radicado' => '20261000000004', 'id_est_radicado' => $estadoRecibido->id_estado],
-                ['num_radicado' => '20261000000005', 'id_est_radicado' => $estadoTramite->id_estado],
-            ];
+        $empresa = \App\Models\Empresa::first();
+        $nitEmpresa = $empresa ? $empresa->nit_empresa : '1234567890';
 
-            foreach ($radicados as $rad) {
-                Radicado::firstOrCreate(['num_radicado' => $rad['num_radicado']], $rad);
-            }
+        foreach ($radicados as $num) {
+            Radicado::firstOrCreate(
+                ['num_radicado' => $num],
+                ['nit_empresa' => $nitEmpresa]
+            );
         }
     }
 }
