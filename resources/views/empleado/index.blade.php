@@ -13,7 +13,7 @@
         </div>
         <div class="flex items-center gap-3">
             <span class="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                Mes en curso: <span class="text-gray-900 dark:text-white font-bold">Marzo 2026</span>
+                Mes en curso: <span class="text-gray-900 dark:text-white font-bold">{{ \Carbon\Carbon::now()->translatedFormat('F Y') }}</span>
             </span>
         </div>
     </div>
@@ -26,7 +26,7 @@
             <div class="flex items-start justify-between relative z-10">
                 <div>
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Recibidos en el mes</p>
-                    <h3 class="text-3xl font-bold text-gray-900 dark:text-white">142</h3>
+                    <h3 class="text-3xl font-bold text-gray-900 dark:text-white">{{ $recibidosMes }}</h3>
                     <p class="text-xs text-green-600 dark:text-green-400 mt-2 flex items-center font-medium">
                         <span class="material-symbols-outlined text-[14px] mr-1">trending_up</span>
                         +12% vs mes anterior
@@ -44,7 +44,7 @@
             <div class="flex items-start justify-between relative z-10">
                 <div>
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Tu Trámite Activo</p>
-                    <h3 class="text-3xl font-bold text-gray-900 dark:text-white">18</h3>
+                    <h3 class="text-3xl font-bold text-gray-900 dark:text-white">{{ $totalTramiteActivo }}</h3>
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-2 flex items-center">
                         <span class="w-2 h-2 rounded-full bg-yellow-500 mr-2"></span>
                         Asignados a tu área
@@ -62,7 +62,7 @@
             <div class="flex items-start justify-between relative z-10">
                 <div>
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Finalizados (Mes)</p>
-                    <h3 class="text-3xl font-bold text-gray-900 dark:text-white">96</h3>
+                    <h3 class="text-3xl font-bold text-gray-900 dark:text-white">{{ $totalFinalizadosMes }}</h3>
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-2 flex items-center">
                         <span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
                         67% de eficiencia
@@ -80,7 +80,7 @@
             <div class="flex items-start justify-between relative z-10">
                 <div>
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Próximos a Vencer</p>
-                    <h3 class="text-3xl font-bold text-red-600 dark:text-red-400">5</h3>
+                    <h3 class="text-3xl font-bold text-red-600 dark:text-red-400">{{ $vencidas }}</h3>
                     <p class="text-xs text-red-600 dark:text-red-400 mt-2 flex items-center font-medium">
                         <span class="material-symbols-outlined text-[14px] mr-1">warning</span>
                         Requieren atención urgente
@@ -109,7 +109,7 @@
                     </div>
                 </div>
                 <span class="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 text-xs font-semibold px-2.5 py-1 rounded-full">
-                    8 nuevas
+                    {{ $rechazosInternos->count() + $nuevasExternas->count() + $nuevasInternas->count() }} pendientes
                 </span>
             </div>
             
@@ -117,135 +117,147 @@
                 <!-- List Items -->
                 <ul class="divide-y divide-gray-200 dark:divide-gray-700 max-h-[500px] overflow-y-auto">
                     
-                    <!-- Item 1 (Urgent/Overdue approach) -->
-                    <li class="p-5 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors relative border-l-4 border-red-500">
-                        <div class="flex justify-between items-start gap-4">
-                            <div class="flex gap-4">
-                                <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-slate-700 flex-shrink-0 flex items-center justify-center text-gray-500 dark:text-gray-400">
-                                    <span class="material-symbols-outlined">person</span>
+                    @forelse($rechazosInternos as $rechazo)
+                        <!-- Rechazo Interno -->
+                        <li class="p-5 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors relative border-l-4 border-red-500">
+                            <div class="flex justify-between items-start gap-4">
+                                <div class="flex gap-4">
+                                    <div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/40 flex-shrink-0 flex items-center justify-center text-red-600 dark:text-red-400">
+                                        <span class="material-symbols-outlined">cancel</span>
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <h4 class="font-bold text-sm text-gray-900 dark:text-white">Correspondencia Rechazada</h4>
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">Rechazo</span>
+                                        </div>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                                            Por: <strong>{{ $rechazo->quienRecibe->emple_nombres }} {{ $rechazo->quienRecibe->emple_apellidos }}</strong>
+                                        </p>
+                                        <p class="text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">{{ $rechazo->envio->asunto }}</p>
+                                        <p class="text-xs text-red-600 dark:text-red-400 line-clamp-2">Motivo: {{ $rechazo->observaciones }}</p>
+                                        
+                                        <div class="mt-3 flex items-center gap-4 text-xs">
+                                            <span class="text-primary dark:text-blue-400 font-semibold flex items-center gap-1">
+                                                <span class="material-symbols-outlined text-[14px]">tag</span>
+                                                {{ $rechazo->envio->radicado->num_radicado ?? 'INT-S/R' }}
+                                            </span>
+                                            <span class="text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                                <span class="material-symbols-outlined text-[14px]">calendar_month</span>
+                                                {{ $rechazo->fecha_traslado->format('d/m/Y h:i A') }}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <div class="flex items-center gap-2 mb-1">
-                                        <h4 class="font-bold text-sm text-gray-900 dark:text-white">Secretaría de Salud</h4>
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">Urgente</span>
-                                    </div>
-                                    <p class="text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">Respuesta a requerimiento de sanidad</p>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">Revisión de instalaciones solicitada en visita previa, se requiere respuesta a la brevedad posible según el anexo adjunto.</p>
-                                    
-                                    <div class="mt-3 flex items-center gap-4 text-xs">
-                                        <span class="text-primary dark:text-blue-400 font-semibold flex items-center gap-1">
-                                            <span class="material-symbols-outlined text-[14px]">tag</span>
-                                            RAD-2026-00140
-                                        </span>
-                                        <span class="text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                                            <span class="material-symbols-outlined text-[14px]">schedule</span>
-                                            Vence hoy
-                                        </span>
-                                    </div>
+                                <div class="flex items-center gap-2">
+                                    <a href="{{ route('empleado.correspondencia_recibida') }}?tab=interna" class="bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-200 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap">
+                                        Ver Detalle
+                                    </a>
+                                    <form action="{{ route('empleado.notificacion_visto', ['interna', $rechazo->id_detalle]) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-slate-700 hover:bg-green-100 dark:hover:bg-green-900/30 text-gray-500 hover:text-green-600 transition-colors" title="Marcar como leída">
+                                            <span class="material-symbols-outlined text-[18px]">done_all</span>
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
-                            <button class="bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-200 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap">
-                                Responder
-                            </button>
-                        </div>
-                    </li>
+                        </li>
+                    @empty
+                    @endforelse
 
-                    <!-- Item 2 (New) -->
-                    <li class="p-5 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors relative border-l-4 border-primary">
-                        <div class="flex justify-between items-start gap-4">
-                            <div class="flex gap-4">
-                                <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-slate-700 flex-shrink-0 flex items-center justify-center text-gray-500 dark:text-gray-400">
-                                    <span class="material-symbols-outlined">corporate_fare</span>
+                    @foreach($nuevasExternas as $nueva)
+                        <!-- Nueva Externa -->
+                        <li class="p-5 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors relative border-l-4 border-primary">
+                            <div class="flex justify-between items-start gap-4">
+                                <div class="flex gap-4">
+                                    <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/40 flex-shrink-0 flex items-center justify-center text-primary">
+                                        <span class="material-symbols-outlined">inbox</span>
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <h4 class="font-bold text-sm text-gray-900 dark:text-white">Nueva Correspondencia Externa</h4>
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">Nueva</span>
+                                        </div>
+                                        <p class="text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">{{ $nueva->recibido->asunto }}</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">Procedencia: {{ $nueva->recibido->nom_institucion ?? $nueva->recibido->nombre_persona }}</p>
+                                        
+                                        <div class="mt-3 flex items-center gap-4 text-xs">
+                                            <span class="text-primary dark:text-blue-400 font-semibold flex items-center gap-1">
+                                                <span class="material-symbols-outlined text-[14px]">tag</span>
+                                                {{ $nueva->recibido->radicado->num_radicado ?? 'S/R' }}
+                                            </span>
+                                            <span class="text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                                <span class="material-symbols-outlined text-[14px]">schedule</span>
+                                                {{ $nueva->fecha_re ? \Carbon\Carbon::parse($nueva->fecha_re)->diffForHumans() : 'Recientemente' }}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <div class="flex items-center gap-2 mb-1">
-                                        <h4 class="font-bold text-sm text-gray-900 dark:text-white">Contraloría Municipal</h4>
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">Nueva</span>
-                                    </div>
-                                    <p class="text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">Solicitud informes financieros Q1</p>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">Por favor enviar los extractos de cuenta y balances del primer trimestre del año para auditoría interna.</p>
-                                    
-                                    <div class="mt-3 flex items-center gap-4 text-xs">
-                                        <span class="text-primary dark:text-blue-400 font-semibold flex items-center gap-1">
-                                            <span class="material-symbols-outlined text-[14px]">tag</span>
-                                            RAD-2026-00142
-                                        </span>
-                                        <span class="text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                                            <span class="material-symbols-outlined text-[14px]">schedule</span>
-                                            Hace 2 horas
-                                        </span>
-                                    </div>
+                                <div class="flex items-center gap-2">
+                                    <a href="{{ route('empleado.correspondencia_recibida') }}" class="bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-200 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap">
+                                        Atender
+                                    </a>
+                                    <form action="{{ route('empleado.notificacion_visto', ['externa', $nueva->id_det_recibido]) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-slate-700 hover:bg-green-100 dark:hover:bg-green-900/30 text-gray-500 hover:text-green-600 transition-colors" title="Marcar como leída">
+                                            <span class="material-symbols-outlined text-[18px]">done_all</span>
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
-                            <button class="bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-200 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap">
-                                Responder
-                            </button>
-                        </div>
-                    </li>
+                        </li>
+                    @endforeach
 
-                    <!-- Item 3 (In Progress / Normal) -->
-                    <li class="p-5 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
-                        <div class="flex justify-between items-start gap-4">
-                            <div class="flex gap-4">
-                                <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-slate-700 flex-shrink-0 flex items-center justify-center text-gray-500 dark:text-gray-400">
-                                    <span class="material-symbols-outlined">person</span>
+                    @foreach($nuevasInternas as $nuevaInt)
+                        <!-- Nueva Interna -->
+                        <li class="p-5 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors relative border-l-4 border-indigo-500">
+                            <div class="flex justify-between items-start gap-4">
+                                <div class="flex gap-4">
+                                    <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex-shrink-0 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                                        <span class="material-symbols-outlined">forward_to_inbox</span>
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <h4 class="font-bold text-sm text-gray-900 dark:text-white">Nueva Correspondencia Interna</h4>
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400">Interna</span>
+                                        </div>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                                            De: <strong>{{ $nuevaInt->quienEnvia->emple_nombres }} {{ $nuevaInt->quienEnvia->emple_apellidos }}</strong>
+                                        </p>
+                                        <p class="text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">{{ $nuevaInt->envio->asunto }}</p>
+                                        
+                                        <div class="mt-3 flex items-center gap-4 text-xs">
+                                            <span class="text-primary dark:text-blue-400 font-semibold flex items-center gap-1">
+                                                <span class="material-symbols-outlined text-[14px]">tag</span>
+                                                {{ $nuevaInt->envio->radicado->num_radicado ?? 'INT-S/R' }}
+                                            </span>
+                                            <span class="text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                                <span class="material-symbols-outlined text-[14px]">schedule</span>
+                                                {{ $nuevaInt->fecha_traslado->diffForHumans() }}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <div class="flex items-center gap-2 mb-1">
-                                        <h4 class="font-bold text-sm text-gray-900 dark:text-white">María González</h4>
-                                    </div>
-                                    <p class="text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">Derecho de Petición - Ajuste factura</p>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">Usuaria solicita rectificación en el estrato de su factura de servicios públicos correspondiente a este mes.</p>
-                                    
-                                    <div class="mt-3 flex items-center gap-4 text-xs">
-                                        <span class="text-primary dark:text-blue-400 font-semibold flex items-center gap-1">
-                                            <span class="material-symbols-outlined text-[14px]">tag</span>
-                                            RAD-2026-00138
-                                        </span>
-                                        <span class="text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                                            <span class="material-symbols-outlined text-[14px]">schedule</span>
-                                            Hace 1 día
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <button class="bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-200 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap">
-                                Responder
-                            </button>
-                        </div>
-                    </li>
-                    
-                    <!-- Item 4 (In Progress / Normal) -->
-                    <li class="p-5 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
-                        <div class="flex justify-between items-start gap-4">
-                            <div class="flex gap-4">
-                                <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-slate-700 flex-shrink-0 flex items-center justify-center text-gray-500 dark:text-gray-400">
-                                    <span class="material-symbols-outlined">business</span>
-                                </div>
-                                <div>
-                                    <div class="flex items-center gap-2 mb-1">
-                                        <h4 class="font-bold text-sm text-gray-900 dark:text-white">Tecnologías XYZ SAS</h4>
-                                    </div>
-                                    <p class="text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">Factura electrónica por servicios</p>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">Radicación de factura de venta FE-901 por mantenimiento de equipos de cómputo del mes de Febrero.</p>
-                                    
-                                    <div class="mt-3 flex items-center gap-4 text-xs">
-                                        <span class="text-primary dark:text-blue-400 font-semibold flex items-center gap-1">
-                                            <span class="material-symbols-outlined text-[14px]">tag</span>
-                                            RAD-2026-00135
-                                        </span>
-                                        <span class="text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                                            <span class="material-symbols-outlined text-[14px]">schedule</span>
-                                            Hace 2 días
-                                        </span>
-                                    </div>
+                                <div class="flex items-center gap-2">
+                                    <a href="{{ route('empleado.correspondencia_recibida') }}?tab=interna" class="bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-200 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap">
+                                        Atender
+                                    </a>
+                                    <form action="{{ route('empleado.notificacion_visto', ['interna', $nuevaInt->id_detalle]) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-slate-700 hover:bg-green-100 dark:hover:bg-green-900/30 text-gray-500 hover:text-green-600 transition-colors" title="Marcar como leída">
+                                            <span class="material-symbols-outlined text-[18px]">done_all</span>
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
-                            <button class="bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-200 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap">
-                                Responder
-                            </button>
-                        </div>
-                    </li>
+                        </li>
+                    @endforeach
+
+                    @if($rechazosInternos->isEmpty() && $nuevasExternas->isEmpty() && $nuevasInternas->isEmpty())
+                        <li class="p-10 text-center text-gray-500 dark:text-gray-400">
+                            <span class="material-symbols-outlined text-5xl mb-3 block opacity-20">notifications_off</span>
+                            <p>No tienes notificaciones pendientes.</p>
+                        </li>
+                    @endif
                 </ul>
             </div>
             <div class="p-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-slate-800/50 text-center rounded-b-xl">

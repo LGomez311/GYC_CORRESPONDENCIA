@@ -56,7 +56,7 @@ class Recibido extends Model
      */
     public function destinatarios()
     {
-        return $this->belongsToMany(Empleado::class , 'detalle_recibido', 'det_id_recibido', 'det_doc_empleado');
+        return $this->belongsToMany(Empleado::class , 'detalle_recibido', 'det_id_recibido', 'det_doc_empleado')->distinct();
     }
 
     /**

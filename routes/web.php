@@ -73,7 +73,8 @@ Route::middleware(['auth:web', 'licencia.activa'])->group(function () {
     Route::get('/admin', fn() => view('admin.index'))->name('admin.index');
 
     // Empleado
-    Route::get('/empleado', fn() => view('empleado.index'))->name('empleado.index');
+    Route::get('/empleado', [\App\Http\Controllers\Empleado\HomeController::class, 'index'])->name('empleado.index');
+    Route::post('/empleado/notificacion/{type}/{id}/visto', [\App\Http\Controllers\Empleado\HomeController::class, 'markAsRead'])->name('empleado.notificacion_visto');
     Route::get('/empleado/correspondencia-recibida', [\App\Http\Controllers\Empleado\CorrespondenciaController::class, 'recibida'])->name('empleado.correspondencia_recibida');
     Route::get('/empleado/correspondencia-finalizada', [\App\Http\Controllers\Empleado\CorrespondenciaController::class, 'finalizada'])->name('empleado.correspondencia_finalizada');
     Route::post('/empleado/correspondencia-recibida/{id}/estado', [\App\Http\Controllers\Empleado\CorrespondenciaController::class, 'actualizarEstado'])->name('empleado.estado_externa');

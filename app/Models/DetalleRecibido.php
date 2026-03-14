@@ -20,6 +20,7 @@ class DetalleRecibido extends Model
         'observaciones',
         'archivo_res',
         'folios_res',
+        'visto',
     ];
 
     // Relación con el registro de recibido (documento principal)

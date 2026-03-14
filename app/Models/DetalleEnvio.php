@@ -18,7 +18,8 @@ class DetalleEnvio extends Model
         'id_estado_rec',
         'observaciones',
         'archivo_respuesta',
-        'folios_respuesta'
+        'folios_respuesta',
+        'visto'
     ]; // Added by user for traceability
 
     protected $casts = [

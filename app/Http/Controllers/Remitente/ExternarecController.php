@@ -52,7 +52,7 @@ class ExternarecController extends Controller
                 'p.prioridad_nombre',
                 'e.estado_nomb',
                 DB::raw("(
-                    SELECT GROUP_CONCAT(COALESCE(CONCAT(emp.emple_nombres, ' ', emp.emple_apellidos), CONCAT(rem.rem_nombres, ' ', rem.rem_apellidos)) SEPARATOR ', ')
+                    SELECT GROUP_CONCAT(DISTINCT COALESCE(CONCAT(emp.emple_nombres, ' ', emp.emple_apellidos), CONCAT(rem.rem_nombres, ' ', rem.rem_apellidos)) SEPARATOR ', ')
                     FROM detalle_recibido dr
                     LEFT JOIN empleado emp ON dr.det_doc_empleado = emp.emple_doc
                     LEFT JOIN remitente rem ON dr.det_doc_empleado = rem.rem_doc
@@ -322,7 +322,7 @@ class ExternarecController extends Controller
                     'det_doc_empleado' => $docEmpleado,
                     'fecha_re'         => now(),
                     'id_estado_rec'    => 7, // Estado: Recibido
-                    'observaciones'    => 'Documento recibido (Registro Externo)',
+                    'observaciones'    => $validated['observaciones'] ?? 'Documento recibido (Registro Externo)',
                 ]);
             }
 
