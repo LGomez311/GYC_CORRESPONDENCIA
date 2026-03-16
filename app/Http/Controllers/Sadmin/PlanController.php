@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Sadmin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Plan;
+use App\Models\AuditoriaPlan;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PlanesExport;
@@ -22,7 +24,12 @@ class PlanController extends Controller
             ->paginate(3)
             ->withQueryString();
 
-        return view('sadmin.cplanes', compact('planes'));
+        // Historial de auditoría
+        $auditorias = AuditoriaPlan::with(['planAfectado', 'responsable'])
+            ->orderBy('fecha_cambio', 'desc')
+            ->get();
+
+        return view('sadmin.cplanes', compact('planes', 'auditorias'));
     }
 
 
@@ -96,6 +103,7 @@ class PlanController extends Controller
             // 👇 AQUÍ ESTÁ LA CLAVE
             'descripcion'  => array_values($request->descripcion),
             'es_destacado' => $request->has('es_destacado'),
+            'actualizado_por' => Auth::user()->emple_doc,
         ]);
 
         return redirect()->back()->with('success', 'Plan actualizado correctamente');

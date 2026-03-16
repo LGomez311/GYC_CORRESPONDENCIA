@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 11, 2026 at 07:14 PM
+-- Generation Time: Mar 13, 2026 at 08:57 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -39,13 +39,8 @@ CREATE TABLE `anexo_envio` (
 --
 
 INSERT INTO `anexo_envio` (`id_anexo`, `id_envio`, `ruta_archivo`, `nombre_original`) VALUES
-(3, 7, 'archivos/unSMNxx6XdLhqb7bh1Hx5waaiVmvaiu98iIHNQNY.pdf', 'LEGALIZACION 2586-2026 (3) (1) (1).pdf'),
-(4, 7, 'archivos/5mxVv0ix5paQrOtU7Yz8Yjq0Ownk2SUS7iNu6Lq7.pdf', 'EVALUACION (1).PDF'),
-(5, 8, 'archivos/0kclb2r2uAb8bb6iHbVN3ZOkpo8yMlKWt3m1Ci3W.pdf', 'CO1_PCCNTR_9148107_En ejecución (2).pdf'),
-(6, 8, 'archivos/fj5HcBzaPcPvZQH8M8QaVi8pHXhkAm8GMEwZ4CN0.pdf', 'CO1_PCCNTR_9148107_Firmado (1).pdf'),
-(7, 9, 'archivos/gc6qlPyUlZhPNQSEcmFbrdjNXp08iLBGfSRjofpa.pdf', 'Coursera Como Resolver Problemas.pdf'),
-(8, 9, 'archivos/cRLr9nx0FqkAJcTNhoy8eNS2MP24f5pzOWYZtYRk.pdf', 'Coursera Generative IA.pdf'),
-(9, 9, 'archivos/pR72DJdDBBa2TDuJyCC4uMt1SC2Obze2lMfjWJ0l.pdf', 'ACTIVITY COMPARATIVE AND SUPERLATIVE.pdf');
+(12, 14, 'correspondencia/Vxoyp3QQlIlMjApdMWfyAdznBiSzVuC4eLPKvAkl.pdf', '141230623434 (2).pdf'),
+(13, 15, 'correspondencia/2i3zwoDyNxMOz7iKZbieXVyhFXKB0wb1rbQpffPQ.pdf', 'LEGALIZACION 2586-2026 (2) (1).pdf');
 
 -- --------------------------------------------------------
 
@@ -65,22 +60,9 @@ CREATE TABLE `anexo_recibido` (
 --
 
 INSERT INTO `anexo_recibido` (`id_anexo`, `id_recibido`, `ruta_archivo`, `nombre_original`) VALUES
-(1, 4, 'correspondencia/OGeGdHbG0Q2AluON4C2zDhrsvbSaiYVYf3nLe0WT.pdf', 'cedula.pdf'),
-(2, 5, 'correspondencia/6Na9vbl7kNdXXG4nmMvB5Bztr3BwIVZ5Wsxdu5X8.pdf', 'cedula.pdf'),
-(3, 5, 'correspondencia/3O1NBZ0s4Eh8eYjNHqZHICVvRpat2fDEgQREv83E.pdf', '2.pdf'),
-(4, 5, 'correspondencia/MhK4u9WEzrdQ9a9CCtS03LDelXTNfFIgV5WXkwM3.pdf', '1.pdf'),
-(5, 6, 'correspondencia/Bl5QN8X7D54KSqYwukk8qZFHoOkc3EtEkqiA8bIT.pdf', 'cedula.pdf'),
-(6, 6, 'correspondencia/XLTAWv4H3kTZUvoxunUj2PSSwZ2UPkiZTUWBA3Kf.pdf', '2.pdf'),
-(7, 6, 'correspondencia/MYj8hgWj6EKriVKkCGrlxPTM6nzLhoX838oIuuYe.pdf', '1.pdf'),
-(8, 7, 'correspondencia/v2RSvKXkvhVSjuXGWCzuXUbYz20OkDcqD9ixOJhq.pdf', 'cedula.pdf'),
-(9, 7, 'correspondencia/ssMLBIXgpwEBVAvXHZDR8CsuO8Wp4SoPAVFTpyxE.pdf', '2.pdf'),
-(10, 7, 'correspondencia/CEvqdzQtgnBZ1sL3c7rGN1jtib09HW3X6n53tuj8.pdf', '1.pdf'),
-(11, 9, 'correspondencia/2M0Yqmu9pBjEcsQUaKrvOq8yO98pASbvlzD41Zol.pdf', 'cedula.pdf'),
-(12, 9, 'correspondencia/czUgS16MIqpEZgAOKKMRik6rE7U9eHBpJYXKouMg.pdf', '2.pdf'),
-(13, 9, 'correspondencia/B3MsDb3JKAHnS92Yj6OdpgZq0lRzqd8Icpp0mmQe.pdf', '1.pdf'),
-(14, 10, 'correspondencia/c8PoqM40ia1KiaRu8owt4Ij4snzy4B2Hm3ECFD8P.pdf', 'cedula.pdf'),
-(15, 10, 'correspondencia/d7p8gjpYoQUi12WimlcyxJfbsrFLt95WZFxt8wAe.pdf', '2.pdf'),
-(16, 10, 'correspondencia/Edc4f281yirKzvCyB3Mxf0mrcLM3tRSykKhKCwLp.pdf', '1.pdf');
+(18, 14, 'correspondencia/dofzcvOQOiHHA2SQGFe01rGqYBRndf7a5sMKJSHI.pdf', 'cedula.pdf'),
+(19, 15, 'correspondencia/baI72QME9OMJGH5HJC9xLjBSttTcUdO2BAMrLu9p.pdf', '2.pdf'),
+(20, 16, 'correspondencia/20lEAdZDCmliqMTbl965Xudyu4I9tUdc9qBNMDd7.pdf', 'PLAN DE PRUEBAS.pdf');
 
 -- --------------------------------------------------------
 
@@ -94,17 +76,6 @@ CREATE TABLE `anexo_respuesta` (
   `ruta_archivo` varchar(500) NOT NULL,
   `nombre_original` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `anexo_respuesta`
---
-
-INSERT INTO `anexo_respuesta` (`id_anexo_resp`, `id_detalle`, `ruta_archivo`, `nombre_original`) VALUES
-(1, 23, 'archivos/3L4zvedcK82TMhrY46WMYuv8TDX9sniI6PsLMiMz.pdf', 'ds08001136720892600011e0a.pdf'),
-(2, 26, 'archivos/0qgWgVnTYK44xvgw92pQz4brgElValSzX89cLbkG.pdf', 'pagos (1).pdf'),
-(3, 26, 'archivos/VMPNjduOJzVdbi4p0H47251L8Rsk2DLTyhbjZH5Y.pdf', 'empresas_sistema.pdf'),
-(4, 29, 'archivos/lRmMfpZM1ZLzKkeV5VlCdQk6pKECVg6S6wAHTJAv.pdf', 'DOCUMENTOS COMPLETOS DANIEL.pdf'),
-(5, 29, 'archivos/0lLxVJCGKSxvDjcXkAfpMl65NAIWT7V37s12QpGr.pdf', 'CARRO SEGUIDOR DE LINEA DANIEL GOMEZ Y RAMIRO GOMEZ.pdf');
 
 -- --------------------------------------------------------
 
@@ -129,6 +100,121 @@ INSERT INTO `area` (`id_area`, `area_nom`) VALUES
 (7, 'Correspondencia'),
 (8, 'Archivo Central'),
 (9, 'Oficina Asesora Juridica');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `auditoria_empleado`
+--
+
+CREATE TABLE `auditoria_empleado` (
+  `id_log` int(11) NOT NULL,
+  `doc_empleado_afectado` varchar(20) NOT NULL,
+  `usuario_app` varchar(20) DEFAULT NULL,
+  `usuario_bd` varchar(100) NOT NULL,
+  `accion` varchar(20) NOT NULL,
+  `fecha_cambio` timestamp NOT NULL DEFAULT current_timestamp(),
+  `datos_anteriores` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`datos_anteriores`)),
+  `datos_nuevos` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`datos_nuevos`))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `auditoria_empleado`
+--
+
+INSERT INTO `auditoria_empleado` (`id_log`, `doc_empleado_afectado`, `usuario_app`, `usuario_bd`, `accion`, `fecha_cambio`, `datos_anteriores`, `datos_nuevos`) VALUES
+(1, '1005912003', '1070730214', 'root@localhost', 'ACTUALIZACION', '2026-03-13 18:07:26', '{\"nombres\": \"Kevin\", \"apellidos\": \"Villafrade\", \"correo\": \"kevindany2222209@gmail.com\", \"estado\": 1, \"rol\": 2, \"area\": null}', '{\"nombres\": \"Vin\", \"apellidos\": \"Villafrade\", \"correo\": \"kevindany2222209@gmail.com\", \"estado\": 1, \"rol\": 2, \"area\": null}'),
+(2, '1005912005', '1070730214', 'root@localhost', 'ACTUALIZACION', '2026-03-13 18:14:46', '{\"nombres\": \"Kevin\", \"apellidos\": \"Villafrade\", \"correo\": \"kevindany222209@gmail.com\", \"estado\": 1, \"rol\": 2, \"area\": null}', '{\"nombres\": \"Kevin\", \"apellidos\": \"Villafradeeee\", \"correo\": \"kevindany222209@gmail.com\", \"estado\": 1, \"rol\": 2, \"area\": null}');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `auditoria_empresa`
+--
+
+CREATE TABLE `auditoria_empresa` (
+  `id_log` int(11) NOT NULL,
+  `nit_empresa_afectada` varchar(25) NOT NULL,
+  `usuario_app` varchar(20) DEFAULT NULL,
+  `usuario_bd` varchar(100) NOT NULL,
+  `accion` varchar(20) NOT NULL,
+  `fecha_cambio` timestamp NOT NULL DEFAULT current_timestamp(),
+  `datos_anteriores` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`datos_anteriores`)),
+  `datos_nuevos` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`datos_nuevos`))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `auditoria_empresa`
+--
+
+INSERT INTO `auditoria_empresa` (`id_log`, `nit_empresa_afectada`, `usuario_app`, `usuario_bd`, `accion`, `fecha_cambio`, `datos_anteriores`, `datos_nuevos`) VALUES
+(1, '4354353454', '1070730214', 'root@localhost', 'ACTUALIZACION', '2026-03-13 18:36:10', '{\"nomb_empresa\": \"KFC & Food\", \"doc_representante\": \"38144607\", \"nomb_representante\": \"Emilio Casas\", \"direccion\": \"Avenida 37 N12 - 23 fdssfdsdfsdf\", \"contacto\": \"3152782654\", \"empresa_correo\": \"kfc@gmail.com\"}', '{\"nomb_empresa\": \"KFC &amp\", \"doc_representante\": \"38144607\", \"nomb_representante\": \"Emilio Casas\", \"direccion\": \"Avenida 37 N12 - 23 fdssfdsdfsdf\", \"contacto\": \"3152782654\", \"empresa_correo\": \"kfc@gmail.com\"}');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `auditoria_licencia`
+--
+
+CREATE TABLE `auditoria_licencia` (
+  `id_log` int(11) NOT NULL,
+  `id_licencia_afectada` int(11) NOT NULL,
+  `usuario_app` varchar(20) DEFAULT NULL,
+  `usuario_bd` varchar(100) NOT NULL,
+  `accion` varchar(20) NOT NULL,
+  `fecha_cambio` timestamp NOT NULL DEFAULT current_timestamp(),
+  `datos_anteriores` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`datos_anteriores`)),
+  `datos_nuevos` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`datos_nuevos`))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `auditoria_licencia`
+--
+
+INSERT INTO `auditoria_licencia` (`id_log`, `id_licencia_afectada`, `usuario_app`, `usuario_bd`, `accion`, `fecha_cambio`, `datos_anteriores`, `datos_nuevos`) VALUES
+(1, 34, '1070730214', 'root@localhost', 'ACTUALIZACION', '2026-03-13 19:34:51', '{\"id_estado\": 1, \"id_pago\": 61, \"fecha_inicio\": \"2026-03-02 22:49:42\", \"fecha_fin\": \"2026-03-10 22:49:42\", \"tipo_licencia\": \"ACTIVACION\", \"licencia_origen\": null}', '{\"id_estado\": 2, \"id_pago\": 61, \"fecha_inicio\": \"2026-03-02 22:49:42\", \"fecha_fin\": \"2026-03-10 22:49:42\", \"tipo_licencia\": \"ACTIVACION\", \"licencia_origen\": null}'),
+(2, 34, '1070730214', 'root@localhost', 'ACTUALIZACION', '2026-03-13 19:35:06', '{\"id_estado\": 2, \"id_pago\": 61, \"fecha_inicio\": \"2026-03-02 22:49:42\", \"fecha_fin\": \"2026-03-10 22:49:42\", \"tipo_licencia\": \"ACTIVACION\", \"licencia_origen\": null}', '{\"id_estado\": 1, \"id_pago\": 61, \"fecha_inicio\": \"2026-03-02 22:49:42\", \"fecha_fin\": \"2026-03-10 22:49:42\", \"tipo_licencia\": \"ACTIVACION\", \"licencia_origen\": null}');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `auditoria_pagos`
+--
+
+CREATE TABLE `auditoria_pagos` (
+  `id_log` int(11) NOT NULL,
+  `id_pago_afectado` int(10) NOT NULL,
+  `usuario_app` varchar(20) DEFAULT NULL,
+  `usuario_bd` varchar(100) NOT NULL,
+  `accion` varchar(20) NOT NULL,
+  `fecha_cambio` timestamp NOT NULL DEFAULT current_timestamp(),
+  `datos_anteriores` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`datos_anteriores`)),
+  `datos_nuevos` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`datos_nuevos`))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `auditoria_pagos`
+--
+
+INSERT INTO `auditoria_pagos` (`id_log`, `id_pago_afectado`, `usuario_app`, `usuario_bd`, `accion`, `fecha_cambio`, `datos_anteriores`, `datos_nuevos`) VALUES
+(1, 63, '1070730214', 'root@localhost', 'ACTUALIZACION', '2026-03-13 18:56:35', '{\"id_plan\": 10, \"comprobante\": null, \"id_admin\": \"999002\", \"moneda\": \"COP\", \"id_est_pago\": 0, \"fecha_pago\": \"2026-03-13 13:56:21\", \"fecha_inicio\": null}', '{\"id_plan\": 10, \"comprobante\": null, \"id_admin\": \"999002\", \"moneda\": \"COP\", \"id_est_pago\": 4, \"fecha_pago\": \"2026-03-13 13:56:21\", \"fecha_inicio\": null}');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `auditoria_plan`
+--
+
+CREATE TABLE `auditoria_plan` (
+  `id_log` int(11) NOT NULL,
+  `id_plan_afectado` int(10) NOT NULL,
+  `usuario_app` varchar(20) DEFAULT NULL,
+  `usuario_bd` varchar(100) NOT NULL,
+  `accion` varchar(20) NOT NULL,
+  `fecha_cambio` timestamp NOT NULL DEFAULT current_timestamp(),
+  `datos_anteriores` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`datos_anteriores`)),
+  `datos_nuevos` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`datos_nuevos`))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -279,15 +365,13 @@ CREATE TABLE `detalle_envio` (
 --
 
 INSERT INTO `detalle_envio` (`id_detalle`, `id_quien_envie`, `id_quien_recibe`, `id_envio`, `fecha_traslado`, `id_estado_rec`, `observaciones`, `archivo_respuesta`, `folios_respuesta`) VALUES
-(21, '1005912006', '1005912008', 7, '2026-03-08 06:01:14', 7, 'Necesito saber que paso con mis cuentas', NULL, NULL),
-(22, '1005912006', '1005912008', 7, '2026-03-08 06:01:57', 8, NULL, NULL, 0),
-(23, '1005912006', '1005912008', 7, '2026-03-08 06:02:41', 9, 'proceso INT-2026-50234 finalizado', 'archivos/rlzxqUpMBGaGYf5zB3kkj0pySMgys2rNn3W1wnK3.pdf', 5),
-(24, '1005912008', '1005912006', 8, '2026-03-08 06:04:56', 7, NULL, NULL, NULL),
-(25, '1005912008', '1005912006', 8, '2026-03-08 06:05:04', 8, NULL, NULL, 0),
-(26, '1005912008', '1005912006', 8, '2026-03-08 06:06:37', 9, 'se dio respuesta a Radicado INT-2026-64218', 'archivos/ZBsGSrmu9o2XcMbEXqQY5NZOCjqcELs2g5svlhLv.pdf', 5),
-(27, '1005912008', '1005912006', 9, '2026-03-09 18:18:24', 7, 'Follatón', NULL, NULL),
-(28, '1005912008', '1005912006', 9, '2026-03-09 18:23:14', 8, 'se empezo con el tramite del Radicado INT-2026-65886', NULL, 0),
-(29, '1005912008', '1005912006', 9, '2026-03-09 18:25:44', 9, 'se resolvio  Radicado INT-2026-65886', 'archivos/vNvKCTgdy55RIRaMI7V64r4K4ubgD9JGoj06EHfb.pdf', 5);
+(40, '1005912006', '1005912008', 13, '2026-03-12 04:52:47', 7, 'no responder a esta resolucion', NULL, NULL),
+(41, '1005912006', '1005912008', 13, '2026-03-12 04:53:20', 10, NULL, NULL, 0),
+(42, '1005912006', '1005912008', 14, '2026-03-12 05:10:22', 7, 'PRUEBA', NULL, NULL),
+(43, '1005912006', '1070730214', 14, '2026-03-12 05:10:22', 7, 'PRUEBA', NULL, NULL),
+(44, '1005912006', '1070730214', 15, '2026-03-12 05:13:03', 7, 'PRUEBA', NULL, NULL),
+(45, '1005912006', '1005912008', 14, '2026-03-12 05:13:59', 8, NULL, NULL, 0),
+(46, '1005912006', '1005912008', 14, '2026-03-12 05:14:04', 9, NULL, NULL, 0);
 
 -- --------------------------------------------------------
 
@@ -298,28 +382,26 @@ INSERT INTO `detalle_envio` (`id_detalle`, `id_quien_envie`, `id_quien_recibe`, 
 CREATE TABLE `detalle_recibido` (
   `id_det_recibido` int(15) NOT NULL,
   `det_id_recibido` int(20) NOT NULL,
-  `det_doc_empleado` varchar(20) NOT NULL
+  `det_doc_empleado` varchar(20) NOT NULL,
+  `fecha_re` timestamp NULL DEFAULT NULL,
+  `id_estado_rec` int(20) DEFAULT NULL,
+  `observaciones` varchar(500) DEFAULT NULL,
+  `archivo_res` varchar(500) DEFAULT NULL,
+  `folios_res` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `detalle_recibido`
 --
 
-INSERT INTO `detalle_recibido` (`id_det_recibido`, `det_id_recibido`, `det_doc_empleado`) VALUES
-(1, 6, '1005912008'),
-(2, 6, '1070730214'),
-(3, 6, '1005912003'),
-(4, 7, '1070730214'),
-(5, 7, '1005912008'),
-(6, 8, '1070730214'),
-(7, 9, '1005912008'),
-(8, 9, '1070730214'),
-(9, 9, '1005912003'),
-(10, 10, '1005912008'),
-(11, 10, '1070730214'),
-(12, 10, '1005912003'),
-(13, 11, '1070730214'),
-(14, 12, '1070730214');
+INSERT INTO `detalle_recibido` (`id_det_recibido`, `det_id_recibido`, `det_doc_empleado`, `fecha_re`, `id_estado_rec`, `observaciones`, `archivo_res`, `folios_res`) VALUES
+(17, 14, '1070730214', NULL, NULL, NULL, NULL, NULL),
+(18, 14, '1070730214', '2026-03-13 04:05:35', 7, 'Documento recibido (Registro Externo)', NULL, NULL),
+(19, 15, '1070730214', NULL, NULL, NULL, NULL, NULL),
+(20, 15, '1005912003', NULL, NULL, NULL, NULL, NULL),
+(21, 15, '1070730214', '2026-03-13 04:06:30', 7, 'Documento recibido (Registro Externo)', NULL, NULL),
+(22, 16, '1070730214', NULL, NULL, NULL, NULL, NULL),
+(23, 16, '1070730214', '2026-03-13 17:44:55', 7, 'Documento recibido (Registro Externo)', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -338,20 +420,62 @@ CREATE TABLE `empleado` (
   `emple_img` varchar(500) DEFAULT NULL,
   `emple_estado` int(20) NOT NULL,
   `emple_rol` int(20) NOT NULL,
-  `emple_area` int(11) DEFAULT NULL
+  `emple_area` int(11) DEFAULT NULL,
+  `actualizado_por` varchar(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `empleado`
 --
 
-INSERT INTO `empleado` (`emple_doc`, `nit_empresa`, `password`, `emple_nombres`, `emple_apellidos`, `emple_tel`, `emple_correo`, `emple_img`, `emple_estado`, `emple_rol`, `emple_area`) VALUES
-('1005912003', '4565464564', '$2y$12$Ld5g59zFru6uK2Xr8MDBHeaaqH/DkGvsLc7ws9YU8BnLdteFAOLt6', 'Kevin', 'Villafrade', '3152782654', 'kevindany2222209@gmail.com', NULL, 1, 2, NULL),
-('1005912004', NULL, '$2y$12$ObwJO1oSYusfcd1QRYO0Z.ZFVsVy.j4w/oiXPUa64GWMecLizJw2a', 'Kevin', 'Villafrade', NULL, 'kevindany2209@gmail.com', NULL, 1, 1, NULL),
-('1005912005', '4354353454', '$2y$12$dsRE/4pK1lXTVNdR6zZrtORXIj2m9VEhCDjZEuKmj8funIyPz92AO', 'Kevin', 'Villafrade', '3152782654', 'kevindany222209@gmail.com', NULL, 1, 2, NULL),
-('1005912006', '9887978978', '$2y$12$OHrgZT0tTor.BZ10PdMIa.5F0tqvEfTKl5hapYaWXDTxRIvMvocBi', 'Daniel', 'Perez', '545466545465', 'nikolas1993838@gmail.com', NULL, 1, 3, 9),
-('1005912008', '9887978978', '$2y$12$gdPanlYye7fzZMveYoQg4Ojx.lFx5NNFOTjbQc0g409wAF1vgvuMi', 'Humber', 'Perez', '3142808076', 'humber@gmail.com', NULL, 1, 3, 6),
-('1070730214', '9887978978', '$2y$12$qTSxTGQa105rqOxqNJHKduU.GchvUS3rOyXjmmtqXF3GuCcpXO2IW', 'Yuber', 'Paez', '3202534042', 'santiagopc333@gmail.com', NULL, 1, 3, 1);
+INSERT INTO `empleado` (`emple_doc`, `nit_empresa`, `password`, `emple_nombres`, `emple_apellidos`, `emple_tel`, `emple_correo`, `emple_img`, `emple_estado`, `emple_rol`, `emple_area`, `actualizado_por`) VALUES
+('1005912003', '4565464564', '$2y$12$Ld5g59zFru6uK2Xr8MDBHeaaqH/DkGvsLc7ws9YU8BnLdteFAOLt6', 'Vin', 'Villafrade', '3152782654', 'kevindany2222209@gmail.com', NULL, 1, 2, NULL, '1070730214'),
+('1005912004', NULL, '$2y$12$ObwJO1oSYusfcd1QRYO0Z.ZFVsVy.j4w/oiXPUa64GWMecLizJw2a', 'Kevin', 'Villafrade', NULL, 'kevindany2209@gmail.com', NULL, 1, 1, NULL, NULL),
+('1005912005', '4354353454', '$2y$12$dsRE/4pK1lXTVNdR6zZrtORXIj2m9VEhCDjZEuKmj8funIyPz92AO', 'Kevin', 'Villafradeeee', '3152782654', 'kevindany222209@gmail.com', NULL, 1, 2, NULL, '1070730214'),
+('1005912006', '9887978978', '$2y$12$OHrgZT0tTor.BZ10PdMIa.5F0tqvEfTKl5hapYaWXDTxRIvMvocBi', 'Daniel', 'Perez', '545466545465', 'nikolas1993838@gmail.com', NULL, 1, 3, 9, NULL),
+('1005912008', '9887978978', '$2y$12$gdPanlYye7fzZMveYoQg4Ojx.lFx5NNFOTjbQc0g409wAF1vgvuMi', 'Humber', 'Perez', '3142808076', 'humber@gmail.com', NULL, 1, 3, 6, NULL),
+('1070730214', '9887978978', '$2y$12$qTSxTGQa105rqOxqNJHKduU.GchvUS3rOyXjmmtqXF3GuCcpXO2IW', 'Yuber', 'Paez', '3202534042', 'santiagopc333@gmail.com', NULL, 1, 1, 1, NULL),
+('999001', '4354353454', '$2y$12$a7jL1mck5DcU9jZRCSJGjeSls5pB08WHwK3/ZFnmAITs62XxflSRq', 'Super Admin', 'SAdmin', '3009990001', 'superadmin.sadmin@gmail.com', NULL, 1, 1, 1, NULL),
+('999002', '4354353454', '$2y$12$a7jL1mck5DcU9jZRCSJGjeSls5pB08WHwK3/ZFnmAITs62XxflSRq', 'Super Admin', 'Admin', '3009990002', 'superadmin.admin@gmail.com', NULL, 1, 2, 1, NULL),
+('999003', '4354353454', '$2y$12$a7jL1mck5DcU9jZRCSJGjeSls5pB08WHwK3/ZFnmAITs62XxflSRq', 'Super Admin', 'Empleado', '3009990003', 'superadmin.empleado@gmail.com', NULL, 1, 3, 1, NULL);
+
+--
+-- Triggers `empleado`
+--
+DELIMITER $$
+CREATE TRIGGER `trg_auditoria_empleado_update` AFTER UPDATE ON `empleado` FOR EACH ROW BEGIN
+    INSERT INTO auditoria_empleado (
+        doc_empleado_afectado, 
+        usuario_app,
+        usuario_bd, 
+        accion, 
+        datos_anteriores, 
+        datos_nuevos
+    ) VALUES (
+        OLD.emple_doc, 
+        NEW.actualizado_por, -- Capturamos al usuario logueado en tu sistema
+        USER(), 
+        'ACTUALIZACION',
+        JSON_OBJECT(
+            'nombres', OLD.emple_nombres,
+            'apellidos', OLD.emple_apellidos,
+            'correo', OLD.emple_correo,
+            'estado', OLD.emple_estado,
+            'rol', OLD.emple_rol,
+            'area', OLD.emple_area
+        ),
+        JSON_OBJECT(
+            'nombres', NEW.emple_nombres,
+            'apellidos', NEW.emple_apellidos,
+            'correo', NEW.emple_correo,
+            'estado', NEW.emple_estado,
+            'rol', NEW.emple_rol,
+            'area', NEW.emple_area
+        )
+    );
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -366,18 +490,57 @@ CREATE TABLE `empresa` (
   `nomb_representante` varchar(100) NOT NULL,
   `direccion` varchar(150) DEFAULT NULL,
   `contacto` varchar(15) DEFAULT NULL,
-  `empresa_correo` varchar(150) NOT NULL
+  `empresa_correo` varchar(150) NOT NULL,
+  `actualizado_por` varchar(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `empresa`
 --
 
-INSERT INTO `empresa` (`nit_empresa`, `nomb_empresa`, `doc_representante`, `nomb_representante`, `direccion`, `contacto`, `empresa_correo`) VALUES
-('4354353454', 'KFC & Food', '38144607', 'Emilio Casas', 'Avenida 37 N12 - 23 fdssfdsdfsdf', '3152782654', 'kfc@gmail.com'),
-('4355466554', 'SUBWAY', '5654645645', 'Subway Dueño', 'Cra 12 N37 A16 PRUEBA PORUEBA', '3152782654', 'subway@gmail.com'),
-('4565464564', 'LA MAZZA', '38144609', 'Adriana Perez', 'Avenida 37 N12 - 23 Gaitan', '3152782654', 'lamazzaibg@gmail.com'),
-('9887978978', '657 Sport', '7866787678', 'Humbert Villein', 'Avenida 37 N12 - 23 fdgfgdgfdgdfgdfgdffgdfdgfgdgfdfdgdfg', '3152782654', '657sports@gmail.com');
+INSERT INTO `empresa` (`nit_empresa`, `nomb_empresa`, `doc_representante`, `nomb_representante`, `direccion`, `contacto`, `empresa_correo`, `actualizado_por`) VALUES
+('4354353454', 'KFC &amp', '38144607', 'Emilio Casas', 'Avenida 37 N12 - 23 fdssfdsdfsdf', '3152782654', 'kfc@gmail.com', '1070730214'),
+('4355466554', 'SUBWAY', '5654645645', 'Subway Dueño', 'Cra 12 N37 A16 PRUEBA PORUEBA', '3152782654', 'subway@gmail.com', NULL),
+('4565464564', 'LA MAZZA', '38144609', 'Adriana Perez', 'Avenida 37 N12 - 23 Gaitan', '3152782654', 'lamazzaibg@gmail.com', NULL),
+('9887978978', '657 Sport', '7866787678', 'Humbert Villein', 'Avenida 37 N12 - 23 fdgfgdgfdgdfgdfgdffgdfdgfgdgfdfdgdfg', '3152782654', '657sports@gmail.com', NULL);
+
+--
+-- Triggers `empresa`
+--
+DELIMITER $$
+CREATE TRIGGER `trg_auditoria_empresa_update` AFTER UPDATE ON `empresa` FOR EACH ROW BEGIN
+    INSERT INTO auditoria_empresa (
+        nit_empresa_afectada, 
+        usuario_app,
+        usuario_bd, 
+        accion, 
+        datos_anteriores, 
+        datos_nuevos
+    ) VALUES (
+        OLD.nit_empresa, 
+        NEW.actualizado_por, -- Capturamos quién modificó la empresa
+        USER(), 
+        'ACTUALIZACION',
+        JSON_OBJECT(
+            'nomb_empresa', OLD.nomb_empresa,
+            'doc_representante', OLD.doc_representante,
+            'nomb_representante', OLD.nomb_representante,
+            'direccion', OLD.direccion,
+            'contacto', OLD.contacto,
+            'empresa_correo', OLD.empresa_correo
+        ),
+        JSON_OBJECT(
+            'nomb_empresa', NEW.nomb_empresa,
+            'doc_representante', NEW.doc_representante,
+            'nomb_representante', NEW.nomb_representante,
+            'direccion', NEW.direccion,
+            'contacto', NEW.contacto,
+            'empresa_correo', NEW.empresa_correo
+        )
+    );
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -393,7 +556,6 @@ CREATE TABLE `envio` (
   `doc_quien_envia` varchar(20) DEFAULT NULL,
   `fecha` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `destino` varchar(200) DEFAULT NULL,
-  `anexo` varchar(500) DEFAULT NULL,
   `folio` int(20) NOT NULL,
   `id_tipo_envio` int(11) DEFAULT NULL,
   `id_estado_envio` int(10) DEFAULT NULL,
@@ -405,10 +567,10 @@ CREATE TABLE `envio` (
 -- Dumping data for table `envio`
 --
 
-INSERT INTO `envio` (`id_envio`, `num_radicado_int`, `asunto`, `doc_quien_dirigido`, `doc_quien_envia`, `fecha`, `destino`, `anexo`, `folio`, `id_tipo_envio`, `id_estado_envio`, `archivo`, `nit_empresa`) VALUES
-(7, 16, 'CUENTAS', NULL, '1005912006', '2026-03-08 06:01:14', 'Interno', NULL, 20, 4, 7, 'archivos/hJlORhHG46cMVdvzTZLejYUSvW2QkLuC7pJXlgAL.pdf', '9887978978'),
-(8, 17, 'Reclamo no me llega tal', NULL, '1005912008', '2026-03-08 06:04:56', 'Interno', NULL, 20, 3, 7, 'archivos/jpluLhMPzQfdalDII5yuMB6Al9whgyiEGGgTQ2wR.pdf', '9887978978'),
-(9, 18, 'Follatón', NULL, '1005912008', '2026-03-09 18:18:24', 'Interno', NULL, 8, 4, 7, 'archivos/oSEbDI0eVS16z3waOUKdh5akhj8LeRajEn3D37jX.pdf', '9887978978');
+INSERT INTO `envio` (`id_envio`, `num_radicado_int`, `asunto`, `doc_quien_dirigido`, `doc_quien_envia`, `fecha`, `destino`, `folio`, `id_tipo_envio`, `id_estado_envio`, `archivo`, `nit_empresa`) VALUES
+(13, 35, 'RESOLUCION', NULL, '1005912006', '2026-03-12 04:52:47', 'Interno', 0, 8, 12, '', '9887978978'),
+(14, 36, 'DERECHO', NULL, '1005912006', '2026-03-12 05:10:22', 'Interno', 3, 1, 12, 'correspondencia/mr8Rchi4xRWYRXfvuPPF5rES2AEXJZPWODgIUVjx.pdf', '9887978978'),
+(15, 37, 'DERECHO', NULL, '1005912006', '2026-03-12 05:13:03', 'Interno', 5, 1, 12, 'correspondencia/v3ondxDmEoYLILtXRTaU1TPhcJbgTSx0Bnsx3GU7.pdf', '9887978978');
 
 -- --------------------------------------------------------
 
@@ -436,7 +598,8 @@ INSERT INTO `estado` (`id_estado`, `estado_nomb`) VALUES
 (9, 'Resuelto'),
 (10, 'Archivado'),
 (11, 'Rechazado'),
-(12, 'Enviado');
+(12, 'Enviado'),
+(13, 'Digitalizado');
 
 -- --------------------------------------------------------
 
@@ -502,19 +665,60 @@ CREATE TABLE `licencia` (
   `fecha_inicio` datetime NOT NULL,
   `fecha_fin` datetime DEFAULT NULL,
   `tipo_licencia` enum('ACTIVACION','RENOVACION') NOT NULL,
-  `licencia_origen` int(11) DEFAULT NULL
+  `licencia_origen` int(11) DEFAULT NULL,
+  `actualizado_por` varchar(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `licencia`
 --
 
-INSERT INTO `licencia` (`id_licencia`, `id_estado`, `id_pago`, `fecha_inicio`, `fecha_fin`, `tipo_licencia`, `licencia_origen`) VALUES
-(27, 1, 55, '2026-02-27 12:00:22', '2026-05-28 12:00:22', 'ACTIVACION', NULL),
-(30, 1, 56, '2026-05-28 12:00:22', '2026-08-26 12:00:22', 'RENOVACION', 27),
-(31, 1, 59, '2026-08-26 12:00:22', '2026-09-25 12:00:22', 'RENOVACION', 30),
-(32, 1, 58, '2026-09-25 12:00:22', '2026-10-25 12:00:22', 'RENOVACION', 31),
-(34, 1, 61, '2026-03-02 22:49:42', '2026-03-10 22:49:42', 'ACTIVACION', NULL);
+INSERT INTO `licencia` (`id_licencia`, `id_estado`, `id_pago`, `fecha_inicio`, `fecha_fin`, `tipo_licencia`, `licencia_origen`, `actualizado_por`) VALUES
+(27, 1, 55, '2026-02-27 12:00:22', '2026-05-28 12:00:22', 'ACTIVACION', NULL, NULL),
+(30, 1, 56, '2026-05-28 12:00:22', '2026-08-26 12:00:22', 'RENOVACION', 27, NULL),
+(31, 1, 59, '2026-08-26 12:00:22', '2026-09-25 12:00:22', 'RENOVACION', 30, NULL),
+(32, 1, 58, '2026-09-25 12:00:22', '2026-10-25 12:00:22', 'RENOVACION', 31, NULL),
+(34, 1, 61, '2026-03-02 22:49:42', '2026-03-10 22:49:42', 'ACTIVACION', NULL, '1070730214'),
+(35, 1, 62, '2026-03-11 14:23:37', '2027-03-11 14:23:37', 'ACTIVACION', NULL, NULL),
+(36, 1, 63, '2027-03-11 14:23:37', '2028-03-10 14:23:37', 'RENOVACION', 35, NULL);
+
+--
+-- Triggers `licencia`
+--
+DELIMITER $$
+CREATE TRIGGER `trg_auditoria_licencia_update` AFTER UPDATE ON `licencia` FOR EACH ROW BEGIN
+    INSERT INTO auditoria_licencia (
+        id_licencia_afectada, 
+        usuario_app,
+        usuario_bd, 
+        accion, 
+        datos_anteriores, 
+        datos_nuevos
+    ) VALUES (
+        OLD.id_licencia, 
+        NEW.actualizado_por, -- Capturamos quién modificó la licencia
+        USER(), 
+        'ACTUALIZACION',
+        JSON_OBJECT(
+            'id_estado', OLD.id_estado,
+            'id_pago', OLD.id_pago,
+            'fecha_inicio', OLD.fecha_inicio,
+            'fecha_fin', OLD.fecha_fin,
+            'tipo_licencia', OLD.tipo_licencia,
+            'licencia_origen', OLD.licencia_origen
+        ),
+        JSON_OBJECT(
+            'id_estado', NEW.id_estado,
+            'id_pago', NEW.id_pago,
+            'fecha_inicio', NEW.fecha_inicio,
+            'fecha_fin', NEW.fecha_fin,
+            'tipo_licencia', NEW.tipo_licencia,
+            'licencia_origen', NEW.licencia_origen
+        )
+    );
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -552,21 +756,64 @@ CREATE TABLE `pagos` (
   `moneda` varchar(10) DEFAULT NULL,
   `id_est_pago` int(10) DEFAULT NULL,
   `fecha_pago` datetime DEFAULT NULL,
-  `fecha_inicio` datetime DEFAULT NULL
+  `fecha_inicio` datetime DEFAULT NULL,
+  `actualizado_por` varchar(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `pagos`
 --
 
-INSERT INTO `pagos` (`id_pago`, `id_plan`, `comprobante`, `id_admin`, `moneda`, `id_est_pago`, `fecha_pago`, `fecha_inicio`) VALUES
-(55, 5, NULL, '1005912006', 'COP', 4, '2026-02-27 11:59:10', NULL),
-(56, 5, NULL, '1005912006', 'COP', 4, '2026-02-27 12:01:04', NULL),
-(57, 6, NULL, '1005912005', 'COP', 4, '2026-02-27 12:01:17', NULL),
-(58, 4, NULL, '1005912006', 'COP', 4, '2026-02-27 12:05:03', NULL),
-(59, 4, NULL, '1005912006', 'COP', 4, '2026-02-27 12:05:09', NULL),
-(60, 10, NULL, '1005912005', 'COP', 4, '2026-02-27 12:06:40', NULL),
-(61, 4, NULL, '1005912003', 'COP', 4, '2026-03-02 22:49:33', NULL);
+INSERT INTO `pagos` (`id_pago`, `id_plan`, `comprobante`, `id_admin`, `moneda`, `id_est_pago`, `fecha_pago`, `fecha_inicio`, `actualizado_por`) VALUES
+(55, 5, NULL, '1005912006', 'COP', 4, '2026-02-27 11:59:10', NULL, NULL),
+(56, 5, NULL, '1005912006', 'COP', 4, '2026-02-27 12:01:04', NULL, NULL),
+(57, 6, NULL, '1005912005', 'COP', 4, '2026-02-27 12:01:17', NULL, NULL),
+(58, 4, NULL, '1005912006', 'COP', 4, '2026-02-27 12:05:03', NULL, NULL),
+(59, 4, NULL, '1005912006', 'COP', 4, '2026-02-27 12:05:09', NULL, NULL),
+(60, 10, NULL, '1005912005', 'COP', 4, '2026-02-27 12:06:40', NULL, NULL),
+(61, 4, NULL, '1005912003', 'COP', 4, '2026-03-02 22:49:33', NULL, NULL),
+(62, 10, NULL, '999002', 'COP', 4, '2026-03-11 14:23:11', NULL, NULL),
+(63, 10, NULL, '999002', 'COP', 4, '2026-03-13 13:56:21', NULL, '1070730214');
+
+--
+-- Triggers `pagos`
+--
+DELIMITER $$
+CREATE TRIGGER `trg_auditoria_pagos_update` AFTER UPDATE ON `pagos` FOR EACH ROW BEGIN
+    INSERT INTO auditoria_pagos (
+        id_pago_afectado, 
+        usuario_app,
+        usuario_bd, 
+        accion, 
+        datos_anteriores, 
+        datos_nuevos
+    ) VALUES (
+        OLD.id_pago, 
+        NEW.actualizado_por, -- Capturamos quién modificó el pago
+        USER(), 
+        'ACTUALIZACION',
+        JSON_OBJECT(
+            'id_plan', OLD.id_plan,
+            'comprobante', OLD.comprobante,
+            'id_admin', OLD.id_admin,
+            'moneda', OLD.moneda,
+            'id_est_pago', OLD.id_est_pago,
+            'fecha_pago', OLD.fecha_pago,
+            'fecha_inicio', OLD.fecha_inicio
+        ),
+        JSON_OBJECT(
+            'id_plan', NEW.id_plan,
+            'comprobante', NEW.comprobante,
+            'id_admin', NEW.id_admin,
+            'moneda', NEW.moneda,
+            'id_est_pago', NEW.id_est_pago,
+            'fecha_pago', NEW.fecha_pago,
+            'fecha_inicio', NEW.fecha_inicio
+        )
+    );
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -607,19 +854,55 @@ CREATE TABLE `plan` (
   `valor` int(12) NOT NULL,
   `descripcion` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`descripcion`)),
   `duracion` int(10) DEFAULT NULL,
-  `es_destacado` tinyint(1) NOT NULL DEFAULT 0
+  `es_destacado` tinyint(1) NOT NULL DEFAULT 0,
+  `actualizado_por` varchar(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `plan`
 --
 
-INSERT INTO `plan` (`id_plan`, `nomb_plan`, `valor`, `descripcion`, `duracion`, `es_destacado`) VALUES
-(4, 'Mensual', 200000, '[\"Acceso completo al sistema.\",\"Soporte básico.\",\"Garantía 7 días.\"]', 30, 0),
-(5, 'Trimestral', 540000, '[\"Acceso completo al sistema.\",\"Soporte prioritario.\",\"Garantía 14 días.\", \"Incluye 1 capacitación.\"]', 90, 0),
-(6, 'Semestral', 1040000, '[\"Acceso completo al sistema.\",\"Soporte prioritario extendido.\",\"Garantía 30 días.\", \"Incluye 2 capacitaciones.\"]\r\n', 180, 0),
-(10, 'Anual', 1950000, '[\"Acceso completo al sistema.\",\"Soporte prioritario exclusivo.\",\"Garant\\u00eda 60 d\\u00edas.\",\"Incluye 6 capacitaciones.\"]', 365, 0),
-(12, 'Sotfware tuyo', 0, '[\"Es totalmente tuyo el sistema\"]', 7, 0);
+INSERT INTO `plan` (`id_plan`, `nomb_plan`, `valor`, `descripcion`, `duracion`, `es_destacado`, `actualizado_por`) VALUES
+(4, 'Mensual', 200000, '[\"Acceso completo al sistema.\",\"Soporte básico.\",\"Garantía 7 días.\"]', 30, 0, NULL),
+(5, 'Trimestral', 540000, '[\"Acceso completo al sistema.\",\"Soporte prioritario.\",\"Garantía 14 días.\", \"Incluye 1 capacitación.\"]', 90, 0, NULL),
+(6, 'Semestral', 1040000, '[\"Acceso completo al sistema.\",\"Soporte prioritario extendido.\",\"Garantía 30 días.\", \"Incluye 2 capacitaciones.\"]\r\n', 180, 1, NULL),
+(10, 'Anual', 1950000, '[\"Acceso completo al sistema.\",\"Soporte prioritario exclusivo.\",\"Garant\\u00eda 60 d\\u00edas.\",\"Incluye 6 capacitaciones.\"]', 365, 0, NULL);
+
+--
+-- Triggers `plan`
+--
+DELIMITER $$
+CREATE TRIGGER `trg_auditoria_plan_update` AFTER UPDATE ON `plan` FOR EACH ROW BEGIN
+    INSERT INTO auditoria_plan (
+        id_plan_afectado, 
+        usuario_app,
+        usuario_bd, 
+        accion, 
+        datos_anteriores, 
+        datos_nuevos
+    ) VALUES (
+        OLD.id_plan, 
+        NEW.actualizado_por, -- Capturamos quién modificó el plan
+        USER(), 
+        'ACTUALIZACION',
+        JSON_OBJECT(
+            'nomb_plan', OLD.nomb_plan,
+            'valor', OLD.valor,
+            'descripcion', OLD.descripcion,
+            'duracion', OLD.duracion,
+            'es_destacado', OLD.es_destacado
+        ),
+        JSON_OBJECT(
+            'nomb_plan', NEW.nomb_plan,
+            'valor', NEW.valor,
+            'descripcion', NEW.descripcion,
+            'duracion', NEW.duracion,
+            'es_destacado', NEW.es_destacado
+        )
+    );
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -659,20 +942,12 @@ CREATE TABLE `radicados` (
 --
 
 INSERT INTO `radicados` (`id_radicado`, `num_radicado`, `nit_empresa`) VALUES
-(16, 'INT-2026-50234', '9887978978'),
-(17, 'INT-2026-64218', '9887978978'),
-(18, 'INT-2026-65886', '9887978978'),
-(19, 'INT-2026-34564', '9887978978'),
-(20, 'INT-2026-95974', '9887978978'),
-(21, 'INT-2026-64115', '9887978978'),
-(22, 'INT-2026-43279', '9887978978'),
-(25, 'INT-2026-94852', '9887978978'),
-(26, 'INT-2026-14031', '9887978978'),
-(27, 'INT-2026-56022', '9887978978'),
-(28, 'INT-2026-44876', '9887978978'),
-(29, 'INT-2026-56415', '9887978978'),
-(30, 'INT-2026-54102', '9887978978'),
-(31, 'INT-2026-61963', '9887978978');
+(35, 'INT-2026-00001', '9887978978'),
+(36, 'INT-2026-00002', '9887978978'),
+(37, 'INT-2026-00003', '9887978978'),
+(39, 'INT-2026-00004', '9887978978'),
+(40, 'INT-2026-00005', '9887978978'),
+(41, 'INT-2026-00006', '9887978978');
 
 -- --------------------------------------------------------
 
@@ -707,18 +982,9 @@ CREATE TABLE `recibido` (
 --
 
 INSERT INTO `recibido` (`id_recibido`, `num_radicado_ext`, `num_radicado_int`, `asunto`, `fecha_hora_recib`, `nom_institucion`, `ciudad_proveniente`, `folio`, `anexo`, `observaciones`, `doc_quien_registra`, `id_tipo`, `id_estado_rec`, `archivo`, `nit_empresa`, `nombre_persona`, `doc_persona`, `correo_persona`, `tel_persona`) VALUES
-(1, '12345', 16, 'Follatón', '2026-03-09 13:35:59', 'Alcaldia', '25001', 5, 'pdf', 'ninguna', 1234567888, 1, 7, 'correspondencia/mZBduSfmhO7wcPr5HDLSflksITLoaMdwjuTtUfuZ.pdf', '9887978978', NULL, NULL, NULL, NULL),
-(2, '12345', 19, 'Derecho de peticion', '2026-03-09 14:54:31', 'Alcaldia', '25001', 5, 'ninguno', 'nada', 1234567888, 9, 12, 'correspondencia/5NXH2r6ixLKWf98SwCjFd7JDXzdr1gtmjok4xRvI.pdf', '9887978978', NULL, NULL, NULL, NULL),
-(3, '12345', 20, 'Derecho de peticion', '2026-03-09 16:47:25', 'Alcaldia', '11001', 5, 'nada', 'ninguna', 1234567888, 1, 12, 'correspondencia/pxqE7t9I9a906LDR30HWMzL86qV7GWzrjxqCLvwu.pdf', '9887978978', NULL, NULL, NULL, NULL),
-(4, NULL, 21, 'Derecho de peticion', '2026-03-09 17:20:55', 'Alcaldia', '05001', 6, 'nada', 'nada', 1234567888, 1, 12, 'correspondencia/ninSNDBNasg4jwsHiUXqWKyT2X1esYsMVkTEAOqS.pdf', '9887978978', NULL, NULL, NULL, NULL),
-(5, NULL, 22, 'Derecho de peticion', '2026-03-10 13:07:09', 'Alcaldia', '05001', 15, NULL, NULL, 1234567888, 4, 12, 'correspondencia/AY8DTZb8nVGA3Z0AS0PItTZV8srgOf3u5Dth7sQS.pdf', '9887978978', NULL, NULL, NULL, NULL),
-(6, '12345', 25, 'Derecho de peticion', '2026-03-10 13:57:22', 'Alcaldia', '05001', 50, NULL, 'nadaaaaaaa', 1234567888, 1, 12, 'correspondencia/bNNdNrWsP3JlGP58yiE06GT897aMCC0baWV3YAq5.pdf', '9887978978', NULL, NULL, NULL, NULL),
-(7, NULL, 26, 'Derecho de peticion', '2026-03-10 14:35:23', 'Persona de prueba', '05001', 60, NULL, 'no responder', 1234567888, 1, 12, 'correspondencia/FLKKPTb6LEk13tVFFiVYpob1xpDzxgXCIchIyFdM.pdf', '9887978978', 'Persona de prueba', '1234567890', 'prueba@gmail.com', '3202534042'),
-(8, '12345', 27, 'Derecho de peticion', '2026-03-10 14:36:37', 'Persona de pruebaaaaaaaa', '73001', 1, NULL, 'no rrrrr', 1234567888, 1, 12, 'correspondencia/Dsps1PyfY55DJTWLMzT59auFugi95dPodGpV24of.pdf', '9887978978', 'Persona de pruebaaaaaaaa', '1234567890', 'prueba@gmail.com', '3202534042222'),
-(9, NULL, 28, 'solicitud', '2026-03-10 16:11:35', 'Persona de pruebaa', '05001', 50, NULL, 'nada', 1234567888, 4, 12, 'correspondencia/sbD1G62UzsEpbgxwUFqLWryHGsaea88fdoejesyN.pdf', '9887978978', 'Persona de pruebaa', '1234567890', 'prueba@gmail.com', '3202534042222'),
-(10, '12345', 29, 'solicitud', '2026-03-10 16:15:57', 'Alcaldia', '05001', 50, NULL, 'nada', 1234567888, 4, 12, 'correspondencia/Yvj0lKWReW0mwHULGIWVyWYjRtLzS1L020OJbNhC.pdf', '9887978978', NULL, NULL, NULL, NULL),
-(11, NULL, 30, 'solicitud', '2026-03-10 16:16:57', NULL, '05001', 1, NULL, 'nada', 1234567888, 4, 12, 'correspondencia/0gPl9nRHPL4nuhJVdew0JVS5pitASqPgjYQpVwJr.pdf', '9887978978', 'Persona de prueba', '1234567890', 'prueba@gmail.com', '3202534042222'),
-(12, '12345', 31, 'solicitud', '2026-03-10 16:35:45', 'Alcaldia', '05001', 1, NULL, 'nada', 1234567888, 1, 12, 'correspondencia/faDBHfrroemyJV2ZqS9kKWtnFJui1BLuBrdNLrya.pdf', '9887978978', NULL, NULL, NULL, NULL);
+(14, '12345', 39, 'solicitud', '2026-03-12 23:05:35', 'Alcaldia', '05001', 8, NULL, 'ninguna', 1234567888, 4, 12, 'correspondencia/GCA64cEw69swXGwDjSNhqJnmYrV34YLBFRcIq2gv.pdf', '9887978978', NULL, NULL, NULL, NULL),
+(15, NULL, 40, 'solicitud', '2026-03-12 23:06:30', NULL, '05001', 7, NULL, 'ninguna', 1234567888, 4, 12, 'correspondencia/4Do1qFnbyCDqjLYKNDRtDQQHHhgle5gXbGa4OYWX.pdf', '9887978978', 'Persona de prueba', '1234567890', 'prueba@gmail.com', '12345789'),
+(16, '12345', 41, 'solicitud', '2026-03-13 12:44:55', 'Alcaldia', '18001', 7, NULL, 'no responder', 1234567888, 4, 12, 'correspondencia/pZXV0CtAKPNQq1Hwe0mUnLOxf4NcuaraB7PYjJhU.pdf', '9887978978', NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -743,6 +1009,7 @@ CREATE TABLE `remitente` (
 --
 
 INSERT INTO `remitente` (`rem_doc`, `nit_empresa`, `rem_nombres`, `rem_apellidos`, `rem_correo`, `password`, `rem_tel`, `rem_ciudad`, `rem_estado`) VALUES
+(999004, '4354353454', 'Super Admin', 'Remitente', 'superadmin.remitente@gmail.com', '$2y$12$a7jL1mck5DcU9jZRCSJGjeSls5pB08WHwK3/ZFnmAITs62XxflSRq', '3000000000', '11001', 1),
 (1234567888, '9887978978', 'Kevin', 'Daniel', 'kevin.daniel@gmail.com', '$2y$12$V/kBOsNQ33fJEcmod3oG.e2F/VDOtKa3dzc6TQjvpuTBb4WXy6DPe', '3001234567', '11001', 1);
 
 -- --------------------------------------------------------
@@ -763,7 +1030,10 @@ CREATE TABLE `rol` (
 INSERT INTO `rol` (`id_rol`, `rol_nom`) VALUES
 (1, 'SuperAdmin'),
 (2, 'AdminEmpresa'),
-(3, 'Empleado');
+(3, 'Empleado'),
+(7, 'SuperAdministrador'),
+(8, 'Administrador'),
+(9, 'Usuario Estandar');
 
 -- --------------------------------------------------------
 
@@ -785,9 +1055,8 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('BacLH4WNox4g0OgpJOFqu29Ut2Jkn4lycW6v7wAG', 1234567888, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoieEF3cjBvWUlJbm9WaHh0eW5JYmRxM0JGM1BMZmRSbTZ5cnpnNm5XbyI7czozOiJ1cmwiO2E6MTp7czo4OiJpbnRlbmRlZCI7czo0MjoiaHR0cDovLzEyNy4wLjAuMTo4MDAwL3JlbWl0ZW50ZS9leHRlcm5hcmVjIjt9czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDI6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9yZW1pdGVudGUvZXh0ZXJuYXJlYyI7czo1OiJyb3V0ZSI7czoyMDoicmVtaXRlbnRlLmV4dGVybmFyZWMiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjU2OiJsb2dpbl9yZW1pdGVudGVfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToxMjM0NTY3ODg4O30=', 1773181497),
-('VZRhZmL9sCDPHY8RZa27EIc2GAgCmpNdw0G7RihZ', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'YTo2OntzOjY6Il90b2tlbiI7czo0MDoiUk9RbzRBVWxlWkZDc3F5a0hMYkhDdHdGMEJpMThDaDVEcHAyejg4YyI7czozOiJ1cmwiO2E6MTp7czo4OiJpbnRlbmRlZCI7czo0MjoiaHR0cDovLzEyNy4wLjAuMTo4MDAwL3JlbWl0ZW50ZS9leHRlcm5hcmVjIjt9czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9sb2dpbiI7czo1OiJyb3V0ZSI7czo1OiJsb2dpbiI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6MTU6ImxvY2tvdXRfc2Vjb25kcyI7aTozMDA7czo1NjoibG9naW5fcmVtaXRlbnRlXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MTIzNDU2Nzg4ODt9', 1773171254),
-('xgQQKFKvQGOQiq1X0NTALCILxvgyGMyqubZRaeOb', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiY1lkd0pQYjM2WXNQc21zd2tCeUNmTThwWkZueTlCWVAzM2phVER5dyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo5OiJ3ZWIuaW5kZXgiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1773180888);
+('CfQ7hNNrxYTZFC9KVJ3oGPnepMYxyaIdn7kEVNIs', 1070730214, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiQ25TRTRUME42TGhrSmdacDlmOVMzbDlWRnRZaWM3UG1taGZ4aU44ZCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzU6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zYWRtaW4vcGxhbmVzIjtzOjU6InJvdXRlIjtzOjc6ImNwbGFuZXMiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7czoxMDoiMTA3MDczMDIxNCI7fQ==', 1773431768),
+('xFLQ50Y5X482GBEXKrBfokLA4V1T6kFcBZKMfXrK', 1005912008, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiU05vYXkxaDJmd0czaHlOaU9ZcllpSGs3cko4RXNZT3hieEVsbWZlcyI7czozOiJ1cmwiO2E6MTp7czo4OiJpbnRlbmRlZCI7czozNzoiaHR0cDovLzEyNy4wLjAuMTo4MDAwL3NhZG1pbi9lbXByZXNhcyI7fXM6OToiX3ByZXZpb3VzIjthOjI6e3M6MzoidXJsIjtzOjMwOiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvZW1wbGVhZG8iO3M6NToicm91dGUiO3M6MTQ6ImVtcGxlYWRvLmluZGV4Ijt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO3M6MTA6IjEwMDU5MTIwMDgiO30=', 1773426186);
 
 -- --------------------------------------------------------
 
@@ -807,15 +1076,15 @@ CREATE TABLE `tipo` (
 --
 
 INSERT INTO `tipo` (`id_tipo`, `tipo_nombre`, `id_prioridad`, `dias_respuesta`) VALUES
-(1, 'Derecho de Peticion', 1, NULL),
-(2, 'Queja', NULL, NULL),
-(3, 'Reclamo', NULL, NULL),
-(4, 'Solicitud', NULL, NULL),
-(5, 'Carta', NULL, NULL),
-(6, 'Memorando', NULL, NULL),
-(7, 'Circular', NULL, NULL),
-(8, 'Resolucion', NULL, NULL),
-(9, 'Contrato', NULL, NULL);
+(1, 'Derecho de Peticion', 4, 15),
+(3, 'Reclamo', 1, 15),
+(4, 'Solicitud', 2, 15),
+(5, 'Carta', 2, 15),
+(6, 'Memorando', 2, 5),
+(7, 'Circular', 3, 0),
+(8, 'Resolucion', 3, 0),
+(9, 'Contrato', 1, 5),
+(10, 'Queja', 1, 15);
 
 -- --------------------------------------------------------
 
@@ -873,6 +1142,36 @@ ALTER TABLE `area`
   ADD PRIMARY KEY (`id_area`);
 
 --
+-- Indexes for table `auditoria_empleado`
+--
+ALTER TABLE `auditoria_empleado`
+  ADD PRIMARY KEY (`id_log`);
+
+--
+-- Indexes for table `auditoria_empresa`
+--
+ALTER TABLE `auditoria_empresa`
+  ADD PRIMARY KEY (`id_log`);
+
+--
+-- Indexes for table `auditoria_licencia`
+--
+ALTER TABLE `auditoria_licencia`
+  ADD PRIMARY KEY (`id_log`);
+
+--
+-- Indexes for table `auditoria_pagos`
+--
+ALTER TABLE `auditoria_pagos`
+  ADD PRIMARY KEY (`id_log`);
+
+--
+-- Indexes for table `auditoria_plan`
+--
+ALTER TABLE `auditoria_plan`
+  ADD PRIMARY KEY (`id_log`);
+
+--
 -- Indexes for table `cache`
 --
 ALTER TABLE `cache`
@@ -915,7 +1214,8 @@ ALTER TABLE `detalle_envio`
 ALTER TABLE `detalle_recibido`
   ADD PRIMARY KEY (`id_det_recibido`),
   ADD KEY `det_doc_empleado` (`det_doc_empleado`),
-  ADD KEY `det_id_recibido` (`det_id_recibido`);
+  ADD KEY `det_id_recibido` (`det_id_recibido`),
+  ADD KEY `id_estado_rec` (`id_estado_rec`);
 
 --
 -- Indexes for table `empleado`
@@ -1083,13 +1383,13 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `anexo_envio`
 --
 ALTER TABLE `anexo_envio`
-  MODIFY `id_anexo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id_anexo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `anexo_recibido`
 --
 ALTER TABLE `anexo_recibido`
-  MODIFY `id_anexo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id_anexo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `anexo_respuesta`
@@ -1104,28 +1404,58 @@ ALTER TABLE `area`
   MODIFY `id_area` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
+-- AUTO_INCREMENT for table `auditoria_empleado`
+--
+ALTER TABLE `auditoria_empleado`
+  MODIFY `id_log` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `auditoria_empresa`
+--
+ALTER TABLE `auditoria_empresa`
+  MODIFY `id_log` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `auditoria_licencia`
+--
+ALTER TABLE `auditoria_licencia`
+  MODIFY `id_log` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `auditoria_pagos`
+--
+ALTER TABLE `auditoria_pagos`
+  MODIFY `id_log` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `auditoria_plan`
+--
+ALTER TABLE `auditoria_plan`
+  MODIFY `id_log` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `detalle_envio`
 --
 ALTER TABLE `detalle_envio`
-  MODIFY `id_detalle` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+  MODIFY `id_detalle` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
 
 --
 -- AUTO_INCREMENT for table `detalle_recibido`
 --
 ALTER TABLE `detalle_recibido`
-  MODIFY `id_det_recibido` int(15) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id_det_recibido` int(15) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `envio`
 --
 ALTER TABLE `envio`
-  MODIFY `id_envio` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id_envio` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `estado`
 --
 ALTER TABLE `estado`
-  MODIFY `id_estado` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id_estado` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `failed_jobs`
@@ -1143,7 +1473,7 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT for table `licencia`
 --
 ALTER TABLE `licencia`
-  MODIFY `id_licencia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `id_licencia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- AUTO_INCREMENT for table `migrations`
@@ -1155,7 +1485,7 @@ ALTER TABLE `migrations`
 -- AUTO_INCREMENT for table `pagos`
 --
 ALTER TABLE `pagos`
-  MODIFY `id_pago` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
+  MODIFY `id_pago` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=64;
 
 --
 -- AUTO_INCREMENT for table `password_codes`
@@ -1179,25 +1509,25 @@ ALTER TABLE `prioridad`
 -- AUTO_INCREMENT for table `radicados`
 --
 ALTER TABLE `radicados`
-  MODIFY `id_radicado` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `id_radicado` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
 
 --
 -- AUTO_INCREMENT for table `recibido`
 --
 ALTER TABLE `recibido`
-  MODIFY `id_recibido` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id_recibido` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `rol`
 --
 ALTER TABLE `rol`
-  MODIFY `id_rol` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id_rol` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `tipo`
 --
 ALTER TABLE `tipo`
-  MODIFY `id_tipo` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id_tipo` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `users`
@@ -1247,7 +1577,8 @@ ALTER TABLE `detalle_envio`
 --
 ALTER TABLE `detalle_recibido`
   ADD CONSTRAINT `detalle_recibido_ibfk_1` FOREIGN KEY (`det_doc_empleado`) REFERENCES `empleado` (`emple_doc`),
-  ADD CONSTRAINT `detalle_recibido_ibfk_2` FOREIGN KEY (`det_id_recibido`) REFERENCES `recibido` (`id_recibido`);
+  ADD CONSTRAINT `detalle_recibido_ibfk_2` FOREIGN KEY (`det_id_recibido`) REFERENCES `recibido` (`id_recibido`),
+  ADD CONSTRAINT `detalle_recibido_ibfk_3` FOREIGN KEY (`id_estado_rec`) REFERENCES `estado` (`id_estado`);
 
 --
 -- Constraints for table `empleado`

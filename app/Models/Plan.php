@@ -18,6 +18,7 @@ class Plan extends Model
         'duracion',
         'descripcion',
         'es_destacado',
+        'actualizado_por',
     ];
 
     protected $casts = [

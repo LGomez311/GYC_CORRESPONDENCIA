@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Sadmin;
 use App\Http\Controllers\Controller;
 use App\Models\Pago;
 use App\Models\Licencia;
+use App\Models\AuditoriaPagos;
+use App\Models\Estado;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
 
 class PagoController extends Controller
@@ -13,11 +16,19 @@ class PagoController extends Controller
     public function index()
     {
         // Paginación: 10 registros por página (ajusta a tu gusto)
-        $pagos = Pago::with(['plan', 'estado', 'admin'])
+        $pagos = Pago::with(['plan', 'estado', 'admin', 'admin.empresa'])
             ->orderBy('fecha_pago', 'desc')
             ->paginate(4);
 
-        return view('sadmin.pagos', compact('pagos'));
+        // Historial de auditoría
+        $auditorias = AuditoriaPagos::with(['pagoAfectado', 'responsable'])
+            ->orderBy('fecha_cambio', 'desc')
+            ->get();
+
+        // Estados para el modal de auditoría
+        $estados = Estado::all();
+
+        return view('sadmin.pagos', compact('pagos', 'auditorias', 'estados'));
     }
 
 
@@ -28,6 +39,7 @@ class PagoController extends Controller
 
         // Aprobar el pago
         $pago->id_est_pago = 4; // APROBADO
+        $pago->actualizado_por = Auth::user()->emple_doc;
         $pago->save();
 
         // Obtener el empleado (admin) que pagó
@@ -81,6 +93,7 @@ class PagoController extends Controller
 
         // Cambiar estado a DENEGADO
         $pago->id_est_pago = 5; // Ajusta según tu estado DENEGADO
+        $pago->actualizado_por = Auth::user()->emple_doc;
         $pago->save();
 
         return back()->with('success', 'Pago denegado correctamente');

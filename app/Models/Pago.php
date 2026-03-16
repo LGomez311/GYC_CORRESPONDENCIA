@@ -22,6 +22,7 @@ class Pago extends Model
         'fecha_pago',
         'fecha_inicio',
         'comprobante',
+        'actualizado_por',
     ];
 
     // 🔹 Plan pagado

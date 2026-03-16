@@ -277,6 +277,8 @@ class UsuarioController extends Controller
             $empleado->emple_img = $filename;
         }
 
+        $empleado->actualizado_por = Auth::user()->emple_doc;
+
         $empleado->save();
 
         return redirect()->back()->with('success', 'Empleado actualizado correctamente');

@@ -1,6 +1,6 @@
 @extends('sadmin.layouts.app')
 
-@section('title', 'Panel de Licencias')
+@section('title', 'Panel de Planes')
 
 {{-- ================= HEADER PERSONALIZADO ================= --}}
 @section('header')
@@ -25,30 +25,35 @@
     <div class="p-4 md:p-8 max-w-7xl mx-auto w-full">
 
         {{-- HEADER INTERNO --}}
-        <div class="flex flex-wrap justify-between items-end gap-3 mb-8">
-            <div class="flex flex-col gap-1">
-                <h1 class="text-[#0d121b] dark:text-white text-3xl font-black leading-tight tracking-tight">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
+
+            {{-- Título --}}
+            <div>
+                <h1 class="text-[#0d121b] dark:text-white text-3xl font-black tracking-tight">
                     Gestión de Planes
                 </h1>
-                <p class="text-[#4c669a] dark:text-gray-400 text-base font-normal">
+                <p class="text-[#4c669a] dark:text-gray-400">
                     Administre los planes del sistema.
                 </p>
             </div>
 
-            <button type="button" onclick="openCreatePlanModal()" aria-haspopup="dialog" aria-controls="planModal"
-                class="group inline-flex items-center gap-2
-           rounded-xl bg-primary px-6 py-3
-           text-sm font-bold text-white
-           shadow-lg
-           hover:bg-primary/90 hover:scale-[1.02]
-           focus:outline-none focus:ring-2 focus:ring-primary/50
-           transition">
-                <span class="material-symbols-outlined text-base group-hover:rotate-90 transition">
-                    add
-                </span>
-                Crear nuevo plan
-            </button>
+            {{-- Botones --}}
+            <div class="flex items-center gap-3">
 
+                {{-- Botón Crear --}}
+                <button type="button" onclick="openCreatePlanModal()" aria-haspopup="dialog" aria-controls="planModal"
+                    class="px-5 py-2.5 bg-primary text-white rounded-lg 
+                   font-bold text-sm flex items-center gap-2 
+                   shadow-lg shadow-primary/20 
+                   hover:bg-primary/90 transition-all duration-200 whitespace-nowrap">
+
+                    <span class="material-symbols-outlined text-[18px]">
+                        add
+                    </span>
+                    Añadir Plan
+                </button>
+
+            </div>
         </div>
 
         {{-- CARD --}}
@@ -59,11 +64,20 @@
 
                 <h2 class="text-lg font-bold dark:text-white">Planes Disponibles</h2>
 
-                <button onclick="openExportModal()"
-                    class="px-3 py-2 border border-[#cfd7e7] dark:border-gray-700 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors dark:text-white">
-                    <span class="material-symbols-outlined text-sm">download</span>
-                    Exportar
-                </button>
+                <div class="flex items-center gap-3">
+                    {{-- Botón Historial --}}
+                    <button id="btnOpenHistorial"
+                        class="px-3 py-2 border border-[#cfd7e7] dark:border-gray-700 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors dark:text-white">
+                        <span class="material-symbols-outlined text-sm">history</span>
+                        Historial
+                    </button>
+
+                    <button onclick="openExportModal()"
+                        class="px-3 py-2 border border-[#cfd7e7] dark:border-gray-700 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors dark:text-white">
+                        <span class="material-symbols-outlined text-sm">download</span>
+                        Exportar
+                    </button>
+                </div>
 
             </div>
 
@@ -472,32 +486,32 @@
 @section('modals')
 
     {{-- MODAL --}}
-    <div id="planModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div id="planModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-black/40 p-4">
 
         <div
-            class="relative w-full max-w-3xl mx-4
-           bg-white dark:bg-[#161d2b]
-           rounded-2xl shadow-xl border border-[#cfd7e7] dark:border-gray-800
-           max-h-[90vh] overflow-y-auto">
+            class="bg-white dark:bg-[#161d2b] w-full max-w-3xl rounded-xl shadow-xl relative my-10 max-h-[90vh] flex flex-col overflow-hidden border border-[#cfd7e7] dark:border-gray-800">
 
             {{-- HEADER --}}
-            <div class="flex items-center justify-between p-6 border-b border-[#cfd7e7] dark:border-gray-800">
-                <div>
-                    <h2 id="planModalTitle" class="text-xl font-black text-[#0d121b] dark:text-white">
-                        Crear nuevo plan
-                    </h2>
-                    <p class="text-sm text-[#4c669a] dark:text-gray-400">
-                        Los campos con (*) son obligatorios.
-                    </p>
-                </div>
+            <div class="px-6 pt-6">
+                <div class="flex justify-between items-center border-b border-[#cfd7e7] dark:border-gray-800 pb-4 mb-4">
+                    <div>
+                        <h2 id="planModalTitle" class="text-xl font-semibold text-[#0d121b] dark:text-white">
+                            Crear nuevo plan
+                        </h2>
+                        <p class="text-sm text-[#4c669a] dark:text-gray-400">
+                            Los campos con (*) son obligatorios.
+                        </p>
+                    </div>
 
-                <button onclick="closePlanCreateModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">
-                    &times;
-                </button>
+                    <button type="button" onclick="closePlanCreateModal()"
+                        class="text-gray-500 hover:text-gray-800 dark:hover:text-white">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
             </div>
 
             {{-- BODY --}}
-            <form id="planForm" method="POST" class="p-6 space-y-8">
+            <form id="planForm" method="POST" class="flex-1 overflow-y-auto px-6 pb-6 space-y-8">
                 @csrf
                 <input type="hidden" name="_method" id="planFormMethod" value="POST">
 
@@ -1182,8 +1196,243 @@
 
 
 
+    {{-- MODAL HISTORIAL --}}
+    <div id="historialModal" class="fixed inset-0 bg-black/40 hidden flex items-center justify-center z-[60] p-4">
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg w-full max-w-4xl max-h-[85vh] flex flex-col">
+            <div class="p-5 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-800 dark:text-white">
+                        Historial de Modificaciones
+                    </h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                        Registro de cambios realizados a los planes en el sistema.
+                    </p>
+                </div>
+                <button onclick="closeHistorialModal()"
+                    class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <div class="p-5 overflow-y-auto flex-1">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-gray-50 dark:bg-gray-800/50 sticky top-0">
+                            <tr>
+                                <th
+                                    class="px-4 py-3 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Fecha / Hora</th>
+                                <th
+                                    class="px-4 py-3 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Plan Afectado</th>
+                                <th
+                                    class="px-4 py-3 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Modificado Por</th>
+                                <th
+                                    class="px-4 py-3 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center">
+                                    Detalles</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+                            @forelse ($auditorias as $auditoria)
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
+                                        {{ $auditoria->fecha_cambio->format('d/m/Y H:i A') }}
+                                    </td>
+                                    <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+                                        <div class="font-semibold text-primary">
+                                            Plan #{{ $auditoria->id_plan_afectado }}</div>
+                                    </td>
+                                    <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+                                        <div class="font-semibold">
+                                            {{ $auditoria->responsable->emple_nombres ?? 'Sistema' }}
+                                            {{ $auditoria->responsable->emple_apellidos ?? '' }}</div>
+                                        <div class="text-xs text-gray-500">
+                                            {{ $auditoria->usuario_app ? 'C.C. ' . $auditoria->usuario_app : 'BD' }}
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <button onclick="verDetallesCambio({{ $auditoria->id_log }})"
+                                            class="text-primary hover:text-blue-700 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 mx-auto transition-colors">
+                                            <span class="material-symbols-outlined text-[16px]">visibility</span>
+                                            Ver Cambios
+                                        </button>
+                                        <!-- Datos Ocultos para JS -->
+                                        <div id="datos-ant-{{ $auditoria->id_log }}" class="hidden">
+                                            {{ json_encode($auditoria->datos_anteriores) }}
+                                        </div>
+                                        <div id="datos-nue-{{ $auditoria->id_log }}" class="hidden">
+                                            {{ json_encode($auditoria->datos_nuevos) }}
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="text-center py-6 text-gray-500 dark:text-gray-400">
+                                        <div class="flex flex-col items-center justify-center">
+                                            <span
+                                                class="material-symbols-outlined text-4xl text-gray-300 dark:text-gray-600 mb-2">history</span>
+                                            Aún no hay registros de modificaciones
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- MODAL DETALLES DE CAMBIOS --}}
+    <div id="detallesCambioModal"
+        class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-[60] p-4 backdrop-blur-sm">
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-3xl flex flex-col overflow-hidden">
+            <div
+                class="p-4 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                <h4 class="text-md font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                    <span class="material-symbols-outlined text-blue-600">compare_arrows</span>
+                    Comparación de Datos
+                </h4>
+                <button onclick="closeDetallesCambioModal()" class="text-gray-500 hover:text-red-600 transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <div class="p-6 overflow-y-auto max-h-[70vh]">
+                <div class="grid grid-cols-2 gap-6" id="contenedor-comparacion">
+                    <!-- Se renderiza via JS -->
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+                <button onclick="closeDetallesCambioModal()"
+                    class="px-5 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-semibold rounded-lg transition-colors">
+                    Cerrar Detalles
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            /* ===========================
+               HISTORIAL DE AUDITORÍA
+            ============================*/
+            const btnHistorial = document.getElementById('btnOpenHistorial');
+            if (btnHistorial) {
+                btnHistorial.addEventListener('click', () => {
+                    document.getElementById('historialModal').classList.remove('hidden');
+                });
+            }
+
+            window.closeHistorialModal = function() {
+                document.getElementById('historialModal').classList.add('hidden');
+            }
+
+            window.closeDetallesCambioModal = function() {
+                document.getElementById('detallesCambioModal').classList.add('hidden');
+            }
+
+            window.verDetallesCambio = function(idLog) {
+                const modal = document.getElementById('detallesCambioModal');
+                const contenedor = document.getElementById('contenedor-comparacion');
+
+                try {
+                    const datosAnt = JSON.parse(document.getElementById(`datos-ant-${idLog}`).textContent
+                        .trim() || '{}');
+                    const datosNue = JSON.parse(document.getElementById(`datos-nue-${idLog}`).textContent
+                        .trim() || '{}');
+
+                    let htmlAnt =
+                        '<div class="flex flex-col gap-3"><h5 class="font-bold text-red-600 border-b pb-2 mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-sm">remove_circle</span> Datos Anteriores</h5>';
+                    let htmlNue =
+                        '<div class="flex flex-col gap-3"><h5 class="font-bold text-green-600 border-b pb-2 mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-sm">add_circle</span> Datos Nuevos</h5>';
+
+                    const camposRelevantes = ['nomb_plan', 'valor', 'duracion', 'descripcion', 'es_destacado'];
+                    const labelsMap = {
+                        'nomb_plan': 'Nombre del Plan',
+                        'valor': 'Valor (COP)',
+                        'duracion': 'Duración (Días)',
+                        'descripcion': 'Beneficios',
+                        'es_destacado': 'Destacado'
+                    };
+
+                    camposRelevantes.forEach(campo => {
+                        let valAnt = datosAnt[campo];
+                        let valNue = datosNue[campo];
+
+                        // Parse JSON fields like descripcion if they come stringified
+                        if (campo === 'descripcion') {
+                            try {
+                                if (typeof valAnt === 'string') valAnt = JSON.parse(valAnt);
+                            } catch (e) {}
+                            try {
+                                if (typeof valNue === 'string') valNue = JSON.parse(valNue);
+                            } catch (e) {}
+
+                            // Convert arrays to string representation
+                            if (Array.isArray(valAnt)) valAnt = valAnt.join(' | ');
+                            if (Array.isArray(valNue)) valNue = valNue.join(' | ');
+                        }
+
+                        // Parse boolean inputs
+                        if (campo === 'es_destacado') {
+                            valAnt = (valAnt == 1 || valAnt === true) ? 'Sí' : 'No';
+                            valNue = (valNue == 1 || valNue === true) ? 'Sí' : 'No';
+                        }
+
+                        // Prevent "No definido" on standard outputs if null
+                        if (valAnt === null || valAnt === undefined) valAnt = 'No definido';
+                        if (valNue === null || valNue === undefined) valNue = 'No definido';
+
+                        const esDiferente = String(valAnt) !== String(valNue);
+
+                        // Resaltar si cambió
+                        const claseAnt = esDiferente ?
+                            'bg-red-50 text-red-700 p-2 rounded border border-red-100' :
+                            'p-2 text-gray-600';
+                        const claseNue = esDiferente ?
+                            'bg-green-50 text-green-700 p-2 rounded border border-green-100' :
+                            'p-2 text-gray-600';
+
+                        const label = labelsMap[campo] || campo;
+
+                        htmlAnt += `
+                            <div class="${claseAnt}">
+                                <div class="text-xs font-bold uppercase tracking-wider mb-1 opacity-70">${label}</div>
+                                <div class="text-sm break-words">${valAnt}</div>
+                            </div>
+                        `;
+
+                        htmlNue += `
+                            <div class="${claseNue}">
+                                <div class="text-xs font-bold uppercase tracking-wider mb-1 opacity-70">${label}</div>
+                                <div class="text-sm break-words">${valNue}</div>
+                            </div>
+                        `;
+                    });
+
+                    htmlAnt += '</div>';
+                    htmlNue += '</div>';
+
+                    contenedor.innerHTML = htmlAnt + htmlNue;
+                    modal.classList.remove('hidden');
+
+                } catch (error) {
+                    console.error("Error al procesar JSON de detalles", error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error de Datos',
+                        text: 'No se pudieron cargar los detalles de este cambio.'
+                    });
+                }
+            }
+        });
+    </script>
+
     {{-- MODAL EXPORTAR --}}
-    <div id="exportModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+    <div id="exportModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-[60]">
         <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg w-72 p-5">
 
             <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-4">

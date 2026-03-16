@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Sadmin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Empresa;
+use App\Models\AuditoriaEmpresa;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\EmpresasExport;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 
 
 class EmpresaController extends Controller
@@ -19,7 +21,11 @@ class EmpresaController extends Controller
     {
 
         $empresas = Empresa::paginate(5);
-        return view('sadmin.empresas', compact('empresas'));
+        $auditorias = AuditoriaEmpresa::with(['empresaAfectada', 'responsable'])
+            ->orderBy('fecha_cambio', 'desc')
+            ->get();
+
+        return view('sadmin.empresas', compact('empresas', 'auditorias'));
     }
 
     public function store(Request $request)
@@ -243,12 +249,14 @@ class EmpresaController extends Controller
 
         // Si NO tiene empleados, puede actualizar todo
         if (!$empresa->empleados()->exists()) {
-            $empresa->update($request->all());
+            $empresa->fill($request->all());
         } else {
             // Si tiene empleados, nunca tocamos el NIT
             $empresa->fill($request->except('nit_empresa'));
-            $empresa->save();
         }
+
+        $empresa->actualizado_por = Auth::user()->emple_doc;
+        $empresa->save();
 
         return redirect()->back()
             ->with('success', 'Empresa actualizada correctamente');

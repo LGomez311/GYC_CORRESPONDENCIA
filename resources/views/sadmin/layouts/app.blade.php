@@ -80,9 +80,9 @@
 
         </main>
 
-        @yield('modals')
-
     </div>
+
+    @yield('modals')
 
     <script>
         function toggleSidebar() {

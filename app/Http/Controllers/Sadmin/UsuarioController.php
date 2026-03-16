@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Empleado;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManager;
@@ -30,7 +31,37 @@ class UsuarioController extends Controller
         $estados = \App\Models\Estado::all();
         $estadoActivo = \App\Models\Estado::where('estado_nomb', 'Activo')->first();
 
-        return view('sadmin.admins', compact('users', 'empresas', 'estados', 'estadoActivo'));
+        // Obtener historial de auditoría de los administradores (ROL 2)
+        $auditorias = \App\Models\AuditoriaEmpleado::with(['empleadoAfectado', 'responsable'])
+            ->whereHas('empleadoAfectado', function ($query) {
+                $query->where('emple_rol', 2);
+            })
+            ->orderBy('fecha_cambio', 'desc')
+            ->get();
+
+        // Mapear IDs a nombres reales
+        $estadosMap = \App\Models\Estado::pluck('estado_nomb', 'id_estado')->toArray();
+        $rolesMap = \App\Models\Rol::pluck('rol_nom', 'id_rol')->toArray();
+        $areasMap = \App\Models\Area::pluck('area_nom', 'id_area')->toArray();
+
+        foreach ($auditorias as $auditoria) {
+            $datosAnt = $auditoria->datos_anteriores ?? [];
+            $datosNue = $auditoria->datos_nuevos ?? [];
+
+            if (isset($datosAnt['estado'])) $datosAnt['estado'] = $estadosMap[$datosAnt['estado']] ?? $datosAnt['estado'];
+            if (isset($datosNue['estado'])) $datosNue['estado'] = $estadosMap[$datosNue['estado']] ?? $datosNue['estado'];
+
+            if (isset($datosAnt['rol'])) $datosAnt['rol'] = $rolesMap[$datosAnt['rol']] ?? $datosAnt['rol'];
+            if (isset($datosNue['rol'])) $datosNue['rol'] = $rolesMap[$datosNue['rol']] ?? $datosNue['rol'];
+
+            if (isset($datosAnt['area'])) $datosAnt['area'] = $areasMap[$datosAnt['area']] ?? $datosAnt['area'];
+            if (isset($datosNue['area'])) $datosNue['area'] = $areasMap[$datosNue['area']] ?? $datosNue['area'];
+
+            $auditoria->datos_anteriores = $datosAnt;
+            $auditoria->datos_nuevos = $datosNue;
+        }
+
+        return view('sadmin.admins', compact('users', 'empresas', 'estados', 'estadoActivo', 'auditorias'));
     }
 
     public function store(Request $request)
@@ -298,6 +329,8 @@ class UsuarioController extends Controller
 
             $empleado->emple_img = $filename;
         }
+
+        $empleado->actualizado_por = Auth::user()->emple_doc;
 
         $empleado->save();
 

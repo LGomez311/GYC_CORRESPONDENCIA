@@ -20,6 +20,7 @@ class Licencia extends Model
         'fecha_fin',
         'tipo_licencia',
         'licencia_origen',
+        'actualizado_por',
     ];
 
     protected $casts = [
