@@ -92,7 +92,7 @@ class Empleado extends Authenticatable
     {
         return $this->hasMany(
             \App\Models\Envio::class,
-            'doc_quien_dirigido',  // FK en envio
+            'doc_quien_registra',  // FK en envio (ahora apunta a remitente generalmente)
             'emple_doc'            // PK en empleado
         );
     }

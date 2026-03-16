@@ -158,7 +158,7 @@
                                 <div class="font-medium text-gray-900 dark:text-gray-100 mb-1 max-w-[200px] whitespace-normal break-words">{{ $rec?->asunto }}</div>
                                 @if($item->observaciones && trim(strtoupper($item->observaciones)) !== 'NINGUNO' && trim(strtoupper($item->observaciones)) !== 'NINGUNA')
                                     <div class="mt-2">
-                                        <button onclick="openObservacionModal('{{ addslashes($item->observaciones) }}')" class="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-amber-700 bg-amber-50 border border-amber-200 hover:bg-amber-100 rounded transition-colors w-fit shadow-sm">
+                                        <button onclick="openObservacionModal('{{ addslashes($item->observaciones) }}', {{ json_encode($rec?->destinatarios->map(fn($d) => $d->emple_nombres . ' ' . $d->emple_apellidos)->toArray()) }})" class="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-amber-700 bg-amber-50 border border-amber-200 hover:bg-amber-100 rounded transition-colors w-fit shadow-sm">
                                             <span class="material-symbols-outlined text-[14px]">visibility</span> Ver Observaciones
                                         </button>
                                     </div>
@@ -409,7 +409,7 @@
                                         
                                         <div class="mt-2 text-xs">
                                             @if($int->observaciones && trim(strtoupper($int->observaciones)) !== 'NINGUNO' && trim(strtoupper($int->observaciones)) !== 'NINGUNA')
-                                                <button onclick="openObservacionModal('{{ addslashes($int->observaciones) }}')" class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-purple-700 bg-purple-50 border border-purple-200 hover:bg-purple-100 rounded transition-colors w-fit">
+                                                <button onclick="openObservacionModal('{{ addslashes($int->observaciones) }}', {{ json_encode($int->envio?->recipients->map(fn($d) => $d->emple_nombres . ' ' . $d->emple_apellidos)->toArray()) }})" class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-purple-700 bg-purple-50 border border-purple-200 hover:bg-purple-100 rounded transition-colors w-fit">
                                                     <span class="material-symbols-outlined text-[14px]">visibility</span> Observaciones
                                                 </button>
                                             @endif
@@ -969,9 +969,19 @@
             </button>
         </div>
         
-        <div class="p-6">
-            <div id="contenidoObservacion" class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed bg-gray-50 dark:bg-slate-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                <!-- Content injected via JS -->
+        <div class="p-6 space-y-4">
+            <div>
+                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Comentario / Observación</h4>
+                <div id="contenidoObservacion" class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed bg-gray-50 dark:bg-slate-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <!-- Content injected via JS -->
+                </div>
+            </div>
+
+            <div id="seccionDestinatarios" class="hidden">
+                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Destinatarios que recibieron este radicado</h4>
+                <div id="destinatariosObservacion" class="flex flex-wrap gap-2 p-4 bg-blue-50/50 dark:bg-blue-900/10 rounded-lg border border-blue-100 dark:border-blue-800/30">
+                    <!-- Pills injected via JS -->
+                </div>
             </div>
         </div>
 
@@ -1137,8 +1147,27 @@
         toggleModal('modalReasignar');
     }
 
-    function openObservacionModal(texto) {
+    function openObservacionModal(texto, destinatarios = []) {
         document.getElementById('contenidoObservacion').innerText = texto;
+        
+        const container = document.getElementById('destinatariosObservacion');
+        const section = document.getElementById('seccionDestinatarios');
+        
+        if (container && section) {
+            container.innerHTML = '';
+            if (destinatarios && destinatarios.length > 0) {
+                section.classList.remove('hidden');
+                destinatarios.forEach(nombre => {
+                    const pill = document.createElement('span');
+                    pill.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800';
+                    pill.textContent = nombre;
+                    container.appendChild(pill);
+                });
+            } else {
+                section.classList.add('hidden');
+            }
+        }
+        
         toggleModal('modalVerObservacion');
     }
 

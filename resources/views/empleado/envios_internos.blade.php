@@ -96,11 +96,18 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-right">
-                                <a href="{{ route('empleado.historial_interna', $primerDetalle->id_detalle ?? 0) }}" 
-                                   class="inline-flex items-center gap-1 px-3 py-1.5 bg-primary/10 text-primary dark:bg-blue-900/20 dark:text-blue-400 rounded-lg text-xs font-bold hover:bg-primary hover:text-white transition-all shadow-sm">
-                                    <span class="material-symbols-outlined text-[16px]">visibility</span>
-                                    Ver Seguimiento
-                                </a>
+                                @if($envio->destino === 'Ventanilla')
+                                    <span class="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-100 text-gray-400 dark:bg-slate-700/50 dark:text-gray-500 rounded-lg text-xs font-bold cursor-not-allowed" title="Los envíos a Ventanilla no tienen trazabilidad interna">
+                                        <span class="material-symbols-outlined text-[16px]">visibility_off</span>
+                                        Sin Seguimiento
+                                    </span>
+                                @else
+                                    <a href="{{ route('empleado.historial_interna', $primerDetalle->id_detalle ?? 0) }}" 
+                                       class="inline-flex items-center gap-1 px-3 py-1.5 bg-primary/10 text-primary dark:bg-blue-900/20 dark:text-blue-400 rounded-lg text-xs font-bold hover:bg-primary hover:text-white transition-all shadow-sm">
+                                        <span class="material-symbols-outlined text-[16px]">visibility</span>
+                                        Ver Seguimiento
+                                    </a>
+                                @endif
                             </td>
                         </tr>
                     @empty
