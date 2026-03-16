@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 13, 2026 at 08:57 PM
+-- Generation Time: Mar 13, 2026 at 11:27 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -73,6 +73,7 @@ INSERT INTO `anexo_recibido` (`id_anexo`, `id_recibido`, `ruta_archivo`, `nombre
 CREATE TABLE `anexo_respuesta` (
   `id_anexo_resp` int(11) NOT NULL,
   `id_detalle` int(10) NOT NULL,
+  `id_det_interna` int(10) DEFAULT NULL,
   `ruta_archivo` varchar(500) NOT NULL,
   `nombre_original` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -215,6 +216,14 @@ CREATE TABLE `auditoria_plan` (
   `datos_anteriores` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`datos_anteriores`)),
   `datos_nuevos` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`datos_nuevos`))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `auditoria_plan`
+--
+
+INSERT INTO `auditoria_plan` (`id_log`, `id_plan_afectado`, `usuario_app`, `usuario_bd`, `accion`, `fecha_cambio`, `datos_anteriores`, `datos_nuevos`) VALUES
+(1, 6, '1070730214', 'root@localhost', 'ACTUALIZACION', '2026-03-13 20:49:22', '{\"nomb_plan\": \"Semestral\", \"valor\": 1040000, \"descripcion\": \"[\\\"Acceso completo al sistema.\\\",\\\"Soporte prioritario extendido.\\\",\\\"Garantía 30 días.\\\", \\\"Incluye 2 capacitaciones.\\\"]\\r\\n\", \"duracion\": 180, \"es_destacado\": 1}', '{\"nomb_plan\": \"Semestrallllll\", \"valor\": 1040000, \"descripcion\": \"[\\\"Acceso completo al sistema.\\\",\\\"Soporte prioritario extendido.\\\",\\\"Garantía 30 días.\\\", \\\"Incluye 2 capacitaciones.\\\"]\\r\\n\", \"duracion\": 180, \"es_destacado\": 1}'),
+(2, 6, '1070730214', 'root@localhost', 'ACTUALIZACION', '2026-03-13 20:49:39', '{\"nomb_plan\": \"Semestrallllll\", \"valor\": 1040000, \"descripcion\": \"[\\\"Acceso completo al sistema.\\\",\\\"Soporte prioritario extendido.\\\",\\\"Garantía 30 días.\\\", \\\"Incluye 2 capacitaciones.\\\"]\\r\\n\", \"duracion\": 180, \"es_destacado\": 1}', '{\"nomb_plan\": \"Semestral\", \"valor\": 1040000, \"descripcion\": \"[\\\"Acceso completo al sistema.\\\",\\\"Soporte prioritario extendido.\\\",\\\"Garantía 30 días.\\\", \\\"Incluye 2 capacitaciones.\\\"]\\r\\n\", \"duracion\": 180, \"es_destacado\": 1}');
 
 -- --------------------------------------------------------
 
@@ -865,7 +874,7 @@ CREATE TABLE `plan` (
 INSERT INTO `plan` (`id_plan`, `nomb_plan`, `valor`, `descripcion`, `duracion`, `es_destacado`, `actualizado_por`) VALUES
 (4, 'Mensual', 200000, '[\"Acceso completo al sistema.\",\"Soporte básico.\",\"Garantía 7 días.\"]', 30, 0, NULL),
 (5, 'Trimestral', 540000, '[\"Acceso completo al sistema.\",\"Soporte prioritario.\",\"Garantía 14 días.\", \"Incluye 1 capacitación.\"]', 90, 0, NULL),
-(6, 'Semestral', 1040000, '[\"Acceso completo al sistema.\",\"Soporte prioritario extendido.\",\"Garantía 30 días.\", \"Incluye 2 capacitaciones.\"]\r\n', 180, 1, NULL),
+(6, 'Semestral', 1040000, '[\"Acceso completo al sistema.\",\"Soporte prioritario extendido.\",\"Garantía 30 días.\", \"Incluye 2 capacitaciones.\"]\r\n', 180, 1, '1070730214'),
 (10, 'Anual', 1950000, '[\"Acceso completo al sistema.\",\"Soporte prioritario exclusivo.\",\"Garant\\u00eda 60 d\\u00edas.\",\"Incluye 6 capacitaciones.\"]', 365, 0, NULL);
 
 --
@@ -1055,7 +1064,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('CfQ7hNNrxYTZFC9KVJ3oGPnepMYxyaIdn7kEVNIs', 1070730214, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiQ25TRTRUME42TGhrSmdacDlmOVMzbDlWRnRZaWM3UG1taGZ4aU44ZCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzU6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zYWRtaW4vcGxhbmVzIjtzOjU6InJvdXRlIjtzOjc6ImNwbGFuZXMiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7czoxMDoiMTA3MDczMDIxNCI7fQ==', 1773431768),
+('CfQ7hNNrxYTZFC9KVJ3oGPnepMYxyaIdn7kEVNIs', 1070730214, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiQ25TRTRUME42TGhrSmdacDlmOVMzbDlWRnRZaWM3UG1taGZ4aU44ZCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzU6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zYWRtaW4vcGxhbmVzIjtzOjU6InJvdXRlIjtzOjc6ImNwbGFuZXMiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7czoxMDoiMTA3MDczMDIxNCI7fQ==', 1773439132),
 ('xFLQ50Y5X482GBEXKrBfokLA4V1T6kFcBZKMfXrK', 1005912008, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiU05vYXkxaDJmd0czaHlOaU9ZcllpSGs3cko4RXNZT3hieEVsbWZlcyI7czozOiJ1cmwiO2E6MTp7czo4OiJpbnRlbmRlZCI7czozNzoiaHR0cDovLzEyNy4wLjAuMTo4MDAwL3NhZG1pbi9lbXByZXNhcyI7fXM6OToiX3ByZXZpb3VzIjthOjI6e3M6MzoidXJsIjtzOjMwOiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvZW1wbGVhZG8iO3M6NToicm91dGUiO3M6MTQ6ImVtcGxlYWRvLmluZGV4Ijt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO3M6MTA6IjEwMDU5MTIwMDgiO30=', 1773426186);
 
 -- --------------------------------------------------------
@@ -1133,7 +1142,8 @@ ALTER TABLE `anexo_recibido`
 --
 ALTER TABLE `anexo_respuesta`
   ADD PRIMARY KEY (`id_anexo_resp`),
-  ADD KEY `id_detalle_idx` (`id_detalle`);
+  ADD KEY `id_detalle_idx` (`id_detalle`),
+  ADD KEY `fk_anexo_resp_interna` (`id_det_interna`);
 
 --
 -- Indexes for table `area`
@@ -1431,7 +1441,7 @@ ALTER TABLE `auditoria_pagos`
 -- AUTO_INCREMENT for table `auditoria_plan`
 --
 ALTER TABLE `auditoria_plan`
-  MODIFY `id_log` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_log` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `detalle_envio`
@@ -1555,7 +1565,8 @@ ALTER TABLE `anexo_recibido`
 -- Constraints for table `anexo_respuesta`
 --
 ALTER TABLE `anexo_respuesta`
-  ADD CONSTRAINT `fk_anexo_respuesta` FOREIGN KEY (`id_detalle`) REFERENCES `detalle_envio` (`id_detalle`) ON DELETE CASCADE;
+  ADD CONSTRAINT `fk_anexo_resp_interna` FOREIGN KEY (`id_det_interna`) REFERENCES `detalle_envio` (`id_detalle`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_anexo_respuesta` FOREIGN KEY (`id_detalle`) REFERENCES `detalle_recibido` (`id_det_recibido`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `ciudad`

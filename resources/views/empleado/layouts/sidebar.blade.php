@@ -59,7 +59,9 @@
                 <!-- Inicio -->
                 <a href="{{ route('empleado.index') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-            text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                    {{ request()->routeIs('empleado.index')
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
                     <span class="material-symbols-outlined">home</span>
                     <p class="text-sm font-medium">Inicio</p>
                 </a>
@@ -67,15 +69,39 @@
                 <!-- Correspondencia Recibida -->
                 <a href="{{ route('empleado.correspondencia_recibida') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-            text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                    {{ request()->routeIs('empleado.correspondencia_recibida')
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
                     <span class="material-symbols-outlined">inbox</span>
                     <p class="text-sm font-medium">Correspondencia Recibida</p>
+                </a>
+
+                <!-- Correspondencia Finalizada -->
+                <a href="{{ route('empleado.correspondencia_finalizada') }}"
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
+                    {{ request()->routeIs('empleado.correspondencia_finalizada')
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
+                    <span class="material-symbols-outlined">inventory_2</span>
+                    <p class="text-sm font-medium">Correspondencia Finalizada</p>
+                </a>
+
+                <!-- Mis Envíos Internos (NUEVO) -->
+                <a href="{{ route('empleado.envios_internos') }}"
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
+                    {{ request()->routeIs('empleado.envios_internos*') || request()->routeIs('empleado.historial_interna')
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
+                    <span class="material-symbols-outlined">send_and_archive</span>
+                    <p class="text-sm font-medium">Mis Envíos Internos</p>
                 </a>
 
                 <!-- Reportes -->
                 <a href="{{ route('empleado.reportes') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-            text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                    {{ request()->routeIs('empleado.reportes')
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
                     <span class="material-symbols-outlined">bar_chart</span>
                     <p class="text-sm font-medium">Reportes</p>
                 </a>

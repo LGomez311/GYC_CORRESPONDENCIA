@@ -1,1 +1,0 @@
-["id_recibido","num_radicado_ext","num_radicado_int","asunto","fecha_hora_recib","nom_institucion","ciudad_proveniente","folio","anexo","observaciones","doc_quien_registra","id_tipo","id_estado_rec","archivo","nit_empresa","nombre_persona","doc_persona","correo_persona","tel_persona"]

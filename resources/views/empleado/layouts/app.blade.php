@@ -132,6 +132,17 @@
         </script>
     @endif
 
+    @if ($errors->any())
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Error al procesar la solicitud',
+                html: `<ul style="text-align:left;margin:0;padding-left:1.2em">{!! implode('', array_map(fn($e) => '<li>' . e($e) . '</li>', $errors->all())) !!}</ul>`,
+                confirmButtonColor: '#135bec'
+            });
+        </script>
+    @endif
+
     @if (session('warning'))
         <script>
             Swal.fire({
@@ -164,6 +175,7 @@
         }
     </script>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     @yield('scripts')
 
 </body>

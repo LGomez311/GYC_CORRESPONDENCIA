@@ -107,162 +107,184 @@
                         <th class="px-6 py-3 font-medium">Radicados</th>
                         <th class="px-6 py-3 font-medium">Procedencia</th>
                         <th class="px-6 py-3 font-medium">Detalles Documento</th>
+                        <th class="px-6 py-3 font-medium hidden lg:table-cell">Detalles Técnicos</th>
                         <th class="px-6 py-3 font-medium hidden lg:table-cell">Ingreso / Registro</th>
                         <th class="px-6 py-3 font-medium">Archivos / Anexos</th>
-                        <th class="px-6 py-3 font-medium hidden md:table-cell">Observaciones</th>
                         <th class="px-6 py-3 font-medium">Estado</th>
                         <th class="px-6 py-3 font-medium text-right">Acciones</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                    @php 
-                        $radicadosProcesadosExterna = []; 
-                    @endphp
                     @forelse($correspondencias as $item)
                         @php
-                            // Check if this is the latest row for this radicado
-                            $isLatestExterna = false;
-                            $radicadoStr = $item->radicado ? $item->radicado->num_radicado : $item->id_recibido;
-                            if (!in_array($radicadoStr, $radicadosProcesadosExterna)) {
-                                $isLatestExterna = true;
-                                $radicadosProcesadosExterna[] = $radicadoStr;
-                            }
-                            // Also lock if state is Rechazado
+                            // $item es un DetalleRecibido; el documento está en $item->recibido
+                            $rec = $item->recibido;
+
+                            // Estado del EMPLEADO (no del recepcionista)
                             $estadoNombL = strtolower($item->estado ? $item->estado->estado_nomb : '');
                             $isRechazado = str_contains($estadoNombL, 'rechazado');
+                            $isFinalizedExt = str_contains($estadoNombL, 'finalizado') || str_contains($estadoNombL, 'resuelto') || str_contains($estadoNombL, 'archivado') || $isRechazado;
+
+                            // Procedencia
+                            $esPersona = !empty($rec?->nombre_persona) || !empty($rec?->doc_persona);
+                            $procedencia = $esPersona
+                                ? ($rec?->nombre_persona ?? $rec?->doc_persona ?? '—')
+                                : ($rec?->nom_institucion ?? '—');
                         @endphp
                         <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors align-top">
-                            <!-- Radicados -->
+                            <!-- 1. Radicados -->
                             <td class="px-6 py-4">
                                 <div class="font-medium text-primary dark:text-blue-400" title="Radicado Interno">
-                                    {{ $item->radicado ? $item->radicado->num_radicado : 'S/R' }}
+                                    {{ $rec?->radicado ? $rec->radicado->num_radicado : 'S/R' }}
                                 </div>
-                                @if($item->num_radicado_ext)
+                                @if($rec?->num_radicado_ext)
                                 <div class="text-xs text-gray-500 dark:text-gray-400 mt-1" title="Radicado Externo">
-                                    EXT: {{ $item->num_radicado_ext }}
+                                    EXT: {{ $rec->num_radicado_ext }}
                                 </div>
                                 @endif
                             </td>
                             
-                            <!-- Procedencia -->
+                            <!-- 2. Procedencia -->
                             <td class="px-6 py-4">
-                                <div class="font-medium dark:text-white max-w-[180px] break-words whitespace-normal">{{ $item->nom_institucion }}</div>
-                                @if($item->ciudad)
+                                <div class="font-medium dark:text-white max-w-[180px] break-words whitespace-normal">{{ $procedencia }}</div>
+                                <span class="inline-flex items-center gap-0.5 text-xs {{ $esPersona ? 'text-purple-500' : 'text-blue-500' }} mt-0.5">
+                                    <span class="material-symbols-outlined" style="font-size:13px">{{ $esPersona ? 'person' : 'business' }}</span>
+                                    {{ $esPersona ? 'Persona Natural' : 'Entidad / Empresa' }}
+                                </span>
+                                @if($rec?->ciudad)
                                 <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
                                     <span class="material-symbols-outlined text-[14px]">location_on</span>
-                                    {{ $item->ciudad->ciudad_nom ?? 'Desconocida' }}
+                                    {{ $rec->ciudad->ciudad_nom ?? 'Desconocida' }}
                                 </div>
                                 @endif
                             </td>
                             
-                            <!-- Detalles Documento -->
                             <td class="px-6 py-4 text-sm">
-                                <div class="font-medium text-gray-900 dark:text-gray-100 mb-1 max-w-[200px] whitespace-normal break-words" title="{{ $item->asunto }}">
-                                    {{ $item->asunto }}
+                                <div class="font-medium text-gray-900 dark:text-gray-100 mb-1 max-w-[200px] whitespace-normal break-words">
+                                    {{ $rec?->asunto }}
                                 </div>
-                                <div class="flex flex-col gap-1.5 text-xs mt-2">
-                                    <div class="flex items-center gap-3 text-gray-500 dark:text-gray-400">
-                                        <span class="flex items-center gap-1" title="Tipo Documento">
-                                            <span class="material-symbols-outlined text-[14px]">description</span>
-                                            {{ $item->tipo ? $item->tipo->tipo_nombre : 'N/A' }}
-                                        </span>
-                                        <span class="flex items-center gap-1" title="Folios">
-                                            <span class="material-symbols-outlined text-[14px]">layers</span>
-                                            Folios: {{ $item->folio ?? 0 }}
-                                        </span>
+                                @if($item->observaciones && trim(strtoupper($item->observaciones)) !== 'NINGUNO' && trim(strtoupper($item->observaciones)) !== 'NINGUNA')
+                                    <div class="mt-2">
+                                        <button onclick="openObservacionModal('{{ addslashes($item->observaciones) }}')" class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-purple-700 bg-purple-50 border border-purple-200 hover:bg-purple-100 rounded transition-colors w-fit">
+                                            <span class="material-symbols-outlined text-[14px]">visibility</span> Observaciones
+                                        </button>
                                     </div>
-                                    @if($item->tipo)
-                                        <div class="flex flex-col gap-1 mt-0.5">
-                                            <!-- Prioridad Info -->
-                                            <span class="flex items-center gap-1 {{ ($item->tipo->id_prioridad == 3) ? 'text-red-600 dark:text-red-400 font-medium' : (($item->tipo->id_prioridad == 2) ? 'text-yellow-600 dark:text-yellow-400 font-medium' : 'text-green-600 dark:text-green-400') }}" title="Prioridad">
-                                                <span class="material-symbols-outlined text-[14px]">flag</span>
-                                                Prioridad: {{ $item->tipo->prioridad->prioridad_nombre ?? 'N/A' }}
-                                            </span>
+                                @endif
+                            </td>
+
+                            <!-- 4. Detalles Técnicos (Inline) -->
+                            <td class="px-6 py-4 hidden lg:table-cell">
+                                <div class="flex flex-col gap-1.5 text-[11px] leading-tight text-gray-600 dark:text-gray-400">
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-[14px]">description</span> 
+                                        <span class="truncate max-w-[150px]" title="{{ $rec?->tipo?->tipo_nombre ?? 'Externo' }}">{{ $rec?->tipo?->tipo_nombre ?? 'Externo' }}</span>
+                                    </div>
+                                    
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-[14px]">layers</span> 
+                                        <span>Folios: {{ $rec?->folio ?? 0 }}</span>
+                                    </div>
+
+                                    @if($rec?->tipo)
+                                        @php
+                                            $prioColor = 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
+                                            $prioNombre = $rec->tipo->prioridad->prioridad_nombre ?? 'N/A';
+                                            $prioNombreUpper = strtoupper($prioNombre);
                                             
-                                            <!-- Días de Respuesta de la DB -->
-                                            <span class="flex items-center gap-1 text-gray-500 dark:text-gray-400" title="Días Asignados">
-                                                <span class="material-symbols-outlined text-[14px]">event_note</span>
-                                                Días de Respuesta: {{ $item->tipo->dias_respuesta ?? 'N/A' }}
+                                            if (str_contains($prioNombreUpper, 'URGENTE')) {
+                                                $prioColor = 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+                                            } elseif (str_contains($prioNombreUpper, 'ALTA')) {
+                                                $prioColor = 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400';
+                                            } elseif (str_contains($prioNombreUpper, 'MEDIA')) {
+                                                $prioColor = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
+                                            } elseif (str_contains($prioNombreUpper, 'BAJA')) {
+                                                $prioColor = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+                                            }
+                                        @endphp
+                                        <div class="flex items-center gap-2" title="Prioridad">
+                                            <span class="material-symbols-outlined text-[14px] opacity-70">flag</span>
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider {{ $prioColor }}">
+                                                {{ $prioNombre }}
                                             </span>
-                                            
-                                            <!-- Cálculo Días Restantes -->
-                                            @php
-                                                $fechaBase = \Carbon\Carbon::parse($item->fecha_hora_recib);
+                                        </div>
+
+                                        <!-- Días Restantes -->
+                                        @php
+                                            $diasTotales = $rec->tipo->dias_respuesta ?? 0;
+                                            $msgTiempo = 'Sin límite';
+                                            $diasClass = 'text-gray-400 dark:text-gray-500 italic';
+                                            $iconoDias = 'timer_off';
+
+                                            if ($isFinalizedExt) {
+                                                $msgTiempo = 'Proceso Finalizado';
+                                                $diasClass = 'text-blue-600 dark:text-blue-400 font-bold';
+                                                $iconoDias = 'task_alt';
+                                            } elseif ($diasTotales > 0) {
+                                                $fechaBase = \Carbon\Carbon::parse($item->fecha_re ?? $rec?->fecha_hora_recib);
                                                 $hoy = \Carbon\Carbon::now();
-                                                
-                                                // Calcular días hábiles transcurridos (Lunes a Viernes)
-                                                $diasTranscurridos = $fechaBase->diffInDaysFiltered(function(\Carbon\Carbon $date) {
-                                                    return $date->isWeekday();
-                                                }, $hoy);
-                                                
-                                                $diasTotales = $item->tipo->dias_respuesta ?? 15;
+                                                $diasTranscurridos = $fechaBase->diffInDaysFiltered(fn(\Carbon\Carbon $d) => $d->isWeekday(), $hoy);
                                                 $diasRestantes = $diasTotales - $diasTranscurridos;
-                                                
-                                                // Colores según días restantes
-                                                $diasClass = 'text-green-600 dark:text-green-400 font-medium'; // Tiempo de sobra
-                                                $iconoDias = 'schedule';
-                                                
+
                                                 if ($diasRestantes < 0) {
-                                                    $diasClass = 'text-red-600 dark:text-red-400 font-bold'; // Vencido
+                                                    $msgTiempo = '¡Vencido: ' . abs($diasRestantes) . ' d!';
+                                                    $diasClass = 'text-red-600 dark:text-red-400 font-bold';
                                                     $iconoDias = 'warning';
                                                 } elseif ($diasRestantes <= 2) {
-                                                    $diasClass = 'text-yellow-600 dark:text-yellow-400 font-bold'; // Por vencer
+                                                    $msgTiempo = 'Quedan ' . $diasRestantes . ' días';
+                                                    $diasClass = 'text-yellow-600 dark:text-yellow-400 font-bold';
                                                     $iconoDias = 'hourglass_empty';
+                                                } else {
+                                                    $msgTiempo = 'Le quedan ' . $diasRestantes . ' días';
+                                                    $diasClass = 'text-green-600 dark:text-green-400 font-medium';
+                                                    $iconoDias = 'schedule';
                                                 }
-                                            @endphp
-                                            <span class="flex items-center gap-1 {{ $diasClass }} mt-0.5" title="Días Hábiles Restantes">
-                                                <span class="material-symbols-outlined text-[14px]">{{ $iconoDias }}</span>
-                                                @if($diasRestantes < 0)
-                                                    ¡Vencido por {{ abs($diasRestantes) }} días!
-                                                @else
-                                                    Quedan: {{ $diasRestantes }} días hábiles
-                                                @endif
-                                            </span>
+                                            }
+                                        @endphp
+                                        <div class="flex items-center gap-2 {{ $diasClass }}">
+                                            <span class="material-symbols-outlined text-[14px]">{{ $iconoDias }}</span>
+                                            <span>{{ $msgTiempo }}</span>
                                         </div>
                                     @endif
                                 </div>
                             </td>
                             
-                            <!-- Ingreso / Registro -->
+                            <!-- 5. Ingreso / Registro -->
                             <td class="px-6 py-4 hidden lg:table-cell">
                                 <div class="font-medium text-gray-900 dark:text-white">
-                                    {{ $item->fecha_hora_recib ? \Carbon\Carbon::parse($item->fecha_hora_recib)->format('d M Y') : 'N/A' }}
+                                    {{ $item->fecha_re ? \Carbon\Carbon::parse($item->fecha_re)->format('d M Y') : 'N/A' }}
                                 </div>
                                 <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
                                     <span class="material-symbols-outlined text-[14px]">schedule</span>
-                                    {{ $item->fecha_hora_recib ? \Carbon\Carbon::parse($item->fecha_hora_recib)->format('h:i A') : '' }}
+                                    {{ $item->fecha_re ? \Carbon\Carbon::parse($item->fecha_re)->format('h:i A') : '' }}
                                 </div>
-                                @if($item->registradoPor)
-                                <div class="text-xs text-gray-600 dark:text-gray-300 flex items-center gap-1 mt-2" title="Registrado por (Remitente)">
-                                    <span class="material-symbols-outlined text-[14px]">person</span>
-                                    Remitente: {{ $item->registradoPor->rem_nombres }} {{ $item->registradoPor->rem_apellidos }}
-                                </div>
-                                @endif
-                                @if($item->destinatarios && $item->destinatarios->count() > 0)
-                                <div class="text-xs text-blue-600 dark:text-blue-400 flex items-center gap-1 mt-1" title="Dirigido a">
-                                    <span class="material-symbols-outlined text-[14px]">forward_to_inbox</span>
-                                    Para: {{ $item->destinatarios->first()->emple_nombres }} {{ $item->destinatarios->first()->emple_apellidos }}
-                                </div>
-                                @endif
                             </td>
                             
-                            <!-- Archivos / Anexos -->
+                            <!-- 6. Archivos / Anexos -->
                             <td class="px-6 py-4 align-top">
                                 @php
                                     $archivosDatos = [
-                                        'principal' => $item->archivo ? asset('storage/' . $item->archivo) : null,
-                                        'anexos' => [],
-                                        'anexo_texto' => $item->anexo,
-                                        'folios' => $item->folio,
-                                        'respuesta_principal' => null,
-                                        'respuestas_anexos' => [],
-                                        'folios_respuesta' => 0
+                                        'principal'          => $rec?->archivo ? asset('storage/' . $rec->archivo) : null,
+                                        'anexos'             => [],
+                                        'anexo_texto'        => $rec?->anexo,
+                                        'folios'             => $rec?->folio,
+                                        'respuesta_principal'=> $item->archivo_res ? asset('storage/' . $item->archivo_res) : null,
+                                        'respuestas_anexos'  => [],
+                                        'folios_respuesta'   => $item->folios_res ?? 0
                                     ];
-                                    if($item->anexos) {
-                                        foreach($item->anexos as $ax) {
+                                    if ($rec?->anexos) {
+                                        foreach ($rec->anexos as $ax) {
                                             $archivosDatos['anexos'][] = [
                                                 'nombre' => $ax->nombre_original,
-                                                'ruta' => asset('storage/' . $ax->ruta_archivo)
+                                                'ruta'   => asset('storage/' . $ax->ruta_archivo)
+                                            ];
+                                        }
+                                    }
+                                    // Anexos de respuesta
+                                    if ($item->anexosRespuesta) {
+                                        foreach ($item->anexosRespuesta as $ra) {
+                                            $archivosDatos['respuestas_anexos'][] = [
+                                                'nombre' => $ra->nombre_original,
+                                                'ruta'   => asset('storage/' . $ra->ruta_archivo)
                                             ];
                                         }
                                     }
@@ -272,52 +294,36 @@
                                     Ver Documentos
                                 </button>
                             </td>
-
-                            <!-- Observaciones -->
-                            <td class="px-6 py-4 text-sm max-w-[200px] align-top hidden md:table-cell">
-                                @if($item->observaciones && strtoupper($item->observaciones) !== 'NINGUNO' && strtoupper($item->observaciones) !== 'NINGUNA')
-                                    <div class="whitespace-normal text-xs text-gray-600 dark:text-gray-400 italic border-l-2 border-yellow-400 dark:border-yellow-600 pl-2">
-                                        {{ $item->observaciones }}
-                                    </div>
-                                @else
-                                    <span class="text-xs text-gray-400 dark:text-gray-500">-</span>
-                                @endif
-                            </td>
                             
-                            <!-- Estado -->
+                            <!-- 7. Estado (del empleado) -->
                             <td class="px-6 py-4">
                                 @php
-                                    $estadoNomb = $item->estado ? strtolower($item->estado->estado_nomb) : '';
+                                    $estadoNomb = strtolower($item->estado?->estado_nomb ?? '');
                                     $bgClass = 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
-                                    if(str_contains($estadoNomb, 'recibido')) {
+                                    if (str_contains($estadoNomb, 'recibido')) {
                                         $bgClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
-                                    } elseif(str_contains($estadoNomb, 'tramite') || str_contains($estadoNomb, 'trámite')) {
+                                    } elseif (str_contains($estadoNomb, 'tramite') || str_contains($estadoNomb, 'trámite')) {
                                         $bgClass = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
-                                    } elseif(str_contains($estadoNomb, 'finalizado') || str_contains($estadoNomb, 'resuelto')) {
+                                    } elseif (str_contains($estadoNomb, 'finalizado') || str_contains($estadoNomb, 'resuelto')) {
                                         $bgClass = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
                                     }
                                 @endphp
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $bgClass }}">
-                                    {{ $item->estado ? $item->estado->estado_nomb : 'Sin estado' }}
+                                    {{ $item->estado?->estado_nomb ?? 'Sin estado' }}
                                 </span>
                             </td>
                             
-                            <!-- Acciones -->
+                            <!-- 8. Acciones -->
                             <td class="px-6 py-4 text-right">
-                                <button title="Ver y añadir seguimiento" onclick="toggleModal('modalSeguimiento')" class="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-blue-400 p-1">
-                                    <span class="material-symbols-outlined text-xl">timeline</span>
-                                </button>
-                                
-                                @if(in_array($item->id_estado_rec, [9, 10]) || $isRechazado || !$isLatestExterna)
+                                @if(in_array($item->id_estado_rec, [9, 10]) || $isRechazado)
                                     <button title="Registro Bloqueado (Solo Lectura)" class="text-gray-300 dark:text-gray-600 p-1 cursor-not-allowed">
                                         <span class="material-symbols-outlined text-xl">lock</span>
                                     </button>
                                 @else
-                                    <button title="Actualizar estado" onclick="openEstadoModal({{ $item->id_recibido }}, '{{ $item->estado ? $item->estado->estado_nomb : '' }}', '{{ $item->radicado ? $item->radicado->num_radicado : '' }}', 'externa')" class="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-blue-400 p-1">
+                                    <button title="Actualizar estado"
+                                        onclick="openEstadoModal({{ $item->id_det_recibido }}, '{{ $item->estado?->estado_nomb }}', '{{ $rec?->radicado?->num_radicado ?? '' }}', 'externa')"
+                                        class="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-blue-400 p-1">
                                         <span class="material-symbols-outlined text-xl">edit_document</span>
-                                    </button>
-                                    <button title="Reasignar a otro empleado" onclick="openReasignarModal({{ $item->id_recibido }}, '{{ $item->radicado ? $item->radicado->num_radicado : '' }}')" class="text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 p-1">
-                                        <span class="material-symbols-outlined text-xl">forward</span>
                                     </button>
                                 @endif
                             </td>
@@ -414,8 +420,8 @@
                                 <th class="px-6 py-3 font-medium">Radicados</th>
                                 <th class="px-6 py-3 font-medium">Remitente Interno</th>
                                 <th class="px-6 py-3 font-medium">Detalles Documento</th>
-                                <th class="px-6 py-3 font-medium hidden lg:table-cell">Observaciones</th>
-                                <th class="px-6 py-3 font-medium hidden md:table-cell">Fecha Traslado</th>
+                                <th class="px-6 py-3 font-medium hidden lg:table-cell">Detalles Técnicos</th>
+                                <th class="px-6 py-3 font-medium hidden md:table-cell">Fecha</th>
                                 <th class="px-6 py-3 font-medium">Documentos <br> y Anexos</th>
                                 <th class="px-6 py-3 font-medium">Estado</th>
                                 <th class="px-6 py-3 font-medium text-right">Acciones</th>
@@ -455,74 +461,101 @@
                                     <td class="px-6 py-4 text-sm max-w-[200px] whitespace-normal break-words">
                                         <div class="font-medium text-gray-900 dark:text-gray-100 mb-1">{{ $int->envio->asunto ?? 'Sin Asunto' }}</div>
                                         
-                                        <div class="flex flex-col gap-1.5 text-xs mt-2">
-                                            <div class="flex items-center gap-3 text-gray-500 dark:text-gray-400">
-                                                <span class="flex items-center gap-1" title="Tipo Documento">
-                                                    <span class="material-symbols-outlined text-[14px]">description</span> 
-                                                    {{ $int->envio->tipoEnvio ? $int->envio->tipoEnvio->tipo_nombre : 'Interno' }}
-                                                </span>
-                                            </div>
-                                            
-                                            @if($int->envio->tipoEnvio)
-                                                <div class="flex flex-col gap-1 mt-0.5">
-                                                    <!-- Prioridad Info -->
-                                                    <span class="flex items-center gap-1 {{ ($int->envio->tipoEnvio->id_prioridad == 3) ? 'text-red-600 dark:text-red-400 font-medium' : (($int->envio->tipoEnvio->id_prioridad == 2) ? 'text-yellow-600 dark:text-yellow-400 font-medium' : 'text-green-600 dark:text-green-400') }}" title="Prioridad">
-                                                        <span class="material-symbols-outlined text-[14px]">flag</span>
-                                                        Prioridad: {{ $int->envio->tipoEnvio->prioridad->prioridad_nombre ?? 'N/A' }}
-                                                    </span>
-
-                                                    <!-- Días de Respuesta de la DB -->
-                                                    <span class="flex items-center gap-1 text-gray-500 dark:text-gray-400" title="Días Asignados">
-                                                        <span class="material-symbols-outlined text-[14px]">event_note</span>
-                                                        Días de Respuesta: {{ $int->envio->tipoEnvio->dias_respuesta ?? 'N/A' }}
-                                                    </span>
-                                                    
-                                                    <!-- Días de Respuesta -->
-                                                    @php
-                                                        // Usamos la fecha de traslado (cuando el remitente interno lo pasó al empleado actual)
-                                                        $fechaBaseInt = \Carbon\Carbon::parse($int->fecha_traslado ?? $int->envio->fecha);
-                                                        $hoyInt = \Carbon\Carbon::now();
-                                                        
-                                                        // Calcular días hábiles transcurridos (Lunes a Viernes)
-                                                        $diasTranscurridosInt = $fechaBaseInt->diffInDaysFiltered(function(\Carbon\Carbon $date) {
-                                                            return $date->isWeekday();
-                                                        }, $hoyInt);
-                                                        
-                                                        $diasTotalesInt = $int->envio->tipoEnvio->dias_respuesta ?? 15;
-                                                        $diasRestantesInt = $diasTotalesInt - $diasTranscurridosInt;
-                                                        
-                                                        // Colores según días restantes
-                                                        $diasClassInt = 'text-green-600 dark:text-green-400 font-medium'; // Tiempo de sobra
-                                                        $iconoDiasInt = 'schedule';
-                                                        
-                                                        if ($diasRestantesInt < 0) {
-                                                            $diasClassInt = 'text-red-600 dark:text-red-400 font-bold'; // Vencido
-                                                            $iconoDiasInt = 'warning';
-                                                        } elseif ($diasRestantesInt <= 2) {
-                                                            $diasClassInt = 'text-yellow-600 dark:text-yellow-400 font-bold'; // Por vencer
-                                                            $iconoDiasInt = 'hourglass_empty';
-                                                        }
-                                                    @endphp
-                                                    <span class="flex items-center gap-1 {{ $diasClassInt }} mt-0.5" title="Días Hábiles Restantes">
-                                                        <span class="material-symbols-outlined text-[14px]">{{ $iconoDiasInt }}</span>
-                                                        @if($diasRestantesInt < 0)
-                                                            ¡Vencido por {{ abs($diasRestantesInt) }} d!
-                                                        @else
-                                                            Quedan {{ $diasRestantesInt }} días hábiles
-                                                        @endif
-                                                    </span>
-                                                </div>
+                                        <div class="mt-2 text-xs">
+                                            @if($int->observaciones && trim(strtoupper($int->observaciones)) !== 'NINGUNO' && trim(strtoupper($int->observaciones)) !== 'NINGUNA')
+                                                <button onclick="openObservacionModal('{{ addslashes($int->observaciones) }}')" class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-purple-700 bg-purple-50 border border-purple-200 hover:bg-purple-100 rounded transition-colors w-fit">
+                                                    <span class="material-symbols-outlined text-[14px]">visibility</span> Observaciones
+                                                </button>
                                             @endif
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 hidden lg:table-cell">
-                                        @if($int->observaciones)
-                                            <button onclick="openObservacionModal('{{ addslashes($int->observaciones) }}')" class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-purple-700 bg-purple-50 border border-purple-200 hover:bg-purple-100 rounded-md transition-colors w-fit">
-                                                <span class="material-symbols-outlined text-[16px]">visibility</span> Ver Nota
-                                            </button>
-                                        @else
-                                            <span class="text-xs text-gray-400 italic">Sin observaciones</span>
-                                        @endif
+                                        <div class="flex flex-col gap-1.5 text-[11px] leading-tight text-gray-600 dark:text-gray-400">
+                                            <div class="flex items-center gap-2">
+                                                <span class="material-symbols-outlined text-[14px]">description</span> 
+                                                <span class="truncate max-w-[150px]" title="{{ $int->envio->tipoEnvio ? $int->envio->tipoEnvio->tipo_nombre : 'Interno' }}">{{ $int->envio->tipoEnvio ? $int->envio->tipoEnvio->tipo_nombre : 'Interno' }}</span>
+                                            </div>
+                                            
+                                            <div class="flex items-center gap-2">
+                                                <span class="material-symbols-outlined text-[14px]">layers</span> 
+                                                <span>Folios: {{ $int->envio->folio ?? 0 }}</span>
+                                            </div>
+
+                                            @if($int->envio->tipoEnvio)
+                                                <!-- Prioridad -->
+                                                @php
+                                                    $prioColorInt = 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
+                                                    $prioNombreInt = $int->envio->tipoEnvio->prioridad->prioridad_nombre ?? 'N/A';
+                                                    $prioNombreIntUpper = strtoupper($prioNombreInt);
+                                                    
+                                                    if (str_contains($prioNombreIntUpper, 'URGENTE') || $int->envio->tipoEnvio->id_prioridad == 4) {
+                                                        $prioColorInt = 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+                                                    } elseif (str_contains($prioNombreIntUpper, 'ALTA') || $int->envio->tipoEnvio->id_prioridad == 3) {
+                                                        $prioColorInt = 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400';
+                                                    } elseif (str_contains($prioNombreIntUpper, 'MEDIA') || $int->envio->tipoEnvio->id_prioridad == 2) {
+                                                        $prioColorInt = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
+                                                    } elseif (str_contains($prioNombreIntUpper, 'BAJA') || $int->envio->tipoEnvio->id_prioridad == 1) {
+                                                        $prioColorInt = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+                                                    }
+                                                @endphp
+                                                <div class="flex items-center gap-2 mt-0.5" title="Prioridad">
+                                                    <span class="material-symbols-outlined text-[14px] opacity-70">flag</span>
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider {{ $prioColorInt }}">
+                                                        {{ $prioNombreInt }}
+                                                    </span>
+                                                </div>
+
+                                                <!-- Días Restantes -->
+                                                @php
+                                                    $estadoNombIntCheck = $int->estado ? strtolower($int->estado->estado_nomb) : '';
+                                                    $isFinalizedIntCheck = str_contains($estadoNombIntCheck, 'finalizado') || str_contains($estadoNombIntCheck, 'resuelto') || str_contains($estadoNombIntCheck, 'archivado') || str_contains($estadoNombIntCheck, 'rechazado');
+                                                @endphp
+
+                                                @if($isFinalizedIntCheck)
+                                                    <div class="flex items-center gap-2 mt-0.5 text-blue-600 dark:text-blue-400 font-bold" title="Proceso Completado">
+                                                        <span class="material-symbols-outlined text-[14px]">task_alt</span>
+                                                        <span>Proceso Finalizado</span>
+                                                    </div>
+                                                @elseif(!empty($int->envio->tipoEnvio->dias_respuesta) && $int->envio->tipoEnvio->dias_respuesta > 0)
+                                                    @php
+                                                        $fechaBaseInt = \Carbon\Carbon::parse($int->fecha_traslado ?? $int->envio->fecha);
+                                                        $hoyInt = \Carbon\Carbon::now();
+                                                        $diasTranscurridosInt = $fechaBaseInt->diffInDaysFiltered(function(\Carbon\Carbon $date) {
+                                                            return $date->isWeekday();
+                                                        }, $hoyInt);
+                                                        
+                                                        $diasTotalesInt = $int->envio->tipoEnvio->dias_respuesta;
+                                                        $diasRestantesInt = $diasTotalesInt - $diasTranscurridosInt;
+                                                        
+                                                        $diasClassInt = 'text-green-600 dark:text-green-400 font-medium';
+                                                        $iconoDiasInt = 'schedule';
+                                                        
+                                                        if ($diasRestantesInt < 0) {
+                                                            $diasClassInt = 'text-red-600 dark:text-red-400 font-bold';
+                                                            $iconoDiasInt = 'warning';
+                                                        } elseif ($diasRestantesInt <= 2) {
+                                                            $diasClassInt = 'text-yellow-600 dark:text-yellow-400 font-bold';
+                                                            $iconoDiasInt = 'hourglass_empty';
+                                                        }
+                                                    @endphp
+                                                    <div class="flex items-center gap-2 mt-0.5 {{ $diasClassInt }}" title="Días Asignados: {{ $diasTotalesInt }}">
+                                                        <span class="material-symbols-outlined text-[14px]">{{ $iconoDiasInt }}</span>
+                                                        <span>
+                                                            @if($diasRestantesInt < 0)
+                                                                ¡Vencido: {{ abs($diasRestantesInt) }} d!
+                                                            @else
+                                                                Le quedan {{ $diasRestantesInt }} días
+                                                            @endif
+                                                        </span>
+                                                    </div>
+                                                @else
+                                                    <div class="flex items-center gap-2 mt-0.5 text-gray-400 dark:text-gray-500 italic">
+                                                        <span class="material-symbols-outlined text-[14px]">timer_off</span>
+                                                        <span>Sin límite</span>
+                                                    </div>
+                                                @endif
+                                            @endif
+                                        </div>
                                     </td>
                                     <td class="px-6 py-4 hidden md:table-cell">
                                         <div class="font-medium text-gray-900 dark:text-white">
@@ -702,26 +735,29 @@
                 </div>
                 
                 <div id="archivoRespuestaContainer" class="hidden">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Archivo de Respuesta (Opcional, Solo PDF)</label>
-                    <input type="file" name="archivo_respuesta" accept=".pdf" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-600 file:text-white hover:file:bg-green-700 file:cursor-pointer cursor-pointer border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 mb-4">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Archivo de Respuesta
+                        <span class="ml-1 text-xs font-normal text-green-600 dark:text-green-400">(Opcional · 1 PDF · Máx. 5 MB)</span>
+                    </label>
+                    <input type="file" id="archivo_respuesta_input" name="archivo_respuesta" accept=".pdf"
+                           class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-600 file:text-white hover:file:bg-green-700 file:cursor-pointer cursor-pointer border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 mb-1"
+                           onchange="validarArchivoRespuesta(this)">
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Solo <strong>1 PDF</strong> como oficio de respuesta con peso máximo de <strong>5 MB</strong>.</p>
+                    <p id="error_archivo_respuesta" class="hidden mb-3 text-xs text-red-600 dark:text-red-400 font-medium flex items-center gap-1"><span class="material-symbols-outlined text-[13px]">error</span> <span id="error_archivo_respuesta_msg"></span></p>
 
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Anexos de Respuesta (Opcional, Múltiples PDFs)</label>
-                    
-                    <!-- Custom Multiple File Upload Area for Respuestas -->
-                    <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors cursor-pointer relative" onclick="document.getElementById('archivos_respuesta_input').click()">
-                        <span class="material-symbols-outlined text-gray-400 text-3xl mb-2">upload_file</span>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">Clic aquí para añadir anexos (PDF)</p>
-                        <p class="text-xs text-gray-500 mt-1">Puedes agregar varios archivos uno por uno sin usar la tecla Ctrl.</p>
-                        <!-- Actual Hidden Input -->
-                        <input type="file" id="archivos_respuesta_input" name="archivos_respuesta[]" multiple accept=".pdf" class="hidden" onchange="handleFileSelect(event, 'respuestasList', 'archivos_respuesta_input')">
-                    </div>
-                    
-                    <!-- Container for Selected Files Pills -->
-                    <div id="respuestasList" class="mt-3 flex flex-wrap gap-2 empty:hidden"></div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Anexo de Respuesta
+                        <span class="ml-1 text-xs font-normal text-green-600 dark:text-green-400">(Opcional · 1 PDF · Máx. 25 MB)</span>
+                    </label>
+                    <input type="file" id="archivos_respuesta_input" name="archivos_respuesta[]" accept=".pdf"
+                           class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 dark:file:bg-teal-900/30 dark:file:text-teal-400 file:cursor-pointer cursor-pointer border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 mb-1"
+                           onchange="validarAnexoRespuesta(this)">
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Solo <strong>1 PDF</strong> como anexo de respuesta con peso máximo de <strong>25 MB</strong>.</p>
+                    <p id="error_anexo_respuesta" class="hidden mb-3 text-xs text-red-600 dark:text-red-400 font-medium flex items-center gap-1"><span class="material-symbols-outlined text-[13px]">error</span> <span id="error_anexo_respuesta_msg"></span></p>
 
-                    <div class="mt-4">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Folios de la Respuesta (Opcional, Número)</label>
-                        <input type="number" name="folios_respuesta" min="0" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 dark:text-white py-2 px-3 text-sm focus:ring-2 focus:ring-green-600/50 focus:border-green-600 transition-colors" placeholder="Ej: 5">
+                    <div class="mt-2">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Folios de la Respuesta</label>
+                        <input type="number" id="folios_respuesta_input" name="folios_respuesta" min="0" value="0" readonly class="w-full border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-100 dark:bg-slate-800 dark:text-gray-300 text-gray-600 py-2 px-3 text-sm cursor-not-allowed" placeholder="Se calcula automáticamente...">
                     </div>
                 </div>
 
@@ -861,7 +897,10 @@
                         <div id="listaDestinatarios" class="flex flex-col">
                             @foreach($empleados ?? [] as $emp)
                                 @if($emp->emple_doc != Auth::user()->emple_doc)
-                                    <label class="destinatario-item flex items-center justify-between px-4 py-2 hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0 transition-colors" data-nombre="{{ strtolower($emp->emple_nombres . ' ' . $emp->emple_apellidos) }}" data-area="{{ strtolower($emp->area->area_nom ?? 'sin área') }}">
+                                    <label class="destinatario-item flex items-center justify-between px-4 py-2 hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0 transition-colors" 
+                                           data-nombre="{{ strtolower($emp->emple_nombres . ' ' . $emp->emple_apellidos) }}" 
+                                           data-area="{{ strtolower($emp->area->area_nom ?? 'sin área') }}"
+                                           data-doc="{{ $emp->emple_doc }}">
                                         <div class="flex items-center gap-3 w-full">
                                             <div class="relative flex items-center justify-center">
                                                 <input type="checkbox" name="doc_quien_dirigido[]" value="{{ $emp->emple_doc }}" 
@@ -869,7 +908,7 @@
                                                     onchange="actualizarPillsDestinatarios(this, '{{ addslashes($emp->emple_nombres . ' ' . $emp->emple_apellidos) }}', '{{ $emp->emple_doc }}')">
                                             </div>
                                             <div class="flex flex-col">
-                                                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ $emp->emple_nombres }} {{ $emp->emple_apellidos }}</span>
+                                                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ $emp->emple_nombres }} {{ $emp->emple_apellidos }} <span class="text-xs text-gray-400 font-normal"> Documento: {{ $emp->emple_doc }}</span></span>
                                                 <span class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                                                     <span class="material-symbols-outlined text-[12px]">work</span>
                                                     {{ $emp->area->area_nom ?? 'Sin Área' }}
@@ -913,32 +952,36 @@
 
                 <!-- Archivo y Anexos -->
                 <div class="p-4 bg-gray-50 dark:bg-slate-800/30 rounded-xl border border-gray-200 dark:border-gray-700 space-y-4">
-                    <!-- Principal Full Width so it doesn't truncate long names -->
+                    <!-- Documento Principal -->
                     <div class="w-full">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Documento Principal (PDF, JPG, PNG)</label>
-                        <input type="file" name="archivo" accept=".pdf,.jpg,.jpeg,.png" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-blue-700 file:cursor-pointer cursor-pointer border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 transition-colors">
-                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Tamaño máximo: 5MB. Este archivo es el oficio principal.</p>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Documento Principal
+                            <span class="ml-1 text-xs font-normal text-blue-600 dark:text-blue-400">(Solo 1 PDF · Máx. 5 MB)</span>
+                        </label>
+                        <input type="file" name="archivo" id="archivo_principal_input" accept=".pdf"
+                               class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-blue-700 file:cursor-pointer cursor-pointer border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 transition-colors"
+                               onchange="validarArchivoPrincipal(this)">
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Solo se permite <strong>1 archivo PDF</strong> como oficio principal con un peso máximo de <strong>5 MB</strong>.</p>
+                        <p id="error_archivo_principal" class="hidden mt-1 text-xs text-red-600 dark:text-red-400 font-medium flex items-center gap-1"><span class="material-symbols-outlined text-[13px]">error</span> <span id="error_archivo_principal_msg"></span></p>
                     </div>
 
-                    <!-- Anexos y Folios Side by Side -->
+                    <!-- Anexo único y Folios -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Anexos Extras (PDFs)</label>
-                            
-                            <!-- Custom Multiple File Upload Area for Nuevos Anexos -->
-                            <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-3 text-center hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors cursor-pointer relative" onclick="document.getElementById('anexos_nuevos_input').click()">
-                                <span class="material-symbols-outlined text-gray-400 text-2xl mb-1">note_add</span>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Clic aquí para añadir PDFs adicionales</p>
-                                <!-- Actual Hidden Input -->
-                                <input type="file" id="anexos_nuevos_input" name="anexos[]" multiple accept=".pdf" class="hidden" onchange="handleFileSelect(event, 'anexosNuevosList', 'anexos_nuevos_input')">
-                            </div>
-                            
-                            <!-- Container for Selected Files Pills -->
-                            <div id="anexosNuevosList" class="mt-2 flex flex-wrap gap-2 empty:hidden"></div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Anexo
+                                <span class="ml-1 text-xs font-normal text-blue-600 dark:text-blue-400">(Solo 1 PDF · Máx. 25 MB)</span>
+                            </label>
+                            <input type="file" name="anexos[]" id="anexo_unico_input" accept=".pdf"
+                                   class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900/30 dark:file:text-blue-400 file:cursor-pointer cursor-pointer border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 transition-colors"
+                                   onchange="validarAnexoUnico(this)">
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Solo se permite <strong>1 archivo PDF</strong> como anexo con un peso máximo de <strong>25 MB</strong>.</p>
+                            <p id="error_anexo_unico" class="hidden mt-1 text-xs text-red-600 dark:text-red-400 font-medium flex items-center gap-1"><span class="material-symbols-outlined text-[13px]">error</span> <span id="error_anexo_unico_msg"></span></p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Total de Folios</label>
-                            <input type="number" name="folio" min="0" placeholder="Ej. 3" class="w-full border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 dark:text-white py-2 px-3 text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors">
+                            <input type="number" name="folio" id="total_folios_input" readonly placeholder="Calculado automáticamente..." class="w-full border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-slate-800 dark:text-gray-400 py-2 px-3 text-sm focus:outline-none cursor-not-allowed transition-colors">
+                            <p id="folio_auto_msg" class="mt-1 text-[10px] text-blue-600 dark:text-blue-400 hidden">Autocalculado según PDFs seleccionados.</p>
                         </div>
                     </div>
                 </div>
@@ -994,6 +1037,17 @@
 
 @section('scripts')
 <script>
+    // Configurar PDF.js worker (con guard por si la librería aún no cargó)
+    if (typeof pdfjsLib !== 'undefined') {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    } else {
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof pdfjsLib !== 'undefined') {
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            }
+        });
+    }
+
     function toggleModal(modalId) {
         const modal = document.getElementById(modalId);
         if (modal.classList.contains('hidden')) {
@@ -1031,13 +1085,47 @@
             extBtn.classList.add(...inactiveClasses);
             extBtn.classList.remove(...activeClasses);
         }
+
+        // Persistir pestaña activa
+        sessionStorage.setItem('activeCorrespondenceTab', tab);
     }
 
     document.addEventListener('DOMContentLoaded', () => {
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('int_page')) {
+        
+        // Prioridad: 1. URL (?tab=...) 2. URL (?int_page=...) 3. SessionStorage
+        const tabFromUrl = urlParams.get('tab');
+        const savedTab = sessionStorage.getItem('activeCorrespondenceTab');
+
+        if (tabFromUrl === 'interna' || urlParams.has('int_page')) {
             switchTab('interna');
+        } else if (tabFromUrl === 'externa' || urlParams.has('ext_page')) {
+            switchTab('externa');
+        } else if (savedTab) {
+            switchTab(savedTab);
         }
+
+        // Restaurar posición de scroll si existe
+        const scrollPos = sessionStorage.getItem('scrollPosition');
+        if (scrollPos) {
+            window.scrollTo(0, parseInt(scrollPos));
+            sessionStorage.removeItem('scrollPosition');
+        }
+
+        // Interceptar envíos de formulario para guardar estado y mostrar loading
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            form.addEventListener('submit', () => {
+                sessionStorage.setItem('scrollPosition', window.scrollY);
+                
+                // Mostrar un loader simple (opcional, mejora la percepción)
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.classList.add('opacity-50', 'pointer-events-none');
+                    submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin align-middle mr-1 text-[18px]">sync</span> Procesando...';
+                }
+            });
+        });
     });
 
     let currentModalType = '';
@@ -1060,11 +1148,9 @@
 
         if (tipo === 'externa') {
             form.action = `/empleado/correspondencia-recibida/${id}/estado`;
-            if (fileContainer) fileContainer.classList.add('hidden'); // Solo para externa
+            // Removed: if (fileContainer) fileContainer.classList.add('hidden'); // No longer hiding by default here
         } else {
             form.action = `/empleado/correspondencia-interna/${id}/estado`;
-            // It will be hidden initially, and toggleArchivoRespuesta will handle showing it if Resuelto is selected
-            if (fileContainer) fileContainer.classList.add('hidden'); 
         }
         
         // Dynamic Dropdown Options Logic based on current state
@@ -1092,7 +1178,14 @@
             stateSelect.value = "";
         }
         
+        // Limpiar campo de observaciones al abrir
+        const obsField = form.querySelector('textarea[name="observaciones"]');
+        if (obsField) obsField.value = "";
+
         currentModalType = tipo;
+        
+        // Trigger toggle initially to set correct visibility based on state (e.g. if loaded state is already Resuelto? Usually not)
+        toggleArchivoRespuesta();
         
         toggleModal('modalEstado');
     }
@@ -1112,120 +1205,178 @@
     function toggleArchivoRespuesta() {
         const select = document.getElementById('estadoSelectOptions');
         const fileContainer = document.getElementById('archivoRespuestaContainer');
-        const formAction = document.getElementById('formUpdateEstado').action;
         
-        // Only toggle for internal correspondence forms when changing state
-        if (formAction.includes('interna')) {
-            if (select.value === 'Resuelto') {
-                fileContainer.classList.remove('hidden');
-            } else {
-                fileContainer.classList.add('hidden');
-                
-                // Clear the main answer file
-                const fileInputMain = fileContainer.querySelector('input[name="archivo_respuesta"]');
-                if(fileInputMain) fileInputMain.value = '';
-                
-                // Clear custom anexos responses
-                clearCustomFileInput('archivos_respuesta_input', 'respuestasList');
-            }
+        // Show file containers for BOTH internal and external when "Resuelto" (or similar final state) is selected
+        if (select.value === 'Resuelto') {
+            fileContainer.classList.remove('hidden');
+        } else {
+            fileContainer.classList.add('hidden');
+            
+            // Clear the main answer file
+            const fileInputMain = fileContainer.querySelector('input[name="archivo_respuesta"]');
+            if (fileInputMain) fileInputMain.value = '';
+            limpiarErrorArchivo('error_archivo_respuesta');
+
+            // Clear single anexo de respuesta
+            clearCustomFileInput('archivos_respuesta_input');
+            limpiarErrorArchivo('error_anexo_respuesta');
+
+            // Reset folio count
+            const foliosInput = document.getElementById('folios_respuesta_input');
+            if (foliosInput) foliosInput.value = 0;
         }
     }
 
     // ==========================================
-    // CUSTOM MULTIPLE FILE UPLOAD LOGIC
+    // VALIDACION Y LIMITES DE ARCHIVOS
     // ==========================================
-    
-    // Dictionary to store the selected files for each input ID
-    const customFilesState = {
-        'archivos_respuesta_input': new DataTransfer(),
-        'anexos_nuevos_input': new DataTransfer()
-    };
 
-    function handleFileSelect(event, listContainerId, inputId) {
-        const input = event.target;
-        const newFiles = input.files;
-        const dt = customFilesState[inputId];
-        
-        // Loop through selected files and add them to our DataTransfer object
-        for (let i = 0; i < newFiles.length; i++) {
-            // Prevent duplicate files by checking name & size
-            let isDuplicate = false;
-            for (let j = 0; j < dt.items.length; j++) {
-                if (dt.items[j].getAsFile().name === newFiles[i].name && dt.items[j].getAsFile().size === newFiles[i].size) {
-                    isDuplicate = true;
-                    break;
+    const MAX_PRINCIPAL_MB = 5;   // Documento principal: máx 5 MB
+    const MAX_ANEXO_MB     = 25;  // Anexo: máx 25 MB
+
+    function mostrarErrorArchivo(containerId, msgId, mensaje) {
+        const el = document.getElementById(containerId);
+        const msg = document.getElementById(msgId);
+        if (el && msg) {
+            msg.textContent = mensaje;
+            el.classList.remove('hidden');
+        }
+    }
+
+    function limpiarErrorArchivo(containerId) {
+        const el = document.getElementById(containerId);
+        if (el) el.classList.add('hidden');
+    }
+
+    function validarArchivo(input, maxMB, errorContainerId, errorMsgId, callbackOk) {
+        limpiarErrorArchivo(errorContainerId);
+        if (!input || input.files.length === 0) {
+            if (callbackOk) callbackOk();
+            return true;
+        }
+        if (input.files.length > 1) {
+            input.value = '';
+            mostrarErrorArchivo(errorContainerId, errorMsgId, 'Solo se permite subir 1 archivo PDF en este campo.');
+            Swal.fire({ icon: 'error', title: 'Solo 1 PDF permitido', text: 'Este campo solo acepta un (1) archivo PDF. Por favor seleccione únicamente un PDF.' });
+            return false;
+        }
+        const file = input.files[0];
+        const sizeMB = file.size / (1024 * 1024);
+        if (sizeMB > maxMB) {
+            input.value = '';
+            mostrarErrorArchivo(errorContainerId, errorMsgId, `El archivo pesa ${sizeMB.toFixed(1)} MB y supera el límite de ${maxMB} MB.`);
+            Swal.fire({ icon: 'error', title: 'Archivo demasiado pesado', text: `El PDF seleccionado pesa ${sizeMB.toFixed(1)} MB y supera el límite permitido de ${maxMB} MB. Por favor, reduzca el tamaño del archivo e intente de nuevo.` });
+            return false;
+        }
+        if (callbackOk) callbackOk();
+        return true;
+    }
+
+    function validarArchivoPrincipal(input) {
+        validarArchivo(input, MAX_PRINCIPAL_MB, 'error_archivo_principal', 'error_archivo_principal_msg', actualizarContadorFolios);
+    }
+
+    function validarAnexoUnico(input) {
+        validarArchivo(input, MAX_ANEXO_MB, 'error_anexo_unico', 'error_anexo_unico_msg', actualizarContadorFolios);
+    }
+
+    function validarArchivoRespuesta(input) {
+        validarArchivo(input, MAX_PRINCIPAL_MB, 'error_archivo_respuesta', 'error_archivo_respuesta_msg', actualizarContadorFoliosRespuesta);
+    }
+
+    function validarAnexoRespuesta(input) {
+        validarArchivo(input, MAX_ANEXO_MB, 'error_anexo_respuesta', 'error_anexo_respuesta_msg', actualizarContadorFoliosRespuesta);
+    }
+
+    // Contar páginas de los PDFs de respuesta (archivo principal + anexo único)
+    async function actualizarContadorFoliosRespuesta() {
+        const foliosInput = document.getElementById('folios_respuesta_input');
+        if (!foliosInput) return;
+
+        const promesas = [];
+
+        // 1. Archivo de respuesta principal
+        const archivoInput = document.getElementById('archivo_respuesta_input');
+        if (archivoInput && archivoInput.files.length > 0) {
+            promesas.push(getPdfPageCount(archivoInput.files[0]));
+        }
+
+        // 2. Anexo único de respuesta
+        const anexoRespInput = document.getElementById('archivos_respuesta_input');
+        if (anexoRespInput && anexoRespInput.files.length > 0) {
+            promesas.push(getPdfPageCount(anexoRespInput.files[0]));
+        }
+
+        if (promesas.length === 0) {
+            foliosInput.value = 0;
+            return;
+        }
+
+        foliosInput.placeholder = 'Contando páginas...';
+        const resultados = await Promise.all(promesas);
+        foliosInput.value = resultados.reduce((a, b) => a + b, 0);
+        foliosInput.placeholder = 'Se calcula automáticamente...';
+    }
+
+
+
+    function getPdfPageCount(file) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const typedArray = new Uint8Array(e.target.result);
+                    const pdf = await pdfjsLib.getDocument({ data: typedArray }).promise;
+                    resolve(pdf.numPages);
+                } catch (err) {
+                    console.error('PDF.js error counting pages:', err);
+                    resolve(0);
                 }
-            }
-            
-            if (!isDuplicate) {
-                dt.items.add(newFiles[i]);
-            }
-        }
-        
-        // Sync the true input with our accumulated files
-        input.files = dt.files;
-        
-        // Render the UI
-        renderFilePills(inputId, listContainerId);
+            };
+            reader.onerror = () => resolve(0);
+            reader.readAsArrayBuffer(file);
+        });
     }
 
-    function removeFile(inputId, listContainerId, fileName, fileSize) {
-        const input = document.getElementById(inputId);
-        const dt = customFilesState[inputId];
-        const newDt = new DataTransfer();
-        
-        for (let i = 0; i < dt.items.length; i++) {
-            const file = dt.items[i].getAsFile();
-            if (file.name !== fileName || file.size !== fileSize) {
-                newDt.items.add(file);
-            }
-        }
-        
-        // Update our state
-        customFilesState[inputId] = newDt;
-        // Sync with actual input
-        input.files = newDt.files;
-        
-        // Render UI
-        renderFilePills(inputId, listContainerId);
-    }
+    async function actualizarContadorFolios() {
+        const principalInput = document.getElementById('archivo_principal_input');
+        const anexoInput = document.getElementById('anexo_unico_input');
+        const totalInput = document.getElementById('total_folios_input');
+        const autoMsg = document.getElementById('folio_auto_msg');
 
-    function renderFilePills(inputId, listContainerId) {
-        const container = document.getElementById(listContainerId);
-        const dt = customFilesState[inputId];
-        
-        container.innerHTML = '';
-        
-        for (let i = 0; i < dt.items.length; i++) {
-            const file = dt.items[i].getAsFile();
-            
-            // Truncate name for display
-            let display = file.name;
-            if (display.length > 20) {
-                display = display.substring(0, 15) + '...' + display.substring(display.lastIndexOf('.'));
+        let filePromises = [];
+
+        // 1. Promesa para el documento principal
+        if (principalInput && principalInput.files.length > 0) {
+            const file = principalInput.files[0];
+            if (file.type === 'application/pdf') {
+                filePromises.push(getPdfPageCount(file));
             }
-            
-            const pill = document.createElement('div');
-            pill.className = 'flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 px-2 py-1 rounded text-xs font-medium dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800';
-            
-            pill.innerHTML = `
-                <span class="material-symbols-outlined text-[14px]">description</span>
-                <span title="${file.name}">${display}</span>
-                <button type="button" class="text-blue-500 hover:text-red-500 hover:bg-red-50 rounded-full w-4 h-4 flex items-center justify-center transition-colors ml-1 focus:outline-none" onclick="event.stopPropagation(); removeFile('${inputId}', '${listContainerId}', '${file.name}', ${file.size})">
-                    <span class="material-symbols-outlined text-[12px]">close</span>
-                </button>
-            `;
-            
-            container.appendChild(pill);
+        }
+
+        // 2. Promesa para el anexo único
+        if (anexoInput && anexoInput.files.length > 0) {
+            const file = anexoInput.files[0];
+            if (file.type === 'application/pdf') {
+                filePromises.push(getPdfPageCount(file));
+            }
+        }
+
+        if (filePromises.length > 0) {
+            totalInput.placeholder = "Contando...";
+            const counts = await Promise.all(filePromises);
+            const total = counts.reduce((a, b) => a + b, 0);
+            totalInput.value = total;
+            totalInput.placeholder = "Calculado automáticamente...";
+            autoMsg.classList.remove('hidden');
+        } else {
+            totalInput.value = "";
+            autoMsg.classList.add('hidden');
         }
     }
-    
-    function clearCustomFileInput(inputId, listContainerId) {
-        customFilesState[inputId] = new DataTransfer();
+    function clearCustomFileInput(inputId) {
         const input = document.getElementById(inputId);
-        if(input) input.files = customFilesState[inputId].files;
-        const container = document.getElementById(listContainerId);
-        if(container) container.innerHTML = '';
+        if (input) input.value = '';
     }
 
     // ==========================================
@@ -1268,9 +1419,10 @@
         items.forEach(item => {
             const nombre = item.getAttribute('data-nombre');
             const area = item.getAttribute('data-area');
+            const doc = item.getAttribute('data-doc');
             
             // Si no hay texto, mostramos todos
-            if (input.length === 0 || nombre.includes(input) || area.includes(input)) {
+            if (input.length === 0 || nombre.includes(input) || area.includes(input) || doc.includes(input)) {
                 item.classList.remove('hidden');
                 item.classList.add('flex');
                 visibleCount++;
@@ -1394,10 +1546,28 @@
         }
     }
 
-    // Call validation on modal open to ensure state is clean
+    // Validar destinatarios solo al intentar enviar el formulario
     document.addEventListener('DOMContentLoaded', () => {
-        // Wait for DOM to load before setting initial validity
-        setTimeout(validarDestinatariosMinimos, 500);
+        const form = document.querySelector('#modalNuevaInterna form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const checkboxes = document.querySelectorAll('.destinatario-checkbox');
+                let checkedCount = 0;
+                checkboxes.forEach(cb => { if (cb.checked) checkedCount++; });
+
+                if (checkedCount === 0) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Destinatario requerido',
+                        text: 'Debe seleccionar al menos un destinatario.',
+                    });
+                }
+            });
+        }
+
+        // Limpiar cualquier validación custom que pueda estar bloqueando
+        document.querySelectorAll('.destinatario-checkbox').forEach(cb => cb.setCustomValidity(''));
     });
 
     function abrirModalArchivos(datosJson) {
@@ -1496,5 +1666,72 @@
         toggleModal('modalArchivos');
     }
 
+    function abrirModalDetalles(datosJson) {
+        const data = JSON.parse(datosJson);
+        
+        let priorityColorClass = 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700';
+        const prioUpper = (data.prioridad || '').toUpperCase();
+        
+        if (prioUpper.includes('URGENTE')) priorityColorClass = 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800';
+        else if (prioUpper.includes('ALTA')) priorityColorClass = 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800';
+        else if (prioUpper.includes('MEDIA')) priorityColorClass = 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800';
+        else if (prioUpper.includes('BAJA')) priorityColorClass = 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800';
+
+        let htmlContent = `
+            <div class="flex flex-col gap-4 text-left">
+                <!-- Data display grid -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-gray-50 dark:bg-slate-800 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
+                        <span class="block text-xs text-gray-500 uppercase tracking-wider mb-1">Tipo de Documento</span>
+                        <div class="font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-1.5 text-sm">
+                            <span class="material-symbols-outlined text-[16px] text-blue-500">description</span>
+                            ${data.tipo}
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-slate-800 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
+                        <span class="block text-xs text-gray-500 uppercase tracking-wider mb-1">Folios Físicos</span>
+                        <div class="font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-1.5 text-sm">
+                            <span class="material-symbols-outlined text-[16px] text-gray-400">layers</span>
+                            ${data.folios}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Priority badge box -->
+                <div class="flex items-center justify-between p-3 rounded-lg border ${priorityColorClass}">
+                    <span class="text-sm font-medium">Nivel de Prioridad:</span>
+                    <span class="text-xs font-bold tracking-wider uppercase px-2 py-0.5 rounded-full bg-white dark:bg-slate-900/50 shadow-sm">${data.prioridad}</span>
+                </div>
+
+                <!-- Time limit tracking -->
+                <div class="bg-gray-50 dark:bg-slate-800 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
+                    <div class="flex justify-between items-center mb-2 leading-none">
+                        <span class="text-xs text-gray-500 uppercase tracking-wider">Límite de Respuesta</span>
+                        <span class="text-xs font-semibold text-gray-600 dark:text-gray-400">${data.diasTotales > 0 ? data.diasTotales + ' días hábiles' : 'No Aplica'}</span>
+                    </div>
+                    <div class="flex items-center gap-2 mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                        <span class="material-symbols-outlined text-[18px] ${data.diasClass.split(' ')[0]}">${data.iconoDias}</span>
+                        <span class="${data.diasClass} text-sm">${data.msgTiempo}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        Swal.fire({
+            title: '<h3 class="text-lg font-bold text-gray-800 dark:text-white mb-2 pt-2">Detalles del Documento</h3>',
+            html: htmlContent,
+            showCloseButton: true,
+            showConfirmButton: false,
+            focusConfirm: false,
+            customClass: {
+                popup: 'rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 dark:bg-slate-900',
+                closeButton: 'text-gray-400 hover:text-gray-600 dark:hover:text-white mt-2 mr-2',
+                content: 'p-0 text-left'
+            }
+        });
+    }
+
 </script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 @endsection

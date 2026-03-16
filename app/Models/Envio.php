@@ -17,7 +17,6 @@ class Envio extends Model
         'doc_quien_envia',
         'fecha',
         'destino',
-        'anexo',
         'folio',
         'id_tipo_envio',
         'id_estado_envio',
@@ -62,5 +61,11 @@ class Envio extends Model
     public function anexos()
     {
         return $this->hasMany(AnexoEnvio::class, 'id_envio', 'id_envio');
+    }
+
+    // Relación con los detalles de seguimiento (destinatarios)
+    public function detalles()
+    {
+        return $this->hasMany(DetalleEnvio::class, 'id_envio', 'id_envio');
     }
 }
