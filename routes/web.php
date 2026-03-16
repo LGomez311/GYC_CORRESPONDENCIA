@@ -420,3 +420,15 @@ Route::prefix('remitente')
         Route::post('/{id}/finalize', [RemitenteDashboardController::class, 'finalize'])->name('remitente.finalize');
         Route::post('/{id}/update-rejected', [RemitenteDashboardController::class, 'updateRejected'])->name('remitente.update_rejected');
     });
+
+// ================= CORRESPONDENCIA EXTERNA PÚBLICA =================
+use App\Http\Controllers\Public\CorrespondenciaExternaController;
+
+// Aplicamos throttle para evitar spam (5 requests por minuto para POST)
+Route::prefix('correspondencia')->name('public.correspondencia.')->group(function () {
+    Route::get('/enviar', [CorrespondenciaExternaController::class, 'create'])->name('enviar');
+    Route::post('/enviar', [CorrespondenciaExternaController::class, 'store'])->name('store')->middleware('throttle:5,1');
+    
+    Route::get('/consultar', [CorrespondenciaExternaController::class, 'consultar'])->name('consultar');
+    Route::post('/buscar', [CorrespondenciaExternaController::class, 'buscarRadicado'])->name('buscar');
+});
