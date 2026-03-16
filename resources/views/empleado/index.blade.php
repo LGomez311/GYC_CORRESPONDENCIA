@@ -109,7 +109,7 @@
                     </div>
                 </div>
                 <span class="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 text-xs font-semibold px-2.5 py-1 rounded-full">
-                    {{ $rechazosInternos->count() + $nuevasExternas->count() + $nuevasInternas->count() }} pendientes
+                    {{ $rechazosInternos->count() + $nuevasExternas->count() + $nuevasInternas->count() + $respuestasInternas->count() }} pendientes
                 </span>
             </div>
             
@@ -252,7 +252,67 @@
                         </li>
                     @endforeach
 
-                    @if($rechazosInternos->isEmpty() && $nuevasExternas->isEmpty() && $nuevasInternas->isEmpty())
+                    @foreach($respuestasInternas as $respuesta)
+                        <!-- Respuesta/Archivado Interno para el Remitente -->
+                        @php
+                            $esArchivado = $respuesta->id_estado_rec == 10;
+                            $borderColor = $esArchivado ? 'border-slate-400' : 'border-green-500';
+                            $bgColor = $esArchivado ? 'bg-slate-100 dark:bg-slate-900/40' : 'bg-green-100 dark:bg-green-900/40';
+                            $textColor = $esArchivado ? 'text-slate-600 dark:text-slate-400' : 'text-green-600 dark:text-green-400';
+                            $icon = $esArchivado ? 'archive' : 'task_alt';
+                            $badgeClass = $esArchivado ? 'bg-slate-100 text-slate-800 dark:bg-slate-900/30 dark:text-slate-400' : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+                        @endphp
+                        <li class="p-5 hover:bg-gray-50 dark:hover:bg-gray-700/10 transition-colors relative border-l-4 {{ $borderColor }}">
+                            <div class="flex justify-between items-start gap-4">
+                                <div class="flex gap-4">
+                                    <div class="w-10 h-10 rounded-full {{ $bgColor }} flex-shrink-0 flex items-center justify-center {{ $textColor }}">
+                                        <span class="material-symbols-outlined">{{ $icon }}</span>
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <h4 class="font-bold text-sm text-gray-900 dark:text-white">
+                                                {{ $esArchivado ? 'Comunicado Archivado' : 'Correspondencia Resuelta' }}
+                                            </h4>
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium {{ $badgeClass }}">
+                                                {{ $esArchivado ? 'Archivado' : 'Finalizado' }}
+                                            </span>
+                                        </div>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                                            Por: <strong>{{ $respuesta->quienRecibe->emple_nombres }} {{ $respuesta->quienRecibe->emple_apellidos }}</strong>
+                                        </p>
+                                        <p class="text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">{{ $respuesta->envio->asunto }}</p>
+                                        @if($respuesta->observaciones)
+                                            <p class="text-xs text-gray-600 dark:text-gray-400 italic line-clamp-2">"{{ $respuesta->observaciones }}"</p>
+                                        @endif
+                                        
+                                        <div class="mt-3 flex items-center gap-4 text-xs">
+                                            <span class="text-primary dark:text-blue-400 font-semibold flex items-center gap-1">
+                                                <span class="material-symbols-outlined text-[14px]">tag</span>
+                                                {{ $respuesta->envio->radicado->num_radicado ?? 'INT-S/R' }}
+                                            </span>
+                                            <span class="text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                                <span class="material-symbols-outlined text-[14px]">calendar_month</span>
+                                                {{ $respuesta->fecha_traslado->format('d/m/Y h:i A') }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <a href="{{ route('empleado.historial_interna', $respuesta->id_detalle) }}" class="bg-blue-600 dark:bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap">
+                                        Ver Respuesta
+                                    </a>
+                                    <form action="{{ route('empleado.notificacion_visto', ['interna', $respuesta->id_detalle]) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-slate-700 hover:bg-green-100 dark:hover:bg-green-900/30 text-gray-500 hover:text-green-600 transition-colors" title="Marcar como leída">
+                                            <span class="material-symbols-outlined text-[18px]">done_all</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </li>
+                    @endforeach
+
+                    @if($rechazosInternos->isEmpty() && $nuevasExternas->isEmpty() && $nuevasInternas->isEmpty() && $respuestasInternas->isEmpty())
                         <li class="p-10 text-center text-gray-500 dark:text-gray-400">
                             <span class="material-symbols-outlined text-5xl mb-3 block opacity-20">notifications_off</span>
                             <p>No tienes notificaciones pendientes.</p>

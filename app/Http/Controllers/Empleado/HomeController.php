@@ -96,6 +96,20 @@ class HomeController extends Controller
             ->whereIn('id_detalle', $latestInt)
             ->get();
 
+        // Respuestas/Archivados de correspondencia INTERNA enviada por el usuario (Nuevas notificaciones para el remitente)
+        // Queremos saber si el último estado de un envío hecho por mí es "Resuelto" (9) o "Archivado" (10) y no lo he visto
+        $respuestasInternas = DetalleEnvio::with(['envio.radicado', 'quienRecibe'])
+            ->where('id_quien_envie', $user->emple_doc)
+            ->whereIn('id_estado_rec', [9, 10]) // Resuelto o Archivado
+            ->where('visto', 0)
+            ->whereIn('id_detalle', function($query) {
+                $query->selectRaw('MAX(id_detalle)')
+                    ->from('detalle_envio')
+                    ->groupBy('id_envio', 'id_quien_recibe');
+            })
+            ->orderBy('fecha_traslado', 'desc')
+            ->get();
+
         return view('empleado.index', compact(
             'recibidosMes',
             'totalTramiteActivo',
@@ -103,7 +117,8 @@ class HomeController extends Controller
             'vencidas',
             'rechazosInternos',
             'nuevasExternas',
-            'nuevasInternas'
+            'nuevasInternas',
+            'respuestasInternas'
         ));
     }
 

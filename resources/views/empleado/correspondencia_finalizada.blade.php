@@ -558,7 +558,10 @@
                                             {{ $int->estado ? $int->estado->estado_nomb : 'Sin estado' }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 text-right">
+                                    <td class="px-6 py-4 text-right flex justify-end gap-2">
+                                        <a href="{{ route('empleado.historial_interna', $int->id_detalle) }}" title="Ver Historial Detallado" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 p-1">
+                                            <span class="material-symbols-outlined text-xl">history</span>
+                                        </a>
                                         @if(in_array($int->id_estado_rec, [9, 10]) || $isRechazadoInt || !$isLatestInterna)
                                             <button title="Registro Bloqueado (Solo Lectura)" class="text-gray-300 dark:text-gray-600 p-1 cursor-not-allowed">
                                                 <span class="material-symbols-outlined text-xl">lock</span>

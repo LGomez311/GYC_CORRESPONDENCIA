@@ -202,6 +202,7 @@ class CorrespondenciaController extends Controller
 
     public function actualizarEstado(Request $request, $id)
     {
+        $user = Auth::user();
         $request->validate([
             'estado_nomb'        => 'required',
             'observaciones'      => 'nullable|string',
@@ -245,6 +246,39 @@ class CorrespondenciaController extends Controller
 
         $nuevoRegistro->save();
 
+        // Implementación de lógica: Si un empleado pone la correspondencia 'En Trámite' (8) o 'Resuelto' (9),
+        // se le quita a los demás destinatarios de su bandeja de entrada (pasan a Archivado 10)
+        if (in_array($estado->id_estado, [8, 9])) {
+            $otrosDestinatarios = DetalleRecibido::where('det_id_recibido', $nuevoRegistro->det_id_recibido)
+                ->where('det_doc_empleado', '!=', $user->emple_doc)
+                ->whereIn('id_det_recibido', function ($query) use ($nuevoRegistro) {
+                    $query->selectRaw('MAX(id_det_recibido)')
+                        ->from('detalle_recibido')
+                        ->where('det_id_recibido', $nuevoRegistro->det_id_recibido)
+                        ->groupBy('det_doc_empleado');
+                })
+                ->where('id_estado_rec', 7) // Solo si aún está en estado 'Recibido'
+                ->get();
+
+            foreach ($otrosDestinatarios as $otro) {
+                DetalleRecibido::create([
+                    'det_id_recibido'  => $otro->det_id_recibido,
+                    'det_doc_empleado' => $otro->det_doc_empleado,
+                    'fecha_re'         => now(),
+                    'id_estado_rec'    => 10, // Archivado
+                    'observaciones'    => 'Tomado por: ' . $user->emple_nombres . ' ' . $user->emple_apellidos,
+                    'visto'            => 1 // Marcado como visto para que desaparezca de notificaciones
+                ]);
+            }
+
+            // Opcionalmente actualizar el estado global del documento Recibido
+            $recibido = $nuevoRegistro->recibido;
+            if ($recibido && $recibido->id_estado_rec != $estado->id_estado) {
+                $recibido->id_estado_rec = $estado->id_estado;
+                $recibido->save();
+            }
+        }
+
         // Duplicar los Anexos de Respuesta previos para el nuevo registro usando id_detalle
         $anexosPrevios = \App\Models\AnexoRespuesta::where('id_detalle', $detalleAntiguo->id_det_recibido)->get();
         foreach ($anexosPrevios as $anexo) {
@@ -273,6 +307,7 @@ class CorrespondenciaController extends Controller
 
     public function actualizarEstadoInterna(Request $request, $id)
     {
+        $user = Auth::user();
         $request->validate([
             'estado_nomb' => 'required',
             'observaciones' => 'nullable|string',
@@ -537,5 +572,46 @@ class CorrespondenciaController extends Controller
             \Log::error('Error guardando correspondencia interna: ' . $e->getMessage());
             return back()->with('error', 'Error interno al guardar: ' . $e->getMessage())->withInput();
         }
+    }
+    public function historialInterna($id)
+    {
+        $detalle = \App\Models\DetalleEnvio::with(['envio.radicado', 'envio.tipoEnvio', 'quienEnvia.area', 'quienRecibe.area'])
+            ->findOrFail($id);
+
+        $trazabilidad = \App\Models\DetalleEnvio::with(['quienRecibe', 'estado', 'anexosRespuesta'])
+            ->where('id_envio', $detalle->id_envio)
+            ->orderBy('fecha_traslado', 'asc')
+            ->get();
+
+        $destinatarios = $trazabilidad->groupBy('id_quien_recibe');
+
+        return view('empleado.historial_interna', compact('detalle', 'trazabilidad', 'destinatarios'));
+    }
+
+    public function enviosInternos()
+    {
+        $user = Auth::user();
+
+        // Obtener los documentos enviados por el usuario (un registro por radicado)
+        $envios = \App\Models\Envio::with(['radicado', 'tipoEnvio'])
+            ->where('doc_quien_envia', $user->emple_doc)
+            ->where('nit_empresa', $user->nit_empresa)
+            ->orderBy('id_envio', 'desc')
+                ->paginate(15);
+
+        // Para cada envío, cargamos la relación de quiénes lo recibieron y su estado actual
+        foreach ($envios as $envio) {
+            $envio->destinatarios_actuales = \App\Models\DetalleEnvio::with(['quienRecibe.area', 'estado'])
+                ->where('id_envio', $envio->id_envio)
+                ->whereIn('id_detalle', function($query) use ($envio) {
+                    $query->select(\Illuminate\Support\Facades\DB::raw('MAX(id_detalle)'))
+                        ->from('detalle_envio')
+                        ->where('id_envio', $envio->id_envio)
+                        ->groupBy('id_quien_recibe');
+                })
+                ->get();
+        }
+
+        return view('empleado.envios_internos', compact('envios'));
     }
 }

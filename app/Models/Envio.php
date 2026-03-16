@@ -62,4 +62,10 @@ class Envio extends Model
     {
         return $this->hasMany(AnexoEnvio::class, 'id_envio', 'id_envio');
     }
+
+    // Relación con los detalles de seguimiento (destinatarios)
+    public function detalles()
+    {
+        return $this->hasMany(DetalleEnvio::class, 'id_envio', 'id_envio');
+    }
 }
