@@ -99,27 +99,20 @@ class ExternarecController extends Controller
 
         $recibidos = $query->paginate(4)->appends(['tipo' => $tipoFiltro, 'search' => $searchQuery]);
 
-        $empleadosList = Empleado::with('area')->where('emple_rol', '!=', 1)->get()->map(function($e) {
-            return [
-                'emple_doc' => (string) $e->emple_doc,
-                'emple_nombres' => $e->emple_nombres,
-                'emple_apellidos' => $e->emple_apellidos,
-                'tipo' => 'empleado',
-                'area_nombre' => $e->area ? $e->area->area_nom : null
-            ];
-        });
-
-        $remitentesList = DB::table('remitente')->get()->map(function($r) {
-            return [
-               'emple_doc' => (string) $r->rem_doc,
-               'emple_nombres' => $r->rem_nombres,
-               'emple_apellidos' => $r->rem_apellidos,
-               'tipo' => 'remitente',
-               'area_nombre' => null
-            ];
-        });
-
-        $todosDestinatarios = $empleadosList->concat($remitentesList)->sortBy('emple_nombres')->values();
+        $todosDestinatarios = Empleado::with('area')
+            ->where('emple_rol', '=', 3)
+            ->get()
+            ->map(function($e) {
+                return [
+                    'emple_doc' => (string) $e->emple_doc,
+                    'emple_nombres' => $e->emple_nombres,
+                    'emple_apellidos' => $e->emple_apellidos,
+                    'tipo' => 'empleado',
+                    'area_nombre' => $e->area ? $e->area->area_nom : null
+                ];
+            })
+            ->sortBy('emple_nombres')
+            ->values();
 
         return view('remitente.externarec', compact('tipos', 'estados', 'ciudades', 'radicados', 'recibidos', 'tipoFiltro', 'todosDestinatarios'));
     }
@@ -149,9 +142,9 @@ class ExternarecController extends Controller
         $q = trim($request->get('q', ''));
         $like = "%{$q}%";
 
-        // Empleados excluyendo el rol super admin (id_rol = 1)
-        $empleados = DB::table('empleado')
-            ->where('emple_rol', '!=', 1)
+        // Only employees with role 3
+        $results = DB::table('empleado')
+            ->where('emple_rol', '=', 3)
             ->where(function ($sub) use ($like) {
                 $sub->where('emple_doc',       'like', $like)
                     ->orWhere('emple_nombres',  'like', $like)
@@ -162,23 +155,7 @@ class ExternarecController extends Controller
                 'emple_nombres',
                 'emple_apellidos',
                 DB::raw("'empleado' as tipo")
-            );
-
-        // Remitentes — todos incluidos
-        $remitentes = DB::table('remitente')
-            ->where(function ($sub) use ($like) {
-                $sub->where('rem_doc',        'like', $like)
-                    ->orWhere('rem_nombres',   'like', $like)
-                    ->orWhere('rem_apellidos', 'like', $like);
-            })
-            ->select(
-                DB::raw("CAST(rem_doc AS CHAR) as emple_doc"),
-                DB::raw("rem_nombres  as emple_nombres"),
-                DB::raw("rem_apellidos as emple_apellidos"),
-                DB::raw("'remitente' as tipo")
-            );
-
-        $results = $empleados->union($remitentes)
+            )
             ->orderBy('emple_nombres')
             ->limit(30)
             ->get();

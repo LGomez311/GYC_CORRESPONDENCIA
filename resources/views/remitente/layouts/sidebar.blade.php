@@ -92,7 +92,7 @@
                     <a href="{{ route('remitente.externaenv') }}"
                         class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {{ request()->routeIs('remitente.externaenv') ? 'text-primary bg-primary/5 font-semibold' : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
                         <span class="material-symbols-outlined text-base">send</span>
-                        <p class="text-sm">Enviados</p>
+                        <p class="text-sm">Salientes</p>
                     </a>
                 </div>
             </details>

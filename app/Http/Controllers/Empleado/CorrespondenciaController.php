@@ -246,9 +246,9 @@ class CorrespondenciaController extends Controller
 
         $nuevoRegistro->save();
 
-        // Implementación de lógica: Si un empleado pone la correspondencia 'En Trámite' (8) o 'Resuelto' (9),
+        // Implementación de lógica: Si un empleado pone la correspondencia 'En Trámite' (8), 'Resuelto' (9) o 'Rechazado' (11),
         // se le quita a los demás destinatarios de su bandeja de entrada (pasan a Archivado 10)
-        if (in_array($estado->id_estado, [8, 9])) {
+        if (in_array($estado->id_estado, [8, 9, 11])) {
             $otrosDestinatarios = DetalleRecibido::where('det_id_recibido', $nuevoRegistro->det_id_recibido)
                 ->where('det_doc_empleado', '!=', $user->emple_doc)
                 ->whereIn('id_det_recibido', function ($query) use ($nuevoRegistro) {
@@ -266,12 +266,12 @@ class CorrespondenciaController extends Controller
                     'det_doc_empleado' => $otro->det_doc_empleado,
                     'fecha_re'         => now(),
                     'id_estado_rec'    => 10, // Archivado
-                    'observaciones'    => 'Tomado por: ' . $user->emple_nombres . ' ' . $user->emple_apellidos,
+                    'observaciones'    => ($estado->id_estado == 11 ? 'Rechazado por: ' : 'Tomado por: ') . $user->emple_nombres . ' ' . $user->emple_apellidos,
                     'visto'            => 1 // Marcado como visto para que desaparezca de notificaciones
                 ]);
             }
 
-            // Opcionalmente actualizar el estado global del documento Recibido
+            // Actualizar el estado global del documento Recibido
             $recibido = $nuevoRegistro->recibido;
             if ($recibido && $recibido->id_estado_rec != $estado->id_estado) {
                 $recibido->id_estado_rec = $estado->id_estado;
@@ -569,7 +569,7 @@ class CorrespondenciaController extends Controller
             return back()->withErrors($e->errors())->withInput();
         }
         catch (\Exception $e) {
-            \Log::error('Error guardando correspondencia interna: ' . $e->getMessage());
+            Log::error('Error guardando correspondencia interna: ' . $e->getMessage());
             return back()->with('error', 'Error interno al guardar: ' . $e->getMessage())->withInput();
         }
     }

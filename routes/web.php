@@ -31,6 +31,7 @@ use App\Exports\PrioridadesExport;
 
 // controller de remitente
 use App\Http\Controllers\Remitente\ExternarecController;
+use App\Http\Controllers\Remitente\DashboardController as RemitenteDashboardController;
 
 
 Route::get('/', [LandingController::class, 'index'])->name('web.index');
@@ -252,7 +253,7 @@ Route::prefix('sadmin')->name('sadmin.')->middleware(['auth:web', 'role:1'])->gr
 
 
 Route::middleware(['auth:remitente', 'licencia.activa'])->group(function () {
-    Route::get('/remitente', fn() => view('remitente.index'))->name('remitente.index');
+    Route::get('/remitente', [RemitenteDashboardController::class, 'index'])->name('remitente.index');
 });
 
 
@@ -388,7 +389,7 @@ Route::view('/cookies', 'web.pages.legal.cookies')->name('cookies');
 
 // Vistas remitente
 Route::middleware(['auth:remitente', 'licencia.activa'])->group(function () {
-    Route::get('/remitente', fn() => view('remitente.index'))->name('remitente.index');
+    Route::get('/remitente', [RemitenteDashboardController::class, 'index'])->name('remitente.index');
 });
 
 Route::prefix('remitente')
@@ -413,4 +414,9 @@ Route::prefix('remitente')
         Route::get('/ciudades/buscar', [ExternarecController::class, 'buscarCiudades'])->name('externarec.ciudades.buscar');
 
         Route::get('/externarec/{id}/archivos', [ExternarecController::class, 'getArchivos'])->name('externarec.archivos');
+
+        // Dashboard history and actions
+        Route::get('/history/{id}', [RemitenteDashboardController::class, 'getHistory'])->name('remitente.history');
+        Route::post('/{id}/finalize', [RemitenteDashboardController::class, 'finalize'])->name('remitente.finalize');
+        Route::post('/{id}/update-rejected', [RemitenteDashboardController::class, 'updateRejected'])->name('remitente.update_rejected');
     });

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 13, 2026 at 11:27 PM
+-- Generation Time: Mar 16, 2026 at 04:59 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -34,14 +34,6 @@ CREATE TABLE `anexo_envio` (
   `nombre_original` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `anexo_envio`
---
-
-INSERT INTO `anexo_envio` (`id_anexo`, `id_envio`, `ruta_archivo`, `nombre_original`) VALUES
-(12, 14, 'correspondencia/Vxoyp3QQlIlMjApdMWfyAdznBiSzVuC4eLPKvAkl.pdf', '141230623434 (2).pdf'),
-(13, 15, 'correspondencia/2i3zwoDyNxMOz7iKZbieXVyhFXKB0wb1rbQpffPQ.pdf', 'LEGALIZACION 2586-2026 (2) (1).pdf');
-
 -- --------------------------------------------------------
 
 --
@@ -60,9 +52,7 @@ CREATE TABLE `anexo_recibido` (
 --
 
 INSERT INTO `anexo_recibido` (`id_anexo`, `id_recibido`, `ruta_archivo`, `nombre_original`) VALUES
-(18, 14, 'correspondencia/dofzcvOQOiHHA2SQGFe01rGqYBRndf7a5sMKJSHI.pdf', 'cedula.pdf'),
-(19, 15, 'correspondencia/baI72QME9OMJGH5HJC9xLjBSttTcUdO2BAMrLu9p.pdf', '2.pdf'),
-(20, 16, 'correspondencia/20lEAdZDCmliqMTbl965Xudyu4I9tUdc9qBNMDd7.pdf', 'PLAN DE PRUEBAS.pdf');
+(28, 24, 'correspondencia/4Tt8UiLYOISI7dU8OBM9nZBpJ7RBji5N5d1JHkPx.pdf', 'CEDULA PEQUEÑA TIO.pdf');
 
 -- --------------------------------------------------------
 
@@ -72,11 +62,18 @@ INSERT INTO `anexo_recibido` (`id_anexo`, `id_recibido`, `ruta_archivo`, `nombre
 
 CREATE TABLE `anexo_respuesta` (
   `id_anexo_resp` int(11) NOT NULL,
-  `id_detalle` int(10) NOT NULL,
+  `id_detalle` int(10) DEFAULT NULL,
   `id_det_interna` int(10) DEFAULT NULL,
   `ruta_archivo` varchar(500) NOT NULL,
   `nombre_original` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `anexo_respuesta`
+--
+
+INSERT INTO `anexo_respuesta` (`id_anexo_resp`, `id_detalle`, `id_det_interna`, `ruta_archivo`, `nombre_original`) VALUES
+(12, 46, NULL, 'correspondencia/SuF85qCwyFbq1Oadz8NR1cOa0SUtVYphaTinoiST.pdf', 'ced.pdf');
 
 -- --------------------------------------------------------
 
@@ -125,7 +122,10 @@ CREATE TABLE `auditoria_empleado` (
 
 INSERT INTO `auditoria_empleado` (`id_log`, `doc_empleado_afectado`, `usuario_app`, `usuario_bd`, `accion`, `fecha_cambio`, `datos_anteriores`, `datos_nuevos`) VALUES
 (1, '1005912003', '1070730214', 'root@localhost', 'ACTUALIZACION', '2026-03-13 18:07:26', '{\"nombres\": \"Kevin\", \"apellidos\": \"Villafrade\", \"correo\": \"kevindany2222209@gmail.com\", \"estado\": 1, \"rol\": 2, \"area\": null}', '{\"nombres\": \"Vin\", \"apellidos\": \"Villafrade\", \"correo\": \"kevindany2222209@gmail.com\", \"estado\": 1, \"rol\": 2, \"area\": null}'),
-(2, '1005912005', '1070730214', 'root@localhost', 'ACTUALIZACION', '2026-03-13 18:14:46', '{\"nombres\": \"Kevin\", \"apellidos\": \"Villafrade\", \"correo\": \"kevindany222209@gmail.com\", \"estado\": 1, \"rol\": 2, \"area\": null}', '{\"nombres\": \"Kevin\", \"apellidos\": \"Villafradeeee\", \"correo\": \"kevindany222209@gmail.com\", \"estado\": 1, \"rol\": 2, \"area\": null}');
+(2, '1005912005', '1070730214', 'root@localhost', 'ACTUALIZACION', '2026-03-13 18:14:46', '{\"nombres\": \"Kevin\", \"apellidos\": \"Villafrade\", \"correo\": \"kevindany222209@gmail.com\", \"estado\": 1, \"rol\": 2, \"area\": null}', '{\"nombres\": \"Kevin\", \"apellidos\": \"Villafradeeee\", \"correo\": \"kevindany222209@gmail.com\", \"estado\": 1, \"rol\": 2, \"area\": null}'),
+(3, '1005912003', '1070730214', 'root@localhost', 'ACTUALIZACION', '2026-03-14 01:32:30', '{\"nombres\": \"Vin\", \"apellidos\": \"Villafrade\", \"correo\": \"kevindany2222209@gmail.com\", \"estado\": 1, \"rol\": 2, \"area\": null}', '{\"nombres\": \"Vin\", \"apellidos\": \"Villafrade\", \"correo\": \"kevinreal2209@gmail.com\", \"estado\": 1, \"rol\": 2, \"area\": null}'),
+(4, '1005912003', '1070730214', 'root@localhost', 'ACTUALIZACION', '2026-03-14 01:33:16', '{\"nombres\": \"Vin\", \"apellidos\": \"Villafrade\", \"correo\": \"kevinreal2209@gmail.com\", \"estado\": 1, \"rol\": 2, \"area\": null}', '{\"nombres\": \"Vin\", \"apellidos\": \"Villafrade\", \"correo\": \"kevinreal2209@gmail.com\", \"estado\": 1, \"rol\": 2, \"area\": null}'),
+(5, '1005912003', '1070730214', 'root@localhost', 'ACTUALIZACION', '2026-03-14 01:34:01', '{\"nombres\": \"Vin\", \"apellidos\": \"Villafrade\", \"correo\": \"kevinreal2209@gmail.com\", \"estado\": 1, \"rol\": 2, \"area\": null}', '{\"nombres\": \"Vin\", \"apellidos\": \"Villafrade\", \"correo\": \"kevinreal2209@gmail.com\", \"estado\": 1, \"rol\": 2, \"area\": null}');
 
 -- --------------------------------------------------------
 
@@ -366,21 +366,9 @@ CREATE TABLE `detalle_envio` (
   `id_estado_rec` int(20) NOT NULL,
   `observaciones` varchar(500) DEFAULT NULL,
   `archivo_respuesta` varchar(500) DEFAULT NULL,
-  `folios_respuesta` int(11) DEFAULT NULL
+  `folios_respuesta` int(11) DEFAULT NULL,
+  `visto` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `detalle_envio`
---
-
-INSERT INTO `detalle_envio` (`id_detalle`, `id_quien_envie`, `id_quien_recibe`, `id_envio`, `fecha_traslado`, `id_estado_rec`, `observaciones`, `archivo_respuesta`, `folios_respuesta`) VALUES
-(40, '1005912006', '1005912008', 13, '2026-03-12 04:52:47', 7, 'no responder a esta resolucion', NULL, NULL),
-(41, '1005912006', '1005912008', 13, '2026-03-12 04:53:20', 10, NULL, NULL, 0),
-(42, '1005912006', '1005912008', 14, '2026-03-12 05:10:22', 7, 'PRUEBA', NULL, NULL),
-(43, '1005912006', '1070730214', 14, '2026-03-12 05:10:22', 7, 'PRUEBA', NULL, NULL),
-(44, '1005912006', '1070730214', 15, '2026-03-12 05:13:03', 7, 'PRUEBA', NULL, NULL),
-(45, '1005912006', '1005912008', 14, '2026-03-12 05:13:59', 8, NULL, NULL, 0),
-(46, '1005912006', '1005912008', 14, '2026-03-12 05:14:04', 9, NULL, NULL, 0);
 
 -- --------------------------------------------------------
 
@@ -396,21 +384,20 @@ CREATE TABLE `detalle_recibido` (
   `id_estado_rec` int(20) DEFAULT NULL,
   `observaciones` varchar(500) DEFAULT NULL,
   `archivo_res` varchar(500) DEFAULT NULL,
-  `folios_res` int(11) DEFAULT NULL
+  `folios_res` int(11) DEFAULT NULL,
+  `visto` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `detalle_recibido`
 --
 
-INSERT INTO `detalle_recibido` (`id_det_recibido`, `det_id_recibido`, `det_doc_empleado`, `fecha_re`, `id_estado_rec`, `observaciones`, `archivo_res`, `folios_res`) VALUES
-(17, 14, '1070730214', NULL, NULL, NULL, NULL, NULL),
-(18, 14, '1070730214', '2026-03-13 04:05:35', 7, 'Documento recibido (Registro Externo)', NULL, NULL),
-(19, 15, '1070730214', NULL, NULL, NULL, NULL, NULL),
-(20, 15, '1005912003', NULL, NULL, NULL, NULL, NULL),
-(21, 15, '1070730214', '2026-03-13 04:06:30', 7, 'Documento recibido (Registro Externo)', NULL, NULL),
-(22, 16, '1070730214', NULL, NULL, NULL, NULL, NULL),
-(23, 16, '1070730214', '2026-03-13 17:44:55', 7, 'Documento recibido (Registro Externo)', NULL, NULL);
+INSERT INTO `detalle_recibido` (`id_det_recibido`, `det_id_recibido`, `det_doc_empleado`, `fecha_re`, `id_estado_rec`, `observaciones`, `archivo_res`, `folios_res`, `visto`) VALUES
+(44, 24, '1005912008', '2026-03-16 03:48:32', 7, 'responder urgente', NULL, NULL, 0),
+(45, 24, '1005912008', '2026-03-16 03:56:44', 8, 'estoy resolviendolo', NULL, 0, 0),
+(46, 24, '1005912008', '2026-03-16 03:57:24', 9, 'anexo mi respuesta a tu mensaje', 'correspondencia/ZyCcKuowbZrNEN8xvqGMRge79XjQEOVNg3vboCf5.pdf', 5, 0),
+(47, 25, '1005912008', '2026-03-16 03:58:06', 7, 'responder muy rapido', NULL, NULL, 0),
+(48, 25, '1005912008', '2026-03-16 03:58:16', 11, NULL, NULL, 0, 0);
 
 -- --------------------------------------------------------
 
@@ -438,7 +425,8 @@ CREATE TABLE `empleado` (
 --
 
 INSERT INTO `empleado` (`emple_doc`, `nit_empresa`, `password`, `emple_nombres`, `emple_apellidos`, `emple_tel`, `emple_correo`, `emple_img`, `emple_estado`, `emple_rol`, `emple_area`, `actualizado_por`) VALUES
-('1005912003', '4565464564', '$2y$12$Ld5g59zFru6uK2Xr8MDBHeaaqH/DkGvsLc7ws9YU8BnLdteFAOLt6', 'Vin', 'Villafrade', '3152782654', 'kevindany2222209@gmail.com', NULL, 1, 2, NULL, '1070730214'),
+('1005912001', '9887978978', '$2y$12$QbInKlg5gvKVn0/AOx3KVeo6jI3Fvj8rrTVEn6PdrhUZQw6FJBJTS', 'Dani', 'Villa', '3152782654', 'kevindany21993838@gmail.com', NULL, 1, 3, 1, NULL),
+('1005912003', '9887978978', '$2y$12$iCEPRJZz7DIq04N0w2waNeuZThBpKxh4rs02ahzJvZxfzzQJ/zujO', 'Vin', 'Villafrade', '3152782654', 'kevinreal2209@gmail.com', NULL, 1, 2, NULL, '1070730214'),
 ('1005912004', NULL, '$2y$12$ObwJO1oSYusfcd1QRYO0Z.ZFVsVy.j4w/oiXPUa64GWMecLizJw2a', 'Kevin', 'Villafrade', NULL, 'kevindany2209@gmail.com', NULL, 1, 1, NULL, NULL),
 ('1005912005', '4354353454', '$2y$12$dsRE/4pK1lXTVNdR6zZrtORXIj2m9VEhCDjZEuKmj8funIyPz92AO', 'Kevin', 'Villafradeeee', '3152782654', 'kevindany222209@gmail.com', NULL, 1, 2, NULL, '1070730214'),
 ('1005912006', '9887978978', '$2y$12$OHrgZT0tTor.BZ10PdMIa.5F0tqvEfTKl5hapYaWXDTxRIvMvocBi', 'Daniel', 'Perez', '545466545465', 'nikolas1993838@gmail.com', NULL, 1, 3, 9, NULL),
@@ -571,15 +559,6 @@ CREATE TABLE `envio` (
   `archivo` varchar(500) NOT NULL,
   `nit_empresa` varchar(25) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `envio`
---
-
-INSERT INTO `envio` (`id_envio`, `num_radicado_int`, `asunto`, `doc_quien_dirigido`, `doc_quien_envia`, `fecha`, `destino`, `folio`, `id_tipo_envio`, `id_estado_envio`, `archivo`, `nit_empresa`) VALUES
-(13, 35, 'RESOLUCION', NULL, '1005912006', '2026-03-12 04:52:47', 'Interno', 0, 8, 12, '', '9887978978'),
-(14, 36, 'DERECHO', NULL, '1005912006', '2026-03-12 05:10:22', 'Interno', 3, 1, 12, 'correspondencia/mr8Rchi4xRWYRXfvuPPF5rES2AEXJZPWODgIUVjx.pdf', '9887978978'),
-(15, 37, 'DERECHO', NULL, '1005912006', '2026-03-12 05:13:03', 'Interno', 5, 1, 12, 'correspondencia/v3ondxDmEoYLILtXRTaU1TPhcJbgTSx0Bnsx3GU7.pdf', '9887978978');
 
 -- --------------------------------------------------------
 
@@ -749,7 +728,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (1, '0001_01_01_000000_create_users_table', 1),
 (2, '0001_01_01_000001_create_cache_table', 1),
 (3, '0001_01_01_000002_create_jobs_table', 1),
-(4, '2026_02_16_162424_create_password_codes_table', 2);
+(4, '2026_02_16_162424_create_password_codes_table', 2),
+(5, '2026_03_13_213627_add_visto_to_detalles_tables', 3);
 
 -- --------------------------------------------------------
 
@@ -951,12 +931,8 @@ CREATE TABLE `radicados` (
 --
 
 INSERT INTO `radicados` (`id_radicado`, `num_radicado`, `nit_empresa`) VALUES
-(35, 'INT-2026-00001', '9887978978'),
-(36, 'INT-2026-00002', '9887978978'),
-(37, 'INT-2026-00003', '9887978978'),
-(39, 'INT-2026-00004', '9887978978'),
-(40, 'INT-2026-00005', '9887978978'),
-(41, 'INT-2026-00006', '9887978978');
+(56, 'INT-2026-00001', '9887978978'),
+(57, 'INT-2026-00002', '9887978978');
 
 -- --------------------------------------------------------
 
@@ -991,9 +967,8 @@ CREATE TABLE `recibido` (
 --
 
 INSERT INTO `recibido` (`id_recibido`, `num_radicado_ext`, `num_radicado_int`, `asunto`, `fecha_hora_recib`, `nom_institucion`, `ciudad_proveniente`, `folio`, `anexo`, `observaciones`, `doc_quien_registra`, `id_tipo`, `id_estado_rec`, `archivo`, `nit_empresa`, `nombre_persona`, `doc_persona`, `correo_persona`, `tel_persona`) VALUES
-(14, '12345', 39, 'solicitud', '2026-03-12 23:05:35', 'Alcaldia', '05001', 8, NULL, 'ninguna', 1234567888, 4, 12, 'correspondencia/GCA64cEw69swXGwDjSNhqJnmYrV34YLBFRcIq2gv.pdf', '9887978978', NULL, NULL, NULL, NULL),
-(15, NULL, 40, 'solicitud', '2026-03-12 23:06:30', NULL, '05001', 7, NULL, 'ninguna', 1234567888, 4, 12, 'correspondencia/4Do1qFnbyCDqjLYKNDRtDQQHHhgle5gXbGa4OYWX.pdf', '9887978978', 'Persona de prueba', '1234567890', 'prueba@gmail.com', '12345789'),
-(16, '12345', 41, 'solicitud', '2026-03-13 12:44:55', 'Alcaldia', '18001', 7, NULL, 'no responder', 1234567888, 4, 12, 'correspondencia/pZXV0CtAKPNQq1Hwe0mUnLOxf4NcuaraB7PYjJhU.pdf', '9887978978', NULL, NULL, NULL, NULL);
+(24, NULL, 56, 'derecho de peticion', '2026-03-15 22:48:32', NULL, '05001', 5, NULL, 'responder urgente', 1234567888, 1, 9, 'correspondencia/TAhF6lt11puORhqFpY0Cfl5XVyhyDGo60KmIG4aG.pdf', '9887978978', 'Persona de prueba', '1234567890', 'prueba@gmail.com', '12345789'),
+(25, '123456', 57, 'solicitud', '2026-03-15 22:58:06', 'Alcaldia', '05001', 4, NULL, 'responder muy rapido', 1234567888, 1, 12, 'correspondencia/vJ1JaCa0zVXElQWB5BqnciWnUDlHSNqncYh1KNUd.pdf', '9887978978', NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1019,6 +994,7 @@ CREATE TABLE `remitente` (
 
 INSERT INTO `remitente` (`rem_doc`, `nit_empresa`, `rem_nombres`, `rem_apellidos`, `rem_correo`, `password`, `rem_tel`, `rem_ciudad`, `rem_estado`) VALUES
 (999004, '4354353454', 'Super Admin', 'Remitente', 'superadmin.remitente@gmail.com', '$2y$12$a7jL1mck5DcU9jZRCSJGjeSls5pB08WHwK3/ZFnmAITs62XxflSRq', '3000000000', '11001', 1),
+(1005912002, '9887978978', 'Vin', 'Vin', 'kevinvin@gmail.com', '$2y$12$mMdpWhFKAQK9O3h0RYtIYeQIDe4AooSX7qchFGeb./geZQdiLww0W', '3873483743', '05001', 1),
 (1234567888, '9887978978', 'Kevin', 'Daniel', 'kevin.daniel@gmail.com', '$2y$12$V/kBOsNQ33fJEcmod3oG.e2F/VDOtKa3dzc6TQjvpuTBb4WXy6DPe', '3001234567', '11001', 1);
 
 -- --------------------------------------------------------
@@ -1064,8 +1040,13 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('CfQ7hNNrxYTZFC9KVJ3oGPnepMYxyaIdn7kEVNIs', 1070730214, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiQ25TRTRUME42TGhrSmdacDlmOVMzbDlWRnRZaWM3UG1taGZ4aU44ZCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzU6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zYWRtaW4vcGxhbmVzIjtzOjU6InJvdXRlIjtzOjc6ImNwbGFuZXMiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7czoxMDoiMTA3MDczMDIxNCI7fQ==', 1773439132),
-('xFLQ50Y5X482GBEXKrBfokLA4V1T6kFcBZKMfXrK', 1005912008, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiU05vYXkxaDJmd0czaHlOaU9ZcllpSGs3cko4RXNZT3hieEVsbWZlcyI7czozOiJ1cmwiO2E6MTp7czo4OiJpbnRlbmRlZCI7czozNzoiaHR0cDovLzEyNy4wLjAuMTo4MDAwL3NhZG1pbi9lbXByZXNhcyI7fXM6OToiX3ByZXZpb3VzIjthOjI6e3M6MzoidXJsIjtzOjMwOiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvZW1wbGVhZG8iO3M6NToicm91dGUiO3M6MTQ6ImVtcGxlYWRvLmluZGV4Ijt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO3M6MTA6IjEwMDU5MTIwMDgiO30=', 1773426186);
+('7jZA5gtIfkJBQk2IdMUriTrGn8dZfaMFJeKdL8Y8', 1005912008, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoieWs1TmNVUEJwbW9RSUhwVlB5QWdNbjBLMmNGV3VqcnBNd1FmT1EybiI7czozOiJ1cmwiO2E6MTp7czo4OiJpbnRlbmRlZCI7czo0MjoiaHR0cDovLzEyNy4wLjAuMTo4MDAwL3JlbWl0ZW50ZS9leHRlcm5hcmVjIjt9czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NTU6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9lbXBsZWFkby9jb3JyZXNwb25kZW5jaWEtcmVjaWJpZGEiO3M6NToicm91dGUiO3M6MzM6ImVtcGxlYWRvLmNvcnJlc3BvbmRlbmNpYV9yZWNpYmlkYSI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtzOjEwOiIxMDA1OTEyMDA4Ijt9', 1773629411),
+('8ZtFj2xTWmUB7QYFGVSOuWSEh6MmKB4xZldqvlmH', 1005912006, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiYVJGS0M3S3U0dDNpOHd5ZGU0dVN6ZU9PWGlGQWwyYWpvR0NSWE5qaSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzA6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9lbXBsZWFkbyI7czo1OiJyb3V0ZSI7czoxNDoiZW1wbGVhZG8uaW5kZXgiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7czoxMDoiMTAwNTkxMjAwNiI7fQ==', 1773629814),
+('bgBU2mIMBHCJVPRYl5JFDKkvMhjvxsgkRfRWIMYI', 1005912001, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiYlBvVDZCSjlxbXdZeGYySm91NWVubEtqTUgxdDZqVm11Zmt0MEszMyI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDY6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9lbXBsZWFkby9lbnZpb3MtaW50ZXJub3MiO3M6NToicm91dGUiO3M6MjQ6ImVtcGxlYWRvLmVudmlvc19pbnRlcm5vcyI7fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtzOjEwOiIxMDA1OTEyMDAxIjt9', 1773629676),
+('biv2W9XxubB9HnvQpmA1XaEjGhblZ7aQ02T0NhCb', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiUDFVSlMwaTdqNjhxY0N1cUpOM2kyTTYyZmozTWY1MUQxWFBuOWNHbCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9sb2dpbiI7czo1OiJyb3V0ZSI7czo1OiJsb2dpbiI7fXM6MTU6ImxvY2tvdXRfc2Vjb25kcyI7aToyMjQ7fQ==', 1773633272),
+('HAMqdA5EUf7sgkdBEbeeG2TuPQiVd7ol8VZdTy0Z', 1234567888, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiUnhIZGdvTnhrTHZxVkNINjh4NXd5QUVhMml5VWFQR0hLNG51bFJaeiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDI6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9yZW1pdGVudGUvaGlzdG9yeS8yNSI7czo1OiJyb3V0ZSI7czoxNzoicmVtaXRlbnRlLmhpc3RvcnkiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjU2OiJsb2dpbl9yZW1pdGVudGVfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToxMjM0NTY3ODg4O30=', 1773633548),
+('MBjzudGk3jtbhSw8MOzmpy1uCumjPZWm0BN0SCPc', 1005912002, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoibTJEdHpTcWVPbVI2dnFPYTlQNGpSSGVxNndFc2h0REZrUHgxYmdIVCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDI6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9yZW1pdGVudGUvZXh0ZXJuYXJlYyI7czo1OiJyb3V0ZSI7czoyMDoicmVtaXRlbnRlLmV4dGVybmFyZWMiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjU2OiJsb2dpbl9yZW1pdGVudGVfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToxMDA1OTEyMDAyO30=', 1773628535),
+('yhZCrNwxIXvCU6XJuGoiheZ74l7968Oy0bgOkuqt', 1005912008, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiaFdhUTJJQUhaSkZqWDZ2Z3FvTVF6UGM0UUNPWGNJV0NER3U1VnJUbyI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NTU6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9lbXBsZWFkby9jb3JyZXNwb25kZW5jaWEtcmVjaWJpZGEiO3M6NToicm91dGUiO3M6MzM6ImVtcGxlYWRvLmNvcnJlc3BvbmRlbmNpYV9yZWNpYmlkYSI7fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtzOjEwOiIxMDA1OTEyMDA4Ijt9', 1773633497);
 
 -- --------------------------------------------------------
 
@@ -1393,19 +1374,19 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `anexo_envio`
 --
 ALTER TABLE `anexo_envio`
-  MODIFY `id_anexo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id_anexo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `anexo_recibido`
 --
 ALTER TABLE `anexo_recibido`
-  MODIFY `id_anexo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id_anexo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT for table `anexo_respuesta`
 --
 ALTER TABLE `anexo_respuesta`
-  MODIFY `id_anexo_resp` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id_anexo_resp` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `area`
@@ -1417,7 +1398,7 @@ ALTER TABLE `area`
 -- AUTO_INCREMENT for table `auditoria_empleado`
 --
 ALTER TABLE `auditoria_empleado`
-  MODIFY `id_log` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id_log` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `auditoria_empresa`
@@ -1447,19 +1428,19 @@ ALTER TABLE `auditoria_plan`
 -- AUTO_INCREMENT for table `detalle_envio`
 --
 ALTER TABLE `detalle_envio`
-  MODIFY `id_detalle` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
+  MODIFY `id_detalle` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=75;
 
 --
 -- AUTO_INCREMENT for table `detalle_recibido`
 --
 ALTER TABLE `detalle_recibido`
-  MODIFY `id_det_recibido` int(15) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id_det_recibido` int(15) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
 
 --
 -- AUTO_INCREMENT for table `envio`
 --
 ALTER TABLE `envio`
-  MODIFY `id_envio` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id_envio` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `estado`
@@ -1489,7 +1470,7 @@ ALTER TABLE `licencia`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `pagos`
@@ -1501,7 +1482,7 @@ ALTER TABLE `pagos`
 -- AUTO_INCREMENT for table `password_codes`
 --
 ALTER TABLE `password_codes`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `plan`
@@ -1519,13 +1500,13 @@ ALTER TABLE `prioridad`
 -- AUTO_INCREMENT for table `radicados`
 --
 ALTER TABLE `radicados`
-  MODIFY `id_radicado` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
+  MODIFY `id_radicado` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
 
 --
 -- AUTO_INCREMENT for table `recibido`
 --
 ALTER TABLE `recibido`
-  MODIFY `id_recibido` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id_recibido` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT for table `rol`
