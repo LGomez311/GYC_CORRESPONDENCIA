@@ -33,7 +33,7 @@ class CorrespondenciaExternaController extends Controller
         // 1. Obtener datos validados
         $validated = $request->validated();
 
-        // 2. Procesamiento del archivo y cálculo de folios
+        // 2. Procesamiento del archivo principal y cálculo de folios
         $rutaArchivo = null;
         $folios = 1;
 
@@ -47,9 +47,33 @@ class CorrespondenciaExternaController extends Controller
                 $pdf = $parser->parseFile($file->getPathname());
                 $folios = count($pdf->getPages());
             } catch (\Exception $e) {
-                Log::warning('No se pudo contar las páginas del PDF: ' . $e->getMessage());
+                Log::warning('No se pudo contar las páginas del PDF principal: ' . $e->getMessage());
                 // Si falla el conteo, dejamos por defecto 1
                 $folios = 1;
+            }
+        }
+        
+        // Contar folios extra de los anexos (si los hay) al total de folios en recibidos
+        $anexosArchivos = [];
+        if ($request->hasFile('anexos')) {
+            $parser = new \Smalot\PdfParser\Parser();
+            foreach ($request->file('anexos') as $anexoFile) {
+                // Almacenamos f&iacute;sicamente el anexo
+                $rutaAnexo = $anexoFile->store('correspondencia_anexos', 'public');
+                $nombreOriginal = $anexoFile->getClientOriginalName();
+                
+                // Intentamos sumar los folios del anexo al total
+                try {
+                    $pdfAnexo = $parser->parseFile($anexoFile->getPathname());
+                    $folios += count($pdfAnexo->getPages());
+                } catch (\Exception $e) {
+                    Log::warning('No se pudo contar las p&aacute;ginas del anexo PDF: ' . $e->getMessage());
+                }
+                
+                $anexosArchivos[] = [
+                    'ruta_archivo'    => $rutaAnexo,
+                    'nombre_original' => $nombreOriginal,
+                ];
             }
         }
 
@@ -109,10 +133,10 @@ class CorrespondenciaExternaController extends Controller
             // 4. Inserción en tabla Recibido
             $idRecibido = DB::table('recibido')->insertGetId([
                 'num_radicado_int'   => $radicado->id_radicado,
+                'num_radicado_ext'   => $radicadoEmpresa, // radicado_empresa goes here
                 'fecha_hora_recib'   => now(),
+                'nom_institucion'    => $tipoRemitente === 'Empresa' ? $nombrePersona : null,
                 'nit_empresa'        => $nitEmpresa,
-                'tipo_remitente'     => $tipoRemitente,
-                'radicado_empresa'   => $radicadoEmpresa,
                 'ciudad_proveniente' => $validated['ciudad_proveniente'],
                 'asunto'             => $validated['asunto'],
                 'id_tipo'            => $validated['id_tipo'],
@@ -120,11 +144,20 @@ class CorrespondenciaExternaController extends Controller
                 'folio'              => $folios,
                 'observaciones'      => "{$tipoDoc} {$docPersona} - " . ($validated['observaciones'] ?? ''),
                 'archivo'            => $rutaArchivo,
-                'nombre_persona'     => $nombrePersona,
+                'nombre_persona'     => $tipoRemitente === 'Persona' ? $nombrePersona : null,
                 'doc_persona'        => $docPersona,
                 'correo_persona'     => $correoPersona,
                 'tel_persona'        => $telPersona,
             ]);
+            
+            // Insercion de anexos
+            foreach ($anexosArchivos as $anexoData) {
+                DB::table('anexo_recibido')->insert([
+                    'id_recibido'     => $idRecibido,
+                    'ruta_archivo'    => $anexoData['ruta_archivo'],
+                    'nombre_original' => $anexoData['nombre_original'],
+                ]);
+            }
 
             // 5. Trazabilidad
             if ($docDestinatario) {
@@ -171,7 +204,7 @@ class CorrespondenciaExternaController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error registrando correspondencia pública: ' . $e->getMessage());
-            return redirect()->back()->withInput()->withErrors(['error' => 'Ocurrió un error inesperado al procesar el envío. Por favor, intente nuevamente.']);
+            return redirect()->back()->withInput()->withErrors(['error' => 'Ocurrió un error inesperado al procesar el envío: ' . $e->getMessage()]);
         }
     }
 
@@ -201,29 +234,40 @@ class CorrespondenciaExternaController extends Controller
             $documentoBuscado = $request->numero_documento;
         }
 
-        // Buscar el radicado en la tabla radicados y vincular con recibido
-        // Recordar que guardamos el NIT o Documento en doc_persona
-        $resultado = DB::table('recibido')
-            ->join('radicados', 'recibido.num_radicado_int', '=', 'radicados.id_radicado')
-            ->join('tipo', 'recibido.id_tipo', '=', 'tipo.id_tipo')
-            ->join('estado', 'recibido.id_estado_rec', '=', 'estado.id_estado')
-            ->where('radicados.num_radicado', $request->numero_radicado)
-            ->where('recibido.doc_persona', $documentoBuscado)
-            ->where('recibido.tipo_remitente', $request->tipo_remitente)
-            ->select(
-                'radicados.num_radicado',
-                'recibido.asunto',
-                'recibido.fecha_hora_recib',
-                'estado.estado_nomb',
-                'tipo.tipo_nombre',
-                'recibido.observaciones'
-            )
-            ->first();
+        try {
+            $query = DB::table('recibido')
+                ->join('radicados', 'recibido.num_radicado_int', '=', 'radicados.id_radicado')
+                ->join('tipo', 'recibido.id_tipo', '=', 'tipo.id_tipo')
+                ->join('estado', 'recibido.id_estado_rec', '=', 'estado.id_estado')
+                ->where('radicados.num_radicado', $request->numero_radicado)
+                ->where('recibido.doc_persona', $documentoBuscado);
 
-        if (!$resultado) {
-            return redirect()->back()->withInput()->withErrors(['error' => 'No se encontró correspondencia con los datos proporcionados.']);
+            // Refinar la búsqueda basándonos en cómo guardamos el registro (con o sin nom_institucion)
+            if ($request->tipo_remitente === 'Empresa') {
+                $query->whereNotNull('recibido.nom_institucion');
+            } else {
+                $query->whereNull('recibido.nom_institucion');
+            }
+
+            $resultado = $query->select(
+                    'radicados.num_radicado',
+                    'recibido.asunto',
+                    'recibido.fecha_hora_recib',
+                    'estado.estado_nomb',
+                    'tipo.tipo_nombre',
+                    'recibido.observaciones'
+                )
+                ->first();
+
+            if (!$resultado) {
+                return redirect()->back()->withInput()->withErrors(['error' => 'No se encontró correspondencia con los datos proporcionados. Verifique el radicado y el documento.']);
+            }
+
+            return view('public.correspondencia.consultar', compact('resultado'));
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error consultando correspondencia: ' . $e->getMessage());
+            return redirect()->back()->withInput()->withErrors(['error' => 'Ocurrió un error al realizar la consulta: ' . $e->getMessage()]);
         }
-
-        return view('public.correspondencia.consultar', compact('resultado'));
     }
 }

@@ -82,7 +82,7 @@
                                     <span class="text-sm text-[#0d121b] dark:text-white font-medium" title="{{ $cor->asunto }}">
                                         {{ $cor->asunto }}
                                     </span>
-                                    <span class="text-xs text-[#4c669a]">{{ CarbonCarbon::parse($cor->fecha)->format('d M, Y H:i') }}</span>
+                                    <span class="text-xs text-[#4c669a]">{{ \Carbon\Carbon::parse($cor->fecha)->format('d M, Y H:i') }}</span>
                                 </div>
                             </td>
                             <td class="px-6 py-4" data-label="Destinatario">
@@ -119,7 +119,7 @@
                                         data-institucion="{{ $cor->nom_institucion }}"
                                         data-ciudad="{{ $cor->ciudad }}"
                                         data-asunto="{{ $cor->asunto }}"
-                                        data-fecha="{{ CarbonCarbon::parse($cor->fecha)->format('d M, Y H:i') }}"
+                                        data-fecha="{{ \Carbon\Carbon::parse($cor->fecha)->format('d M, Y H:i') }}"
                                         data-destinatario="{{ $cor->destinatario_nombre }}"
                                         data-docdest="{{ $cor->doc_destinatario }}"
                                         data-folios="{{ $cor->folio }}"
@@ -198,7 +198,7 @@
                     <tbody id="tableEnvios" class="divide-y divide-[#cfd7e7] dark:divide-gray-800">
                         @forelse($envios as $cor)
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" 
-                            data-search="{{ strtolower($cor->num_radicado_ext . ' ' . $cor->num_radicado_int . ' ' . $cor->asunto) }}">
+                            data-search="{{ strtolower($cor->num_radicado_int . ' ' . $cor->asunto . ' ' . $cor->destinatario_nombre) }}">
                             <td class="px-6 py-4" data-label="Radicados">
                                 <div class="flex flex-col">
                                     <span class="inline-flex items-center w-max px-2 py-0.5 rounded text-[10px] uppercase font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400 mb-1">
@@ -207,7 +207,7 @@
                                     <span class="font-bold text-[#0d121b] dark:text-white">INT: {{ $cor->num_radicado_int }}</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4" data-label="Creado Por">
+                            <td class="px-6 py-4" data-label="Enviado por">
                                 <div class="flex flex-col">
                                     <span class="text-sm font-bold dark:text-white">{{ $cor->registrado_por_nombre }}</span>
                                     <span class="text-xs text-[#4c669a]">Doc: {{ $cor->doc_registra }}</span>
@@ -218,23 +218,13 @@
                                     <span class="text-sm text-[#0d121b] dark:text-white font-medium" title="{{ $cor->asunto }}">
                                         {{ $cor->asunto }}
                                     </span>
-                                    <span class="text-xs text-[#4c669a]">{{ CarbonCarbon::parse($cor->fecha)->format('d M, Y H:i') }}</span>
+                                    <span class="text-xs text-[#4c669a]">{{ \Carbon\Carbon::parse($cor->fecha)->format('d M, Y H:i') }}</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4" data-label="Destinatarios">
+                            <td class="px-6 py-4" data-label="Destinatario">
                                 <div class="flex flex-col">
-                                    <span class="text-sm font-bold dark:text-white">
-                                        @if($cor->destinatarios->count() > 0)
-                                            {{ $cor->destinatarios->count() }} destinatario(s)
-                                        @else
-                                            No asignado
-                                        @endif
-                                    </span>
-                                    @if($cor->destinatarios->isNotEmpty())
-                                      <span class="text-xs text-[#4c669a] truncate max-w-[150px]" title="{{ $cor->destinatarios->pluck('emple_nombres')->join(', ') }}">
-                                          {{ $cor->destinatarios->first()->emple_nombres }}...
-                                      </span>
-                                    @endif
+                                    <span class="text-sm font-bold dark:text-white">{{ $cor->destinatario_nombre }}</span>
+                                    <span class="text-xs text-[#4c669a]">Doc: {{ $cor->doc_destinatario ?? 'N/A' }}</span>
                                 </div>
                             </td>
                             <td class="px-6 py-4" data-label="Folios / Anexos">
@@ -247,10 +237,12 @@
                                 @php
                                     $estadoNom = $cor->estado_nomb;
                                     $bgColor = 'bg-slate-100 text-slate-700 dark:bg-gray-800 dark:text-gray-300';
-                                    if(stripos($estadoNom, 'activo') !== false || stripos($estadoNom, 'radicado') !== false) {
+                                    if(stripos($estadoNom, 'activo') !== false || stripos($estadoNom, 'radicado') !== false || stripos($estadoNom, 'enviado') !== false) {
                                         $bgColor = 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400';
-                                    } elseif(stripos($estadoNom, 'proceso') !== false || stripos($estadoNom, 'tramite') !== false) {
+                                    } elseif(stripos($estadoNom, 'proceso') !== false || stripos($estadoNom, 'tramite') !== false || stripos($estadoNom, 'pendiente') !== false) {
                                         $bgColor = 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400';
+                                    } elseif(stripos($estadoNom, 'rechazado') !== false) {
+                                        $bgColor = 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400';
                                     }
                                 @endphp
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $bgColor }}">
@@ -265,9 +257,9 @@
                                         data-institucion="{{ $cor->nom_institucion }}"
                                         data-ciudad="{{ $cor->ciudad }}"
                                         data-asunto="{{ $cor->asunto }}"
-                                        data-fecha="{{ CarbonCarbon::parse($cor->fecha)->format('d M, Y H:i') }}"
+                                        data-fecha="{{ \Carbon\Carbon::parse($cor->fecha)->format('d M, Y H:i') }}"
                                         data-destinatario="{{ $cor->destinatario_nombre }}"
-                                        data-docdest="{{ $cor->doc_destinatario }}"
+                                        data-docdest="{{ $cor->doc_destinatario ?? 'N/A' }}"
                                         data-folios="{{ $cor->folio }}"
                                         data-anexos="{{ $cor->anexo ?? 'Ninguno' }}"
                                         data-estado="{{ $estadoNom }}"

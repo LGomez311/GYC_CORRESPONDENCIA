@@ -114,7 +114,7 @@
 
                                 // Aquí concatenas el nombre del destinatario según lo que devuelva tu relación quienDirigido
                                 $nombreDestinatario = $envio->quienDirigido
-                                    ? $envio->quienDirigido->rem_nombres . ' ' . $envio->quienDirigido->rem_apellidos
+                                    ? $envio->quienDirigido->emple_nombres . ' ' . $envio->quienDirigido->emple_apellidos
                                     : $envio->destino ?? 'Destino no especificado';
 
                                 $fechaEnvio = $envio->fecha->format('d M, Y - h:i A'); // Como tienes 'fecha' => 'datetime' en tus $casts

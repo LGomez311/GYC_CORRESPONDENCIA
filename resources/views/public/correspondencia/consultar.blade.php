@@ -38,6 +38,7 @@
             -moz-osx-font-smoothing: grayscale;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body class="font-display bg-background-light dark:bg-background-dark min-h-screen py-10 px-4 flex items-center justify-center">
@@ -60,11 +61,22 @@
         </div>
 
         @if ($errors->any())
-            <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded mb-6 text-sm">
-                @foreach ($errors->all() as $error)
-                    <p>{{ $error }}</p>
-                @endforeach
-            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error en la consulta',
+                        html: `
+                            <ul class="text-sm text-center">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        `,
+                        confirmButtonColor: '#135bec',
+                    });
+                });
+            </script>
         @endif
 
         <form action="{{ route('public.correspondencia.buscar') }}" method="POST" class="space-y-6">

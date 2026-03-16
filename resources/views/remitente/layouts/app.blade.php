@@ -61,7 +61,6 @@
 
     {{-- ======= LAYOUT PRINCIPAL ======= --}}
     <div class="flex h-screen w-full bg-background-light dark:bg-background-dark overflow-hidden">
-        {{-- @if ($licenciaBloqueada) pt-10 @endif"> --}}
 
         {{-- Overlay móvil --}}
         <div id="sidebarOverlay" class="fixed inset-0 bg-black/40 z-40 hidden md:hidden" onclick="toggleSidebar()">

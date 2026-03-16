@@ -68,4 +68,10 @@ class Envio extends Model
     {
         return $this->hasMany(DetalleEnvio::class, 'id_envio', 'id_envio');
     }
+
+    // Quien va dirigido (Empleado)
+    public function quienDirigido()
+    {
+        return $this->belongsTo(Empleado::class, 'doc_quien_dirigido', 'emple_doc');
+    }
 }

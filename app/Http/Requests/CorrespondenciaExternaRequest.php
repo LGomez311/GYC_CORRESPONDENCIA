@@ -31,6 +31,8 @@ class CorrespondenciaExternaRequest extends FormRequest
             'asunto'             => 'required|string|max:100',
             'observaciones'      => 'nullable|string|max:250',
             'archivo'            => 'required|file|mimes:pdf|max:10240', // 10MB máximo, solo PDF
+            'anexos'             => 'nullable|array|max:5', // Máximo 5 anexos
+            'anexos.*'           => 'file|mimes:pdf|max:10240', // Solo PDF, 10MB máximo cada uno
         ];
 
         if ($this->input('tipo_remitente') === 'Empresa') {
@@ -82,9 +84,14 @@ class CorrespondenciaExternaRequest extends FormRequest
             'id_tipo.required'            => 'Debe seleccionar el tipo de correspondencia.',
             'id_tipo.exists'              => 'El tipo de correspondencia seleccionado no es válido.',
             'asunto.required'             => 'El asunto es obligatorio.',
-            'archivo.required'            => 'Debe adjuntar un archivo.',
-            'archivo.mimes'               => 'El archivo debe ser un PDF.',
-            'archivo.max'                 => 'El archivo no debe pesar más de 10MB.',
+            'archivo.required'            => 'Debe adjuntar un archivo principal.',
+            'archivo.mimes'               => 'El archivo principal debe ser un PDF.',
+            'archivo.max'                 => 'El archivo principal no debe pesar más de 10MB.',
+            
+            'anexos.array'                => 'El formato de los anexos es inválido.',
+            'anexos.*.file'               => 'Uno o más anexos no son un archivo válido.',
+            'anexos.*.mimes'              => 'Todos los anexos deben ser en formato PDF.',
+            'anexos.*.max'                => 'Cada anexo no debe pesar más de 10MB.',
         ];
     }
 }

@@ -39,7 +39,7 @@
             <span class="material-symbols-outlined">shield_person</span>
         </div>
         <h2 class="text-[#0d121b] dark:text-white text-lg font-bold leading-tight tracking-tight">
-            {{ auth()->user()->empresa->nomb_empresa ?? 'Sin empresa asignada' }}
+            {{ Auth::user()->empresa->nomb_empresa ?? 'Sin empresa asignada' }}
         </h2>
     </div>
 
@@ -155,14 +155,14 @@
     <div class="p-4 border-t border-[#cfd7e7] dark:border-gray-800">
         <div class="flex items-center gap-3 px-2">
             <div class="size-10 rounded-full bg-cover bg-center border-2 border-primary/20"
-                style='background-image: url("{{ auth()->user()->emple_img ? asset('storage/' . auth()->user()->emple_img) : asset('images/default-avatar.png') }}");'>
+                style='background-image: url("{{ Auth::user()->emple_img ? asset('storage/' . Auth::user()->emple_img) : asset('images/default-avatar.png') }}");'>
             </div>
             <div class="overflow-hidden">
                 <p class="text-sm font-bold truncate dark:text-white">
-                    {{ auth()->user()->rol->rol_nom }}
+                    {{ Auth::user()->rol->rol_nom }}
                 </p>
                 <p class="text-xs text-[#4c669a] truncate dark:text-gray-400">
-                    {{ auth()->user()->emple_nombres }} {{ auth()->user()->emple_apellidos }}
+                    {{ Auth::user()->emple_nombres }} {{ Auth::user()->emple_apellidos }}
                 </p>
             </div>
         </div>
