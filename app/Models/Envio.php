@@ -13,7 +13,6 @@ class Envio extends Model
     protected $fillable = [
         'num_radicado_int',
         'asunto',
-        'doc_quien_dirigido',
         'doc_quien_envia',
         'fecha',
         'destino',
@@ -22,6 +21,7 @@ class Envio extends Model
         'id_estado_envio',
         'archivo',
         'nit_empresa',
+        'doc_quien_registra',
     ];
 
     protected $casts = [
@@ -46,9 +46,9 @@ class Envio extends Model
         return $this->belongsTo(Empleado::class, 'doc_quien_envia', 'emple_doc');
     }
 
-    public function quienDirigido()
+    public function quienRegistra()
     {
-        return $this->belongsTo(Empleado::class, 'doc_quien_dirigido', 'emple_doc');
+        return $this->belongsTo(Remitente::class, 'doc_quien_registra', 'rem_doc');
     }
 
     // Relación con el número de radicado interno generado

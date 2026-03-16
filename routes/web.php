@@ -31,6 +31,7 @@ use App\Exports\PrioridadesExport;
 
 // controller de remitente
 use App\Http\Controllers\Remitente\ExternarecController;
+use App\Http\Controllers\Remitente\ExternaenvController;
 use App\Http\Controllers\Remitente\DashboardController as RemitenteDashboardController;
 
 
@@ -403,13 +404,12 @@ Route::prefix('remitente')
 
         Route::get('/externarec', [ExternarecController::class, 'index'])->name('remitente.externarec');
 
-        Route::get('/externaenv', function () {
-            return view('remitente.externaenv');
-        })->name('remitente.externaenv');
+        Route::get('/externaenv', [ExternaenvController::class, 'index'])->name('remitente.externaenv');
+        Route::post('/externaenv', [ExternaenvController::class, 'store'])->name('remitente.externaenv.store');
 
         Route::post('/externarec', [ExternarecController::class, 'store'])->name('externarec.store');
 
-        Route::get('/empleados/buscar', [ExternarecController::class, 'buscarEmpleados'])->name('externarec.empleados.buscar');
+        Route::get('/empleados/buscar', [ExternaenvController::class, 'buscarEmpleados'])->name('remitente.buscar_empleados');
 
         Route::get('/ciudades/buscar', [ExternarecController::class, 'buscarCiudades'])->name('externarec.ciudades.buscar');
 

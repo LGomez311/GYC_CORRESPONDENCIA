@@ -11,6 +11,7 @@ class Radicado extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'num_radicado'
+        'num_radicado',
+        'nit_empresa'
     ];
 }
