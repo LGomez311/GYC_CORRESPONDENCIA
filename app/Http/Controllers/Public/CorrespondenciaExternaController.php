@@ -40,35 +40,18 @@ class CorrespondenciaExternaController extends Controller
         if ($request->hasFile('archivo')) {
             $file = $request->file('archivo');
             $rutaArchivo = $file->store('correspondencia', 'public');
-
-            // Calcular folios automáticamente
-            try {
-                $parser = new \Smalot\PdfParser\Parser();
-                $pdf = $parser->parseFile($file->getPathname());
-                $folios = count($pdf->getPages());
-            } catch (\Exception $e) {
-                Log::warning('No se pudo contar las páginas del PDF principal: ' . $e->getMessage());
-                // Si falla el conteo, dejamos por defecto 1
-                $folios = 1;
-            }
+            
+            // Usamos el conteo de folios enviado desde el frontend
+            $folios = $validated['folio'];
         }
         
         // Contar folios extra de los anexos (si los hay) al total de folios en recibidos
         $anexosArchivos = [];
         if ($request->hasFile('anexos')) {
-            $parser = new \Smalot\PdfParser\Parser();
             foreach ($request->file('anexos') as $anexoFile) {
-                // Almacenamos f&iacute;sicamente el anexo
+                // Almacenamos físicamente el anexo
                 $rutaAnexo = $anexoFile->store('correspondencia_anexos', 'public');
                 $nombreOriginal = $anexoFile->getClientOriginalName();
-                
-                // Intentamos sumar los folios del anexo al total
-                try {
-                    $pdfAnexo = $parser->parseFile($anexoFile->getPathname());
-                    $folios += count($pdfAnexo->getPages());
-                } catch (\Exception $e) {
-                    Log::warning('No se pudo contar las p&aacute;ginas del anexo PDF: ' . $e->getMessage());
-                }
                 
                 $anexosArchivos[] = [
                     'ruta_archivo'    => $rutaAnexo,
@@ -140,7 +123,7 @@ class CorrespondenciaExternaController extends Controller
                 'ciudad_proveniente' => $validated['ciudad_proveniente'],
                 'asunto'             => $validated['asunto'],
                 'id_tipo'            => $validated['id_tipo'],
-                'id_estado_rec'      => 7, // Estado 7 = Recibido
+                'id_estado_rec'      => 12, // Estado 12 = Enviado (Inicial para registro público)
                 'folio'              => $folios,
                 'observaciones'      => "{$tipoDoc} {$docPersona} - " . ($validated['observaciones'] ?? ''),
                 'archivo'            => $rutaArchivo,
@@ -159,7 +142,8 @@ class CorrespondenciaExternaController extends Controller
                 ]);
             }
 
-            // 5. Trazabilidad
+            /* 
+            // 5. Trazabilidad (Se elimina la asignación automática por defecto)
             if ($docDestinatario) {
                 DB::table('detalle_recibido')->insert([
                     'det_id_recibido'  => $idRecibido,
@@ -169,6 +153,7 @@ class CorrespondenciaExternaController extends Controller
                     'observaciones'    => 'Documento recibido desde formulario externo'
                 ]);
             }
+            */
 
             DB::commit();
 

@@ -109,21 +109,20 @@
                                     <th class="px-6 py-3 font-bold" scope="col">Fecha de Recepción</th>
                                     <th class="px-6 py-3 font-bold" scope="col">Prioridad</th>
                                     <th class="px-6 py-3 font-bold" scope="col">Estado</th>
+                                    <th class="px-6 py-3 font-bold" scope="col">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="tablaRecibidosBody">
                                 @forelse($recibidos as $rec)
                                     @php
                                         // --- Tipo de remitente ---
-                                        $esPersona = !empty($rec->nombre_persona) || !empty($rec->doc_persona);
+                                        $esPersona = !empty($rec->nombre_persona);
                                         $tipoRow = $esPersona ? 'persona' : 'entidad';
 
                                         // --- Remitente display ---
                                         $remitenteDisplay = $esPersona
-                                            ? ($rec->nombre_persona ?:
-                                            $rec->doc_persona)
-                                            : ($rec->nom_institucion ?:
-                                            '—');
+                                            ? ($rec->nombre_persona ?: '—')
+                                            : ($rec->nom_institucion ?: '—');
 
                                         // --- Estado badge ---
                                         $estadoNombre = $rec->estado_nomb ?? 'Sin estado';
@@ -199,6 +198,7 @@
                                         data-radicado-ext="{{ $rec->num_radicado_ext ?? '' }}"
                                         data-radicado-int="{{ $rec->num_radicado ?? '' }}"
                                         data-remitente="{{ $remitenteDisplay }}"
+                                        data-documento="{{ $rec->doc_persona ?? '' }}"
                                         data-correo="{{ $rec->correo_persona ?? '' }}"
                                         data-telefono="{{ $rec->tel_persona ?? '' }}"
                                         data-fecha="{{ $fechaFormateada }}"
@@ -224,13 +224,27 @@
                                         <td class="px-6 py-4">
                                             <span
                                                 class="font-medium text-gray-900 dark:text-white">{{ $remitenteDisplay }}</span>
-                                            @if ($esPersona && $rec->correo_persona)
-                                                <span class="block text-xs text-gray-400">{{ $rec->correo_persona }}</span>
-                                            @endif
+                                            
+                                            <div class="flex flex-col gap-0.5 mt-1">
+                                                @if ($rec->doc_persona)
+                                                    <span class="text-[10px] text-slate-400 font-mono flex items-center gap-1">
+                                                        <span class="material-symbols-outlined" style="font-size:11px">fingerprint</span>
+                                                        {{ $esPersona ? 'CC' : 'NIT' }}: {{ $rec->doc_persona }}
+                                                    </span>
+                                                @endif
+
+                                                @if ($rec->correo_persona)
+                                                    <span class="text-[10px] text-slate-400 flex items-center gap-1">
+                                                        <span class="material-symbols-outlined" style="font-size:11px">mail</span>
+                                                        {{ $rec->correo_persona }}
+                                                    </span>
+                                                @endif
+                                            </div>
+
                                             <span
-                                                class="flex items-center gap-0.5 text-xs {{ $esPersona ? 'text-purple-500' : 'text-blue-500' }} mt-0.5">
+                                                class="flex items-center gap-0.5 text-[10px] uppercase tracking-wider font-bold {{ $esPersona ? 'text-purple-500' : 'text-blue-500' }} mt-1.5 pt-1 border-t border-slate-100 dark:border-slate-700/50 w-fit">
                                                 <span class="material-symbols-outlined"
-                                                    style="font-size:13px">{{ $esPersona ? 'person' : 'business' }}</span>
+                                                    style="font-size:12px">{{ $esPersona ? 'person' : 'business' }}</span>
                                                 {{ $esPersona ? 'Persona Natural' : 'Entidad / Empresa' }}
                                             </span>
                                         </td>
@@ -254,6 +268,20 @@
                                         <td class="px-6 py-4">
                                             <span
                                                 class="{{ $estadoClases }} text-xs font-medium px-2.5 py-0.5 rounded-full">{{ $estadoNombre }}</span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-2">
+                                                @if($rec->id_estado_rec == 12)
+                                                    <button type="button" 
+                                                        class="btn-abrir-asignar flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 rounded-lg text-xs font-bold transition-colors"
+                                                        data-id="{{ $rec->id_recibido }}"
+                                                        data-asunto="{{ $rec->asunto }}"
+                                                        data-radicado="{{ $rec->num_radicado }}">
+                                                        <span class="material-symbols-outlined text-sm">person_add</span>
+                                                        Asignar
+                                                    </button>
+                                                @endif
+                                            </div>
                                         </td>
                                     </tr>
                                 @empty
@@ -310,6 +338,7 @@
                                 <span id="aside-tipo-icon" class="material-symbols-outlined text-xs"></span>
                                 <span id="aside-remitente" class="text-sm font-medium text-gray-900 dark:text-white"></span>
                             </div>
+                            <p id="aside-documento" class="text-xs text-slate-500 font-mono mt-0.5 hidden"></p>
                             <p id="aside-correo" class="text-xs text-gray-400 mt-0.5 hidden"></p>
                             <p id="aside-telefono" class="text-xs text-gray-400 hidden"></p>
                         </div>
@@ -455,6 +484,13 @@
                         iconEl.textContent = esPersona ? 'person' : 'business';
                         iconEl.className = 'material-symbols-outlined text-sm ' + (esPersona ? 'text-purple-500' : 'text-blue-500');
                         document.getElementById('aside-remitente').textContent = d.remitente || '—';
+                        const docEl = document.getElementById('aside-documento');
+                        if (d.documento) {
+                            docEl.textContent = (esPersona ? 'CC: ' : 'NIT: ') + d.documento;
+                            docEl.classList.remove('hidden');
+                        } else {
+                            docEl.classList.add('hidden');
+                        }
                         const correoEl = document.getElementById('aside-correo');
                         if (d.correo) { correoEl.textContent = d.correo; correoEl.classList.remove('hidden'); } else { correoEl.classList.add('hidden'); }
                         const telEl = document.getElementById('aside-telefono');
@@ -1149,6 +1185,24 @@
 
                             {{-- ===== BLOQUE 1: EMPRESA (Visible por defecto) ===== --}}
                             <div id="bloqueEmpresa" class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2">
+                                <div class="sm:col-span-2">
+                                    <label class="flex flex-col">
+                                        <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
+                                            Nombre Institución *</p>
+                                        <input type="text" name="nom_institucion" required maxlength="150"
+                                            class="input-empresa form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal"
+                                            placeholder="Nombre de la entidad o empresa" />
+                                    </label>
+                                </div>
+                                <div class="sm:col-span-1">
+                                    <label class="flex flex-col">
+                                        <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
+                                            NIT *</p>
+                                        <input type="text" name="nit_institucion" required maxlength="20"
+                                            class="input-empresa form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal"
+                                            placeholder="Número de Identificación Tributaria" />
+                                    </label>
+                                </div>
                                 <div class="sm:col-span-1">
                                     <label class="flex flex-col">
                                         <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
@@ -1162,59 +1216,51 @@
                                 <div class="sm:col-span-1">
                                     <label class="flex flex-col">
                                         <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
-                                            Nombre Institución *</p>
-                                        <input type="text" name="nom_institucion" required maxlength="150"
-                                            class="input-empresa form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal"
-                                            placeholder="Nombre de la entidad" />
+                                            Correo Electrónico</p>
+                                        <input type="email" name="correo_persona" maxlength="100"
+                                            class="form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal"
+                                            placeholder="correo@ejemplo.com" />
                                     </label>
                                 </div>
                             </div>
 
                             {{-- ===== BLOQUE 2: PERSONA NATURAL (Oculto por defecto) ===== --}}
-                            <div id="bloquePersona" class="hidden space-y-8">
-                                <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2">
-                                    <div class="sm:col-span-1">
-                                        <label class="flex flex-col">
-                                            <p
-                                                class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
-                                                Nombre Completo *</p>
-                                            <input type="text" name="nombre_persona" maxlength="150"
-                                                class="input-persona form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal"
-                                                placeholder="Nombres y apellidos" />
-                                        </label>
-                                    </div>
-                                    <div class="sm:col-span-1">
-                                        <label class="flex flex-col">
-                                            <p
-                                                class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
-                                                Documento de Identidad *</p>
-                                            <input type="text" name="documento_persona" maxlength="20"
-                                                class="input-persona form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal"
-                                                placeholder="Cédula, NIT, etc." />
-                                        </label>
-                                    </div>
+                            <div id="bloquePersona" class="hidden grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2">
+                                <div class="sm:col-span-1">
+                                    <label class="flex flex-col">
+                                        <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
+                                            Nombre Completo *</p>
+                                        <input type="text" name="nombre_persona" maxlength="150"
+                                            class="input-persona form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal"
+                                            placeholder="Nombres y apellidos" />
+                                    </label>
                                 </div>
-                                <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2">
-                                    <div class="sm:col-span-1">
-                                        <label class="flex flex-col">
-                                            <p
-                                                class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
-                                                Correo Electrónico</p>
-                                            <input type="email" name="correo_persona" maxlength="100"
-                                                class="form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal"
-                                                placeholder="correo@ejemplo.com" />
-                                        </label>
-                                    </div>
-                                    <div class="sm:col-span-1">
-                                        <label class="flex flex-col">
-                                            <p
-                                                class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
-                                                Teléfono</p>
-                                            <input type="text" name="telefono_persona" maxlength="20"
-                                                class="form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal"
-                                                placeholder="Opcional" />
-                                        </label>
-                                    </div>
+                                <div class="sm:col-span-1">
+                                    <label class="flex flex-col">
+                                        <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
+                                            Documento de Identidad *</p>
+                                        <input type="text" name="documento_persona" maxlength="20"
+                                            class="input-persona form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal"
+                                            placeholder="Cédula, NIT, etc." />
+                                    </label>
+                                </div>
+                                <div class="sm:col-span-1">
+                                    <label class="flex flex-col">
+                                        <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
+                                            Correo Electrónico</p>
+                                        <input type="email" name="correo_persona" maxlength="100"
+                                            class="form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal"
+                                            placeholder="correo@ejemplo.com" />
+                                    </label>
+                                </div>
+                                <div class="sm:col-span-1">
+                                    <label class="flex flex-col">
+                                        <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
+                                            Teléfono</p>
+                                        <input type="text" name="telefono_persona" maxlength="20"
+                                            class="form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal"
+                                            placeholder="Opcional" />
+                                    </label>
                                 </div>
                             </div>
 
@@ -1493,5 +1539,213 @@
                     </form>
                 </div>
             </div>
+
+            {{-- MODAL ASIGNAR DESTINATARIOS --}}
+            <div id="modalAsignar" tabindex="-1" aria-hidden="true"
+                class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
+                <div class="relative w-full max-w-2xl max-h-full my-auto">
+                    <form id="formAsignar" method="POST" class="relative">
+                        @csrf
+                        <div class="space-y-6 bg-white dark:bg-slate-900 p-8 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xl">
+                            <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-4 mb-4">
+                                <h3 class="text-xl font-bold text-slate-900 dark:text-white">Asignar Destinatarios</h3>
+                                <button type="button" class="btnCerrarAsignar text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                                    <span class="material-symbols-outlined">close</span>
+                                </button>
+                            </div>
+
+                            <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
+                                <p class="text-xs font-semibold text-blue-800 dark:text-blue-300 uppercase tracking-wider mb-1">Correspondencia</p>
+                                <p id="asignar-radicado" class="text-sm font-bold text-slate-900 dark:text-white"></p>
+                                <p id="asignar-asunto" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5"></p>
+                            </div>
+
+                            <div class="space-y-3">
+                                <label class="text-slate-900 dark:text-white text-sm font-medium leading-normal">
+                                    Seleccionar Destinatario(s) <span class="text-red-500">*</span>
+                                </label>
+                                <div id="asignar-destinatarios-container" class="space-y-2">
+                                    {{-- El primer bloque se usa como template y base --}}
+                                    <div class="destinatario-block-asignar flex items-start gap-2" data-index="0">
+                                        <input type="hidden" name="destinatarios[]" class="dest-hidden-input">
+                                        <div class="relative flex-1" style="min-width:0">
+                                            <button type="button"
+                                                class="dest-btn-toggle form-input flex items-center justify-between w-full rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal text-left">
+                                                <span class="dest-label text-slate-400">Seleccione un documento o nombre...</span>
+                                                <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                </svg>
+                                            </button>
+                                            <div class="dest-dropdown hidden absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg shadow-lg overflow-hidden">
+                                                <div class="p-2 border-b border-slate-200 dark:border-slate-700">
+                                                    <div class="relative">
+                                                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                                            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                                            </svg>
+                                                        </div>
+                                                        <input type="text" class="dest-search-input w-full rounded-md border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-900 text-slate-900 dark:text-white py-2 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="Buscar por cédula o nombre..." />
+                                                    </div>
+                                                </div>
+                                                <ul class="dest-list max-h-48 overflow-y-auto py-1 text-sm text-slate-700 dark:text-slate-200">
+                                                    <li class="px-3 py-2 text-slate-400 italic">Escriba para buscar...</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="dest-btn-remove hidden mt-1 flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-lg border border-red-200 dark:border-red-800 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
+                                            <span class="material-symbols-outlined text-sm">close</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <button type="button" id="btnAgregarDestinatarioAsignar"
+                                    class="flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors mt-1">
+                                    <span class="material-symbols-outlined text-base">person_add</span>
+                                    + Agregar otro destinatario
+                                </button>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="text-slate-900 dark:text-white text-sm font-medium leading-normal">Observaciones</label>
+                                <textarea name="observaciones" rows="2" class="form-textarea flex w-full min-w-0 flex-1 resize-y rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 p-3.5 text-base font-normal" placeholder="Opcional..."></textarea>
+                            </div>
+
+                            <div class="flex items-center justify-end gap-4 pt-6 border-t border-slate-200 dark:border-slate-800">
+                                <button type="button" class="btnCerrarAsignar h-11 px-6 rounded-lg text-sm font-bold bg-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Cancelar</button>
+                                <button type="submit" class="h-11 px-6 rounded-lg text-sm font-bold bg-primary text-white hover:bg-primary/90 transition-colors">Confirmar Asignación</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const modalAsignar = document.getElementById('modalAsignar');
+                    const formAsignar = document.getElementById('formAsignar');
+                    const asignarRadicadoLabel = document.getElementById('asignar-radicado');
+                    const asignarAsuntoLabel = document.getElementById('asignar-asunto');
+                    const ALL_DESTINATARIOS = @json($todosDestinatarios);
+                    
+                    function initBuscadorAsignar(block) {
+                        const btnToggle = block.querySelector('.dest-btn-toggle');
+                        const dropdown  = block.querySelector('.dest-dropdown');
+                        const searchInput = block.querySelector('.dest-search-input');
+                        const list      = block.querySelector('.dest-list');
+                        const label     = block.querySelector('.dest-label');
+                        const hidden    = block.querySelector('.dest-hidden-input');
+                        const btnRemove = block.querySelector('.dest-btn-remove');
+
+                        function render(items) {
+                            list.innerHTML = '';
+                            if (items.length === 0) {
+                                list.innerHTML = '<li class="px-3 py-2 text-slate-400 italic">No se encontraron resultados</li>';
+                                return;
+                            }
+                            items.forEach(item => {
+                                const li = document.createElement('li');
+                                li.className = 'px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer border-b border-slate-50 dark:border-slate-700/50 last:border-0';
+                                li.innerHTML = `
+                                    <div class="flex flex-col gap-0.5">
+                                        <span class="font-bold text-slate-700 dark:text-slate-200">${item.emple_nombres} ${item.emple_apellidos}</span>
+                                        <span class="text-[10px] text-blue-500 font-mono">CC: ${item.emple_doc} ${item.area_nombre ? '— ' + item.area_nombre : ''}</span>
+                                    </div>
+                                `;
+                                li.addEventListener('click', (e) => {
+                                    e.stopPropagation();
+                                    hidden.value = item.emple_doc;
+                                    label.textContent = `${item.emple_nombres} ${item.emple_apellidos}`;
+                                    label.classList.remove('text-slate-400');
+                                    label.classList.add('text-slate-900', 'dark:text-white');
+                                    dropdown.classList.add('hidden');
+                                });
+                                list.appendChild(li);
+                            });
+                        }
+
+                        btnToggle.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            modalAsignar.querySelectorAll('.dest-dropdown').forEach(d => {
+                                if (d !== dropdown) d.classList.add('hidden');
+                            });
+                            dropdown.classList.toggle('hidden');
+                            if (!dropdown.classList.contains('hidden')) {
+                                searchInput.focus();
+                                render(ALL_DESTINATARIOS);
+                            }
+                        });
+
+                        searchInput.addEventListener('input', function() {
+                            const q = this.value.toLowerCase();
+                            const filtrados = ALL_DESTINATARIOS.filter(d => 
+                                d.emple_doc.toLowerCase().includes(q) || 
+                                d.emple_nombres.toLowerCase().includes(q) || 
+                                d.emple_apellidos.toLowerCase().includes(q)
+                            );
+                            render(filtrados);
+                        });
+
+                        if (btnRemove) {
+                            btnRemove.addEventListener('click', () => block.remove());
+                        }
+                    }
+
+                    document.addEventListener('click', function(e) {
+                        const btn = e.target.closest('.btn-abrir-asignar');
+                        if (btn) {
+                            const id = btn.dataset.id;
+                            const radicado = btn.dataset.radicado;
+                            const asunto = btn.dataset.asunto;
+                            
+                            asignarRadicadoLabel.textContent = radicado;
+                            asignarAsuntoLabel.textContent = asunto;
+                            formAsignar.action = `{{ url('/remitente/externarec') }}/${id}/asignar`;
+                            
+                            const container = document.getElementById('asignar-destinatarios-container');
+                            const blocks = container.querySelectorAll('.destinatario-block-asignar');
+                            
+                            for(let i = 1; i < blocks.length; i++) blocks[i].remove();
+                            
+                            const firstBlock = blocks[0];
+                            firstBlock.querySelector('.dest-hidden-input').value = '';
+                            firstBlock.querySelector('.dest-label').textContent = 'Seleccione un documento o nombre...';
+                            firstBlock.querySelector('.dest-label').classList.add('text-slate-400');
+                            firstBlock.querySelector('.dest-search-input').value = '';
+                            
+                            initBuscadorAsignar(firstBlock);
+                            
+                            modalAsignar.classList.remove('hidden');
+                            modalAsignar.classList.add('flex');
+                            document.body.style.overflow = 'hidden';
+                        }
+
+                        if (e.target.closest('.btnCerrarAsignar')) {
+                            modalAsignar.classList.add('hidden');
+                            modalAsignar.classList.remove('flex');
+                            document.body.style.overflow = 'auto';
+                        }
+                    });
+
+                    document.getElementById('btnAgregarDestinatarioAsignar').addEventListener('click', function() {
+                        const container = document.getElementById('asignar-destinatarios-container');
+                        const template = container.querySelector('.destinatario-block-asignar');
+                        const clone = template.cloneNode(true);
+                        
+                        clone.querySelector('.dest-hidden-input').value = '';
+                        clone.querySelector('.dest-label').textContent = 'Seleccione un documento o nombre...';
+                        clone.querySelector('.dest-label').classList.add('text-slate-400');
+                        clone.querySelector('.dest-search-input').value = '';
+                        clone.querySelector('.dest-btn-remove').classList.remove('hidden');
+                        
+                        container.appendChild(clone);
+                        initBuscadorAsignar(clone);
+                    });
+
+                    document.addEventListener('click', function(e) {
+                        if (!e.target.closest('.destinatario-block-asignar')) {
+                            modalAsignar.querySelectorAll('.dest-dropdown').forEach(d => d.classList.add('hidden'));
+                        }
+                    });
+                });
+            </script>
 
         @endsection

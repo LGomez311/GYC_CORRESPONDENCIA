@@ -294,6 +294,60 @@ class DashboardController extends Controller
                 ]);
             }
 
+            // 7. Send Email Notification to the original sender
+            if (!empty($recibido->correo_persona)) {
+                try {
+                    $correoDestino = $recibido->correo_persona;
+                    $numRadicado = $radicado->num_radicado;
+                    $asuntoEmail = 'Respuesta a su correspondencia - Radicado: ' . $numRadicado;
+                    $urlConsulta = route('public.correspondencia.consultar');
+
+                    \Illuminate\Support\Facades\Log::info("Enviando correo de notificación a: $correoDestino para el radicado: $numRadicado");
+
+                    \Illuminate\Support\Facades\Mail::send([], [], function ($message) use ($correoDestino, $numRadicado, $asuntoEmail, $urlConsulta, $recibido) {
+                        $message->to($correoDestino)
+                            ->subject($asuntoEmail)
+                            ->html("
+                            <div style='font-family: Arial, sans-serif; background-color: #f8fafc; padding: 40px;'>
+                                <div style='max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 16px; padding: 40px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #e2e8f0;'>
+                                    <div style='text-align: center; margin-bottom: 32px;'>
+                                        <div style='display: inline-block; padding: 12px; background-color: #ecfdf5; border-radius: 12px;'>
+                                            <span style='font-size: 32px;'>📩</span>
+                                        </div>
+                                    </div>
+                                    <h2 style='color: #1e293b; font-size: 24px; font-weight: 700; text-align: center; margin-bottom: 8px;'>Su correspondencia tiene una respuesta</h2>
+                                    <p style='color: #64748b; font-size: 16px; text-align: center; margin-bottom: 32px;'>Le informamos que se ha registrado una respuesta oficial a su solicitud en nuestro sistema de gestión documental.</p>
+                                    
+                                    <div style='background-color: #f1f5f9; border-radius: 12px; padding: 24px; margin-bottom: 32px;'>
+                                        <div style='margin-bottom: 16px;'>
+                                            <span style='color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;'>Radicado Inicial</span>
+                                            <p style='color: #1e293b; font-size: 18px; font-weight: 700; margin: 4px 0 0;'>" . ($recibido->radicado ? $recibido->radicado->num_radicado : 'N/A') . "</p>
+                                        </div>
+                                        <div>
+                                            <span style='color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;'>Radicado de Respuesta</span>
+                                            <p style='color: #059669; font-size: 18px; font-weight: 700; margin: 4px 0 0;'>$numRadicado</p>
+                                        </div>
+                                    </div>
+
+                                    <div style='text-align: center; margin-bottom: 32px;'>
+                                        <a href='$urlConsulta' style='display: inline-block; background-color: #10b981; color: #ffffff; font-size: 15px; font-weight: 700; text-decoration: none; padding: 14px 32px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);'>Consultar mi respuesta</a>
+                                    </div>
+                                    
+                                    <p style='color: #94a3b8; font-size: 12px; line-height: 1.6; text-align: center; margin: 0;'>
+                                        Si tiene problemas con el botón, copie y pegue el siguiente enlace en su navegador: <br>
+                                        <a href='$urlConsulta' style='color: #10b981; text-decoration: underline;'>$urlConsulta</a>
+                                    </p>
+                                    
+                                    <hr style='margin: 32px 0; border: none; border-top: 1px solid #e2e8f0;'>
+                                    <p style='font-size: 11px; color: #cbd5e1; text-align: center; margin: 0;'>Este es un mensaje automático generado por el Sistema de Gestión Documental. Por favor no responda a este correo.</p>
+                                </div>
+                            </div>");
+                    });
+                } catch (\Exception $mailEx) {
+                    \Illuminate\Support\Facades\Log::error('Error enviando correo de respuesta saliente: ' . $mailEx->getMessage());
+                }
+            }
+
             DB::commit();
             return redirect()->back()->with('success', 'Envío saliente registrado exitosamente con radicado: ' . $radicado->num_radicado);
         } catch (\Exception $e) {

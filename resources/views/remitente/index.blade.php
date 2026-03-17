@@ -275,7 +275,8 @@
                                             @forelse($filteredDetalles as $det)
                                                 <div class="flex items-center gap-2"
                                                     title="{{ $det->empleado->emple_nombres ?? 'Usuario' }} {{ $det->empleado->emple_apellidos ?? '' }}">
-                                                    <div class="w-7 h-7 rounded-full {{ $det->empleado && $det->empleado->emple_img ? '' : 'bg-blue-600' }} flex items-center justify-center overflow-hidden border border-gray-200 dark:border-gray-700 flex-shrink-0">
+                                                    <div
+                                                        class="w-7 h-7 rounded-full {{ $det->empleado && $det->empleado->emple_img ? '' : 'bg-blue-600' }} flex items-center justify-center overflow-hidden border border-gray-200 dark:border-gray-700 flex-shrink-0">
                                                         @if ($det->empleado && $det->empleado->emple_img)
                                                             <img src="{{ asset('storage/' . $det->empleado->emple_img) }}"
                                                                 class="w-full h-full object-cover">
@@ -288,7 +289,8 @@
                                                     <div class="flex flex-col min-w-0">
                                                         <span
                                                             class="text-[10px] font-bold text-gray-700 dark:text-gray-300 leading-none truncate max-w-[120px]">
-                                                            {{ $det->empleado->emple_nombres ?? 'Usuario' }} {{ $det->empleado->emple_apellidos ?? '' }}
+                                                            {{ $det->empleado->emple_nombres ?? 'Usuario' }}
+                                                            {{ $det->empleado->emple_apellidos ?? '' }}
                                                         </span>
                                                         @php
                                                             $detStatusColor = match ($det->id_estado_rec) {
@@ -299,7 +301,8 @@
                                                                 default => 'text-gray-500 dark:text-gray-400',
                                                             };
                                                         @endphp
-                                                        <span class="text-[9px] font-medium {{ $detStatusColor }} leading-none mt-1">
+                                                        <span
+                                                            class="text-[9px] font-medium {{ $detStatusColor }} leading-none mt-1">
                                                             {{ $det->estado->estado_nomb ?? 'Pendiente' }}
                                                         </span>
                                                     </div>
@@ -673,7 +676,8 @@
             if (dest.emple_img) {
                 return `<img src="/storage/${dest.emple_img}" class="w-6 h-6 rounded-full object-cover border border-white dark:border-gray-700">`;
             }
-            const initials = ((dest.emple_nombres ? dest.emple_nombres[0] : 'U') + (dest.emple_apellidos ? dest.emple_apellidos[0] : 'A')).toUpperCase();
+            const initials = ((dest.emple_nombres ? dest.emple_nombres[0] : 'U') + (dest.emple_apellidos ? dest
+                .emple_apellidos[0] : 'A')).toUpperCase();
             return `<div class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold border border-blue-700 shadow-sm">${initials}</div>`;
         }
 
@@ -717,10 +721,10 @@
                 const activeRecipients = c.destinatarios.filter(dest => {
                     const allDets = c.detalles ? c.detalles.filter(d => d.det_doc_empleado == dest.emple_doc) : [];
                     if (allDets.length === 0) return true;
-                    
+
                     // Get latest detail for this employee
                     const latestDet = allDets.sort((a, b) => b.id_det_recibido - a.id_det_recibido)[0];
-                    
+
                     // Filter out finished historical statuses (9)
                     // We keep status 10 (Archivado) visible because it's assigned to other 
                     // recipients when someone "takes" the document.
@@ -734,25 +738,31 @@
                         div.className =
                             'inline-flex items-center gap-2 px-2 py-1 rounded-lg text-[10px] font-bold bg-gray-50 text-gray-700 dark:bg-gray-700/50 dark:text-gray-300 border border-gray-100 dark:border-gray-600';
 
-                        const allDets = c.detalles ? c.detalles.filter(d => d.det_doc_empleado == dest.emple_doc) : [];
+                        const allDets = c.detalles ? c.detalles.filter(d => d.det_doc_empleado == dest.emple_doc) :
+                            [];
                         const det = allDets.sort((a, b) => b.id_det_recibido - a.id_det_recibido)[0];
-                        
+
                         let statusHtml = '';
                         if (det) {
-                            const statusName = det.estado ? det.estado.estado_nomb : (det.id_estado_rec == 7 ? 'Recibido' : (det.id_estado_rec == 11 ? 'Rechazado' : 'Pendiente'));
+                            const statusName = det.estado ? det.estado.estado_nomb : (det.id_estado_rec == 7 ?
+                                'Recibido' : (det.id_estado_rec == 11 ? 'Rechazado' : 'Pendiente'));
                             let colorClass = 'text-gray-500';
                             if (det.id_estado_rec == 7) colorClass = 'text-green-600 dark:text-green-400';
                             else if (det.id_estado_rec == 11) colorClass = 'text-red-600 dark:text-red-400';
                             else if (det.id_estado_rec == 8) colorClass = 'text-amber-600 dark:text-amber-400';
-                            else if ([9, 10, 14].includes(parseInt(det.id_estado_rec))) colorClass = 'text-emerald-600 dark:text-emerald-400';
+                            else if ([9, 10, 14].includes(parseInt(det.id_estado_rec))) colorClass =
+                                'text-emerald-600 dark:text-emerald-400';
 
-                            statusHtml = `<span class="text-[8px] font-medium ${colorClass} mt-0.5">${statusName}</span>`;
+                            statusHtml =
+                                `<span class="text-[8px] font-medium ${colorClass} mt-0.5">${statusName}</span>`;
                         }
-                        div.innerHTML = `${avatar} <div class="flex flex-col"><span class="leading-none">${dest.emple_nombres} ${dest.emple_apellidos}</span>${statusHtml}</div>`;
+                        div.innerHTML =
+                            `${avatar} <div class="flex flex-col"><span class="leading-none">${dest.emple_nombres} ${dest.emple_apellidos}</span>${statusHtml}</div>`;
                         recipientsContainer.appendChild(div);
                     });
                 } else {
-                    recipientsContainer.innerHTML = '<p class="text-gray-400 text-xs italic">Sin destinatarios activos.</p>';
+                    recipientsContainer.innerHTML =
+                    '<p class="text-gray-400 text-xs italic">Sin destinatarios activos.</p>';
                 }
             } else {
                 recipientsContainer.innerHTML =
@@ -983,25 +993,25 @@
                                     </div>
 
                                     ${item.observaciones ? `
-                                                            <div class="relative p-4 bg-white dark:bg-gray-800 border-l-4 border-primary/20 rounded-r-xl shadow-sm group hover:border-primary transition-colors">
-                                                                <span class="material-symbols-outlined absolute -right-2 -top-2 text-primary/5 text-4xl group-hover:scale-110 transition-transform">format_quote</span>
-                                                                <p class="text-[12px] text-gray-600 dark:text-gray-400 italic leading-relaxed">"${item.observaciones}"</p>
-                                                            </div>
-                                                        ` : ''}
+                                                                <div class="relative p-4 bg-white dark:bg-gray-800 border-l-4 border-primary/20 rounded-r-xl shadow-sm group hover:border-primary transition-colors">
+                                                                    <span class="material-symbols-outlined absolute -right-2 -top-2 text-primary/5 text-4xl group-hover:scale-110 transition-transform">format_quote</span>
+                                                                    <p class="text-[12px] text-gray-600 dark:text-gray-400 italic leading-relaxed">"${item.observaciones}"</p>
+                                                                </div>
+                                                            ` : ''}
 
                                     ${item.archivo_res ? `
-                                                <div class="mt-3">
-                                                    <a href="/storage/${item.archivo_res}" target="_blank" 
-                                                       class="inline-flex items-center gap-2 px-3 py-2 text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-xl hover:bg-emerald-100 transition-all">
-                                                        <span class="material-symbols-outlined text-[18px]">task</span>
-                                                        Ver Documento de Respuesta
-                                                    </a>
-                                                </div>
-                                            ` : ''}
+                                                    <div class="mt-3">
+                                                        <a href="/storage/${item.archivo_res}" target="_blank" 
+                                                           class="inline-flex items-center gap-2 px-3 py-2 text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-xl hover:bg-emerald-100 transition-all">
+                                                            <span class="material-symbols-outlined text-[18px]">task</span>
+                                                            Ver Documento de Respuesta
+                                                        </a>
+                                                    </div>
+                                                ` : ''}
 
                                     ${item.anexos && item.anexos.length > 0 ? `
-                                                <div class="mt-2 flex flex-wrap gap-2">
-                                                    ${item.anexos.map((anexo, idx) => `
+                                                    <div class="mt-2 flex flex-wrap gap-2">
+                                                        ${item.anexos.map((anexo, idx) => `
                                                 <a href="/storage/${anexo.ruta_archivo}" target="_blank" 
                                                    class="inline-flex items-center gap-2 px-2.5 py-1.5 text-[10px] font-bold text-teal-600 bg-teal-50 dark:bg-teal-900/20 border border-teal-100 dark:border-teal-800 rounded-lg hover:bg-teal-100 transition-all"
                                                    title="${anexo.nombre_original}">
@@ -1009,8 +1019,8 @@
                                                     Anexo ${idx + 1}
                                                 </a>
                                             `).join('')}
-                                                </div>
-                                            ` : ''}
+                                                    </div>
+                                                ` : ''}
                                 </div>
                             </div>
                         `;
@@ -1186,6 +1196,17 @@
                 previewContainer.appendChild(annexGrid);
             }
 
+            // Set Notification Email
+            const emailInput = document.getElementById('salienteEmailNotif');
+            const emailContainer = document.getElementById('emailNotifContainer');
+            if (c.correo_persona) {
+                emailInput.value = c.correo_persona;
+                emailContainer.classList.remove('hidden');
+            } else {
+                emailInput.value = '';
+                emailContainer.classList.add('hidden');
+            }
+
             openModal('salienteModal');
         }
     </script>
@@ -1239,6 +1260,24 @@
                         <input type="text" name="asunto" id="salienteAsunto" required
                             class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none dark:text-white"
                             placeholder="Asunto del envío">
+                    </div>
+
+                    <!-- Email de Notificación -->
+                    <div id="emailNotifContainer" class="hidden">
+                        <label
+                            class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Correo de Notificación</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                                <span class="material-symbols-outlined text-emerald-500 text-sm">mail</span>
+                            </span>
+                            <input type="email" id="salienteEmailNotif" disabled
+                                class="w-full pl-10 pr-4 py-3 bg-emerald-50/30 dark:bg-emerald-900/10 border border-emerald-100/50 dark:border-emerald-800/50 rounded-2xl text-xs font-bold text-emerald-700 dark:text-emerald-400 cursor-not-allowed transition-all outline-none"
+                                placeholder="No hay correo registrado">
+                        </div>
+                        <p class="text-[9px] text-gray-400 mt-1.5 px-1 flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[12px]">info</span>
+                            Se enviará un correo de notificación a esta dirección.
+                        </p>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">

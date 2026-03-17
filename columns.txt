@@ -1,0 +1,1 @@
+id_recibido\nnum_radicado_ext\nnum_radicado_int\nasunto\nfecha_hora_recib\nnom_institucion\nciudad_proveniente\nfolio\nanexo\nobservaciones\ndoc_quien_registra\nid_tipo\nid_estado_rec\narchivo\nnit_empresa\nnombre_persona\ndoc_persona\ncorreo_persona\ntel_persona

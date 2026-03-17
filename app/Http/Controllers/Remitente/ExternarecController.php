@@ -34,7 +34,7 @@ class ExternarecController extends Controller
             ->leftJoin('estado as e',    'r.id_estado_rec', '=', 'e.id_estado')
             ->leftJoin('radicados as rad', 'r.num_radicado_int', '=', 'rad.id_radicado')
             ->where('r.nit_empresa', $nitEmpresa)
-            ->where('r.id_estado_rec', 12) // Show only 'Enviado' records
+            ->whereIn('r.id_estado_rec', [7, 12]) // Show 'Recibido' (External) and 'Enviado' records
             ->orderByDesc('r.fecha_hora_recib')
             ->select(
                 'r.id_recibido',
@@ -52,6 +52,7 @@ class ExternarecController extends Controller
                 't.tipo_nombre',
                 'p.prioridad_nombre',
                 'e.estado_nomb',
+                'r.id_estado_rec',
                 DB::raw("(
                     SELECT GROUP_CONCAT(DISTINCT COALESCE(CONCAT(emp.emple_nombres, ' ', emp.emple_apellidos), CONCAT(rem.rem_nombres, ' ', rem.rem_apellidos)) SEPARATOR ', ')
                     FROM detalle_recibido dr
@@ -192,11 +193,13 @@ class ExternarecController extends Controller
         if ($tipoRemitente === 'persona') {
             $rules['nombre_persona']   = 'required|string|max:100';
             $rules['documento_persona'] = 'required|string|max:20';
-            $rules['correo_persona']   = 'nullable|email|max:255';
             $rules['telefono_persona'] = 'nullable|string|max:25';
         } else {
             $rules['nom_institucion'] = 'required|string|max:150';
+            $rules['nit_institucion'] = 'required|string|max:20';
         }
+
+        $rules['correo_persona'] = 'nullable|email|max:255';
 
         $validated = $request->validate($rules);
 
@@ -253,8 +256,8 @@ class ExternarecController extends Controller
                 : null;
 
             $nombrePersona   = $tipoRemitente === 'persona' ? ($validated['nombre_persona'] ?? null)   : null;
-            $docPersona      = $tipoRemitente === 'persona' ? ($validated['documento_persona'] ?? null) : null;
-            $correoPersona   = $tipoRemitente === 'persona' ? ($validated['correo_persona'] ?? null)    : null;
+            $docPersona      = $tipoRemitente === 'persona' ? ($validated['documento_persona'] ?? null) : ($validated['nit_institucion'] ?? null);
+            $correoPersona   = $validated['correo_persona'] ?? null;
             $telPersona      = $tipoRemitente === 'persona' ? ($validated['telefono_persona'] ?? null)  : null;
 
             $idRecibido = DB::table('recibido')->insertGetId([
@@ -267,7 +270,7 @@ class ExternarecController extends Controller
                 'doc_quien_registra' => $docQuienRegistra,
                 'asunto'             => $validated['asunto'] ?? null,
                 'id_tipo'            => $validated['id_tipo'] ?? null,
-                'id_estado_rec'      => 12,
+                'id_estado_rec'      => 7, // Recibido (ya que en este formulario se asignan destinatarios inmediatamente)
                 'folio'              => $validated['folio'],
                 'anexo'              => $validated['anexo'] ?? null,
                 'observaciones'      => $validated['observaciones'] ?? null,
@@ -344,5 +347,61 @@ class ExternarecController extends Controller
             'asunto'            => $recibido->asunto,
             'anexos'            => $anexos,
         ]);
+    }
+
+    /**
+     * Asigna uno o más destinatarios a una correspondencia externa recien registrada.
+     */
+    public function asignarDestinatarios(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'destinatarios'   => 'required|array|min:1',
+            'destinatarios.*' => 'required|string|max:20',
+            'observaciones'   => 'nullable|string|max:250',
+        ]);
+
+        $remitente = Auth::guard('remitente')->user();
+        $nitEmpresa = $remitente ? $remitente->nit_empresa : null;
+
+        // Verificar que la correspondencia pertenezca a la empresa
+        $recibido = DB::table('recibido')
+            ->where('id_recibido', $id)
+            ->where('nit_empresa', $nitEmpresa)
+            ->first();
+
+        if (!$recibido) {
+            return redirect()->back()->withErrors(['error' => 'No se encontró la correspondencia o no tiene permisos.']);
+        }
+
+        DB::beginTransaction();
+        try {
+            // 1. Eliminar asignaciones previas (la por defecto del formulario público)
+            DB::table('detalle_recibido')->where('det_id_recibido', $id)->delete();
+
+            // 2. Insertar los nuevos destinatarios
+            foreach ($request->input('destinatarios') as $docEmpleado) {
+                DB::table('detalle_recibido')->insert([
+                    'det_id_recibido'  => $id,
+                    'det_doc_empleado' => $docEmpleado,
+                    'fecha_re'         => now(),
+                    'id_estado_rec'    => 7, // Recibido
+                    'observaciones'    => $validated['observaciones'] ?? 'Asignación manual de destinatarios',
+                ]);
+            }
+
+            // 3. Cambiamos el estado de la correspondencia a "Recibido" (7) si estaba en "Enviado" (12)
+            // Y asignamos el documento de quien registra para que aparezca en su dashboard
+            DB::table('recibido')->where('id_recibido', $id)->update([
+                'id_estado_rec'      => 7, // Estado: Recibido (ahora que tiene destinatarios)
+                'doc_quien_registra' => $remitente->rem_doc
+            ]);
+
+            DB::commit();
+            return redirect()->back()->with('success', 'Destinatarios asignados exitosamente.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->withErrors(['error' => 'Error al asignar destinatarios: ' . $e->getMessage()]);
+        }
     }
 }

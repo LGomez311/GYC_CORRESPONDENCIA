@@ -30,6 +30,7 @@ class CorrespondenciaExternaRequest extends FormRequest
             'id_tipo'            => 'required|exists:tipo,id_tipo',
             'asunto'             => 'required|string|max:100',
             'observaciones'      => 'nullable|string|max:250',
+            'folio'              => 'required|numeric|min:1',
             'archivo'            => 'required|file|mimes:pdf|max:10240', // 10MB máximo, solo PDF
             'anexos'             => 'nullable|array|max:5', // Máximo 5 anexos
             'anexos.*'           => 'file|mimes:pdf|max:10240', // Solo PDF, 10MB máximo cada uno
@@ -84,6 +85,9 @@ class CorrespondenciaExternaRequest extends FormRequest
             'id_tipo.required'            => 'Debe seleccionar el tipo de correspondencia.',
             'id_tipo.exists'              => 'El tipo de correspondencia seleccionado no es válido.',
             'asunto.required'             => 'El asunto es obligatorio.',
+            'folio.required'              => 'El conteo de folios es obligatorio.',
+            'folio.numeric'               => 'El folio debe ser un número.',
+            'folio.min'                   => 'El folio debe ser al menos 1.',
             'archivo.required'            => 'Debe adjuntar un archivo principal.',
             'archivo.mimes'               => 'El archivo principal debe ser un PDF.',
             'archivo.max'                 => 'El archivo principal no debe pesar más de 10MB.',

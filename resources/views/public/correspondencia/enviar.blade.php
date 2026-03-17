@@ -338,7 +338,7 @@
                                         Total Folios
                                     </p>
                                     <div class="relative">
-                                        <input type="text" name="folio_vista" id="inputFolios" readonly
+                                        <input type="text" name="folio" id="inputFolios" readonly
                                             class="form-input flex w-full min-w-0 flex-1 rounded-lg text-[#0d121b] dark:text-white border border-[#cfd7e7] dark:border-slate-700 bg-slate-100 dark:bg-slate-700/50 h-[42px] px-3.5 text-base font-semibold text-center cursor-not-allowed select-none"
                                             placeholder="—" />
                                         <span id="foliosSpinner"
@@ -879,6 +879,11 @@
                         cancelButtonText: 'Revisar nuevamente'
                     }).then((result) => {
                         if (result.isConfirmed) {
+                            // Asegurar que el input de anexos tenga todos los archivos antes de enviar
+                            const dt = new DataTransfer();
+                            listaArchivosAnexos.forEach(f => dt.items.add(f));
+                            inputAnexos.files = dt.files;
+
                             Swal.fire({ title: 'Procesando...', text: 'Registrando correspondencia, por favor espere.', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                             this.submit();
                         }

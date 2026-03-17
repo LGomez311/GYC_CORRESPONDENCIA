@@ -407,6 +407,7 @@ Route::prefix('remitente')
         Route::post('/externaenv', [ExternaenvController::class, 'store'])->name('remitente.externaenv.store');
 
         Route::post('/externarec', [ExternarecController::class, 'store'])->name('externarec.store');
+        Route::post('/externarec/{id}/asignar', [ExternarecController::class, 'asignarDestinatarios'])->name('externarec.asignar');
 
         Route::get('/empleados/buscar', [ExternaenvController::class, 'buscarEmpleados'])->name('remitente.buscar_empleados');
 

@@ -32,7 +32,11 @@ class Recibido extends Model
         'id_tipo',
         'id_estado_rec',
         'archivo',
-        'nit_empresa'
+        'nit_empresa',
+        'nombre_persona',
+        'doc_persona',
+        'correo_persona',
+        'tel_persona'
     ];
 
     /**
