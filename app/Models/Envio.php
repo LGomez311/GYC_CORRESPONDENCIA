@@ -13,10 +13,7 @@ class Envio extends Model
     protected $fillable = [
         'num_radicado_int',
         'asunto',
-<<<<<<< HEAD
-=======
         'doc_quien_registra',
->>>>>>> kevin
         'doc_quien_envia',
         'fecha',
         'destino',
@@ -25,11 +22,7 @@ class Envio extends Model
         'id_estado_envio',
         'archivo',
         'nit_empresa',
-<<<<<<< HEAD
-        'doc_quien_registra',
-=======
         'observaciones',
->>>>>>> kevin
     ];
 
     protected $casts = [
