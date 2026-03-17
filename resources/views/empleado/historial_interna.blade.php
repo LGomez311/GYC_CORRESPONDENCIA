@@ -192,6 +192,20 @@
                                         <span class="text-[11px] font-bold text-primary dark:text-blue-400 bg-primary/5 px-2 py-0.5 rounded">
                                             {{ $trace->quienRecibe->emple_nombres }}
                                         </span>
+                                        @if($trace->id_estado_rec == 11 && Auth::user()->emple_doc == $detalle->envio->doc_quien_envia)
+                                            @if($trace->id_detalle == $destinatarios[$trace->id_quien_recibe]->last()->id_detalle)
+                                                <button onclick="abrirModalGestionRechazo({{ $trace->id_detalle }}, '{{ $trace->quienRecibe->emple_nombres }}')" 
+                                                    class="px-3 py-1 bg-red-600 text-white rounded text-[10px] font-bold hover:bg-red-700 transition-colors shadow-sm flex items-center gap-1">
+                                                    <span class="material-symbols-outlined text-[14px]">settings_backup_restore</span>
+                                                    Gestionar Rechazo
+                                                </button>
+                                            @else
+                                                <span class="px-3 py-1 bg-gray-100 dark:bg-slate-700 text-gray-400 dark:text-gray-500 rounded text-[10px] font-bold flex items-center gap-1 cursor-not-allowed">
+                                                    <span class="material-symbols-outlined text-[14px]">check_circle</span>
+                                                    Rechazo Gestionado
+                                                </span>
+                                            @endif
+                                        @endif
                                     </div>
 
                                     <!-- Observaciones -->
@@ -207,13 +221,17 @@
                                     @if($trace->archivo_respuesta || $trace->anexosRespuesta->count() > 0)
                                         <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 grid grid-cols-1 md:grid-cols-2 gap-3">
                                             @if($trace->archivo_respuesta)
-                                                <a href="{{ asset('storage/' . $trace->archivo_respuesta) }}" target="_blank" class="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-green-500 transition-colors group/file">
+                                                <a href="{{ asset('storage/' . $trace->archivo_respuesta) }}" target="_blank" class="{{ $trace->id_quien_envie == $detalle->envio->doc_quien_envia ? 'hover:border-blue-500' : 'hover:border-green-500' }} flex items-center gap-3 p-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg transition-colors group/file">
                                                     <div class="w-10 h-10 rounded bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600">
                                                         <span class="material-symbols-outlined text-2xl">picture_as_pdf</span>
                                                     </div>
                                                     <div class="flex-1 min-w-0">
-                                                        <p class="text-xs font-bold dark:text-white truncate">Respuesta Principal.pdf</p>
-                                                        <p class="text-[10px] text-gray-400 uppercase">Documento de Cierre</p>
+                                                        <p class="text-xs font-bold dark:text-white truncate">
+                                                            {{ $trace->id_quien_envie == $detalle->envio->doc_quien_envia ? 'Documento Principal Corregido.pdf' : 'Respuesta Principal.pdf' }}
+                                                        </p>
+                                                        <p class="text-[10px] text-gray-400 uppercase font-bold {{ $trace->id_quien_envie == $detalle->envio->doc_quien_envia ? 'text-blue-500' : 'text-green-500' }}">
+                                                            {{ $trace->id_quien_envie == $detalle->envio->doc_quien_envia ? 'Documento Corregido (Reenvío)' : 'Documento de Cierre' }}
+                                                        </p>
                                                     </div>
                                                 </a>
                                             @endif
@@ -225,7 +243,9 @@
                                                     </div>
                                                     <div class="flex-1 min-w-0">
                                                         <p class="text-xs font-bold dark:text-white truncate">{{ $anexo->nombre_original }}</p>
-                                                        <p class="text-[10px] text-gray-400 uppercase">Anexo Adjunto</p>
+                                                        <p class="text-[10px] text-gray-400 uppercase font-bold {{ $trace->id_quien_envie == $detalle->envio->doc_quien_envia ? 'text-blue-500' : '' }}">
+                                                            {{ $trace->id_quien_envie == $detalle->envio->doc_quien_envia ? 'Anexo Corrección' : 'Anexo Adjunto' }}
+                                                        </p>
                                                     </div>
                                                 </a>
                                             @endforeach
@@ -278,4 +298,207 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Gestión de Rechazo -->
+<div id="modalGestionRechazo" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col">
+        <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-red-50 dark:bg-red-900/20">
+            <h3 class="font-bold text-lg text-red-800 dark:text-red-400 flex items-center gap-2">
+                <span class="material-symbols-outlined text-[24px]">gavel</span>
+                Gestionar Rechazo de <span id="gestionNombreDestinatario"></span>
+            </h3>
+            <button onclick="toggleModal('modalGestionRechazo')" class="text-gray-400 hover:text-gray-600 dark:hover:text-white">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        
+        <form action="{{ route('empleado.gestionar_rechazo_interna') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <input type="hidden" name="id_detalle" id="gestionIdDetalle">
+            
+            <div class="p-6 space-y-5 overflow-y-auto max-h-[70vh]">
+                <div class="space-y-3">
+                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300">¿Qué acción deseas tomar?</label>
+                    <div class="grid grid-cols-1 gap-3">
+                        <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 cursor-pointer transition-colors">
+                            <input type="radio" name="accion" value="finalizar" required class="w-4 h-4 text-primary" onchange="toggleAccionGestion(this.value)">
+                            <div class="ml-3">
+                                <span class="block text-sm font-bold dark:text-white">Finalizar trámite</span>
+                                <span class="block text-xs text-gray-500">Aceptar el rechazo y dar por terminado este hilo de respuesta.</span>
+                            </div>
+                        </label>
+                        <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 cursor-pointer transition-colors">
+                            <input type="radio" name="accion" value="reenviar" class="w-4 h-4 text-primary" onchange="toggleAccionGestion(this.value)">
+                            <div class="ml-3">
+                                <span class="block text-sm font-bold dark:text-white">Corregir y Reenviar</span>
+                                <span class="block text-xs text-gray-500">Actualizar el documento y volver a enviarlo al mismo destinatario.</span>
+                            </div>
+                        </label>
+                        <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 cursor-pointer transition-colors">
+                            <input type="radio" name="accion" value="reasignar" class="w-4 h-4 text-primary" onchange="toggleAccionGestion(this.value)">
+                            <div class="ml-3">
+                                <span class="block text-sm font-bold dark:text-white">Reasignar a otro colaborador</span>
+                                <span class="block text-xs text-gray-500">Enviar esta correspondencia a una persona distinta.</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Campo dinámico: Archivos (Principal y Anexos) -->
+                <div id="gestionArchivoContainer" class="hidden animate-fade-in space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nuevo Documento Principal (Opcional, Max 5MB)</label>
+                        <input type="file" name="archivo_nuevo" id="archivo_nuevo_gestion" accept=".pdf" onchange="window.handleFileSelectAndCount(event, 'folios_nuevos_gestion')" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-blue-700 file:cursor-pointer cursor-pointer border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 transition-colors">
+                        <p class="mt-1 text-[10px] text-gray-500">Si subes un archivo, este reemplazará al archivo principal anterior.</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Anexos Adicionales (Opcional, Max 25MB c/u)</label>
+                        <input type="file" name="anexos_nuevos[]" id="anexos_nuevos_gestion" accept=".pdf" multiple onchange="window.handleMultipleFilesAndCount(event, 'folios_nuevos_gestion')" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-slate-600 file:text-white hover:file:bg-slate-700 file:cursor-pointer cursor-pointer border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 transition-colors">
+                        <p class="mt-1 text-[10px] text-gray-500">Los anexos subidos se sumarán a los ya existentes (si no se especifica, se mantienen los anteriores).</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Folios Totales</label>
+                        <input type="number" name="folios_nuevos" id="folios_nuevos_gestion" value="{{ $detalle->envio->folio }}" class="w-24 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-slate-800 dark:text-white py-2 px-3 text-sm focus:ring-2 focus:ring-primary/50 text-center font-bold" min="0" readonly>
+                        <p class="mt-1 text-[10px] text-gray-500">Se actualizan automáticamente al seleccionar PDFs.</p>
+                    </div>
+                </div>
+
+                <!-- Campo dinámico: Nuevo Destinatario -->
+                <div id="gestionReasignarContainer" class="hidden animate-fade-in">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nuevo Destinatario <span class="text-red-500">*</span></label>
+                    <select name="id_nuevo_destinatario" id="selectNuevoDestinatario" class="w-full border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 dark:text-white py-2 px-3 text-sm focus:ring-2 focus:ring-primary/50">
+                        <option value="">Seleccione el nuevo responsable...</option>
+                        @foreach($empleados ?? [] as $emp)
+                            <option value="{{ $emp->emple_doc }}">{{ $emp->emple_nombres }} {{ $emp->emple_apellidos }} ({{ $emp->area->area_nom ?? 'N/A' }})</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Observaciones <span class="text-red-500">*</span></label>
+                    <textarea name="observaciones" required rows="3" class="w-full border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 dark:text-white py-2 px-3 text-sm focus:ring-2 focus:ring-primary/50" placeholder="Explique la decisión tomada..."></textarea>
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 bg-gray-50 dark:bg-slate-800/50">
+                <button type="button" onclick="toggleModal('modalGestionRechazo')" class="px-4 py-2 border border-blue-300 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700">
+                    Cancelar
+                </button>
+                <button type="submit" class="px-5 py-2 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700 transition-colors shadow-sm flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[20px]">send_and_archive</span>
+                    Confirmar Acción
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function toggleModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) {
+            modal.classList.toggle('hidden');
+        }
+    }
+
+    function abrirModalGestionRechazo(idDetalle, nombre) {
+        document.getElementById('gestionIdDetalle').value = idDetalle;
+        document.getElementById('gestionNombreDestinatario').innerText = nombre;
+        toggleModal('modalGestionRechazo');
+    }
+
+    function toggleAccionGestion(accion) {
+        const archivoContainer = document.getElementById('gestionArchivoContainer');
+        const reasignarContainer = document.getElementById('gestionReasignarContainer');
+        const selectDest = document.getElementById('selectNuevoDestinatario');
+        
+        // Reset inputs when changing action
+        document.getElementById('archivo_nuevo_gestion').value = '';
+        document.getElementById('anexos_nuevos_gestion').value = '';
+        document.getElementById('folios_nuevos_gestion').value = '{{ $detalle->envio->folio }}'; // Reset to original
+
+        if (accion === 'reenviar') {
+            archivoContainer.classList.remove('hidden');
+            reasignarContainer.classList.add('hidden');
+            selectDest.removeAttribute('required');
+        } else if (accion === 'reasignar') {
+            archivoContainer.classList.add('hidden');
+            reasignarContainer.classList.remove('hidden');
+            selectDest.setAttribute('required', 'required');
+        } else {
+            archivoContainer.classList.add('hidden');
+            reasignarContainer.classList.add('hidden');
+            selectDest.removeAttribute('required');
+        }
+    }
+</script>
+
+<!-- Script para PDF.js y Conteo de Folios -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<script>
+    // Configurar worker de PDF.js
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+    async function contarPaginasPDF(file) {
+        if (!file || file.type !== 'application/pdf') return 0;
+        try {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            return pdf.numPages;
+        } catch (error) {
+            console.error('Error al leer el PDF:', error);
+            return 0;
+        }
+    }
+
+    window.handleFileSelectAndCount = async function(event, foliosInputId) {
+        const foliosInput = document.getElementById(foliosInputId);
+        if (!foliosInput) return;
+        
+        let totalPages = 0;
+        
+        // Count main file
+        const mainInput = document.getElementById('archivo_nuevo_gestion');
+        if (mainInput && mainInput.files && mainInput.files.length > 0) {
+            const file = mainInput.files[0];
+            if (file.size > 5 * 1024 * 1024) {
+                alert('El documento principal no debe superar los 5MB.');
+                mainInput.value = '';
+                return;
+            }
+            const pages = await contarPaginasPDF(file);
+            totalPages += pages;
+        }
+        
+        // Count anexos
+        const anexosInput = document.getElementById('anexos_nuevos_gestion');
+        if (anexosInput && anexosInput.files && anexosInput.files.length > 0) {
+            for (let i = 0; i < anexosInput.files.length; i++) {
+                const file = anexosInput.files[i];
+                if (file.size > 25 * 1024 * 1024) {
+                    alert('Cada anexo no debe superar los 25MB.');
+                    anexosInput.value = '';
+                    continue;
+                }
+                const pages = await contarPaginasPDF(file);
+                totalPages += pages;
+            }
+        }
+        
+        if (totalPages > 0) {
+            foliosInput.value = totalPages;
+            foliosInput.classList.add('ring-2', 'ring-green-400', 'bg-green-50', 'dark:bg-green-900/20');
+            setTimeout(() => {
+                foliosInput.classList.remove('ring-2', 'ring-green-400', 'bg-green-50', 'dark:bg-green-900/20');
+            }, 1000);
+        } else {
+            // Revert back to original folios if no new files
+            foliosInput.value = '{{ $detalle->envio->folio }}';
+        }
+    };
+    
+    window.handleMultipleFilesAndCount = window.handleFileSelectAndCount;
+
+</script>
+
 @endsection

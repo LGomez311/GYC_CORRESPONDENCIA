@@ -83,6 +83,7 @@ Route::middleware(['auth:web', 'licencia.activa'])->group(function () {
     Route::post('/empleado/correspondencia-recibida/{id}/reasignar', [\App\Http\Controllers\Empleado\CorrespondenciaController::class, 'reasignar'])->name('empleado.reasignar_externa');
     Route::post('/empleado/correspondencia-interna/nueva', [\App\Http\Controllers\Empleado\CorrespondenciaController::class, 'nuevaInterna'])->name('empleado.nueva_interna');
     Route::post('/empleado/correspondencia-ventanilla/nueva', [\App\Http\Controllers\Empleado\CorrespondenciaController::class, 'nuevaVentanilla'])->name('empleado.nueva_ventanilla');
+    Route::post('/empleado/correspondencia-interna/gestionar-rechazo', [\App\Http\Controllers\Empleado\CorrespondenciaController::class, 'gestionarRechazoInterno'])->name('empleado.gestionar_rechazo_interna');
     Route::get('/empleado/correspondencia-interna/{id}/historial', [\App\Http\Controllers\Empleado\CorrespondenciaController::class, 'historialInterna'])->name('empleado.historial_interna');
     Route::get('/empleado/envios-internos', [\App\Http\Controllers\Empleado\CorrespondenciaController::class, 'enviosInternos'])->name('empleado.envios_internos');
     Route::get('/empleado/reportes', [\App\Http\Controllers\Empleado\ReporteController::class, 'index'])->name('empleado.reportes');

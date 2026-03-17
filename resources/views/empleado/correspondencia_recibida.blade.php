@@ -319,7 +319,7 @@
                                     </button>
                                 @else
                                     <button title="Actualizar estado"
-                                        onclick="openEstadoModal({{ $item->id_det_recibido }}, '{{ $item->estado?->estado_nomb }}', '{{ $rec?->radicado?->num_radicado ?? '' }}', 'externa')"
+                                        onclick="openEstadoModal({{ $item->id_det_recibido }}, '{{ $item->estado?->estado_nomb }}', '{{ $rec?->radicado?->num_radicado ?? '' }}', 'externa', {{ $rec?->tipo?->requiere_respuesta ?? 0 }})"
                                         class="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-blue-400 p-1">
                                         <span class="material-symbols-outlined text-xl">edit_document</span>
                                     </button>
@@ -567,6 +567,10 @@
                                     <!-- Documentos y Anexos -->
                                     <td class="px-6 py-4 align-top">
                                         @php
+                                            $esCorreccion = false;
+                                            if ($int->envio && $int->id_quien_envie == $int->envio->doc_quien_envia) {
+                                                $esCorreccion = true;
+                                            }
                                             $archivosDatos = [
                                                 'principal' => ($int->envio && $int->envio->archivo) ? asset('storage/' . $int->envio->archivo) : null,
                                                 'anexos' => [],
@@ -574,7 +578,8 @@
                                                 'folios' => ($int->envio && $int->envio->folio) ? $int->envio->folio : 0,
                                                 'respuesta_principal' => $int->archivo_respuesta ? asset('storage/' . $int->archivo_respuesta) : null,
                                                 'respuestas_anexos' => [],
-                                                'folios_respuesta' => $int->folios_respuesta ?? 0
+                                                'folios_respuesta' => $int->folios_respuesta ?? 0,
+                                                'es_correccion' => $esCorreccion
                                             ];
                                             if($int->envio && $int->envio->anexos) {
                                                 foreach($int->envio->anexos as $ax) {
@@ -616,7 +621,7 @@
                                                 <span class="material-symbols-outlined text-xl">lock</span>
                                             </button>
                                         @else
-                                            <button title="Actualizar estado" onclick="openEstadoModal({{ $int->id_detalle }}, '{{ $int->estado ? $int->estado->estado_nomb : '' }}', '{{ $int->envio->radicado->num_radicado ?? '' }}', 'interna')" class="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-blue-400 p-1">
+                                            <button title="Actualizar estado" onclick="openEstadoModal({{ $int->id_detalle }}, '{{ $int->estado ? $int->estado->estado_nomb : '' }}', '{{ $int->envio->radicado->num_radicado ?? '' }}', 'interna', {{ $int->envio->tipoEnvio?->requiere_respuesta ?? 0 }})" class="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-blue-400 p-1">
                                                 <span class="material-symbols-outlined text-xl">edit_document</span>
                                             </button>
                                         @endif
@@ -1270,7 +1275,7 @@
 
     let currentModalType = '';
 
-    function openEstadoModal(id, estadoActual, radicado, tipo) {
+    function openEstadoModal(id, estadoActual, radicado, tipo, requiereRespuesta = 0) {
         document.getElementById('modalEstadoTitle').innerText = 'Actualizar Radicado ' + (radicado || '');
         document.getElementById('estado_actual_input').value = estadoActual || 'Sin Estado';
         
@@ -1303,7 +1308,9 @@
             // Logica de limitacion de estados segun requerimiento:
             if (estActualL.includes('recibido')) {
                 // If current is Recibido, allow En Tramite, Archivado and Rechazado
-                stateSelect.innerHTML += `<option value="Archivado">Archivado</option>`;
+                if (requiereRespuesta != 1) {
+                    stateSelect.innerHTML += `<option value="Archivado">Archivado</option>`;
+                }
                 stateSelect.innerHTML += `<option value="En Tramite">En Trámite</option>`;
                 stateSelect.innerHTML += `<option value="Rechazado">Rechazado</option>`;
             } else if (estActualL.includes('tramite') || estActualL.includes('trámite')) {
@@ -1795,39 +1802,46 @@
         
         html += `</div></div>`; // End Envío Original
 
-        // SECCIÓN: DE LA RESPUESTA
+        // SECCIÓN: DE LA RESPUESTA O CORRECCIÓN
         const hasRespuestaPrincipal = datos.respuesta_principal;
         const hasRespuestaAnexos = datos.respuestas_anexos && datos.respuestas_anexos.length > 0;
         const hasRespuestaFolios = datos.folios_respuesta > 0;
 
         if (hasRespuestaPrincipal || hasRespuestaAnexos || hasRespuestaFolios) {
-            html += `<div class="mt-4 bg-green-50/30 dark:bg-green-900/10 p-4 rounded-xl border border-green-100 dark:border-green-800/30">`;
-            html += `<h4 class="font-bold text-green-800 dark:text-green-500 mb-3 flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">output</span> Respuesta del Destinatario</h4>`;
+            const esCorreccion = datos.es_correccion || false;
+            const tituloRespuesta = esCorreccion ? 'Archivos Corregidos (Reenvío)' : 'Respuesta del Destinatario';
+            const subtituloPrincipal = esCorreccion ? 'Documento Principal Corregido' : 'Oficio de Respuesta';
+            const subtituloAnexos = esCorreccion ? 'Nuevos Anexos de Corrección:' : 'Anexos de Respuesta:';
+            const colorClase = esCorreccion ? 'blue' : 'green';
+            const iconoHeader = esCorreccion ? 'update' : 'output';
+            
+            html += `<div class="mt-4 bg-${colorClase}-50/30 dark:bg-${colorClase}-900/10 p-4 rounded-xl border border-${colorClase}-100 dark:border-${colorClase}-800/30">`;
+            html += `<h4 class="font-bold text-${colorClase}-800 dark:text-${colorClase}-500 mb-3 flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">${iconoHeader}</span> ${tituloRespuesta}</h4>`;
             html += `<div class="flex flex-col gap-3">`;
 
             // Documento Respuesta
             if (datos.respuesta_principal) {
-                html += `<div class="flex items-center justify-between bg-white dark:bg-slate-900/50 p-3 rounded-lg border border-green-200 dark:border-green-800/50">
+                html += `<div class="flex items-center justify-between bg-white dark:bg-slate-900/50 p-3 rounded-lg border border-${colorClase}-200 dark:border-${colorClase}-800/50">
                             <div class="flex items-center gap-2">
-                                <span class="material-symbols-outlined text-green-600">picture_as_pdf</span>
-                                <span class="text-sm font-medium dark:text-white">Oficio de Respuesta</span>
+                                <span class="material-symbols-outlined text-${colorClase}-600">picture_as_pdf</span>
+                                <span class="text-sm font-medium dark:text-white">${subtituloPrincipal}</span>
                             </div>
-                            <a href="${datos.respuesta_principal}" target="_blank" class="px-3 py-1 bg-green-50 text-green-700 hover:bg-green-100 rounded-md text-xs font-medium dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50 transition-colors">Ver Archivo</a>
+                            <a href="${datos.respuesta_principal}" target="_blank" class="px-3 py-1 bg-${colorClase}-50 text-${colorClase}-700 hover:bg-${colorClase}-100 rounded-md text-xs font-medium dark:bg-${colorClase}-900/30 dark:text-${colorClase}-400 dark:hover:bg-${colorClase}-900/50 transition-colors">Ver Archivo</a>
                          </div>`;
             }
 
             // Folios Respuesta
             if (datos.folios_respuesta > 0) {
-                html += `<div class="text-sm text-green-700 dark:text-green-400 px-2 mt-1"><strong>Folios de respuesta:</strong> ${datos.folios_respuesta}</div>`;
+                html += `<div class="text-sm text-${colorClase}-700 dark:text-${colorClase}-400 px-2 mt-1"><strong>Folios ${esCorreccion ? 'actualizados' : 'de respuesta'}:</strong> ${datos.folios_respuesta}</div>`;
             }
 
             // Anexos Respuesta
             if (datos.respuestas_anexos && datos.respuestas_anexos.length > 0) {
-                html += `<div class="mt-2"><h5 class="text-xs font-bold text-green-600 dark:text-green-500 uppercase tracking-wider mb-2 px-2">Anexos de Respuesta:</h5>`;
+                html += `<div class="mt-2"><h5 class="text-xs font-bold text-${colorClase}-600 dark:text-${colorClase}-500 uppercase tracking-wider mb-2 px-2">${subtituloAnexos}</h5>`;
                 html += `<div class="grid grid-cols-1 md:grid-cols-2 gap-2">`;
                 datos.respuestas_anexos.forEach(ax => {
-                    html += `<a href="${ax.ruta}" target="_blank" class="flex items-center gap-2 p-2 bg-white dark:bg-slate-900/50 border border-green-200 dark:border-green-800/50 rounded drop-shadow-sm hover:border-green-300 dark:hover:border-green-600 transition-colors" title="${ax.nombre}">
-                                <span class="material-symbols-outlined text-green-500 text-[18px]">attachment</span>
+                    html += `<a href="${ax.ruta}" target="_blank" class="flex items-center gap-2 p-2 bg-white dark:bg-slate-900/50 border border-${colorClase}-200 dark:border-${colorClase}-800/50 rounded drop-shadow-sm hover:border-${colorClase}-300 dark:hover:border-${colorClase}-600 transition-colors" title="${ax.nombre}">
+                                <span class="material-symbols-outlined text-${colorClase}-500 text-[18px]">attachment</span>
                                 <span class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate w-full">${ax.nombre}</span>
                              </a>`;
                 });
