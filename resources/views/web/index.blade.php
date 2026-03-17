@@ -71,12 +71,12 @@
                     href="#">Soporte</a>
             </nav>
             <div class="flex items-center gap-3">
-                {{-- <a href="">
+                <a href="{{ route('public.correspondencia.enviar') }}">
                     <button
-                        class="hidden sm:flex px-5 py-2.5 text-[#0d121b] hover:bg-gray-100 rounded-lg text-sm font-bold transition-all">
-                        Iniciar sesión
+                        class="hidden sm:flex px-5 py-2.5 text-[#0d121b] hover:bg-gray-100 rounded-lg text-sm font-bold transition-all border border-[#cfd7e7]">
+                        Radicar Documento
                     </button>
-                </a> --}}
+                </a>
                 <a href="{{ route('login') }}">
                     <button
                         class="bg-primary hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg text-sm font-bold shadow-lg shadow-primary/20 transition-all">

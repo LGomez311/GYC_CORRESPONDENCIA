@@ -1,0 +1,23 @@
+--- RECIBIDO COLUMNS ---
+Array
+(
+    [0] => id_recibido
+    [1] => num_radicado_ext
+    [2] => num_radicado_int
+    [3] => asunto
+    [4] => fecha_hora_recib
+    [5] => nom_institucion
+    [6] => ciudad_proveniente
+    [7] => folio
+    [8] => anexo
+    [9] => observaciones
+    [10] => doc_quien_registra
+    [11] => id_tipo
+    [12] => id_estado_rec
+    [13] => archivo
+    [14] => nit_empresa
+    [15] => nombre_persona
+    [16] => doc_persona
+    [17] => correo_persona
+    [18] => tel_persona
+)

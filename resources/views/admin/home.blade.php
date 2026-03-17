@@ -15,11 +15,11 @@
             <div>
                 <h1 class="text-[#0d121b] dark:text-white text-2xl sm:text-3xl font-black tracking-tight">
                     Bienvenido,
-                    <span class="text-primary">{{ auth()->user()->emple_nombres }} {{ auth()->user()->emple_apellidos }}</span>
+                    <span class="text-primary">{{ Auth::user()->emple_nombres }} {{ Auth::user()->emple_apellidos }}</span>
                 </h1>
 
                 <p class="text-[#4c669a] dark:text-gray-400 text-sm sm:text-base mt-1">
-                    Estás logueado como <strong>{{ auth()->user()->rol->rol_nom }}</strong>. Desde aquí puedes administrar el sistema.
+                    Estás logueado como <strong>{{ Auth::user()->rol->rol_nom }}</strong>. Desde aquí puedes administrar el sistema.
                 </p>
             </div>
 
