@@ -93,27 +93,19 @@ class AdminCorrespondenciaController extends Controller
                 $radicadoNum = $item->radicado ? $item->radicado->num_radicado : 'N/A';
 
                 return (object) [
-                    'origen'              => 'Interna',
-                    'num_radicado_ext'    => 'N/A',
-                    'num_radicado_int'    => $radicadoNum,
-                    'nom_institucion'     => $item->quienEnvia
-                                             ? $item->quienEnvia->emple_nombres . ' ' . $item->quienEnvia->emple_apellidos
-                                             : 'N/A',
-                    'ciudad'              => 'N/A',
-                    'asunto'              => $item->asunto,
-                    'fecha'               => $item->fecha,
-                    'registrado_por_nombre' => $item->quienEnvia
-                                             ? $item->quienEnvia->emple_nombres . ' ' . $item->quienEnvia->emple_apellidos
-                                             : 'N/A',
-                    'doc_registra'        => $item->quienEnvia ? $item->quienEnvia->emple_doc : '-',
-                    'destinatario_nombre' => $item->quienDirigido
-                                             ? $item->quienDirigido->emple_nombres . ' ' . $item->quienDirigido->emple_apellidos
-                                             : ($item->destino ?? 'Destino no especificado'),
-                    'doc_destinatario'    => $item->doc_quien_dirigido,
-                    'folio'               => $item->folio,
-                    'anexo'               => null,
-                    'estado_nomb'         => $item->estadoEnvio ? $item->estadoEnvio->estado_nomb : 'Desconocido',
-                    'archivo'             => $item->archivo,
+                    'origen' => 'Interna',
+                    'num_radicado_ext' => 'N/A',
+                    'num_radicado_int' => $item->num_radicado_int,
+                    'nom_institucion' => $item->quienEnvia ? $item->quienEnvia->emple_nombres . ' ' . $item->quienEnvia->emple_apellidos : 'N/A',
+                    'ciudad' => 'N/A',
+                    'asunto' => $item->asunto,
+                    'fecha' => $item->fecha,
+                    'destinatario_nombre' => $item->quienDirigido ? $item->quienDirigido->rem_nombres . ' ' . $item->quienDirigido->rem_apellidos : $item->destino,
+                    'doc_destinatario' => $item->doc_quien_registra,
+                    'folio' => $item->folio,
+                    'anexo' => $item->anexo,
+                    'estado_nomb' => $item->estadoEnvio ? $item->estadoEnvio->estado_nomb : 'Desconocido',
+                    'archivo' => $item->archivo
                 ];
             })
             ->sortByDesc('fecha')

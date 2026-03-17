@@ -92,8 +92,8 @@ class HomeController extends Controller
                     // Pendientes (estado 0 = En espera)
                     $pendientes = $enviosEmpresa->where('id_estado_envio', 0)->count();
 
-                    // Recibidos (donde el usuario es el destinatario)
-                    $recibidos = Envio::where('doc_quien_dirigido', $user->emple_doc)->count();
+                    // Recibidos (donde el usuario es el destinatario - nota: en el nuevo esquema esto aplica mayormente a remitentes)
+                    $recibidos = Envio::where('doc_quien_registra', $user->emple_doc)->count();
 
                     // Enviados (donde el usuario es el remitente)
                     $enviados = Envio::where('doc_quien_envia', $user->emple_doc)->count();

@@ -81,10 +81,27 @@
                     </div>
                     @if($detalle->envio->archivo)
                         <div class="pt-2">
-                            <a href="{{ asset('storage/' . $detalle->envio->archivo) }}" target="_blank" class="flex items-center justify-center gap-2 w-full py-2 bg-primary/10 text-primary dark:bg-blue-900/20 dark:text-blue-400 rounded-lg text-xs font-bold hover:bg-primary hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-all">
+                            <a href="{{ asset('storage/' . $detalle->envio->archivo) }}" target="_blank" class="flex items-center justify-center gap-2 w-full py-2 bg-primary/10 text-primary dark:bg-blue-900/20 dark:text-blue-400 rounded-lg text-xs font-bold hover:bg-primary hover:text-white dark:hover:bg-blue-600 dark:hover:text-white transition-all shadow-sm">
                                 <span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
                                 VER DOCUMENTO ORIGINAL
                             </a>
+                        </div>
+                    @endif
+
+                    @if($detalle->envio->anexos && $detalle->envio->anexos->count() > 0)
+                        <div class="space-y-2 mt-4">
+                            <p class="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[14px]">attachment</span>
+                                Anexos Digitales
+                            </p>
+                            <div class="grid grid-cols-1 gap-2">
+                                @foreach($detalle->envio->anexos as $anexo)
+                                    <a href="{{ asset('storage/' . $anexo->ruta_archivo) }}" target="_blank" class="flex items-center gap-2 p-2 bg-gray-50 dark:bg-slate-900/50 border border-gray-100 dark:border-gray-700 rounded-lg hover:border-blue-400 transition-colors group">
+                                        <span class="material-symbols-outlined text-[18px] text-gray-400 group-hover:text-blue-500">description</span>
+                                        <span class="text-[11px] font-medium text-gray-700 dark:text-gray-300 truncate" title="{{ $anexo->nombre_original }}">{{ $anexo->nombre_original }}</span>
+                                    </a>
+                                @endforeach
+                            </div>
                         </div>
                     @endif
                 </div>

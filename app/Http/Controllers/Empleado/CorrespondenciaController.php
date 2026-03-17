@@ -42,7 +42,7 @@ class CorrespondenciaController extends Controller
         // Solo mostramos los que el empleado aún tiene activos (Recibido=7, En Tramite=8)
         $correspondencias = (clone $queryBandejaUnicaExt)
             ->whereIn('detalle_recibido.id_estado_rec', [7, 8])
-            ->with(['recibido.radicado', 'recibido.tipo.prioridad', 'recibido.ciudad', 'recibido.anexos', 'estado', 'anexosRespuesta'])
+            ->with(['recibido.radicado', 'recibido.tipo.prioridad', 'recibido.ciudad', 'recibido.anexos', 'estado', 'anexosRespuesta', 'recibido.destinatarios'])
             ->leftJoin('recibido', 'detalle_recibido.det_id_recibido', '=', 'recibido.id_recibido')
             ->leftJoin('tipo', 'recibido.id_tipo', '=', 'tipo.id_tipo')
             ->leftJoin('prioridad', 'tipo.id_prioridad', '=', 'prioridad.id_prioridad')
@@ -86,7 +86,7 @@ class CorrespondenciaController extends Controller
         $correspondenciasInternas = clone $queryBandejaUnicaInt;
         $correspondenciasInternas = $correspondenciasInternas
             ->whereIn('detalle_envio.id_estado_rec', [7, 8])
-            ->with(['envio', 'envio.tipoEnvio.prioridad', 'envio.radicado', 'quienEnvia', 'quienEnvia.area', 'estado', 'anexosRespuesta'])
+            ->with(['envio', 'envio.tipoEnvio.prioridad', 'envio.radicado', 'quienEnvia', 'quienEnvia.area', 'estado', 'anexosRespuesta', 'envio.recipients'])
             ->leftJoin('envio', 'detalle_envio.id_envio', '=', 'envio.id_envio')
             ->leftJoin('tipo', 'envio.id_tipo_envio', '=', 'tipo.id_tipo')
             ->leftJoin('prioridad', 'tipo.id_prioridad', '=', 'prioridad.id_prioridad')
@@ -118,10 +118,13 @@ class CorrespondenciaController extends Controller
         // Fetch document types
         $tipos = \App\Models\Tipo::all();
 
+        // Fetch remitentes of the same company (Ventanilla users)
+        $remitentes = \App\Models\Remitente::where('nit_empresa', $user->nit_empresa)->get();
+
         return view('empleado.correspondencia_recibida', compact(
             'correspondencias', 'totalRecibidas', 'enTramite', 'finalizadas', 'archivadas', 'vencidas',
             'correspondenciasInternas', 'totalInternas', 'enTramiteInt', 'finalizadasInt', 'archivadasInt', 'vencidasInt',
-            'empleados', 'tipos'
+            'empleados', 'tipos', 'remitentes'
         ));
     }
 
@@ -151,7 +154,7 @@ class CorrespondenciaController extends Controller
 
         $correspondencias = (clone $queryBandejaUnicaExtFin)
             ->whereIn('detalle_recibido.id_estado_rec', [9, 10, 11])
-            ->with(['recibido.radicado', 'recibido.tipo.prioridad', 'recibido.ciudad', 'recibido.anexos', 'estado', 'anexosRespuesta'])
+            ->with(['recibido.radicado', 'recibido.tipo.prioridad', 'recibido.ciudad', 'recibido.anexos', 'estado', 'anexosRespuesta', 'recibido.destinatarios'])
             ->leftJoin('recibido', 'detalle_recibido.det_id_recibido', '=', 'recibido.id_recibido')
             ->leftJoin('tipo', 'recibido.id_tipo', '=', 'tipo.id_tipo')
             ->leftJoin('prioridad', 'tipo.id_prioridad', '=', 'prioridad.id_prioridad')
@@ -177,7 +180,7 @@ class CorrespondenciaController extends Controller
         $correspondenciasInternas = clone $queryBandejaUnicaInt;
         $correspondenciasInternas = $correspondenciasInternas
             ->where('detalle_envio.id_estado_rec', '>', 8)
-            ->with(['envio', 'envio.tipoEnvio.prioridad', 'envio.radicado', 'quienEnvia', 'quienEnvia.area', 'estado', 'anexosRespuesta'])
+            ->with(['envio', 'envio.tipoEnvio.prioridad', 'envio.radicado', 'quienEnvia', 'quienEnvia.area', 'estado', 'anexosRespuesta', 'envio.recipients'])
             ->leftJoin('envio', 'detalle_envio.id_envio', '=', 'envio.id_envio')
             ->leftJoin('tipo', 'envio.id_tipo_envio', '=', 'tipo.id_tipo')
             ->leftJoin('prioridad', 'tipo.id_prioridad', '=', 'prioridad.id_prioridad')
@@ -246,9 +249,10 @@ class CorrespondenciaController extends Controller
 
         $nuevoRegistro->save();
 
-        // Implementación de lógica: Si un empleado pone la correspondencia 'En Trámite' (8), 'Resuelto' (9) o 'Rechazado' (11),
-        // se le quita a los demás destinatarios de su bandeja de entrada (pasan a Archivado 10)
-        if (in_array($estado->id_estado, [8, 9, 11])) {
+        // Implementación de lógica: Si un empleado pone la correspondencia 'En Trámite' (8) o 'Resuelto' (9),
+        // se le quita a los demás destinatarios de su bandeja de entrada (pasan a Archivado 10).
+        // NOTA: Se eliminó 'Rechazado' (11) de esta lista para que el rechazo sea individual.
+        if (in_array($estado->id_estado, [8, 9])) {
             $otrosDestinatarios = DetalleRecibido::where('det_id_recibido', $nuevoRegistro->det_id_recibido)
                 ->where('det_doc_empleado', '!=', $user->emple_doc)
                 ->whereIn('id_det_recibido', function ($query) use ($nuevoRegistro) {
@@ -519,13 +523,14 @@ class CorrespondenciaController extends Controller
             $envio->num_radicado_int = $radicado->id_radicado;
             $envio->asunto = $request->asunto;
             $envio->doc_quien_envia = $user->emple_doc;
-            $envio->doc_quien_dirigido = null; // Internal, not a remitente
+            $envio->doc_quien_registra = null; // Internal, not a remitente
             $envio->fecha = now();
             $envio->folio = $request->folio ?? 0;
             $envio->id_tipo_envio = $request->id_tipo_envio;
             $envio->id_estado_envio = $estadoEnviadoId; // El que envía (remitente) inicia en 'Enviado'
             $envio->nit_empresa = $user->nit_empresa;
             $envio->destino = 'Interno';
+            $envio->observaciones = $request->observaciones;
 
             if ($request->hasFile('archivo')) {
                 $path = $request->file('archivo')->store('correspondencia', 'public');
@@ -573,9 +578,96 @@ class CorrespondenciaController extends Controller
             return back()->with('error', 'Error interno al guardar: ' . $e->getMessage())->withInput();
         }
     }
+    public function nuevaVentanilla(Request $request)
+    {
+        try {
+            $request->validate([
+                'asunto' => 'required|string|max:100',
+                'doc_quien_dirigido' => 'required|exists:remitente,rem_doc',
+                'id_tipo_envio' => 'required|exists:tipo,id_tipo',
+                'observaciones' => 'nullable|string',
+                'archivo' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120', // Max 5MB
+                'anexos.*' => 'nullable|file|mimes:pdf|max:25600', // Max 25MB
+                'folio' => 'nullable|integer'
+            ]);
+
+            $user = Auth::user();
+            $estadoRecibidoId = 7; // Recibido/Inicial
+            $estadoEnviadoId = 9; // Resuelto (para el emisor)
+
+            // Create Radicado (using sequential numbering SAL-YYYY-00001)
+            $currentYear = date('Y');
+
+            // Find the latest output radicado for this year and company
+            $latestRadicado = \App\Models\Radicado::where('nit_empresa', $user->nit_empresa)
+                ->where('num_radicado', 'like', 'SAL-' . $currentYear . '-%')
+                ->orderBy('num_radicado', 'desc')
+                ->first();
+
+            if ($latestRadicado) {
+                // Extract the last 5 digits and increment
+                $lastNumber = intval(substr($latestRadicado->num_radicado, -5));
+                $newNumber = $lastNumber + 1;
+            } else {
+                $newNumber = 1;
+            }
+
+            $radicado = new \App\Models\Radicado();
+            $radicado->num_radicado = 'SAL-' . $currentYear . '-' . str_pad($newNumber, 5, '0', STR_PAD_LEFT);
+            $radicado->nit_empresa = $user->nit_empresa;
+            $radicado->save();
+
+            $envio = new \App\Models\Envio();
+            $envio->num_radicado_int = $radicado->id_radicado;
+            $envio->asunto = $request->asunto;
+            $envio->doc_quien_envia = $user->emple_doc;
+            $envio->doc_quien_registra = $request->doc_quien_dirigido; // Directed to Remitente
+            $envio->fecha = now();
+            $envio->folio = $request->folio ?? 0;
+            $envio->id_tipo_envio = $request->id_tipo_envio;
+            $envio->id_estado_envio = $estadoEnviadoId;
+            $envio->nit_empresa = $user->nit_empresa;
+            $envio->destino = 'Ventanilla';
+            $envio->observaciones = $request->observaciones;
+
+            if ($request->hasFile('archivo')) {
+                $path = $request->file('archivo')->store('correspondencia', 'public');
+                $envio->archivo = $path;
+            } else {
+                $envio->archivo = '';
+            }
+
+            $envio->save();
+
+            // Process Multiple Annexes
+            if ($request->hasFile('anexos')) {
+                foreach ($request->file('anexos') as $file) {
+                    $pathAnexo = $file->store('correspondencia', 'public');
+                    \App\Models\AnexoEnvio::create([
+                        'id_envio' => $envio->id_envio,
+                        'ruta_archivo' => $pathAnexo,
+                        'nombre_original' => $file->getClientOriginalName(),
+                    ]);
+                }
+            }
+
+            // NOTA: No se crea registro en detalle_envio para Ventanilla 
+            // ya que el destinatario es un Remitente, no un Empleado.
+            // El registro en la tabla 'envio' es suficiente para la trazabilidad.
+
+            return back()->with('success', 'Correspondencia a Ventanilla creada exitosamente con radicado ' . $radicado->num_radicado);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            Log::error('Error guardando correspondencia a Ventanilla: ' . $e->getMessage());
+            return back()->with('error', 'Error interno al guardar: ' . $e->getMessage())->withInput();
+        }
+    }
+
     public function historialInterna($id)
     {
-        $detalle = \App\Models\DetalleEnvio::with(['envio.radicado', 'envio.tipoEnvio', 'quienEnvia.area', 'quienRecibe.area'])
+        $detalle = \App\Models\DetalleEnvio::with(['envio.radicado', 'envio.tipoEnvio', 'envio.anexos', 'quienEnvia.area', 'quienRecibe.area'])
             ->findOrFail($id);
 
         $trazabilidad = \App\Models\DetalleEnvio::with(['quienRecibe', 'estado', 'anexosRespuesta'])
@@ -593,23 +685,40 @@ class CorrespondenciaController extends Controller
         $user = Auth::user();
 
         // Obtener los documentos enviados por el usuario (un registro por radicado)
-        $envios = \App\Models\Envio::with(['radicado', 'tipoEnvio'])
+        $envios = \App\Models\Envio::with(['radicado', 'tipoEnvio', 'quienDirigido'])
             ->where('doc_quien_envia', $user->emple_doc)
             ->where('nit_empresa', $user->nit_empresa)
             ->orderBy('id_envio', 'desc')
-                ->paginate(15);
+            ->paginate(15);
 
         // Para cada envío, cargamos la relación de quiénes lo recibieron y su estado actual
         foreach ($envios as $envio) {
-            $envio->destinatarios_actuales = \App\Models\DetalleEnvio::with(['quienRecibe.area', 'estado'])
-                ->where('id_envio', $envio->id_envio)
-                ->whereIn('id_detalle', function($query) use ($envio) {
-                    $query->select(\Illuminate\Support\Facades\DB::raw('MAX(id_detalle)'))
-                        ->from('detalle_envio')
-                        ->where('id_envio', $envio->id_envio)
-                        ->groupBy('id_quien_recibe');
-                })
-                ->get();
+            if ($envio->destino === 'Ventanilla') {
+                // Para Ventanilla no hay detalle_envio, simulamos el destinatario actual
+                $envio->destinatarios_actuales = collect();
+                if ($envio->quienDirigido) {
+                    $mock = new \stdClass();
+                    $mock->quienRecibe = new \stdClass();
+                    $mock->quienRecibe->emple_nombres = $envio->quienDirigido->rem_nombres;
+                    $mock->quienRecibe->emple_apellidos = $envio->quienDirigido->rem_apellidos;
+                    $mock->quienRecibe->area = new \stdClass();
+                    $mock->quienRecibe->area->area_nom = 'Ventanilla / Remitente';
+                    $mock->estado = new \stdClass();
+                    $mock->estado->estado_nomb = $envio->estadoEnvio->estado_nombre ?? 'Enviado';
+                    $mock->id_detalle = 0; // Para el link de seguimiento (aunque para ventanilla será limitado)
+                    $envio->destinatarios_actuales->push($mock);
+                }
+            } else {
+                $envio->destinatarios_actuales = \App\Models\DetalleEnvio::with(['quienRecibe.area', 'estado'])
+                    ->where('id_envio', $envio->id_envio)
+                    ->whereIn('id_detalle', function($query) use ($envio) {
+                        $query->select(\Illuminate\Support\Facades\DB::raw('MAX(id_detalle)'))
+                            ->from('detalle_envio')
+                            ->where('id_envio', $envio->id_envio)
+                            ->groupBy('id_quien_recibe');
+                    })
+                    ->get();
+            }
         }
 
         return view('empleado.envios_internos', compact('envios'));

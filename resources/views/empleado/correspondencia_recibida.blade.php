@@ -90,12 +90,10 @@
                 </div>
             </div>
             <div class="flex gap-2 w-full md:w-auto">
-                <select class="text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-slate-900 dark:text-white py-2 px-3">
-                    <option value="">Todos los estados</option>
-                    <option value="recibido">Recibido</option>
-                    <option value="tramite">En Trámite</option>
-                    <option value="finalizado">Finalizado</option>
-                </select>
+                <button onclick="toggleModal('modalNuevaVentanilla')" class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm whitespace-nowrap">
+                    <span class="material-symbols-outlined text-[18px]">outgoing_mail</span>
+                    Nueva a Ventanilla
+                </button>
             </div>
         </div>
 
@@ -165,7 +163,7 @@
                                 </div>
                                 @if($item->observaciones && trim(strtoupper($item->observaciones)) !== 'NINGUNO' && trim(strtoupper($item->observaciones)) !== 'NINGUNA')
                                     <div class="mt-2">
-                                        <button onclick="openObservacionModal('{{ addslashes($item->observaciones) }}')" class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-purple-700 bg-purple-50 border border-purple-200 hover:bg-purple-100 rounded transition-colors w-fit">
+                                        <button onclick="openObservacionModal('{{ addslashes($item->observaciones) }}', {{ json_encode($rec?->destinatarios->map(fn($d) => $d->emple_nombres . ' ' . $d->emple_apellidos)->toArray()) }})" class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-purple-700 bg-purple-50 border border-purple-200 hover:bg-purple-100 rounded transition-colors w-fit">
                                             <span class="material-symbols-outlined text-[14px]">visibility</span> Observaciones
                                         </button>
                                     </div>
@@ -463,7 +461,7 @@
                                         
                                         <div class="mt-2 text-xs">
                                             @if($int->observaciones && trim(strtoupper($int->observaciones)) !== 'NINGUNO' && trim(strtoupper($int->observaciones)) !== 'NINGUNA')
-                                                <button onclick="openObservacionModal('{{ addslashes($int->observaciones) }}')" class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-purple-700 bg-purple-50 border border-purple-200 hover:bg-purple-100 rounded transition-colors w-fit">
+                                                <button onclick="openObservacionModal('{{ addslashes($int->observaciones) }}', {{ json_encode($int->envio?->recipients->map(fn($d) => $d->emple_nombres . ' ' . $d->emple_apellidos)->toArray()) }})" class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-purple-700 bg-purple-50 border border-purple-200 hover:bg-purple-100 rounded transition-colors w-fit">
                                                     <span class="material-symbols-outlined text-[14px]">visibility</span> Observaciones
                                                 </button>
                                             @endif
@@ -1019,9 +1017,19 @@
             </button>
         </div>
         
-        <div class="p-6">
-            <div id="contenidoObservacion" class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed bg-gray-50 dark:bg-slate-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                <!-- Content injected via JS -->
+        <div class="p-6 space-y-4">
+            <div>
+                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Comentario / Observación</h4>
+                <div id="contenidoObservacion" class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed bg-gray-50 dark:bg-slate-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <!-- Content injected via JS -->
+                </div>
+            </div>
+
+            <div id="seccionDestinatarios" class="hidden">
+                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Destinatarios que recibieron este radicado</h4>
+                <div id="destinatariosObservacion" class="flex flex-wrap gap-2 p-4 bg-blue-50/50 dark:bg-blue-900/10 rounded-lg border border-blue-100 dark:border-blue-800/30">
+                    <!-- Pills injected via JS -->
+                </div>
             </div>
         </div>
 
@@ -1032,6 +1040,138 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Nueva Correspondencia a Ventanilla -->
+<div id="modalNuevaVentanilla" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 w-full h-full">
+    <div class="bg-white dark:bg-slate-900 rounded-[1rem] shadow-[0_8px_30px_rgb(0,0,0,0.12)] w-full max-w-2xl flex flex-col max-h-[90vh] overflow-hidden">
+        <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50 shrink-0">
+            <h3 class="font-bold text-lg text-gray-800 dark:text-white flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary dark:text-blue-400">outgoing_mail</span>
+                Redactar Correspondencia a Ventanilla
+            </h3>
+            <button onclick="toggleModal('modalNuevaVentanilla')" class="text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors p-1 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        
+        <form action="{{ route('empleado.nueva_ventanilla') }}" method="POST" enctype="multipart/form-data" class="flex flex-col overflow-hidden">
+            @csrf
+            <div class="p-6 space-y-5 overflow-y-auto flex-1">
+                <!-- Destinatario (Ventanilla / Remitente) - Rich Dropdown -->
+                <div class="relative" id="ventanillaDropdownContainer">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ventanilla Destino <span class="text-red-500">*</span></label>
+                    
+                    <!-- Faux Input Box containing search input -->
+                    <div id="ventanillaInputContainer" class="flex flex-wrap items-center gap-1.5 w-full min-h-[42px] px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-slate-900 focus-within:ring-2 focus-within:ring-primary/50 cursor-text transition-all" onclick="abrirDropdownVentanilla()">
+                        <input type="text" id="busquedaVentanilla" placeholder="Buscar destinatario en Ventanilla..." 
+                            class="flex-1 min-w-[120px] bg-transparent border-none p-0 focus:ring-0 text-sm dark:text-white dark:placeholder-gray-400 m-0"
+                            autocomplete="off"
+                            onkeyup="filtrarVentanilla()" onfocus="abrirDropdownVentanilla()">
+                    </div>
+
+                    <!-- Dropdown List -->
+                    <div id="dropdownVentanillaList" class="hidden absolute z-10 w-full mt-1 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-800 shadow-lg max-h-60 overflow-y-auto">
+                        <div id="listaVentanilla" class="flex flex-col">
+                            @foreach($remitentes ?? [] as $rem)
+                                <div class="ventanilla-item flex items-center justify-between px-4 py-2 hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0 transition-colors" 
+                                       data-nombre="{{ strtolower($rem->rem_nombres . ' ' . $rem->rem_apellidos) }}" 
+                                       data-doc="{{ $rem->rem_doc }}"
+                                       onclick="seleccionarVentanilla('{{ addslashes($rem->rem_nombres . ' ' . $rem->rem_apellidos) }}', '{{ $rem->rem_doc }}')">
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-medium text-gray-900 dark:text-white">{{ $rem->rem_nombres }} {{ $rem->rem_apellidos }}</span>
+                                        <span class="text-xs text-gray-500 dark:text-gray-400">Documento: {{ $rem->rem_doc }} • <span class="text-blue-600 dark:text-blue-400 font-semibold">Ventanilla / Remitente</span></span>
+                                    </div>
+                                </div>
+                            @endforeach
+                            <!-- No results message -->
+                            <div id="noVentanillaMsg" class="hidden px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                                No se encontraron destinatarios de Ventanilla.
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Input oculto para el envío del formulario -->
+                    <input type="hidden" name="doc_quien_dirigido" id="doc_ventanilla_hidden" required>
+                </div>
+
+                <!-- Selected Recipient Pill -->
+                <div id="ventanillaSeleccionada" class="flex flex-wrap gap-2 empty:hidden items-center mt-2">
+                    <!-- Pill se inyecta acá -->
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <!-- Asunto -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Asunto <span class="text-red-500">*</span></label>
+                        <input type="text" name="asunto" required placeholder="Ej. Respuesta a Reclamación #123" class="w-full border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 dark:text-white py-2.5 px-3 text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors">
+                    </div>
+
+                    <!-- Tipo de Documento -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo de Documento <span class="text-red-500">*</span></label>
+                        <select name="id_tipo_envio" required class="w-full border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 dark:text-white py-2.5 px-3 text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors">
+                            <option value="">Seleccione el tipo...</option>
+                            @foreach($tipos ?? [] as $tipo)
+                                <option value="{{ $tipo->id_tipo }}">{{ $tipo->tipo_nombre }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Archivo y Anexos -->
+                <div class="p-4 bg-gray-50 dark:bg-slate-800/30 rounded-xl border border-gray-200 dark:border-gray-700 space-y-4">
+                    <!-- Documento Principal -->
+                    <div class="w-full">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Documento Principal
+                            <span class="ml-1 text-xs font-normal text-blue-600 dark:text-blue-400">(Solo 1 PDF · Máx. 5 MB)</span>
+                        </label>
+                        <input type="file" name="archivo" id="archivo_ventanilla_input" accept=".pdf"
+                               class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-blue-700 file:cursor-pointer cursor-pointer border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 transition-colors"
+                               onchange="validarArchivoVentanilla(this)">
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Solo se permite <strong>1 archivo PDF</strong> como oficio principal.</p>
+                        <p id="error_archivo_ventanilla" class="hidden mt-1 text-xs text-red-600 dark:text-red-400 font-medium flex items-center gap-1"><span class="material-symbols-outlined text-[13px]">error</span> <span id="error_archivo_ventanilla_msg"></span></p>
+                    </div>
+
+                    <!-- Anexo único y Folios -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Anexo
+                                <span class="ml-1 text-xs font-normal text-blue-600 dark:text-blue-400">(Solo 1 PDF · Máx. 25 MB)</span>
+                            </label>
+                            <input type="file" name="anexos[]" id="anexo_ventanilla_input" accept=".pdf"
+                                   class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900/30 dark:file:text-blue-400 file:cursor-pointer cursor-pointer border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 transition-colors"
+                                   onchange="validarAnexoVentanilla(this)">
+                            <p id="error_anexo_ventanilla" class="hidden mt-1 text-xs text-red-600 dark:text-red-400 font-medium flex items-center gap-1"><span class="material-symbols-outlined text-[13px]">error</span> <span id="error_anexo_ventanilla_msg"></span></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Total de Folios</label>
+                            <input type="number" name="folio" id="total_folios_ventanilla_input" readonly placeholder="Calculado automáticamente..." class="w-full border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-slate-800 dark:text-gray-400 py-2 px-3 text-sm focus:outline-none cursor-not-allowed transition-colors">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mensaje/Observaciones -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Observaciones para Ventanilla</label>
+                    <textarea name="observaciones" rows="4" class="w-full border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 dark:text-white py-2.5 px-3 text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors" placeholder="Escriba aquí los detalles para la salida externa..."></textarea>
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 bg-gray-50 dark:bg-slate-800/50 shrink-0 border-b-xl">
+                <button type="button" onclick="toggleModal('modalNuevaVentanilla')" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors">
+                    Cancelar
+                </button>
+                <button type="submit" class="px-5 py-2 bg-primary text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">send</span>
+                    Enviar a Ventanilla
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
 @endsection
 
@@ -1197,8 +1337,27 @@
         toggleModal('modalReasignar');
     }
 
-    function openObservacionModal(texto) {
+    function openObservacionModal(texto, destinatarios = []) {
         document.getElementById('contenidoObservacion').innerText = texto;
+        
+        const container = document.getElementById('destinatariosObservacion');
+        const section = document.getElementById('seccionDestinatarios');
+        
+        if (container && section) {
+            container.innerHTML = '';
+            if (destinatarios && destinatarios.length > 0) {
+                section.classList.remove('hidden');
+                destinatarios.forEach(nombre => {
+                    const pill = document.createElement('span');
+                    pill.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800';
+                    pill.textContent = nombre;
+                    container.appendChild(pill);
+                });
+            } else {
+                section.classList.add('hidden');
+            }
+        }
+        
         toggleModal('modalVerObservacion');
     }
 
@@ -1566,6 +1725,22 @@
             });
         }
 
+        // Validación para Modal Ventanilla
+        const formVentanilla = document.querySelector('#modalNuevaVentanilla form');
+        if (formVentanilla) {
+            formVentanilla.addEventListener('submit', function(e) {
+                const docHidden = document.getElementById('doc_ventanilla_hidden');
+                if (!docHidden || !docHidden.value) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Destinatario requerido',
+                        text: 'Debe seleccionar un destinatario en Ventanilla.',
+                    });
+                }
+            });
+        }
+
         // Limpiar cualquier validación custom que pueda estar bloqueando
         document.querySelectorAll('.destinatario-checkbox').forEach(cb => cb.setCustomValidity(''));
     });
@@ -1731,7 +1906,128 @@
         });
     }
 
+    function validarArchivoVentanilla(input) {
+        validarArchivo(input, MAX_PRINCIPAL_MB, 'error_archivo_ventanilla', 'error_archivo_ventanilla_msg', actualizarContadorFoliosVentanilla);
+    }
+
+    function validarAnexoVentanilla(input) {
+        validarArchivo(input, MAX_ANEXO_MB, 'error_anexo_ventanilla', 'error_anexo_ventanilla_msg', actualizarContadorFoliosVentanilla);
+    }
+
+    async function actualizarContadorFoliosVentanilla() {
+        const principalInput = document.getElementById('archivo_ventanilla_input');
+        const anexoInput = document.getElementById('anexo_ventanilla_input');
+        const totalInput = document.getElementById('total_folios_ventanilla_input');
+
+        let filePromises = [];
+
+        if (principalInput && principalInput.files.length > 0) {
+            const file = principalInput.files[0];
+            if (file.type === 'application/pdf') {
+                filePromises.push(getPdfPageCount(file));
+            }
+        }
+
+        if (anexoInput && anexoInput.files.length > 0) {
+            const file = anexoInput.files[0];
+            if (file.type === 'application/pdf') {
+                filePromises.push(getPdfPageCount(file));
+            }
+        }
+
+        if (filePromises.length > 0) {
+            totalInput.placeholder = "Contando...";
+            const counts = await Promise.all(filePromises);
+            const total = counts.reduce((a, b) => a + b, 0);
+            totalInput.value = total;
+            totalInput.placeholder = "Calculado automáticamente...";
+        } else {
+            totalInput.value = "";
+        }
+    }
+
+    function abrirDropdownVentanilla() {
+        const dropdown = document.getElementById('dropdownVentanillaList');
+        const input = document.getElementById('busquedaVentanilla');
+        if (dropdown.classList.contains('hidden')) {
+            dropdown.classList.remove('hidden');
+            input.focus();
+            filtrarVentanilla();
+        }
+    }
+
+    function cerrarDropdownVentanilla() {
+        const dropdown = document.getElementById('dropdownVentanillaList');
+        if (dropdown && !dropdown.classList.contains('hidden')) {
+            dropdown.classList.add('hidden');
+        }
+    }
+
+    // Cerrar al hacer clic fuera
+    document.addEventListener('click', function(event) {
+        const container = document.getElementById('ventanillaDropdownContainer');
+        if (container && !container.contains(event.target)) {
+            cerrarDropdownVentanilla();
+        }
+    });
+
+    function filtrarVentanilla() {
+        const input = document.getElementById('busquedaVentanilla').value.toLowerCase().trim();
+        const items = document.querySelectorAll('.ventanilla-item');
+        const noMsg = document.getElementById('noVentanillaMsg');
+        let visibleCount = 0;
+
+        items.forEach(item => {
+            const nombre = item.getAttribute('data-nombre');
+            const doc = item.getAttribute('data-doc');
+            
+            if (input.length === 0 || nombre.includes(input) || doc.includes(input)) {
+                item.classList.remove('hidden');
+                item.classList.add('flex');
+                visibleCount++;
+            } else {
+                item.classList.add('hidden');
+                item.classList.remove('flex');
+            }
+        });
+
+        if (visibleCount === 0 && items.length > 0) {
+            noMsg.classList.remove('hidden');
+        } else {
+            noMsg.classList.add('hidden');
+        }
+    }
+
+    function seleccionarVentanilla(nombre, doc) {
+        const hiddenInput = document.getElementById('doc_ventanilla_hidden');
+        const container = document.getElementById('ventanillaSeleccionada');
+        const searchInput = document.getElementById('busquedaVentanilla');
+        
+        hiddenInput.value = doc;
+        
+        // Mostrar Pill estilizada
+        container.innerHTML = `
+            <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800 transition-all shadow-sm">
+                <span class="material-symbols-outlined text-[18px]">person</span>
+                <div class="flex flex-col leading-tight">
+                    <span>${nombre}</span>
+                    <span class="text-[10px] opacity-70">Doc: ${doc} • Ventanilla / Remitente</span>
+                </div>
+                <button type="button" class="text-blue-600 hover:text-red-500 dark:text-blue-400 dark:hover:text-red-400 ml-1 rounded-full w-5 h-5 flex items-center justify-center transition-colors focus:outline-none" onclick="removerVentanilla()">
+                    <span class="material-symbols-outlined text-[14px]">close</span>
+                </button>
+            </div>
+        `;
+        
+        searchInput.value = '';
+        cerrarDropdownVentanilla();
+    }
+
+    function removerVentanilla() {
+        document.getElementById('doc_ventanilla_hidden').value = '';
+        document.getElementById('ventanillaSeleccionada').innerHTML = '';
+    }
+
 </script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 @endsection

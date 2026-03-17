@@ -13,6 +13,10 @@ class Envio extends Model
     protected $fillable = [
         'num_radicado_int',
         'asunto',
+<<<<<<< HEAD
+=======
+        'doc_quien_registra',
+>>>>>>> kevin
         'doc_quien_envia',
         'fecha',
         'destino',
@@ -21,7 +25,11 @@ class Envio extends Model
         'id_estado_envio',
         'archivo',
         'nit_empresa',
+<<<<<<< HEAD
         'doc_quien_registra',
+=======
+        'observaciones',
+>>>>>>> kevin
     ];
 
     protected $casts = [
@@ -69,9 +77,11 @@ class Envio extends Model
         return $this->hasMany(DetalleEnvio::class, 'id_envio', 'id_envio');
     }
 
-    // Quien va dirigido (Empleado)
-    public function quienDirigido()
+    /**
+     * Relación con los empleados destinatarios
+     */
+    public function recipients()
     {
-        return $this->belongsTo(Empleado::class, 'doc_quien_dirigido', 'emple_doc');
+        return $this->belongsToMany(Empleado::class, 'detalle_envio', 'id_envio', 'id_quien_recibe')->distinct();
     }
 }
