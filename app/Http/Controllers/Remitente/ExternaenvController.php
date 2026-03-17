@@ -16,27 +16,40 @@ use Illuminate\Support\Facades\DB;
 
 class ExternaenvController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $remitente = Auth::guard('remitente')->user();
         $nitEmpresa = $remitente ? $remitente->nit_empresa : null;
 
+        $search = $request->input('search');
+
         // Traemos los envíos con sus relaciones cargadas.
-        $envios = Envio::with([
+        $query = Envio::with([
             'radicado', 
             'tipoEnvio', 
             'estadoEnvio',
             'anexos'
         ])
         ->where('nit_empresa', $nitEmpresa)
-        ->orderBy('fecha', 'desc')
-        ->paginate(10);
+        ->orderBy('fecha', 'desc');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('asunto', 'like', "%{$search}%")
+                  ->orWhere('destino', 'like', "%{$search}%")
+                  ->orWhereHas('radicado', function($qr) use ($search) {
+                      $qr->where('num_radicado', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $envios = $query->paginate(10)->appends(['search' => $search]);
 
         $tipos = Tipo::all();
         $estados = Estado::all();
         $ciudades = Ciudad::orderBy('ciudad_nom')->get();
 
-        return view('remitente.externaenv', compact('envios', 'tipos', 'estados', 'ciudades'));
+        return view('remitente.externaenv', compact('envios', 'tipos', 'estados', 'ciudades', 'search'));
     }
 
     public function store(Request $request)
@@ -120,5 +133,79 @@ class ExternaenvController extends Controller
             ]);
 
         return response()->json($empleados);
+    }
+
+    public function getHistory($id)
+    {
+        $remitente = Auth::guard('remitente')->user();
+        $nitEmpresa = $remitente ? $remitente->nit_empresa : null;
+
+        // 1. Registro inicial (envio)
+        $registration = DB::table('envio as e')
+            ->join('radicados as rad', 'e.num_radicado_int', '=', 'rad.id_radicado')
+            ->leftJoin('remitente as rem', 'e.doc_quien_registra', '=', 'rem.rem_doc')
+            ->where('e.id_envio', $id)
+            ->where('e.nit_empresa', $nitEmpresa)
+            ->select(
+                DB::raw("'registry' as type"),
+                'e.fecha as fecha',
+                'rem.rem_nombres as nombres',
+                'rem.rem_apellidos as apellidos',
+                'rad.num_radicado',
+                DB::raw("'Registrado y Enviado Externamente' as estado_nomb"),
+                DB::raw("NULL as observaciones"),
+                DB::raw("NULL as img")
+            )
+            ->first();
+
+        if (!$registration) {
+            return response()->json(['error' => 'No encontrado'], 404);
+        }
+
+        // 2. Transiciones de ciclo (detalle_envio)
+        $details = DB::table('detalle_envio as de')
+            ->leftJoin('estado as est', 'de.id_estado_rec', '=', 'est.id_estado')
+            ->leftJoin('empleado as emp_e', 'de.id_quien_envie', '=', 'emp_e.emple_doc')
+            ->leftJoin('empleado as emp_r', 'de.id_quien_recibe', '=', 'emp_r.emple_doc')
+            ->where('de.id_envio', $id)
+            ->select(
+                DB::raw("'detail' as type"),
+                'de.fecha_traslado as fecha',
+                'emp_e.emple_nombres as nombres_e',
+                'emp_e.emple_apellidos as apellidos_e',
+                'emp_r.emple_nombres as nombres_r',
+                'emp_r.emple_apellidos as apellidos_r',
+                'est.estado_nomb',
+                'de.observaciones',
+                'emp_e.emple_img as img',
+                'de.id_estado_rec',
+                'de.id_detalle',
+                'de.archivo_respuesta as archivo_res'
+            )
+            ->orderBy('de.fecha_traslado', 'asc')
+            ->get();
+
+        $history = [];
+        $history[] = (array) $registration;
+
+        foreach ($details as $d) {
+            $det = (array) $d;
+            $det['nombres'] = $d->nombres_e;
+            $det['apellidos'] = $d->apellidos_e;
+            
+            if ($d->nombres_r) {
+                $receptor = " -> Destino: {$d->nombres_r} {$d->apellidos_r}";
+                $det['observaciones'] = ($det['observaciones'] ?? '') . $receptor;
+            }
+
+            $det['anexos'] = DB::table('anexo_respuesta')
+                ->where('id_det_interna', $d->id_detalle)
+                ->select('ruta_archivo', 'nombre_original')
+                ->get();
+                
+            $history[] = $det;
+        }
+
+        return response()->json($history);
     }
 }

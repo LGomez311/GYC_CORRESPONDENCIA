@@ -405,6 +405,7 @@ Route::prefix('remitente')
         Route::get('/externarec', [ExternarecController::class, 'index'])->name('remitente.externarec');
 
         Route::get('/externaenv', [ExternaenvController::class, 'index'])->name('remitente.externaenv');
+        Route::get('/externaenv/{id}/history', [ExternaenvController::class, 'getHistory'])->name('remitente.externaenv.history');
         Route::post('/externaenv', [ExternaenvController::class, 'store'])->name('remitente.externaenv.store');
 
         Route::post('/externarec', [ExternarecController::class, 'store'])->name('externarec.store');
@@ -418,5 +419,6 @@ Route::prefix('remitente')
         // Dashboard history and actions
         Route::get('/history/{id}', [RemitenteDashboardController::class, 'getHistory'])->name('remitente.history');
         Route::post('/{id}/finalize', [RemitenteDashboardController::class, 'finalize'])->name('remitente.finalize');
+        Route::post('/{id}/store-saliente', [RemitenteDashboardController::class, 'storeSalienteFromResponse'])->name('remitente.store_saliente');
         Route::post('/{id}/update-rejected', [RemitenteDashboardController::class, 'updateRejected'])->name('remitente.update_rejected');
     });

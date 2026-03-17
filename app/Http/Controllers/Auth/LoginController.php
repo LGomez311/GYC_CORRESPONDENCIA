@@ -14,7 +14,15 @@ class LoginController extends Controller
 {
     public function showLoginForm()
     {
-        return view('auth.login');
+        $throttleKey = 'login|' . request()->ip();
+        $remainingAttempts = $this->maxAttempts() - RateLimiter::attempts($throttleKey);
+        
+        $lockoutSeconds = 0;
+        if (RateLimiter::tooManyAttempts($throttleKey, $this->maxAttempts())) {
+            $lockoutSeconds = RateLimiter::availableIn($throttleKey);
+        }
+
+        return view('auth.login', compact('remainingAttempts', 'lockoutSeconds'));
     }
 
     /**
@@ -54,9 +62,9 @@ class LoginController extends Controller
                 $this->throttleKey($request)
             );
 
-            throw ValidationException::withMessages([
+            return back()->withErrors([
                 'login' => "Demasiados intentos. Intenta nuevamente en {$seconds} segundos."
-            ]);
+            ])->with('lockout_seconds', $seconds);
         }
 
         /**
@@ -128,13 +136,19 @@ class LoginController extends Controller
             $this->decayMinutes() * 60
         );
 
-        $seconds = RateLimiter::availableIn($this->throttleKey($request));
+        $throttleKey = $this->throttleKey($request);
+        $remainingAttempts = $this->maxAttempts() - RateLimiter::attempts($throttleKey);
+        
+        $seconds = 0;
+        if (RateLimiter::tooManyAttempts($throttleKey, $this->maxAttempts())) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+        }
 
-        session(['lockout_seconds' => $seconds]);
-
-
-        throw ValidationException::withMessages([
+        return back()->withErrors([
             'login' => 'Credenciales incorrectas.'
+        ])->with([
+            'remaining_attempts' => $remainingAttempts,
+            'lockout_seconds' => $seconds
         ]);
     }
 

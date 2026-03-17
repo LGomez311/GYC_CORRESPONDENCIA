@@ -120,234 +120,293 @@
                     </div>
                 </div>
                 <div class="overflow-x-auto flex-1">
-                    <table class="w-full text-sm text-left">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-gray-50/50 dark:bg-gray-900/30 border-b border-gray-100 dark:border-gray-800">
-                                    <th
-                                        class="px-3 py-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest text-center">
-                                        Radicados</th>
-                                    <th class="px-3 py-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest">
-                                        Procedencia</th>
-                                    <th class="px-3 py-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest">
-                                        Detalles Documento</th>
-                                    <th class="px-3 py-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest">
-                                        Destinatarios</th>
-                                    <th class="px-3 py-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest">
-                                        Detalles Técnicos</th>
-                                    <th class="px-3 py-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest">
-                                        Ingreso / Registro</th>
-                                    <th
-                                        class="px-3 py-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest text-center">
-                                        Docs</th>
-                                    <th
-                                        class="px-3 py-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest text-center">
-                                        Estado</th>
-                                    <th
-                                        class="px-3 py-4 text-[9px] font-bold text-gray-400 uppercase tracking-widest text-center">
-                                        Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="correspondenceTableBody" class="divide-y divide-gray-50 dark:divide-gray-800/50">
-                                @forelse($correspondencias as $c)
-                                    <tr
-                                        class="group hover:bg-gray-50/30 dark:hover:bg-gray-800/10 transition-all duration-200">
-                                        <!-- Radicados -->
-                                        <td class="px-6 py-5 whitespace-nowrap">
-                                            <div class="flex flex-col gap-1">
-                                                <span
-                                                    class="text-xs font-black text-gray-900 dark:text-white tracking-tight">
-                                                    {{ $c->radicado ? $c->radicado->num_radicado : 'SIN RADICADO' }}
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50/50 dark:bg-gray-900/30 border-b border-gray-100 dark:border-gray-800">
+                                <th class="px-4 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Radicados
+                                </th>
+                                <th class="px-4 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Procedencia
+                                </th>
+                                <th class="px-4 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Asunto</th>
+                                <th class="px-4 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">
+                                    Destinatarios</th>
+                                <th class="px-4 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest text-center">
+                                    Registro</th>
+                                <th class="px-4 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest text-center">
+                                    Estado</th>
+                                <th class="px-4 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest text-center">
+                                    Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="correspondenceTableBody" class="divide-y divide-gray-50 dark:divide-gray-800/50">
+                            @forelse($correspondencias as $c)
+                                <tr class="group hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-all duration-200">
+
+                                    <td class="px-4 py-4 whitespace-nowrap align-middle">
+                                        <div class="flex flex-col gap-1">
+                                            <span class="text-sm font-bold text-gray-900 dark:text-white tracking-tight">
+                                                {{ $c->radicado ? $c->radicado->num_radicado : 'SIN RADICADO' }}
+                                            </span>
+                                            @if ($c->num_radicado_ext)
+                                                <span class="text-[10px] font-medium text-gray-500 dark:text-gray-400">
+                                                    EXT: {{ $c->num_radicado_ext }}
                                                 </span>
+                                            @endif
+                                        </div>
+                                    </td>
+
+                                    <td class="px-4 py-4 align-middle">
+                                        <div class="flex flex-col gap-1.5">
+                                            @if ($c->nom_institucion)
+                                                {{-- Caso Entidad --}}
+                                                <div class="flex items-center gap-2">
+                                                    <span
+                                                        class="px-1.5 py-0.5 bg-blue-50/50 dark:bg-blue-900/10 text-blue-600 dark:text-blue-400 text-[10px] font-semibold rounded border border-blue-100/50 dark:border-blue-800/50">Entidad</span>
+                                                    <span
+                                                        class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate max-w-[200px]"
+                                                        title="{{ $c->nom_institucion }}">
+                                                        {{ $c->nom_institucion }}
+                                                    </span>
+                                                </div>
                                                 @if ($c->num_radicado_ext)
-                                                    <span
-                                                        class="text-[10px] font-bold text-primary bg-primary/5 dark:bg-primary/10 px-1.5 py-0.5 rounded border border-primary/10 w-fit">
-                                                        EXT: {{ $c->num_radicado_ext }}
-                                                    </span>
-                                                @endif
-                                            </div>
-                                        </td>
-
-                                        <!-- Procedencia -->
-                                        <td class="px-3 py-5">
-                                            <div class="flex flex-col gap-1">
-                                                <div class="flex items-center gap-1">
-                                                    <span
-                                                        class="material-symbols-outlined text-[14px] text-gray-400 font-variation-icon">business</span>
-                                                    <span
-                                                        class="text-[11px] font-bold text-gray-700 dark:text-gray-200 truncate max-w-[100px]"
-                                                        title="{{ $c->nom_institucion ?? 'Particular' }}">
-                                                        {{ $c->nom_institucion ?? 'Particular' }}
-                                                    </span>
-                                                </div>
-                                                <div class="flex items-center gap-1 text-primary">
-                                                    <span
-                                                        class="material-symbols-outlined text-[14px] font-variation-icon">location_on</span>
-                                                    <span class="text-[10px] font-black uppercase tracking-tight">
-                                                        {{ $c->ciudad ? $c->ciudad->ciudad_nom : '-' }}
-                                                        @if ($c->ciudad && $c->ciudad->departamento)
-                                                            - {{ $c->ciudad->departamento->dpto_nombre }}
-                                                        @endif
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </td>
-
-                                        <!-- Detalles Documento -->
-                                        <td class="px-3 py-5">
-                                            <div class="flex flex-col gap-1">
-                                                <div class="flex items-center gap-1">
-                                                    <span
-                                                        class="material-symbols-outlined text-[14px] text-gray-400 font-variation-icon">description</span>
-                                                    <span
-                                                        class="text-[11px] font-medium text-gray-600 dark:text-gray-300 truncate max-w-[110px]"
-                                                        title="{{ $c->asunto }}">
-                                                        {{ $c->asunto }}
-                                                    </span>
-                                                </div>
-                                                <div class="flex flex-wrap gap-1">
-                                                    <div
-                                                        class="flex items-center gap-0.5 bg-gray-100 dark:bg-gray-700/50 px-1 py-0.5 rounded text-[8px] font-bold text-gray-500 uppercase tracking-tighter">
-                                                        <span
-                                                            class="material-symbols-outlined text-[10px] font-variation-icon">layers</span>
-                                                        F: {{ $c->folio ?? 0 }}
+                                                    <div class="hidden items-center gap-1 text-gray-500">
+                                                        <span class="material-symbols-outlined text-[12px]">tag</span>
+                                                        <span class="text-[10px] font-medium italic">Rad. Ext:
+                                                            {{ $c->num_radicado_ext }}</span>
                                                     </div>
-                                                    @if ($c->id_tipo_rec)
-                                                        <div
-                                                            class="flex items-center gap-0.5 bg-orange-50 dark:bg-orange-900/10 px-1 py-0.5 rounded text-[8px] font-bold text-orange-600 uppercase tracking-tighter">
-                                                            {{ $c->tipo ? substr($c->tipo->tipo_nombre, 0, 10) : 'TIPO' }}
+                                                @endif
+                                                @if ($c->correo_persona)
+                                                    <div class="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+                                                        <span class="material-symbols-outlined text-[12px]">mail</span>
+                                                        <span
+                                                            class="text-[10px] lowercase truncate max-w-[180px]">{{ $c->correo_persona }}</span>
+                                                    </div>
+                                                @endif
+                                            @else
+                                                {{-- Caso Persona Natural --}}
+                                                <div class="flex items-center gap-2">
+                                                    <span
+                                                        class="px-1.5 py-0.5 bg-purple-50/50 dark:bg-purple-900/10 text-purple-600 dark:text-purple-400 text-[10px] font-semibold rounded border border-purple-100/50 dark:border-purple-800/50">Natural</span>
+                                                    <span
+                                                        class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate max-w-[200px]">
+                                                        {{ $c->nombre_persona ?? 'Particular' }}
+                                                    </span>
+                                                </div>
+                                                <div class="hidden grid-cols-2 gap-x-2 mt-0.5">
+                                                    @if ($c->doc_persona)
+                                                        <div class="flex items-center gap-1 text-gray-500">
+                                                            <span class="material-symbols-outlined text-[12px]">badge</span>
+                                                            <span
+                                                                class="text-[10px] font-medium">{{ $c->doc_persona }}</span>
+                                                        </div>
+                                                    @endif
+                                                    @if ($c->tel_persona)
+                                                        <div class="flex items-center gap-1 text-gray-500">
+                                                            <span class="material-symbols-outlined text-[12px]">call</span>
+                                                            <span
+                                                                class="text-[10px] font-medium">{{ $c->tel_persona }}</span>
                                                         </div>
                                                     @endif
                                                 </div>
-                                            </div>
-                                        </td>
-
-                                        <!-- Destinatarios -->
-                                        <td class="px-3 py-5">
-                                            <div class="flex flex-col gap-1 max-w-[120px]">
-                                                @forelse($c->destinatarios->take(2) as $dest)
-                                                    <div class="flex items-center gap-1.5">
+                                                @if ($c->correo_persona)
+                                                    <div
+                                                        class="flex items-center gap-1 text-gray-500 dark:text-gray-400 mt-0.5">
+                                                        <span class="material-symbols-outlined text-[12px]">mail</span>
                                                         <span
-                                                            class="text-[9px] font-black text-gray-600 dark:text-gray-300 truncate">{{ explode(' ', $dest->emple_nombres)[0] }}</span>
+                                                            class="text-[10px] lowercase truncate max-w-[180px]">{{ $c->correo_persona }}</span>
                                                     </div>
-                                                @empty
-                                                    <span class="text-gray-400 text-xs">-</span>
-                                                @endforelse
-                                            </div>
-                                        </td>
+                                                @endif
+                                            @endif
 
-                                        <!-- Detalles Técnicos -->
-                                        <td class="px-3 py-5">
-                                            <div class="flex items-center gap-1">
+                                            <div
+                                                class="flex items-center gap-1 text-gray-500 dark:text-gray-400 mt-0.5 border-t border-gray-100 dark:border-gray-800/50 pt-1.5">
                                                 <span
-                                                    class="material-symbols-outlined text-[14px] text-green-500 font-variation-icon">task_alt</span>
-                                                <span
-                                                    class="text-[9px] font-black text-gray-700 dark:text-gray-300 whitespace-nowrap uppercase tracking-tighter">
-                                                    {{ $c->id_estado_rec == 10 ? 'Finalizado' : 'Gestión' }}
+                                                    class="material-symbols-outlined text-[12px] font-variation-icon">location_on</span>
+                                                <span class="text-[9px] font-semibold uppercase tracking-tight">
+                                                    {{ $c->ciudad ? $c->ciudad->ciudad_nom : '-' }}
+                                                    @if ($c->ciudad && $c->ciudad->departamento)
+                                                        - {{ $c->ciudad->departamento->dpto_nombre }}
+                                                    @endif
                                                 </span>
                                             </div>
-                                        </td>
+                                        </div>
+                                    </td>
 
-                                        <!-- Ingreso / Registro -->
-                                        <td class="px-3 py-5 whitespace-nowrap">
-                                            <div
-                                                class="flex flex-col gap-0 text-[9px] font-bold text-gray-400 dark:text-gray-500">
-                                                <div class="flex items-center gap-1">
-                                                    <span
-                                                        class="material-symbols-outlined text-[12px] font-variation-icon">calendar_today</span>
-                                                    {{ \Carbon\Carbon::parse($c->fecha_hora_recib)->format('d/m/y') }}
-                                                </div>
-                                                <div class="flex items-center gap-1">
-                                                    <span
-                                                        class="material-symbols-outlined text-[12px] font-variation-icon">schedule</span>
-                                                    {{ \Carbon\Carbon::parse($c->fecha_hora_recib)->format('h:i A') }}
-                                                </div>
-                                            </div>
-                                        </td>
-
-                                        <!-- Archivos / Anexos -->
-                                        <td class="px-3 py-5 text-center">
-                                            <button onclick="viewDetails({{ $c->id_recibido }})"
-                                                class="p-2 text-primary hover:bg-primary/5 rounded-lg transition-all"
-                                                title="Ver Documentos">
-                                                <span
-                                                    class="material-symbols-outlined text-[18px] font-variation-icon">folder_open</span>
-                                            </button>
-                                        </td>
-
-                                        <!-- Estado -->
-                                        <td class="px-3 py-5 text-center">
-                                            @php
-                                                $statusColor = match ($c->id_estado_rec) {
-                                                    11 => 'bg-red-500 text-white',
-                                                    9, 10 => 'bg-green-500 text-white',
-                                                    default => 'bg-primary text-white',
-                                                };
-                                            @endphp
+                                    <td class="px-4 py-4 align-middle">
+                                        <div class="flex flex-col gap-1">
                                             <span
-                                                class="inline-flex items-center px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-tighter shadow-sm {{ $statusColor }}">
-                                                {{ $c->estado ? substr($c->estado->estado_nomb, 0, 10) : 'PEND' }}
+                                                class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 max-w-[250px]"
+                                                title="{{ $c->asunto }}">
+                                                {{ $c->asunto }}
                                             </span>
-                                        </td>
 
-                                        <!-- Acciones -->
-                                        <td class="px-3 py-5 text-center">
-                                            <div class="flex items-center justify-center gap-0.5">
-                                                <button onclick="viewDetails({{ $c->id_recibido }})"
-                                                    class="p-1.5 text-gray-400 hover:text-primary transition-all"
-                                                    title="Ver Detalles">
+                                            <div class="hidden flex-wrap gap-1 mt-1">
+                                                <div
+                                                    class="flex items-center gap-0.5 bg-gray-100 dark:bg-gray-700/50 px-1.5 py-0.5 rounded text-[8px] font-bold text-gray-500 uppercase tracking-tighter">
                                                     <span
-                                                        class="material-symbols-outlined text-[18px] font-variation-icon">visibility</span>
-                                                </button>
-                                                <button onclick="showHistory({{ $c->id_recibido }})"
-                                                    class="p-1.5 text-gray-400 hover:text-primary transition-all"
-                                                    title="Trazabilidad">
-                                                    <span
-                                                        class="material-symbols-outlined text-[18px] font-variation-icon">timeline</span>
-                                                </button>
-                                                @if ($c->id_estado_rec == 11)
-                                                    <button onclick="openEditModalById({{ $c->id_recibido }})"
-                                                        class="p-1.5 text-red-500 hover:text-red-700 transition-all font-variation-icon"
-                                                        title="Corregir">
-                                                        <span
-                                                            class="material-symbols-outlined text-[18px]">edit_note</span>
-                                                    </button>
-                                                    <button onclick="confirmFinalize({{ $c->id_recibido }})"
-                                                        class="p-1.5 text-green-500 hover:text-green-700 transition-all font-variation-icon"
-                                                        title="Finalizar">
-                                                        <span
-                                                            class="material-symbols-outlined text-[18px]">check_circle</span>
-                                                    </button>
-                                                    <form id="finalize-form-{{ $c->id_recibido }}"
-                                                        action="{{ route('remitente.finalize', $c->id_recibido) }}"
-                                                        method="POST" class="hidden">
-                                                        @csrf
-                                                    </form>
-                                                @else
-                                                    <span
-                                                        class="material-symbols-outlined text-gray-200 dark:text-gray-700 text-[18px] font-variation-icon cursor-not-allowed"
-                                                        title="Bloqueado (Ya corregido o finalizado)">lock</span>
+                                                        class="material-symbols-outlined text-[10px] font-variation-icon">layers</span>
+                                                    F: {{ $c->folio ?? 0 }}
+                                                </div>
+                                                @if ($c->id_tipo_rec)
+                                                    <div
+                                                        class="flex items-center gap-0.5 bg-orange-50 dark:bg-orange-900/10 px-1.5 py-0.5 rounded text-[8px] font-bold text-orange-600 uppercase tracking-tighter">
+                                                        {{ $c->tipo ? $c->tipo->tipo_nombre : 'TIPO' }}
+                                                    </div>
                                                 @endif
                                             </div>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="9" class="px-6 py-20 text-center">
-                                            <div class="flex flex-col items-center gap-4">
-                                                <div
-                                                    class="w-16 h-16 bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center">
-                                                    <span
-                                                        class="material-symbols-outlined text-gray-300 text-4xl font-variation-icon">inventory_2</span>
+                                        </div>
+                                    </td>
+
+                                    <td class="px-4 py-4 align-middle">
+                                        <div class="flex flex-wrap gap-2 max-w-[200px]">
+                                            @php
+                                                // Obtenemos solo el último estado de cada empleado y filtramos los históricos
+                                                $filteredDetalles = $c->detalles
+                                                    ->sortByDesc('id_det_recibido')
+                                                    ->unique('det_doc_empleado')
+                                                    ->filter(function ($d) {
+                                                        // Ocultamos registros marcados como Resueltos (9)
+                                                        // ya que representan gestiones pasadas o finalizadas.
+                                                        // Mantenemos Archivados (10) para que no desaparezcan de la vista del remitente
+                                                        // cuando otro usuario toma la correspondencia.
+                                                        return $d->id_estado_rec != 9;
+                                                    });
+                                            @endphp
+                                            @forelse($filteredDetalles as $det)
+                                                <div class="flex items-center gap-2"
+                                                    title="{{ $det->empleado->emple_nombres ?? 'Usuario' }} {{ $det->empleado->emple_apellidos ?? '' }}">
+                                                    <div class="w-7 h-7 rounded-full {{ $det->empleado && $det->empleado->emple_img ? '' : 'bg-blue-600' }} flex items-center justify-center overflow-hidden border border-gray-200 dark:border-gray-700 flex-shrink-0">
+                                                        @if ($det->empleado && $det->empleado->emple_img)
+                                                            <img src="{{ asset('storage/' . $det->empleado->emple_img) }}"
+                                                                class="w-full h-full object-cover">
+                                                        @else
+                                                            <span class="text-xs font-bold text-white">
+                                                                {{ strtoupper(substr($det->empleado->emple_nombres ?? 'U', 0, 1)) }}{{ strtoupper(substr($det->empleado->emple_apellidos ?? 'A', 0, 1)) }}
+                                                            </span>
+                                                        @endif
+                                                    </div>
+                                                    <div class="flex flex-col min-w-0">
+                                                        <span
+                                                            class="text-[10px] font-bold text-gray-700 dark:text-gray-300 leading-none truncate max-w-[120px]">
+                                                            {{ $det->empleado->emple_nombres ?? 'Usuario' }} {{ $det->empleado->emple_apellidos ?? '' }}
+                                                        </span>
+                                                        @php
+                                                            $detStatusColor = match ($det->id_estado_rec) {
+                                                                7 => 'text-green-600 dark:text-green-400',
+                                                                11 => 'text-red-600 dark:text-red-400',
+                                                                8 => 'text-amber-600 dark:text-amber-400',
+                                                                9, 10, 14 => 'text-emerald-600 dark:text-emerald-400',
+                                                                default => 'text-gray-500 dark:text-gray-400',
+                                                            };
+                                                        @endphp
+                                                        <span class="text-[9px] font-medium {{ $detStatusColor }} leading-none mt-1">
+                                                            {{ $det->estado->estado_nomb ?? 'Pendiente' }}
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                                <p class="text-gray-400 font-medium italic">No se encontraron registros de
-                                                    correspondencia.</p>
+                                            @empty
+                                                <span class="text-gray-400 text-xs italic">Sin asignar</span>
+                                            @endforelse
+                                        </div>
+                                    </td>
+
+                                    <td class="px-4 py-4 text-center whitespace-nowrap align-middle">
+                                        <div class="inline-flex flex-col items-center">
+                                            <span class="text-xs font-medium text-gray-900 dark:text-gray-200">
+                                                {{ \Carbon\Carbon::parse($c->fecha_hora_recib)->format('d M, Y') }}
+                                            </span>
+                                            <span class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
+                                                {{ \Carbon\Carbon::parse($c->fecha_hora_recib)->format('h:i A') }}
+                                            </span>
+                                        </div>
+                                    </td>
+
+                                    <td class="px-4 py-4 text-center align-middle">
+                                        @php
+                                            $statusColor = match ($c->id_estado_rec) {
+                                                11
+                                                    => 'bg-red-50 text-red-600 border-red-200 dark:bg-red-900/20 dark:border-red-800',
+                                                9,
+                                                10
+                                                    => 'bg-green-50 text-green-600 border-green-200 dark:bg-green-900/20 dark:border-green-800',
+                                                8
+                                                    => 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800',
+                                                14
+                                                    => 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-800',
+                                                default
+                                                    => 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800',
+                                            };
+                                        @endphp
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-semibold tracking-wide border {{ $statusColor }}">
+                                            {{ $c->estado ? $c->estado->estado_nomb : 'PENDIENTE' }}
+                                        </span>
+                                    </td>
+
+                                    <td class="px-4 py-4 text-center align-middle">
+                                        <div class="flex items-center justify-center gap-2">
+                                            <button onclick="viewDetails({{ $c->id_recibido }})"
+                                                class="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                                title="Ver Gestión y Documentos">
+                                                <span
+                                                    class="material-symbols-outlined text-[20px] font-variation-icon">visibility</span>
+                                            </button>
+                                            <button onclick="showHistory({{ $c->id_recibido }})"
+                                                class="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:hover:text-white dark:hover:bg-gray-700/50 rounded-lg transition-colors"
+                                                title="Trazabilidad">
+                                                <span
+                                                    class="material-symbols-outlined text-[20px] font-variation-icon">timeline</span>
+                                            </button>
+                                            @if ($c->id_estado_rec == 11)
+                                                <button onclick="openEditModalById({{ $c->id_recibido }})"
+                                                    class="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                    title="Corregir">
+                                                    <span class="material-symbols-outlined text-[20px]">edit_note</span>
+                                                </button>
+                                                <button onclick="confirmFinalize({{ $c->id_recibido }})"
+                                                    class="p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
+                                                    title="Finalizar">
+                                                    <span class="material-symbols-outlined text-[20px]">check_circle</span>
+                                                </button>
+                                            @else
+                                                @php
+                                                    $hasResponse = $c->detalles->contains(
+                                                        fn($d) => !empty($d->archivo_res),
+                                                    );
+                                                @endphp
+                                                @if ($hasResponse && $c->id_estado_rec != 14 && $c->id_estado_rec != 10)
+                                                    <button onclick="openSalienteModal({{ $c->id_recibido }})"
+                                                        class="p-1.5 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors"
+                                                        title="Registrar Saliente">
+                                                        <span
+                                                            class="material-symbols-outlined text-[20px] font-variation-icon">outbox</span>
+                                                    </button>
+                                                @else
+                                                    <div class="p-1.5 text-gray-300 dark:text-gray-700 cursor-not-allowed">
+                                                        <span class="material-symbols-outlined text-[20px]">lock</span>
+                                                    </div>
+                                                @endif
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="7" class="px-6 py-20 text-center">
+                                        <div class="flex flex-col items-center gap-3">
+                                            <div
+                                                class="w-14 h-14 bg-gray-50 dark:bg-gray-800/50 rounded-full flex items-center justify-center">
+                                                <span
+                                                    class="material-symbols-outlined text-gray-400 text-3xl font-variation-icon">inventory_2</span>
                                             </div>
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                                            <p class="text-gray-500 text-sm font-medium">No se encontraron registros de
+                                                correspondencia.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
                 <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
                     {{ $correspondencias->appends(request()->query())->links() }}
@@ -430,7 +489,7 @@
                             <div id="detailRecipients" class="flex flex-wrap gap-2"></div>
                         </div>
 
-                        <div class="pt-4 flex gap-3">
+                        <div id="detailActionsContainer" class="pt-4 flex gap-3">
                             <a id="detailDownload" href="#" target="_blank"
                                 class="flex-1 flex items-center justify-center gap-2 px-5 py-3 text-sm font-bold text-primary bg-primary/10 rounded-xl hover:bg-primary/20 transition-all">
                                 <span class="material-symbols-outlined text-[20px]">download</span>
@@ -556,7 +615,7 @@
                                                         class="w-8 h-8 rounded-full object-cover">
                                                 @else
                                                     <div
-                                                        class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
+                                                        class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-sm border border-blue-700">
                                                         {{ strtoupper(substr($e->emple_nombres, 0, 1)) }}{{ strtoupper(substr($e->emple_apellidos, 0, 1)) }}
                                                     </div>
                                                 @endif
@@ -614,8 +673,8 @@
             if (dest.emple_img) {
                 return `<img src="/storage/${dest.emple_img}" class="w-6 h-6 rounded-full object-cover border border-white dark:border-gray-700">`;
             }
-            const initials = (dest.emple_nombres[0] + (dest.emple_apellidos ? dest.emple_apellidos[0] : '')).toUpperCase();
-            return `<div class="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold border border-primary/20">${initials}</div>`;
+            const initials = ((dest.emple_nombres ? dest.emple_nombres[0] : 'U') + (dest.emple_apellidos ? dest.emple_apellidos[0] : 'A')).toUpperCase();
+            return `<div class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold border border-blue-700 shadow-sm">${initials}</div>`;
         }
 
         // View Details Logic
@@ -654,60 +713,154 @@
             const recipientsContainer = document.getElementById('detailRecipients');
             recipientsContainer.innerHTML = '';
             if (c.destinatarios && c.destinatarios.length > 0) {
-                c.destinatarios.forEach(dest => {
-                    const avatar = getAvatarHtml(dest);
-                    const div = document.createElement('div');
-                    div.className =
-                        'inline-flex items-center gap-2 px-2 py-1 rounded-lg text-[10px] font-bold bg-gray-50 text-gray-700 dark:bg-gray-700/50 dark:text-gray-300 border border-gray-100 dark:border-gray-600';
-                    div.innerHTML = `${avatar} <span>${dest.emple_nombres} ${dest.emple_apellidos}</span>`;
-                    recipientsContainer.appendChild(div);
+                // Sorting and filtering in Details Modal to show latest active status
+                const activeRecipients = c.destinatarios.filter(dest => {
+                    const allDets = c.detalles ? c.detalles.filter(d => d.det_doc_empleado == dest.emple_doc) : [];
+                    if (allDets.length === 0) return true;
+                    
+                    // Get latest detail for this employee
+                    const latestDet = allDets.sort((a, b) => b.id_det_recibido - a.id_det_recibido)[0];
+                    
+                    // Filter out finished historical statuses (9)
+                    // We keep status 10 (Archivado) visible because it's assigned to other 
+                    // recipients when someone "takes" the document.
+                    return parseInt(latestDet.id_estado_rec) !== 9;
                 });
+
+                if (activeRecipients.length > 0) {
+                    activeRecipients.forEach(dest => {
+                        const avatar = getAvatarHtml(dest);
+                        const div = document.createElement('div');
+                        div.className =
+                            'inline-flex items-center gap-2 px-2 py-1 rounded-lg text-[10px] font-bold bg-gray-50 text-gray-700 dark:bg-gray-700/50 dark:text-gray-300 border border-gray-100 dark:border-gray-600';
+
+                        const allDets = c.detalles ? c.detalles.filter(d => d.det_doc_empleado == dest.emple_doc) : [];
+                        const det = allDets.sort((a, b) => b.id_det_recibido - a.id_det_recibido)[0];
+                        
+                        let statusHtml = '';
+                        if (det) {
+                            const statusName = det.estado ? det.estado.estado_nomb : (det.id_estado_rec == 7 ? 'Recibido' : (det.id_estado_rec == 11 ? 'Rechazado' : 'Pendiente'));
+                            let colorClass = 'text-gray-500';
+                            if (det.id_estado_rec == 7) colorClass = 'text-green-600 dark:text-green-400';
+                            else if (det.id_estado_rec == 11) colorClass = 'text-red-600 dark:text-red-400';
+                            else if (det.id_estado_rec == 8) colorClass = 'text-amber-600 dark:text-amber-400';
+                            else if ([9, 10, 14].includes(parseInt(det.id_estado_rec))) colorClass = 'text-emerald-600 dark:text-emerald-400';
+
+                            statusHtml = `<span class="text-[8px] font-medium ${colorClass} mt-0.5">${statusName}</span>`;
+                        }
+                        div.innerHTML = `${avatar} <div class="flex flex-col"><span class="leading-none">${dest.emple_nombres} ${dest.emple_apellidos}</span>${statusHtml}</div>`;
+                        recipientsContainer.appendChild(div);
+                    });
+                } else {
+                    recipientsContainer.innerHTML = '<p class="text-gray-400 text-xs italic">Sin destinatarios activos.</p>';
+                }
             } else {
                 recipientsContainer.innerHTML =
                     '<p class="text-gray-400 text-xs italic">No hay destinatarios asignados.</p>';
             }
 
-            // Attachments List Logic
-            const filesContainer = document.querySelector('#detailDownload').parentNode;
-            filesContainer.innerHTML = ''; // Clear action area
+            // Attachments List Logic - Refactored to show Sent and Received docs
+            const actionArea = document.getElementById('detailActionsContainer');
+            actionArea.innerHTML = ''; // Clear action area
 
-            // 1. Principal Document
+            const docsWrapper = document.createElement('div');
+            docsWrapper.className = 'w-full space-y-6';
+            actionArea.appendChild(docsWrapper);
+
+            // SECTION 1: DOCUMENTOS ENVIADOS (ORIGINAL)
+            const sentSection = document.createElement('div');
+            sentSection.innerHTML =
+                '<h5 class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 px-1">Documentos Enviados</h5>';
+            const sentGrid = document.createElement('div');
+            sentGrid.className = 'grid grid-cols-1 sm:grid-cols-2 gap-2';
+            sentSection.appendChild(sentGrid);
+            docsWrapper.appendChild(sentSection);
+
+            // Principal
             if (c.archivo) {
                 const btn = document.createElement('a');
                 btn.href = `/storage/${c.archivo}`;
                 btn.target = '_blank';
                 btn.className =
-                    'flex-1 flex items-center justify-center gap-2 px-4 py-3 text-[11px] font-black uppercase tracking-widest text-primary bg-primary/10 rounded-xl hover:bg-primary/20 transition-all';
+                    'flex items-center gap-2 px-3 py-2.5 text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400 rounded-xl hover:bg-blue-100 transition-all border border-blue-100 dark:border-blue-800';
                 btn.innerHTML = '<span class="material-symbols-outlined text-[18px]">description</span> Principal';
-                filesContainer.appendChild(btn);
+                sentGrid.appendChild(btn);
             }
 
-            // 2. Anexos
+            // Annexes
             if (c.anexos && c.anexos.length > 0) {
                 c.anexos.forEach((anexo, idx) => {
                     const btn = document.createElement('a');
                     btn.href = `/storage/${anexo.ruta_archivo}`;
                     btn.target = '_blank';
                     btn.className =
-                        'flex-1 flex items-center justify-center gap-2 px-4 py-3 text-[11px] font-black uppercase tracking-widest text-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-400 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all';
+                        'flex items-center gap-2 px-3 py-2.5 text-[10px] font-bold uppercase tracking-wider text-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-400 rounded-xl hover:bg-gray-100 transition-all border border-gray-100 dark:border-gray-600';
                     btn.title = anexo.nombre_original;
                     btn.innerHTML =
                         `<span class="material-symbols-outlined text-[18px]">attach_file</span> Anexo ${idx + 1}`;
-                    filesContainer.appendChild(btn);
+                    sentGrid.appendChild(btn);
                 });
             }
 
-            // 3. Edit Action if rejected
+            // SECTION 2: RESPUESTAS RECIBIDAS
+            const hasResponses = c.detalles && c.detalles.some(d => d.archivo_res || (d.anexos_respuesta && d
+                .anexos_respuesta.length > 0));
+
+            if (hasResponses) {
+                const respSection = document.createElement('div');
+                respSection.className = 'pt-2 border-t border-gray-100 dark:border-gray-700';
+                respSection.innerHTML =
+                    '<h5 class="text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400 mb-2 px-1">Respuestas y Evidencias</h5>';
+                const respGrid = document.createElement('div');
+                respGrid.className = 'grid grid-cols-1 sm:grid-cols-2 gap-2';
+                respSection.appendChild(respGrid);
+                docsWrapper.appendChild(respSection);
+
+                c.detalles.forEach(d => {
+                    // Response Main Document
+                    if (d.archivo_res) {
+                        const btn = document.createElement('a');
+                        btn.href = `/storage/${d.archivo_res}`;
+                        btn.target = '_blank';
+                        btn.className =
+                            'flex items-center gap-2 px-3 py-2.5 text-[10px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 dark:text-emerald-400 rounded-xl hover:bg-emerald-100 transition-all border border-emerald-100 dark:border-emerald-800';
+                        const empName = d.empleado ? d.empleado.emple_nombres.split(' ')[0] : 'Funcionario';
+                        btn.innerHTML =
+                            `<span class="material-symbols-outlined text-[18px]">task</span> Respuesta (${empName})`;
+                        respGrid.appendChild(btn);
+                    }
+
+                    // Response Annexes
+                    if (d.anexos_respuesta && d.anexos_respuesta.length > 0) {
+                        d.anexos_respuesta.forEach((anexo, idx) => {
+                            const btn = document.createElement('a');
+                            btn.href = `/storage/${anexo.ruta_archivo}`;
+                            btn.target = '_blank';
+                            btn.className =
+                                'flex items-center gap-2 px-3 py-2.5 text-[10px] font-bold uppercase tracking-wider text-teal-600 bg-teal-50 dark:bg-teal-900/20 dark:text-teal-400 rounded-xl hover:bg-teal-100 transition-all border border-teal-100 dark:border-teal-800';
+                            btn.innerHTML =
+                                `<span class="material-symbols-outlined text-[18px]">attachment</span> Evidencia ${idx + 1}`;
+                            respGrid.appendChild(btn);
+                        });
+                    }
+                });
+            }
+
+            // SECTION 3: ACTIONS (Correction if rejected)
             if (c.id_estado_rec == 11) {
+                const editDiv = document.createElement('div');
+                editDiv.className = 'pt-4';
                 const editBtn = document.createElement('button');
                 editBtn.className =
-                    'flex-1 flex items-center justify-center gap-2 px-4 py-3 text-[11px] font-black uppercase tracking-widest text-white bg-red-500 rounded-xl hover:bg-red-600 transition-all shadow-lg shadow-red-200 dark:shadow-red-900/20';
-                editBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">edit</span> Corregir Ahora';
+                    'w-full flex items-center justify-center gap-2 px-5 py-3 text-xs font-black uppercase tracking-widest text-white bg-red-500 rounded-2xl hover:bg-red-600 transition-all shadow-lg shadow-red-200 dark:shadow-red-900/30 active:scale-[0.98]';
+                editBtn.innerHTML =
+                    '<span class="material-symbols-outlined">edit_note</span> Corregir Correspondencia ahora';
                 editBtn.onclick = () => {
                     closeModal('detailsModal');
                     openEditModalById(id);
                 };
-                filesContainer.appendChild(editBtn);
+                editDiv.appendChild(editBtn);
+                docsWrapper.appendChild(editDiv);
             }
 
             openModal('detailsModal');
@@ -788,6 +941,11 @@
                                     colorClass = 'bg-blue-500';
                                     circleClass = 'bg-blue-100 text-blue-600';
                                     break;
+                                case 14: // Saliente
+                                    icon = 'outbox';
+                                    colorClass = 'bg-emerald-500';
+                                    circleClass = 'bg-emerald-100 text-emerald-600';
+                                    break;
                             }
                         }
 
@@ -825,11 +983,34 @@
                                     </div>
 
                                     ${item.observaciones ? `
-                                                    <div class="relative p-4 bg-white dark:bg-gray-800 border-l-4 border-primary/20 rounded-r-xl shadow-sm group hover:border-primary transition-colors">
-                                                        <span class="material-symbols-outlined absolute -right-2 -top-2 text-primary/5 text-4xl group-hover:scale-110 transition-transform">format_quote</span>
-                                                        <p class="text-[12px] text-gray-600 dark:text-gray-400 italic leading-relaxed">"${item.observaciones}"</p>
-                                                    </div>
-                                                ` : ''}
+                                                            <div class="relative p-4 bg-white dark:bg-gray-800 border-l-4 border-primary/20 rounded-r-xl shadow-sm group hover:border-primary transition-colors">
+                                                                <span class="material-symbols-outlined absolute -right-2 -top-2 text-primary/5 text-4xl group-hover:scale-110 transition-transform">format_quote</span>
+                                                                <p class="text-[12px] text-gray-600 dark:text-gray-400 italic leading-relaxed">"${item.observaciones}"</p>
+                                                            </div>
+                                                        ` : ''}
+
+                                    ${item.archivo_res ? `
+                                                <div class="mt-3">
+                                                    <a href="/storage/${item.archivo_res}" target="_blank" 
+                                                       class="inline-flex items-center gap-2 px-3 py-2 text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-xl hover:bg-emerald-100 transition-all">
+                                                        <span class="material-symbols-outlined text-[18px]">task</span>
+                                                        Ver Documento de Respuesta
+                                                    </a>
+                                                </div>
+                                            ` : ''}
+
+                                    ${item.anexos && item.anexos.length > 0 ? `
+                                                <div class="mt-2 flex flex-wrap gap-2">
+                                                    ${item.anexos.map((anexo, idx) => `
+                                                <a href="/storage/${anexo.ruta_archivo}" target="_blank" 
+                                                   class="inline-flex items-center gap-2 px-2.5 py-1.5 text-[10px] font-bold text-teal-600 bg-teal-50 dark:bg-teal-900/20 border border-teal-100 dark:border-teal-800 rounded-lg hover:bg-teal-100 transition-all"
+                                                   title="${anexo.nombre_original}">
+                                                    <span class="material-symbols-outlined text-[16px]">attachment</span>
+                                                    Anexo ${idx + 1}
+                                                </a>
+                                            `).join('')}
+                                                </div>
+                                            ` : ''}
                                 </div>
                             </div>
                         `;
@@ -927,5 +1108,202 @@
                 }
             });
         @endif
+
+        async function openSalienteModal(id) {
+            const c = window.correspondenceData[id];
+            if (!c) return;
+
+            // Find response data
+            const responseDetail = c.detalles.find(d => d.archivo_res);
+            const responseAnnexes = c.detalles.flatMap(d => d.anexos_respuesta || []);
+
+            document.getElementById('salienteForm').action = `/remitente/${id}/store-saliente`;
+            document.getElementById('salienteAsunto').value = 'RESPUESTA: ' + c.asunto;
+            document.getElementById('salienteDestino').value = c.nom_institucion || (c.nombre_persona ? c
+                .nombre_persona : '');
+
+            // Pre-fill fields
+            const typeSelect = document.getElementById('salienteTipo');
+            if (c.id_tipo) typeSelect.value = c.id_tipo;
+
+            const officialSelect = document.getElementById('salienteFuncionario');
+            if (responseDetail && responseDetail.det_doc_empleado) {
+                officialSelect.value = responseDetail.det_doc_empleado;
+            }
+
+            // File Preview Section
+            const previewContainer = document.getElementById('salienteFilePreview');
+            previewContainer.innerHTML = '';
+
+            if (responseDetail && responseDetail.archivo_res) {
+                const mainFileDiv = document.createElement('div');
+                mainFileDiv.className =
+                    'flex items-center gap-3 p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-2xl mb-2 group cursor-pointer hover:bg-emerald-100 transition-all';
+                mainFileDiv.onclick = () => window.open(`/storage/${responseDetail.archivo_res}`, '_blank');
+                mainFileDiv.innerHTML = `
+                    <span class="material-symbols-outlined text-emerald-600">description</span>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-[11px] font-bold text-emerald-900 dark:text-emerald-100 truncate">Documento Principal de Respuesta</p>
+                        <p class="text-[9px] text-emerald-600 font-medium">Click para ver documento</p>
+                    </div>
+                    <span class="material-symbols-outlined text-emerald-400 text-sm group-hover:translate-x-0.5 transition-transform">open_in_new</span>
+                `;
+                previewContainer.appendChild(mainFileDiv);
+
+                // Start page counting
+                const folioInput = document.getElementById('salienteFolio');
+                folioInput.value = '...';
+                folioInput.disabled = true;
+
+                try {
+                    const pdfPath = `/storage/${responseDetail.archivo_res}`;
+                    const loadingTask = pdfjsLib.getDocument(pdfPath);
+                    const pdf = await loadingTask.promise;
+                    folioInput.value = pdf.numPages;
+                } catch (error) {
+                    console.error('Error counting PDF pages:', error);
+                    folioInput.value = 1;
+                } finally {
+                    folioInput.disabled = false;
+                }
+            }
+
+            if (responseAnnexes.length > 0) {
+                const annexGrid = document.createElement('div');
+                annexGrid.className = 'grid grid-cols-1 gap-2';
+                responseAnnexes.forEach((anexo, idx) => {
+                    const div = document.createElement('div');
+                    div.className =
+                        'flex items-center gap-3 p-2.5 bg-gray-50 dark:bg-gray-900/40 border border-gray-100 dark:border-gray-700/50 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group';
+                    div.onclick = () => window.open(`/storage/${anexo.ruta_archivo}`, '_blank');
+                    div.innerHTML = `
+                        <span class="material-symbols-outlined text-gray-400 text-[18px]">attachment</span>
+                        <p class="text-[10px] font-medium text-gray-600 dark:text-gray-300 truncate flex-1">${anexo.nombre_original || `Anexo ${idx + 1}`}</p>
+                        <span class="material-symbols-outlined text-gray-300 text-sm group-hover:translate-x-0.5 transition-transform">visibility</span>
+                    `;
+                    annexGrid.appendChild(div);
+                });
+                previewContainer.appendChild(annexGrid);
+            }
+
+            openModal('salienteModal');
+        }
     </script>
 @endsection
+<!-- Registrar Saliente Modal -->
+<div id="salienteModal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+            onclick="closeModal('salienteModal')"></div>
+
+        <div
+            class="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all font-display">
+            <!-- Header -->
+            <div
+                class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-emerald-50/50 dark:bg-emerald-900/20">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-10 h-10 rounded-2xl bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                        <span class="material-symbols-outlined">outbox</span>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">Registrar
+                            Saliente</h3>
+                        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Generar Radicado SAL-
+                        </p>
+                    </div>
+                </div>
+                <button onclick="closeModal('salienteModal')"
+                    class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <form id="salienteForm" method="POST">
+                @csrf
+                <div class="p-6 space-y-4">
+                    <!-- Destino -->
+                    <div>
+                        <label
+                            class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Destino
+                            / Institución</label>
+                        <input type="text" name="destino" id="salienteDestino" required
+                            class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none dark:text-white"
+                            placeholder="Nombre de la institución o persona destino">
+                    </div>
+
+                    <!-- Asunto -->
+                    <div>
+                        <label
+                            class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Asunto</label>
+                        <input type="text" name="asunto" id="salienteAsunto" required
+                            class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none dark:text-white"
+                            placeholder="Asunto del envío">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- Tipo Envío -->
+                        <div>
+                            <label
+                                class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Tipo
+                                de Envío</label>
+                            <select name="id_tipo_envio" id="salienteTipo" required
+                                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none dark:text-white appearance-none">
+                                <option value="">Seleccionar...</option>
+                                @foreach ($tipos as $t)
+                                    <option value="{{ $t->id_tipo }}">{{ $t->tipo_nombre }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Folios -->
+                        <div>
+                            <label
+                                class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Folios</label>
+                            <input type="text" name="folio" id="salienteFolio" required
+                                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none dark:text-white">
+                        </div>
+                    </div>
+
+                    <!-- Quien Envía -->
+                    <div>
+                        <label
+                            class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Funcionario
+                            que envía</label>
+                        <select name="doc_quien_envia" id="salienteFuncionario" required
+                            class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none dark:text-white appearance-none">
+                            <option value="">Seleccionar funcionario...</option>
+                            @foreach ($empleados as $e)
+                                <option value="{{ $e->emple_doc }}">{{ $e->emple_nombres }}
+                                    {{ $e->emple_apellidos }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Preview Area -->
+                    <div class="pt-2">
+                        <label
+                            class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Documentos
+                            a enviar</label>
+                        <div id="salienteFilePreview" class="space-y-2">
+                            <!-- Dynamic Preview -->
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="p-6 bg-gray-50/50 dark:bg-gray-900/30 border-t border-gray-100 dark:border-gray-700 flex gap-3">
+                    <button type="button" onclick="closeModal('salienteModal')"
+                        class="flex-1 px-5 py-3 text-xs font-black uppercase tracking-widest text-gray-500 hover:text-gray-700 transition-all">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                        class="flex-[2] flex items-center justify-center gap-2 px-6 py-3 text-xs font-bold text-white bg-emerald-600 rounded-2xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200 dark:shadow-emerald-900/30 active:scale-[0.98]">
+                        <span class="material-symbols-outlined text-[18px]">done_all</span>
+                        Registrar Envío Saliente
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

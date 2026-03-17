@@ -34,6 +34,7 @@ class ExternarecController extends Controller
             ->leftJoin('estado as e',    'r.id_estado_rec', '=', 'e.id_estado')
             ->leftJoin('radicados as rad', 'r.num_radicado_int', '=', 'rad.id_radicado')
             ->where('r.nit_empresa', $nitEmpresa)
+            ->where('r.id_estado_rec', 12) // Show only 'Enviado' records
             ->orderByDesc('r.fecha_hora_recib')
             ->select(
                 'r.id_recibido',

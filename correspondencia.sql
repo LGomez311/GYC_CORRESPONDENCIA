@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 16, 2026 at 06:48 PM
+-- Generation Time: Mar 17, 2026 at 06:12 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -34,6 +34,13 @@ CREATE TABLE `anexo_envio` (
   `nombre_original` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `anexo_envio`
+--
+
+INSERT INTO `anexo_envio` (`id_anexo`, `id_envio`, `ruta_archivo`, `nombre_original`) VALUES
+(22, 26, 'correspondencia/ObNBkFRH0Pv3dZF3qtGU5WwiGQWcB25yVIYL9A1T.pdf', 'ced.pdf');
+
 -- --------------------------------------------------------
 
 --
@@ -46,6 +53,13 @@ CREATE TABLE `anexo_recibido` (
   `ruta_archivo` varchar(500) NOT NULL,
   `nombre_original` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `anexo_recibido`
+--
+
+INSERT INTO `anexo_recibido` (`id_anexo`, `id_recibido`, `ruta_archivo`, `nombre_original`) VALUES
+(32, 33, 'correspondencia/gLh2QXpHQSjsOt8Cqp7cOcr5DjuOtcpNLnpBgX3U.pdf', 'ced.pdf');
 
 -- --------------------------------------------------------
 
@@ -60,6 +74,13 @@ CREATE TABLE `anexo_respuesta` (
   `ruta_archivo` varchar(500) NOT NULL,
   `nombre_original` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `anexo_respuesta`
+--
+
+INSERT INTO `anexo_respuesta` (`id_anexo_resp`, `id_detalle`, `id_det_interna`, `ruta_archivo`, `nombre_original`) VALUES
+(14, 76, NULL, 'correspondencia/ObNBkFRH0Pv3dZF3qtGU5WwiGQWcB25yVIYL9A1T.pdf', 'ced.pdf');
 
 -- --------------------------------------------------------
 
@@ -374,6 +395,25 @@ CREATE TABLE `detalle_recibido` (
   `visto` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `detalle_recibido`
+--
+
+INSERT INTO `detalle_recibido` (`id_det_recibido`, `det_id_recibido`, `det_doc_empleado`, `fecha_re`, `id_estado_rec`, `observaciones`, `archivo_res`, `folios_res`, `visto`) VALUES
+(74, 32, '1005912008', '2026-03-16 18:07:14', 7, 'nada', NULL, NULL, 0),
+(75, 32, '1005912008', '2026-03-16 21:07:59', 8, NULL, NULL, 0, 0),
+(76, 32, '1005912008', '2026-03-16 21:08:18', 9, NULL, 'correspondencia/Dea9MlwJ08yMYWdJ0uUT2ALg8WSHT75r075gndCK.pdf', 5, 0),
+(77, 33, '1005912008', '2026-03-17 04:45:30', 7, 'rechazra', NULL, NULL, 0),
+(78, 33, '1005912006', '2026-03-17 04:45:30', 7, 'rechazra', NULL, NULL, 0),
+(79, 33, '1005912008', '2026-03-17 04:46:25', 9, 'este no es para mi', NULL, 0, 0),
+(80, 33, '1005912006', '2026-03-17 04:46:25', 10, 'Rechazado por: Humber Perez', NULL, NULL, 1),
+(81, 33, '1005912001', '2026-03-17 04:47:05', 12, 'Correspondencia re-enviada tras corrección.', NULL, NULL, 0),
+(82, 33, '1005912001', '2026-03-17 04:47:06', 7, 'Recibido para nueva gestión tras corrección: correcion de enviar a personas indicadas', NULL, NULL, 0),
+(83, 33, '999003', '2026-03-17 04:47:05', 12, 'Correspondencia re-enviada tras corrección.', NULL, NULL, 0),
+(84, 33, '999003', '2026-03-17 04:47:06', 7, 'Recibido para nueva gestión tras corrección: correcion de enviar a personas indicadas', NULL, NULL, 0),
+(85, 33, '1005912001', '2026-03-17 05:03:56', 8, 'lo resolvere en cuanto pueda', NULL, 0, 0),
+(86, 33, '999003', '2026-03-17 05:03:56', 10, 'Tomado por: Dani Villa', NULL, NULL, 1);
+
 -- --------------------------------------------------------
 
 --
@@ -540,8 +580,7 @@ CREATE TABLE `envio` (
 --
 
 INSERT INTO `envio` (`id_envio`, `num_radicado_int`, `asunto`, `doc_quien_registra`, `doc_quien_envia`, `fecha`, `destino`, `folio`, `id_tipo_envio`, `id_estado_envio`, `archivo`, `nit_empresa`) VALUES
-(23, NULL, 'Envio de denuncia empresa sena ', 1234567888, '1005912008', '2026-03-16 06:34:23', 'Persona encargada de recibir denuncias del sena', 1, 1, 12, 'denuncia.pdf', '9887978978'),
-(24, 65, 'Denuncia', 1234567888, '1005912008', '2026-03-16 07:02:12', 'Empresa sena', 1, 1, 12, 'correspondencia/enviados/Jdrwz9uRnXu4fkK1x0nYUzQ4CZOAroz85xJp8IXd.pdf', '9887978978');
+(26, 69, 'RESPUESTA: Preuba', 1234567888, '1005912008', '2026-03-16 21:34:54', 'Persona de prueba', 4, 1, 12, 'correspondencia/Dea9MlwJ08yMYWdJ0uUT2ALg8WSHT75r075gndCK.pdf', '9887978978');
 
 -- --------------------------------------------------------
 
@@ -570,7 +609,8 @@ INSERT INTO `estado` (`id_estado`, `estado_nomb`) VALUES
 (10, 'Archivado'),
 (11, 'Rechazado'),
 (12, 'Enviado'),
-(13, 'Digitalizado');
+(13, 'Digitalizado'),
+(14, 'Saliente');
 
 -- --------------------------------------------------------
 
@@ -914,7 +954,10 @@ CREATE TABLE `radicados` (
 --
 
 INSERT INTO `radicados` (`id_radicado`, `num_radicado`, `nit_empresa`) VALUES
-(65, 'INT-2026-00001', '9887978978');
+(65, 'INT-2026-00001', '9887978978'),
+(66, 'INT-2026-00002', '9887978978'),
+(69, 'SAL-2026-00001', '9887978978'),
+(70, 'INT-2026-00003', '9887978978');
 
 -- --------------------------------------------------------
 
@@ -943,6 +986,14 @@ CREATE TABLE `recibido` (
   `correo_persona` varchar(255) DEFAULT NULL,
   `tel_persona` varchar(25) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `recibido`
+--
+
+INSERT INTO `recibido` (`id_recibido`, `num_radicado_ext`, `num_radicado_int`, `asunto`, `fecha_hora_recib`, `nom_institucion`, `ciudad_proveniente`, `folio`, `anexo`, `observaciones`, `doc_quien_registra`, `id_tipo`, `id_estado_rec`, `archivo`, `nit_empresa`, `nombre_persona`, `doc_persona`, `correo_persona`, `tel_persona`) VALUES
+(32, NULL, 66, 'Preuba', '2026-03-16 13:07:14', NULL, '08001', 4, NULL, 'nada', 1234567888, 1, 14, 'correspondencia/UQ2QcenhW66dl5zs9GZfCvvI34F2V8gY1IiCnzmx.pdf', '9887978978', 'Persona de prueba', '1234567890', 'prueba@gmail.com', '12345789'),
+(33, NULL, 70, 'RESPUESTA: Preuba', '2026-03-16 23:45:30', NULL, '05001', 5, NULL, 'correcion de enviar a personas indicadas', 1234567888, 1, 8, 'correspondencia/p8mxJf3G5EbaiA6yUr6p0iOPMOrEBTT8Jv6CDPU8.pdf', '9887978978', 'Persona de prueba', '1234567890', 'prueba@gmail.com', '12345789');
 
 -- --------------------------------------------------------
 
@@ -1014,8 +1065,9 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('HAMqdA5EUf7sgkdBEbeeG2TuPQiVd7ol8VZdTy0Z', 1234567888, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiUnhIZGdvTnhrTHZxVkNINjh4NXd5QUVhMml5VWFQR0hLNG51bFJaeiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9yZW1pdGVudGUiO3M6NToicm91dGUiO3M6MTU6InJlbWl0ZW50ZS5pbmRleCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTY6ImxvZ2luX3JlbWl0ZW50ZV81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjEyMzQ1Njc4ODg7fQ==', 1773640379),
-('RMAR6aDDArF4rfDiT5y5b07ve9Qheay7hzNZc16a', 1234567888, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiWUxiTDNhcWJyb3dqOGl4dVZuSzlhdGpYSTZvN2I0TEN4MHRna0FjUSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDI6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9yZW1pdGVudGUvZXh0ZXJuYWVudiI7czo1OiJyb3V0ZSI7czoyMDoicmVtaXRlbnRlLmV4dGVybmFlbnYiO31zOjU2OiJsb2dpbl9yZW1pdGVudGVfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToxMjM0NTY3ODg4O30=', 1773644798);
+('oVuUJpWQlEXOTNVcgmJS1g89whx6xgaSPTjI7Lbj', 1005912001, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoibVA4ankzeWc2dmljSnhrVm44Mlp3M1VXelBZaGVVMk5nVEFXam9FdSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NTU6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9lbXBsZWFkby9jb3JyZXNwb25kZW5jaWEtcmVjaWJpZGEiO3M6NToicm91dGUiO3M6MzM6ImVtcGxlYWRvLmNvcnJlc3BvbmRlbmNpYV9yZWNpYmlkYSI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtzOjEwOiIxMDA1OTEyMDAxIjt9', 1773723837),
+('rwOhqMg7PVMQTZuIBxU8QudlxVagAlPlgM2GukVD', 1234567888, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoidWdhV2dLMThFTVdKOGZjMmJVeVlkZkNsWFlYanF0RUZEOTE2bWFlWiI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9yZW1pdGVudGUiO3M6NToicm91dGUiO3M6MTU6InJlbWl0ZW50ZS5pbmRleCI7fXM6NTY6ImxvZ2luX3JlbWl0ZW50ZV81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjEyMzQ1Njc4ODg7fQ==', 1773724269),
+('YnpEHLpHKNjZcWGEbuvgsW2Lc75CFuWjgN1iacRm', 1005912008, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoicFlRTUZVQk1EclBaQm53WlVsaDlNdlF3OWg2WTNtU1NpTTJTcmxaWCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NTU6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9lbXBsZWFkby9jb3JyZXNwb25kZW5jaWEtcmVjaWJpZGEiO3M6NToicm91dGUiO3M6MzM6ImVtcGxlYWRvLmNvcnJlc3BvbmRlbmNpYV9yZWNpYmlkYSI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtzOjEwOiIxMDA1OTEyMDA4Ijt9', 1773722786);
 
 -- --------------------------------------------------------
 
@@ -1343,19 +1395,19 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `anexo_envio`
 --
 ALTER TABLE `anexo_envio`
-  MODIFY `id_anexo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id_anexo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `anexo_recibido`
 --
 ALTER TABLE `anexo_recibido`
-  MODIFY `id_anexo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `id_anexo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT for table `anexo_respuesta`
 --
 ALTER TABLE `anexo_respuesta`
-  MODIFY `id_anexo_resp` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id_anexo_resp` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `area`
@@ -1403,19 +1455,19 @@ ALTER TABLE `detalle_envio`
 -- AUTO_INCREMENT for table `detalle_recibido`
 --
 ALTER TABLE `detalle_recibido`
-  MODIFY `id_det_recibido` int(15) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=74;
+  MODIFY `id_det_recibido` int(15) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=87;
 
 --
 -- AUTO_INCREMENT for table `envio`
 --
 ALTER TABLE `envio`
-  MODIFY `id_envio` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id_envio` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT for table `estado`
 --
 ALTER TABLE `estado`
-  MODIFY `id_estado` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id_estado` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `failed_jobs`
@@ -1469,13 +1521,13 @@ ALTER TABLE `prioridad`
 -- AUTO_INCREMENT for table `radicados`
 --
 ALTER TABLE `radicados`
-  MODIFY `id_radicado` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
+  MODIFY `id_radicado` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=71;
 
 --
 -- AUTO_INCREMENT for table `recibido`
 --
 ALTER TABLE `recibido`
-  MODIFY `id_recibido` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `id_recibido` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
 
 --
 -- AUTO_INCREMENT for table `rol`

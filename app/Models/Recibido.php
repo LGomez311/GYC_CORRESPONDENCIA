@@ -98,6 +98,13 @@ class Recibido extends Model
     public function anexos()
     {
         return $this->hasMany(AnexoRecibido::class , 'id_recibido', 'id_recibido');
+    }
 
+    /**
+     * Relación con los detalles del ciclo de vida (detalle_recibido)
+     */
+    public function detalles()
+    {
+        return $this->hasMany(DetalleRecibido::class, 'det_id_recibido', 'id_recibido');
     }
 }

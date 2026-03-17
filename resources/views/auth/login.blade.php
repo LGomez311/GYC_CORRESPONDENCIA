@@ -252,9 +252,34 @@
                     </script>
 
                     {{-- Errores de login --}}
+                    @php
+                        $remaining = session('remaining_attempts', $remainingAttempts ?? 5);
+                        $lockout = session('lockout_seconds', $lockoutSeconds ?? 0);
+                    @endphp
+
                     @if ($errors->has('login'))
-                        <p class="text-red-500 text-sm">{{ $errors->first('login') }}</p>
+                        <div class="bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-2 rounded mb-2 shadow-sm text-sm">
+                            {{ $errors->first('login') }}
+                        </div>
                     @endif
+
+                    <div id="lockout-container" class="{{ $lockout > 0 ? '' : 'hidden' }} mb-4 animate-pulse">
+                        <div class="bg-orange-50 border border-orange-200 text-orange-800 px-4 py-3 rounded-lg flex items-center gap-3">
+                            <span class="material-symbols-outlined text-orange-500">timer</span>
+                            <div>
+                                <p class="text-sm font-bold">Formulario Bloqueado</p>
+                                <p class="text-xs">Podrás intentar de nuevo en: <span id="countdown-timer" class="font-mono font-bold">{{ $lockout }}</span> segundos</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="attempts-container" class="flex flex-col gap-1 mb-2">
+                        @if ($lockout <= 0)
+                            <p class="text-xs font-medium text-slate-600 dark:text-slate-400">
+                                Te quedan <span class="font-bold text-primary">{{ $remaining }}</span> de {{ 5 }} intentos para iniciar sesión.
+                            </p>
+                        @endif
+                    </div>
 
                 
 
@@ -274,6 +299,42 @@
                     document.addEventListener('DOMContentLoaded', () => {
                         const form = document.getElementById('loginForm');
                         const submitBtn = document.getElementById('submitBtn');
+                        const countdownSpan = document.getElementById('countdown-timer');
+                        const lockoutContainer = document.getElementById('lockout-container');
+
+                        let lockoutSeconds = parseInt("{{ $lockout }}") || 0;
+
+                        if (lockoutSeconds > 0) {
+                            disableForm();
+                            startCountdown();
+                        }
+
+                        function disableForm() {
+                            submitBtn.disabled = true;
+                            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                            document.getElementById('documento').disabled = true;
+                            document.getElementById('password').disabled = true;
+                        }
+
+                        function enableForm() {
+                            submitBtn.disabled = false;
+                            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                            document.getElementById('documento').disabled = false;
+                            document.getElementById('password').disabled = false;
+                            lockoutContainer.classList.add('hidden');
+                        }
+
+                        function startCountdown() {
+                            const timer = setInterval(() => {
+                                lockoutSeconds--;
+                                if (lockoutSeconds <= 0) {
+                                    clearInterval(timer);
+                                    enableForm();
+                                } else {
+                                    countdownSpan.textContent = lockoutSeconds;
+                                }
+                            }, 1000);
+                        }
 
                         const documento = document.getElementById('documento');
                         const docHelp = document.getElementById('docHelp');
@@ -286,6 +347,11 @@
                             /(<script>|<\/script>|--|;|\b(select|insert|update|delete|drop|truncate|union)\b)/i.test(value);
 
                         form.addEventListener('submit', (e) => {
+                            if (lockoutSeconds > 0) {
+                                e.preventDefault();
+                                return;
+                            }
+
                             let hasError = false;
 
                             /* ================= DOCUMENTO ================= */
@@ -327,7 +393,9 @@
 
                                 // Rehabilitar botón si el usuario corrige
                                 setTimeout(() => {
-                                    submitBtn.disabled = false;
+                                    if (lockoutSeconds <= 0) {
+                                        submitBtn.disabled = false;
+                                    }
                                 }, 800);
                             }
                         });

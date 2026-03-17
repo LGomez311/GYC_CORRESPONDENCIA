@@ -41,13 +41,29 @@ class DashboardController extends Controller
 
         // Correspondences list
         // Ordered by Rejected (11) first, then by date descending
-        $correspondencias = Recibido::with(['estado', 'tipo', 'radicado', 'destinatarios.area', 'ciudad.departamento', 'anexos'])
+        $correspondencias = Recibido::with([
+            'estado', 
+            'tipo', 
+            'radicado', 
+            'destinatarios.area', 
+            'ciudad.departamento', 
+            'anexos', 
+            'detalles' => function($q) {
+                $q->orderBy('fecha_re', 'desc');
+            },
+            'detalles.anexosRespuesta',
+            'detalles.empleado.area',
+            'detalles.estado'
+        ])
             ->where('doc_quien_registra', $remDoc)
             ->orderByRaw('CASE WHEN id_estado_rec = 11 THEN 0 ELSE 1 END')
             ->orderBy('fecha_hora_recib', 'desc')
             ->paginate(10);
 
-        return view('remitente.index', compact('stats', 'correspondencias'));
+        $tipos = \App\Models\Tipo::all();
+        $empleados = \App\Models\Empleado::where('emple_rol', 3)->get();
+
+        return view('remitente.index', compact('stats', 'correspondencias', 'tipos', 'empleados'));
     }
 
     public function getHistory($id)
@@ -73,7 +89,7 @@ class DashboardController extends Controller
 
         // 2. Lifecycle transitions from 'detalle_recibido'
         $details = DB::table('detalle_recibido as dr')
-            ->join('estado as e', 'dr.id_estado_rec', '=', 'e.id_estado')
+            ->leftJoin('estado as e', 'dr.id_estado_rec', '=', 'e.id_estado')
             ->leftJoin('empleado as emp', 'dr.det_doc_empleado', '=', 'emp.emple_doc')
             ->leftJoin('remitente as rem', 'dr.det_doc_empleado', '=', 'rem.rem_doc')
             ->where('dr.det_id_recibido', $id)
@@ -83,20 +99,31 @@ class DashboardController extends Controller
                 DB::raw("COALESCE(emp.emple_nombres, rem.rem_nombres) as nombres"),
                 DB::raw("COALESCE(emp.emple_apellidos, rem.rem_apellidos) as apellidos"),
                 DB::raw("NULL as num_radicado"),
-                'e.estado_nomb',
+                DB::raw("COALESCE(e.estado_nomb, CASE WHEN dr.id_estado_rec = 14 THEN 'Saliente' ELSE 'Estado desconocido' END) as estado_nomb"),
                 'dr.observaciones',
                 'emp.emple_img as img',
-                'dr.id_estado_rec'
+                'dr.id_estado_rec',
+                'dr.id_det_recibido',
+                'dr.archivo_res'
             )
             ->orderBy('dr.fecha_re', 'asc')
             ->get();
 
         $history = [];
         if ($registration) {
-            $history[] = $registration;
+            $history[] = (array) $registration;
         }
+
         foreach ($details as $d) {
-            $history[] = $d;
+            $det = (array) $d;
+            
+            // Fetch annexes for this detail
+            $det['anexos'] = DB::table('anexo_respuesta')
+                ->where('id_detalle', $d->id_det_recibido)
+                ->select('ruta_archivo', 'nombre_original')
+                ->get();
+                
+            $history[] = $det;
         }
 
         return response()->json($history);
@@ -145,10 +172,11 @@ class DashboardController extends Controller
             $recibido->id_estado_rec = 12; // Enviado (Restart cycle)
             $recibido->save();
 
-            // 2. Mark previous rejections as "Resuelto" (9) to clear the "Rejected" status from the history
+            // 2. Mark ALL previous assignment records as "Resuelto/Histórico" (9) 
+            // to ensure a clean slate for the new cycle and hide stale recipients.
             DB::table('detalle_recibido')
                 ->where('det_id_recibido', $id)
-                ->where('id_estado_rec', 11)
+                ->whereIn('id_estado_rec', [7, 8, 10, 11, 12]) // All active/transitory states from previous cycle
                 ->update(['id_estado_rec' => 9]);
 
             // 3. Create NEW Details for the new cycle (Sequence: 12 then 7)
@@ -177,6 +205,100 @@ class DashboardController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Error al procesar: ' . $e->getMessage());
+        }
+    }
+
+    public function storeSalienteFromResponse(Request $request, $id)
+    {
+        $remitente = Auth::guard('remitente')->user();
+        $nitEmpresa = $remitente ? $remitente->nit_empresa : null;
+        $docQuienRegistra = $remitente ? $remitente->rem_doc : null;
+
+        $recibido = Recibido::where('id_recibido', $id)
+            ->where('nit_empresa', $nitEmpresa)
+            ->firstOrFail();
+
+        $request->validate([
+            'destino'         => 'required|string|max:200',
+            'asunto'          => 'required|string|max:100',
+            'doc_quien_envia' => 'required|string|max:20',
+            'id_tipo_envio'   => 'required|integer',
+            'folio'           => 'required|integer|min:1',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            // 1. Radicado SAL- Logic
+            $currentYear = date('Y');
+            $prefix = 'SAL-' . $currentYear . '-';
+            
+            $latestRadicado = \App\Models\Radicado::where('nit_empresa', $nitEmpresa)
+                ->where('num_radicado', 'like', $prefix . '%')
+                ->orderBy('num_radicado', 'desc')
+                ->first();
+
+            $newNumber = $latestRadicado ? intval(substr($latestRadicado->num_radicado, -5)) + 1 : 1;
+            
+            $radicado = \App\Models\Radicado::create([
+                'num_radicado' => $prefix . str_pad($newNumber, 5, '0', STR_PAD_LEFT),
+                'nit_empresa'  => $nitEmpresa,
+            ]);
+
+            // 2. Identify the response file and annexes
+            $responseDetail = $recibido->detalles()->whereNotNull('archivo_res')->first();
+            $archivoPrincipal = $responseDetail ? $responseDetail->archivo_res : '';
+            
+            // 3. Create Envio
+            $envio = \App\Models\Envio::create([
+                'num_radicado_int'   => $radicado->id_radicado,
+                'asunto'             => $request->asunto,
+                'destino'            => $request->destino,
+                'doc_quien_envia'    => $request->doc_quien_envia,
+                'fecha'              => now(),
+                'folio'              => $request->folio,
+                'id_tipo_envio'      => $request->id_tipo_envio,
+                'id_estado_envio'    => 12, // Enviado
+                'archivo'            => $archivoPrincipal, // FIX: Field archivo is required
+                'nit_empresa'        => $nitEmpresa,
+                'doc_quien_registra' => $docQuienRegistra,
+            ]);
+
+            // 4. Transfer Annexes if they exist
+            if ($responseDetail) {
+                $annexes = DB::table('anexo_respuesta')
+                    ->where('id_detalle', $responseDetail->id_det_recibido)
+                    ->get();
+                
+                foreach ($annexes as $annex) {
+                    DB::table('anexo_envio')->insert([
+                        'id_envio'        => $envio->id_envio,
+                        'ruta_archivo'    => $annex->ruta_archivo,
+                        'nombre_original' => $annex->nombre_original,
+                    ]);
+                }
+            }
+
+            // 5. Mark the received correspondence as Saliente (14)
+            if ($recibido->id_estado_rec != 10) {
+                $recibido->id_estado_rec = 14; 
+                $recibido->save();
+
+                // 6. Log traceability entry
+                DetalleRecibido::create([
+                    'det_id_recibido'  => $recibido->id_recibido,
+                    'det_doc_empleado' => $request->doc_quien_envia,
+                    'fecha_re'         => now(),
+                    'id_estado_rec'    => 14,
+                    'observaciones'    => 'Registrado como envío saliente con radicado: ' . $radicado->num_radicado,
+                    'visto'            => 1
+                ]);
+            }
+
+            DB::commit();
+            return redirect()->back()->with('success', 'Envío saliente registrado exitosamente con radicado: ' . $radicado->num_radicado);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Error al registrar envío: ' . $e->getMessage());
         }
     }
 }
