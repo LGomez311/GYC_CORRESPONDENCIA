@@ -800,16 +800,58 @@
                     Al reasignar este documento, se enviará a la bandeja del empleado seleccionado y desaparecerá de tu lista de pendientes.
                 </div>
                 
-                <div>
+                <div class="relative" id="reasignarDropdownContainer" style="min-height: 120px;">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Empleado Destino <span class="text-red-500">*</span></label>
-                    <select name="doc_quien_dirige" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-900 dark:text-white py-2 px-3 text-sm focus:ring-2 focus:ring-primary/50">
-                        <option value="">Seleccione a quién reasignar...</option>
-                        @foreach($empleados ?? [] as $emp)
-                            @if($emp->emple_doc != Auth::user()->emple_doc)
-                                <option value="{{ $emp->emple_doc }}">{{ $emp->emple_nombres }} {{ $emp->emple_apellidos }} ({{ $emp->area->area_nom ?? 'Sin Área' }})</option>
-                            @endif
-                        @endforeach
-                    </select>
+                    
+                    <div id="reasignarInputContainer" class="flex flex-wrap items-center gap-1.5 w-full min-h-[42px] px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 focus-within:ring-2 focus-within:ring-primary/50 cursor-text transition-all" onclick="abrirDropdownReasignar()">
+                        <input type="text" id="busquedaReasignar" placeholder="Buscar empleado o área..." 
+                            class="flex-1 min-w-[120px] bg-transparent border-none p-0 focus:ring-0 text-sm dark:text-white dark:placeholder-gray-400 m-0"
+                            autocomplete="off"
+                            onkeyup="filtrarReasignar()" onfocus="abrirDropdownReasignar()">
+                    </div>
+
+                    <!-- Dropdown List -->
+                    <div id="dropdownReasignarList" class="hidden absolute z-10 w-full mt-1 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-800 shadow-lg max-h-60 overflow-y-auto">
+                        
+                        <!-- Header Opcional -->
+                        <div class="sticky top-0 bg-white dark:bg-slate-800 p-2 border-b border-gray-100 dark:border-gray-700 z-10 flex justify-between items-center">
+                            <span class="text-xs text-gray-500 font-medium">Resultados de búsqueda</span>
+                        </div>
+
+                        <div id="listaReasignar" class="flex flex-col">
+                            @foreach($empleados ?? [] as $emp)
+                                @if($emp->emple_doc != Auth::user()->emple_doc)
+                                    <div class="reasignar-item flex items-center justify-between px-4 py-2 hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0 transition-colors" 
+                                           data-nombre="{{ strtolower($emp->emple_nombres . ' ' . $emp->emple_apellidos) }}" 
+                                           data-area="{{ strtolower($emp->area->area_nom ?? 'sin área') }}"
+                                           data-doc="{{ $emp->emple_doc }}"
+                                           onclick="seleccionarReasignar('{{ addslashes($emp->emple_nombres . ' ' . $emp->emple_apellidos) }}', '{{ $emp->emple_doc }}', '{{ $emp->area->area_nom ?? 'Sin Área' }}')">
+                                        
+                                        <div class="flex items-center gap-3 w-full">
+                                            <div class="flex flex-col flex-1">
+                                                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ $emp->emple_nombres }} {{ $emp->emple_apellidos }} <span class="text-xs text-gray-400 font-normal ml-1"> Doc: {{ $emp->emple_doc }}</span></span>
+                                                <span class="text-xs text-blue-600 dark:text-blue-400 flex items-center gap-1 font-medium mt-0.5">
+                                                    <span class="material-symbols-outlined text-[12px]">work</span>
+                                                    {{ $emp->area->area_nom ?? 'Sin Área' }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+                            @endforeach
+                            <!-- No results message -->
+                            <div id="noReasignarMsg" class="hidden px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                                No se encontraron empleados con ese criterio de búsqueda.
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Input oculto para el envío del formulario -->
+                    <input type="hidden" name="doc_quien_dirige" id="doc_reasignar_hidden" required>
+                </div>
+
+                <!-- Selected Recipient Pill -->
+                <div id="reasignarSeleccionado" class="flex flex-wrap gap-2 empty:hidden items-center mt-2">
+                    <!-- Pill se inyecta acá -->
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Motivo de la Reasignación <span class="text-red-500">*</span></label>
@@ -876,7 +918,7 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Para (Destinatario/s) <span class="text-red-500">*</span></label>
                     
                     <!-- Faux Input Box containing Pills and the actual Search Input -->
-                    <div id="fauxInputContainer" class="flex flex-wrap items-center gap-1.5 w-full min-h-[42px] px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-slate-900 focus-within:ring-2 focus-within:ring-primary/50 cursor-text transition-all" onclick="abrirDropdownDestinatarios()">
+                    <div id="fauxInputContainer" class="flex flex-wrap items-center gap-1.5 w-full min-h-[42px] px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 focus-within:ring-2 focus-within:ring-primary/50 cursor-text transition-all" onclick="abrirDropdownDestinatarios()">
                         
                         <!-- Actual Search Input -->
                         <input type="text" id="busquedaDestinatarios" placeholder="Buscar empleado o área..." 
@@ -900,23 +942,19 @@
                         <div id="listaDestinatarios" class="flex flex-col">
                             @foreach($empleados ?? [] as $emp)
                                 @if($emp->emple_doc != Auth::user()->emple_doc)
-                                    <label class="destinatario-item flex items-center justify-between px-4 py-2 hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0 transition-colors" 
+                                    <label class="destinatario-item flex items-center px-4 py-2 hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0 transition-colors" 
                                            data-nombre="{{ strtolower($emp->emple_nombres . ' ' . $emp->emple_apellidos) }}" 
                                            data-area="{{ strtolower($emp->area->area_nom ?? 'sin área') }}"
                                            data-doc="{{ $emp->emple_doc }}">
-                                        <div class="flex items-center gap-3 w-full">
-                                            <div class="relative flex items-center justify-center">
-                                                <input type="checkbox" name="doc_quien_dirigido[]" value="{{ $emp->emple_doc }}" 
-                                                    class="destinatario-checkbox w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary focus:ring-2 dark:bg-slate-600 dark:border-gray-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800"
-                                                    onchange="actualizarPillsDestinatarios(this, '{{ addslashes($emp->emple_nombres . ' ' . $emp->emple_apellidos) }}', '{{ $emp->emple_doc }}')">
-                                            </div>
-                                            <div class="flex flex-col">
-                                                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ $emp->emple_nombres }} {{ $emp->emple_apellidos }} <span class="text-xs text-gray-400 font-normal"> Documento: {{ $emp->emple_doc }}</span></span>
-                                                <span class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                                                    <span class="material-symbols-outlined text-[12px]">work</span>
-                                                    {{ $emp->area->area_nom ?? 'Sin Área' }}
-                                                </span>
-                                            </div>
+                                        
+                                        <div class="flex items-center h-5 custom-checkbox-wrapper mr-3">
+                                            <input type="checkbox" name="doc_quien_dirigido[]" value="{{ $emp->emple_doc }}" 
+                                                class="destinatario-checkbox w-4 h-4 text-primary bg-white border-gray-300 rounded focus:ring-primary dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-slate-700 dark:border-gray-600 cursor-pointer"
+                                                onchange="actualizarPillsDestinatarios(this, '{{ addslashes($emp->emple_nombres . ' ' . $emp->emple_apellidos) }}', '{{ $emp->emple_doc }}')">
+                                        </div>
+                                        <div class="flex flex-col flex-1 min-w-0">
+                                            <span class="text-sm font-medium text-gray-900 dark:text-white truncate" title="{{ $emp->emple_nombres }} {{ $emp->emple_apellidos }}">{{ $emp->emple_nombres }} {{ $emp->emple_apellidos }}</span>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400 truncate">Doc: {{ $emp->emple_doc }} • <span class="text-blue-600 dark:text-blue-400 font-semibold">{{ $emp->area->area_nom ?? 'Sin Área' }}</span></span>
                                         </div>
                                     </label>
                                 @endif
@@ -1067,7 +1105,7 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ventanilla Destino <span class="text-red-500">*</span></label>
                     
                     <!-- Faux Input Box containing search input -->
-                    <div id="ventanillaInputContainer" class="flex flex-wrap items-center gap-1.5 w-full min-h-[42px] px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-slate-900 focus-within:ring-2 focus-within:ring-primary/50 cursor-text transition-all" onclick="abrirDropdownVentanilla()">
+                    <div id="ventanillaInputContainer" class="flex flex-wrap items-center gap-1.5 w-full min-h-[42px] px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 focus-within:ring-2 focus-within:ring-primary/50 cursor-text transition-all" onclick="abrirDropdownVentanilla()">
                         <input type="text" id="busquedaVentanilla" placeholder="Buscar destinatario en Ventanilla..." 
                             class="flex-1 min-w-[120px] bg-transparent border-none p-0 focus:ring-0 text-sm dark:text-white dark:placeholder-gray-400 m-0"
                             autocomplete="off"
@@ -1078,13 +1116,13 @@
                     <div id="dropdownVentanillaList" class="hidden absolute z-10 w-full mt-1 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-800 shadow-lg max-h-60 overflow-y-auto">
                         <div id="listaVentanilla" class="flex flex-col">
                             @foreach($remitentes ?? [] as $rem)
-                                <div class="ventanilla-item flex items-center justify-between px-4 py-2 hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0 transition-colors" 
+                                <div class="ventanilla-item flex items-center px-4 py-2 hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0 transition-colors" 
                                        data-nombre="{{ strtolower($rem->rem_nombres . ' ' . $rem->rem_apellidos) }}" 
                                        data-doc="{{ $rem->rem_doc }}"
                                        onclick="seleccionarVentanilla('{{ addslashes($rem->rem_nombres . ' ' . $rem->rem_apellidos) }}', '{{ $rem->rem_doc }}')">
-                                    <div class="flex flex-col">
-                                        <span class="text-sm font-medium text-gray-900 dark:text-white">{{ $rem->rem_nombres }} {{ $rem->rem_apellidos }}</span>
-                                        <span class="text-xs text-gray-500 dark:text-gray-400">Documento: {{ $rem->rem_doc }} • <span class="text-blue-600 dark:text-blue-400 font-semibold">Ventanilla / Remitente</span></span>
+                                    <div class="flex flex-col flex-1 min-w-0">
+                                        <span class="text-sm font-medium text-gray-900 dark:text-white truncate" title="{{ $rem->rem_nombres }} {{ $rem->rem_apellidos }}">{{ $rem->rem_nombres }} {{ $rem->rem_apellidos }}</span>
+                                        <span class="text-xs text-gray-500 dark:text-gray-400 truncate">Doc: {{ $rem->rem_doc }} • <span class="text-blue-600 dark:text-blue-400 font-semibold">Ventanilla / Remitente</span></span>
                                     </div>
                                 </div>
                             @endforeach
@@ -2040,6 +2078,94 @@
     function removerVentanilla() {
         document.getElementById('doc_ventanilla_hidden').value = '';
         document.getElementById('ventanillaSeleccionada').innerHTML = '';
+    }
+
+    // ==========================================
+    // LÓGICA DEL BUSCADOR DE REASIGNACIÓN (RICH DROPDOWN)
+    // ==========================================
+    
+    function abrirDropdownReasignar() {
+        const dropdown = document.getElementById('dropdownReasignarList');
+        const input = document.getElementById('busquedaReasignar');
+        if (dropdown.classList.contains('hidden')) {
+            dropdown.classList.remove('hidden');
+            input.focus();
+            filtrarReasignar();
+        }
+    }
+
+    function cerrarDropdownReasignar() {
+        const dropdown = document.getElementById('dropdownReasignarList');
+        if (dropdown && !dropdown.classList.contains('hidden')) {
+            dropdown.classList.add('hidden');
+        }
+    }
+
+    // Cerrar al hacer clic fuera del dropdown
+    document.addEventListener('click', function(event) {
+        const container = document.getElementById('reasignarDropdownContainer');
+        if (container && !container.contains(event.target)) {
+            cerrarDropdownReasignar();
+        }
+    });
+
+    function filtrarReasignar() {
+        const input = document.getElementById('busquedaReasignar').value.toLowerCase().trim();
+        const items = document.querySelectorAll('.reasignar-item');
+        const noMsg = document.getElementById('noReasignarMsg');
+        let visibleCount = 0;
+
+        items.forEach(item => {
+            const nombre = item.getAttribute('data-nombre');
+            const area = item.getAttribute('data-area');
+            const doc = item.getAttribute('data-doc');
+            
+            // Buscar por nombre, área o documento
+            if (input.length === 0 || nombre.includes(input) || area.includes(input) || doc.includes(input)) {
+                item.classList.remove('hidden');
+                item.classList.add('flex');
+                visibleCount++;
+            } else {
+                item.classList.add('hidden');
+                item.classList.remove('flex');
+            }
+        });
+
+        if (visibleCount === 0 && items.length > 0) {
+            noMsg.classList.remove('hidden');
+        } else {
+            noMsg.classList.add('hidden');
+        }
+    }
+
+    function seleccionarReasignar(nombre, doc, area) {
+        const hiddenInput = document.getElementById('doc_reasignar_hidden');
+        const container = document.getElementById('reasignarSeleccionado');
+        const searchInput = document.getElementById('busquedaReasignar');
+        
+        hiddenInput.value = doc;
+        
+        // Mostrar Pill estilizada igual a ventanilla
+        container.innerHTML = `
+            <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800 transition-all shadow-sm">
+                <span class="material-symbols-outlined text-[18px]">person</span>
+                <div class="flex flex-col leading-tight">
+                    <span>${nombre}</span>
+                    <span class="text-[10px] opacity-70">Doc: ${doc} • ${area}</span>
+                </div>
+                <button type="button" class="text-blue-600 hover:text-red-500 dark:text-blue-400 dark:hover:text-red-400 ml-1 rounded-full w-5 h-5 flex items-center justify-center transition-colors focus:outline-none" onclick="removerReasignar()">
+                    <span class="material-symbols-outlined text-[14px]">close</span>
+                </button>
+            </div>
+        `;
+        
+        searchInput.value = '';
+        cerrarDropdownReasignar();
+    }
+
+    function removerReasignar() {
+        document.getElementById('doc_reasignar_hidden').value = '';
+        document.getElementById('reasignarSeleccionado').innerHTML = '';
     }
 
 </script>

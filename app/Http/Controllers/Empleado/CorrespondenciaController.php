@@ -740,97 +740,127 @@ class CorrespondenciaController extends Controller
     public function gestionarRechazoInterno(Request $request)
     {
         $request->validate([
-            'id_detalle' => 'required|exists:detalle_envio,id_detalle',
+            'ids_detalle' => 'nullable|array',
+            'ids_detalle.*' => 'exists:detalle_envio,id_detalle',
+            'id_detalle' => 'nullable|exists:detalle_envio,id_detalle',
             'accion' => 'required|in:finalizar,reenviar,reasignar',
-            'id_nuevo_destinatario' => 'nullable|required_if:accion,reasignar|exists:empleado,emple_doc',
+            'ids_nuevos_destinatarios' => 'nullable|required_if:accion,reasignar|array',
+            'ids_nuevos_destinatarios.*' => 'exists:empleado,emple_doc',
             'observaciones' => 'nullable|string',
             'archivo_nuevo' => 'nullable|file|mimes:pdf|max:5120',
             'anexos_nuevos.*' => 'nullable|file|mimes:pdf|max:25600',
             'folios_nuevos' => 'nullable|integer',
         ]);
 
-        $detalle = \App\Models\DetalleEnvio::with('envio')->findOrFail($request->id_detalle);
-        $user = Auth::user();
-
-        // Verificar que el usuario es el remitente original
-        if ($detalle->envio->doc_quien_envia != $user->emple_doc) {
-            return back()->with('error', 'No tiene permisos para gestionar este rechazo.');
+        $ids_detalle = [];
+        if ($request->has('ids_detalle') && is_array($request->ids_detalle)) {
+            $ids_detalle = $request->ids_detalle;
+        } elseif ($request->has('id_detalle')) {
+            $ids_detalle = [$request->id_detalle];
         }
 
-        $envio = $detalle->envio;
-        $mensaje = '';
+        if (empty($ids_detalle)) {
+            return back()->with('error', 'No se ha seleccionado ningún rechazo para gestionar.');
+        }
 
-        if ($request->accion === 'finalizar') {
-            // Aceptar el rechazo y finalizar el hilo para este destinatario
-            $nuevo = new \App\Models\DetalleEnvio();
-            $nuevo->id_quien_envie = $user->emple_doc;
-            $nuevo->id_quien_recibe = $detalle->id_quien_recibe;
-            $nuevo->id_envio = $envio->id_envio;
-            $nuevo->fecha_traslado = now();
-            $nuevo->id_estado_rec = 9; // Resuelto/Finalizado
-            $nuevo->observaciones = 'Rechazo aceptado: ' . $request->observaciones;
-            $nuevo->save();
-            $mensaje = 'Rechazo finalizado correctamente.';
+        $user = Auth::user();
+        $archivosAnexosGuardados = [];
+        $archivoPrincipalPath = null;
+        
+        // Guardar el archivo principal una sola vez si aplica a todos (solo se usa en 'reenviar')
+        if ($request->hasFile('archivo_nuevo') && $request->accion === 'reenviar') {
+            $archivoPrincipalPath = $request->file('archivo_nuevo')->store('correspondencia', 'public');
+        }
 
-        } elseif ($request->accion === 'reenviar') {
-            // Crear nuevo detalle para el MISMO destinatario (Estado Recibido)
-            $nuevo = new \App\Models\DetalleEnvio();
-            $nuevo->id_quien_envie = $user->emple_doc;
-            $nuevo->id_quien_recibe = $detalle->id_quien_recibe;
-            $nuevo->id_envio = $envio->id_envio;
-            $nuevo->fecha_traslado = now();
-            $nuevo->id_estado_rec = 7; // Recibido
-            $nuevo->observaciones = 'Reenviado tras corrección: ' . $request->observaciones;
+        if ($request->hasFile('anexos_nuevos') && $request->accion === 'reenviar') {
+            foreach ($request->file('anexos_nuevos') as $file) {
+                $pathAnexo = $file->store('correspondencia', 'public');
+                $archivosAnexosGuardados[] = [
+                    'path' => $pathAnexo,
+                    'name' => $file->getClientOriginalName()
+                ];
+            }
+        }
 
-            // Guardar el archivo corregido SOLO en el registro de este detalle
-            if ($request->hasFile('archivo_nuevo')) {
-                $path = $request->file('archivo_nuevo')->store('correspondencia', 'public');
-                $nuevo->archivo_respuesta = $path;
+        $enviosProcesadosReasignacion = [];
+
+        foreach ($ids_detalle as $id_det) {
+            $detalle = \App\Models\DetalleEnvio::with('envio')->findOrFail($id_det);
+            
+            // Verificar que el usuario es el remitente original
+            if ($detalle->envio->doc_quien_envia != $user->emple_doc) {
+                continue;
             }
 
-            // Guardar nuevos folios solo en este detalle
-            if ($request->filled('folios_nuevos')) {
-                $nuevo->folios_respuesta = $request->folios_nuevos;
-            }
+            $envio = $detalle->envio;
 
-            $nuevo->save();
+            if ($request->accion === 'finalizar') {
+                $nuevo = new \App\Models\DetalleEnvio();
+                $nuevo->id_quien_envie = $user->emple_doc;
+                $nuevo->id_quien_recibe = $detalle->id_quien_recibe;
+                $nuevo->id_envio = $envio->id_envio;
+                $nuevo->fecha_traslado = now();
+                $nuevo->id_estado_rec = 9; // Resuelto/Finalizado
+                $nuevo->observaciones = 'Rechazo aceptado: ' . $request->observaciones;
+                $nuevo->save();
 
-            // Guardar los nuevos anexos corregidos en 'AnexoRespuesta' atados a este nuevo detalle
-            if ($request->hasFile('anexos_nuevos')) {
-                foreach ($request->file('anexos_nuevos') as $file) {
-                    $pathAnexo = $file->store('correspondencia', 'public');
+            } elseif ($request->accion === 'reenviar') {
+                $nuevo = new \App\Models\DetalleEnvio();
+                $nuevo->id_quien_envie = $user->emple_doc;
+                $nuevo->id_quien_recibe = $detalle->id_quien_recibe;
+                $nuevo->id_envio = $envio->id_envio;
+                $nuevo->fecha_traslado = now();
+                $nuevo->id_estado_rec = 7; // Recibido
+                $nuevo->observaciones = 'Reenviado tras corrección: ' . $request->observaciones;
+
+                if ($archivoPrincipalPath) {
+                    $nuevo->archivo_respuesta = $archivoPrincipalPath;
+                }
+
+                if ($request->filled('folios_nuevos')) {
+                    $nuevo->folios_respuesta = $request->folios_nuevos;
+                }
+
+                $nuevo->save();
+
+                foreach ($archivosAnexosGuardados as $anexoGuardado) {
                     \App\Models\AnexoRespuesta::create([
                         'id_det_interna' => $nuevo->id_detalle,
-                        'ruta_archivo' => $pathAnexo,
-                        'nombre_original' => $file->getClientOriginalName(),
+                        'ruta_archivo' => $anexoGuardado['path'],
+                        'nombre_original' => $anexoGuardado['name'],
                     ]);
                 }
+
+            } elseif ($request->accion === 'reasignar') {
+                $cierreRechazo = new \App\Models\DetalleEnvio();
+                $cierreRechazo->id_quien_envie = $user->emple_doc;
+                $cierreRechazo->id_quien_recibe = $detalle->id_quien_recibe;
+                $cierreRechazo->id_envio = $envio->id_envio;
+                $cierreRechazo->fecha_traslado = now();
+                $cierreRechazo->id_estado_rec = 9; // Resuelto
+                $cierreRechazo->observaciones = 'Trámite reasignado a ' . count($request->ids_nuevos_destinatarios) . ' nuevo(s) colaborador(es).';
+                $cierreRechazo->save();
+
+                if (!in_array($envio->id_envio, $enviosProcesadosReasignacion)) {
+                    foreach ($request->ids_nuevos_destinatarios as $nuevoId) {
+                        $nuevo = new \App\Models\DetalleEnvio();
+                        $nuevo->id_quien_envie = $user->emple_doc;
+                        $nuevo->id_quien_recibe = $nuevoId;
+                        $nuevo->id_envio = $envio->id_envio;
+                        $nuevo->fecha_traslado = now();
+                        $nuevo->id_estado_rec = 7; // Recibido
+                        $nuevo->observaciones = 'Reasignado tras rechazo original: ' . $request->observaciones;
+                        $nuevo->save();
+                    }
+                    $enviosProcesadosReasignacion[] = $envio->id_envio;
+                }
             }
+        }
 
-            $mensaje = 'Correspondencia corregida y reenviada al destinatario.';
-
-        } elseif ($request->accion === 'reasignar') {
-            // Crear nuevo detalle para el NUEVO destinatario (Estado Recibido)
-            $nuevo = new \App\Models\DetalleEnvio();
-            $nuevo->id_quien_envie = $user->emple_doc;
-            $nuevo->id_quien_recibe = $request->id_nuevo_destinatario;
-            $nuevo->id_envio = $envio->id_envio;
-            $nuevo->fecha_traslado = now();
-            $nuevo->id_estado_rec = 7; // Recibido
-            $nuevo->observaciones = 'Reasignado tras rechazo original: ' . $request->observaciones;
-            $nuevo->save();
-
-            // Opcional: Marcar el hilo del que rechazó como "Finalizado" para que no le aparezca como pendiente
-            $cierreRechazo = new \App\Models\DetalleEnvio();
-            $cierreRechazo->id_quien_envie = $user->emple_doc;
-            $cierreRechazo->id_quien_recibe = $detalle->id_quien_recibe;
-            $cierreRechazo->id_envio = $envio->id_envio;
-            $cierreRechazo->fecha_traslado = now();
-            $cierreRechazo->id_estado_rec = 9; // Resuelto
-            $cierreRechazo->observaciones = 'Trámite reasignado a otro colaborador.';
-            $cierreRechazo->save();
-
-            $mensaje = 'Correspondencia reasignada a un nuevo colaborador exitosamente.';
+        if (count($ids_detalle) > 1) {
+            $mensaje = 'Rechazos gestionados correctamente (' . count($ids_detalle) . ' destinatarios).';
+        } else {
+            $mensaje = 'Rechazo gestionado correctamente.';
         }
 
         return back()->with('success', $mensaje);

@@ -1,4 +1,5 @@
 @extends('empleado.layouts.app')
+@extends('empleado.layouts.app')
 
 @section('content')
 <div class="space-y-6">
@@ -194,7 +195,7 @@
                                         </span>
                                         @if($trace->id_estado_rec == 11 && Auth::user()->emple_doc == $detalle->envio->doc_quien_envia)
                                             @if($trace->id_detalle == $destinatarios[$trace->id_quien_recibe]->last()->id_detalle)
-                                                <button onclick="abrirModalGestionRechazo({{ $trace->id_detalle }}, '{{ $trace->quienRecibe->emple_nombres }}')" 
+                                                <button onclick="abrirModalGestionRechazo({{ $trace->id_detalle }}, '{{ $trace->quienRecibe->emple_nombres }}', '{{ $trace->quienRecibe->emple_doc }}')" 
                                                     class="px-3 py-1 bg-red-600 text-white rounded text-[10px] font-bold hover:bg-red-700 transition-colors shadow-sm flex items-center gap-1">
                                                     <span class="material-symbols-outlined text-[14px]">settings_backup_restore</span>
                                                     Gestionar Rechazo
@@ -262,17 +263,44 @@
             </div>
             
             <!-- Information Footer (Dinámico) -->
-            @php
+@php
                 $todosFinalizados = true;
+                $rechazosPendientes = collect();
                 foreach($destinatarios as $id_recibe => $trazas) {
                     $u = $trazas->last();
                     $est = strtolower($u->estado?->estado_nomb ?? '');
                     if(!str_contains($est, 'finalizado') && !str_contains($est, 'resuelto') && !str_contains($est, 'archivado') && !str_contains($est, 'rechazado')) {
                         $todosFinalizados = false;
-                        break;
+                    }
+                    if($u->id_estado_rec == 11 && Auth::user()->emple_doc == $detalle->envio->doc_quien_envia) {
+                        $rechazosPendientes->push($u);
                     }
                 }
+                
+                // Si todos están finalizados, archivados o resueltos pero no es un rechazo final (los rechazos no gestionados se consideran pendientes en este bloque), ajustamos el boolean:
+                if ($rechazosPendientes->count() > 0) {
+                    $todosFinalizados = false;
+                }
             @endphp
+            
+            @if($rechazosPendientes->count() > 1)
+                <div class="bg-red-600 rounded-xl p-6 text-white flex items-center justify-between shadow-lg mb-6">
+                    <div class="flex items-center gap-6">
+                        <div class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-4xl">warning</span>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-bold">Rechazos Múltiples Pendientes</h4>
+                            <p class="text-sm opacity-90">Tienes {{ $rechazosPendientes->count() }} rechazos pendientes. Puedes gestionarlos todos a la vez.</p>
+                        </div>
+                    </div>
+                    <button onclick="abrirModalGestionRechazoMasivo({{ json_encode($rechazosPendientes->pluck('id_detalle')->toArray()) }}, {{ $rechazosPendientes->count() }}, {{ json_encode($rechazosPendientes->pluck('id_quien_recibe')->toArray()) }})" 
+                        class="px-4 py-2 bg-white text-red-600 rounded-lg text-sm font-bold shadow-md hover:bg-gray-100 transition-colors flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">settings_backup_restore</span>
+                        Gestionar Todos
+                    </button>
+                </div>
+            @endif
 
             @if($todosFinalizados)
                 <div class="bg-green-600 rounded-xl p-6 text-white flex items-center gap-6 shadow-lg">
@@ -305,7 +333,7 @@
         <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-red-50 dark:bg-red-900/20">
             <h3 class="font-bold text-lg text-red-800 dark:text-red-400 flex items-center gap-2">
                 <span class="material-symbols-outlined text-[24px]">gavel</span>
-                Gestionar Rechazo de <span id="gestionNombreDestinatario"></span>
+                <span id="tituloGestionRechazo">Gestionar Rechazo</span>
             </h3>
             <button onclick="toggleModal('modalGestionRechazo')" class="text-gray-400 hover:text-gray-600 dark:hover:text-white">
                 <span class="material-symbols-outlined">close</span>
@@ -314,7 +342,8 @@
         
         <form action="{{ route('empleado.gestionar_rechazo_interna') }}" method="POST" enctype="multipart/form-data">
             @csrf
-            <input type="hidden" name="id_detalle" id="gestionIdDetalle">
+            
+            <div id="gestionIdsContenedor"></div>
             
             <div class="p-6 space-y-5 overflow-y-auto max-h-[70vh]">
                 <div class="space-y-3">
@@ -363,15 +392,65 @@
                     </div>
                 </div>
 
-                <!-- Campo dinámico: Nuevo Destinatario -->
-                <div id="gestionReasignarContainer" class="hidden animate-fade-in">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nuevo Destinatario <span class="text-red-500">*</span></label>
-                    <select name="id_nuevo_destinatario" id="selectNuevoDestinatario" class="w-full border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 dark:text-white py-2 px-3 text-sm focus:ring-2 focus:ring-primary/50">
-                        <option value="">Seleccione el nuevo responsable...</option>
-                        @foreach($empleados ?? [] as $emp)
-                            <option value="{{ $emp->emple_doc }}">{{ $emp->emple_nombres }} {{ $emp->emple_apellidos }} ({{ $emp->area->area_nom ?? 'N/A' }})</option>
-                        @endforeach
-                    </select>
+                <!-- Campo dinámico: Nuevo Destinatario (Rich Dropdown) -->
+                <div id="gestionReasignarContainer" class="hidden animate-fade-in relative z-20" style="min-height: 120px;">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nuevos Destinatarios <span class="text-red-500">*</span></label>
+                    <p class="text-[10px] text-gray-500 mb-2">Busca y selecciona uno o más empleados para reasignar el trámite.</p>
+                    
+                    <div class="relative" id="reasignarDropdownContainer">
+                        <!-- Faux Input Box containing search input -->
+                        <div id="reasignarInputContainer" class="flex flex-wrap items-center gap-1.5 w-full min-h-[42px] px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 focus-within:ring-2 focus-within:ring-primary/50 cursor-text transition-all" onclick="abrirDropdownReasignar()">
+                            <input type="text" id="busquedaReasignar" placeholder="Buscar por área, nombre o documento..." 
+                                class="flex-1 min-w-[120px] bg-transparent border-none p-0 focus:ring-0 text-sm dark:text-white dark:placeholder-gray-400 m-0"
+                                autocomplete="off"
+                                onkeyup="filtrarReasignar()" onfocus="abrirDropdownReasignar()">
+                        </div>
+
+                        <!-- Dropdown List -->
+                        <div id="dropdownReasignarList" class="hidden absolute z-50 w-full mt-1 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-800 shadow-xl max-h-60 overflow-y-auto bottom-auto top-full shadow-[0_10px_25px_-5px_rgba(0,0,0,0.3)]">
+                            <!-- Helper Options -->
+                            <div class="p-2 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-slate-800/80 sticky top-0 z-10 flex justify-between items-center" id="opcionesReasignarOcultables">
+                                <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-2">Empleados</span>
+                                <button type="button" onclick="seleccionarTodosReasignarVisibles()" class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-slate-700 transition">
+                                    Seleccionar visibles
+                                </button>
+                            </div>
+
+                            <div id="listaReasignar" class="flex flex-col pb-1">
+                                @foreach($empleados ?? [] as $emp)
+                                    @php
+                                        // Skip current user if needed, but here we can show all or just $empleados directly
+                                        $nombreCompleto = $emp->emple_nombres . ' ' . $emp->emple_apellidos;
+                                        $areaNom = $emp->area->area_nom ?? 'Sin Área';
+                                    @endphp
+                                    <label class="reasignar-item flex items-center px-4 py-2 hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0 transition-colors" 
+                                           data-nombre="{{ strtolower($nombreCompleto) }}" 
+                                           data-area="{{ strtolower($areaNom) }}"
+                                           data-doc="{{ $emp->emple_doc }}">
+                                        
+                                        <div class="flex items-center h-5 custom-checkbox-wrapper mr-3">
+                                            <input type="checkbox" value="{{ $emp->emple_doc }}" name="ids_nuevos_destinatarios[]" 
+                                                class="reasignar-checkbox w-4 h-4 text-primary bg-white border-gray-300 rounded focus:ring-primary dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-slate-700 dark:border-gray-600 cursor-pointer"
+                                                onchange="actualizarPillsReasignar(this, '{{ addslashes($nombreCompleto) }}', '{{ $emp->emple_doc }}')">
+                                        </div>
+                                        <div class="flex flex-col flex-1 min-w-0">
+                                            <span class="text-sm font-medium text-gray-900 dark:text-white truncate" title="{{ $nombreCompleto }}">{{ $nombreCompleto }}</span>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400 truncate">Doc: {{ $emp->emple_doc }} • <span class="text-blue-600 dark:text-blue-400 font-semibold">{{ $areaNom }}</span></span>
+                                        </div>
+                                    </label>
+                                @endforeach
+                                <!-- No results message -->
+                                <div id="noReasignarMsg" class="hidden px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                                    No se encontraron empleados con ese criterio de búsqueda.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Selected Recipients Pills Container -->
+                    <div id="destinatariosReasignarSeleccionados" class="flex flex-wrap gap-2 empty:hidden items-center mt-2 p-2 bg-gray-50 dark:bg-slate-800/50 rounded-lg min-h-[40px] border border-dashed border-gray-300 dark:border-gray-600">
+                        <!-- Pills inyectadas aquí -->
+                    </div>
                 </div>
 
                 <div>
@@ -401,10 +480,48 @@
         }
     }
 
-    function abrirModalGestionRechazo(idDetalle, nombre) {
-        document.getElementById('gestionIdDetalle').value = idDetalle;
-        document.getElementById('gestionNombreDestinatario').innerText = nombre;
+    // Variable global para almacenar los docs a excluir en el buscador de reasignación
+    window.docsExcluidosReasignar = [];
+
+    function abrirModalGestionRechazo(idDetalle, nombre, empleDoc) {
+        window.docsExcluidosReasignar = [empleDoc];
+        
+        const contenedor = document.getElementById('gestionIdsContenedor');
+        contenedor.innerHTML = `<input type="hidden" name="ids_detalle[]" value="${idDetalle}">`;
+        
+        document.getElementById('tituloGestionRechazo').innerHTML = `Gestionar Rechazo de <span class="font-bold border-b border-red-300 pb-0.5">${nombre}</span>`;
         toggleModal('modalGestionRechazo');
+        
+        // Limpiar búsqueda previa
+        limpiarBuscadorReasignar();
+    }
+
+    function abrirModalGestionRechazoMasivo(ids, total, empleDocsArr) {
+        window.docsExcluidosReasignar = empleDocsArr || [];
+        
+        const contenedor = document.getElementById('gestionIdsContenedor');
+        contenedor.innerHTML = '';
+        ids.forEach(id => {
+            contenedor.innerHTML += `<input type="hidden" name="ids_detalle[]" value="${id}">`;
+        });
+        
+        document.getElementById('tituloGestionRechazo').innerHTML = `Gestionar Rechazo Múltiple <span class="text-sm font-normal bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 px-2 py-0.5 rounded-full whitespace-nowrap">(${total} destinatarios)</span>`;
+        toggleModal('modalGestionRechazo');
+        
+        // Limpiar búsqueda previa
+        limpiarBuscadorReasignar();
+    }
+    
+    function limpiarBuscadorReasignar() {
+        // Limpiar input y selecciones
+        const input = document.getElementById('busquedaReasignar');
+        if (input) input.value = '';
+        
+        const pillsContainer = document.getElementById('destinatariosReasignarSeleccionados');
+        if (pillsContainer) pillsContainer.innerHTML = '';
+        
+        const checkboxes = document.querySelectorAll('.reasignar-checkbox');
+        checkboxes.forEach(cb => { cb.checked = false; cb.setCustomValidity(""); });
     }
 
     function toggleAccionGestion(accion) {
@@ -431,6 +548,17 @@
             selectDest.removeAttribute('required');
         }
     }
+
+    // Add event listener to update count dynamically
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectDest = document.getElementById('selectNuevoDestinatario');
+        if (selectDest) {
+            selectDest.addEventListener('change', function() {
+                const count = Array.from(this.selectedOptions).length;
+                document.getElementById('destinatariosSeleccionadosCount').innerText = `${count} colaborador(es) seleccionado(s)`;
+            });
+        }
+    });
 </script>
 
 <!-- Script para PDF.js y Conteo de Folios -->
@@ -498,6 +626,188 @@
     };
     
     window.handleMultipleFilesAndCount = window.handleFileSelectAndCount;
+
+    // ==========================================
+    // LÓGICA DEL BUSCADOR DE REASIGNACIÓN (RICH DROPDOWN)
+    // ==========================================
+    
+    function abrirDropdownReasignar() {
+        const dropdown = document.getElementById('dropdownReasignarList');
+        const input = document.getElementById('busquedaReasignar');
+        if (dropdown.classList.contains('hidden')) {
+            dropdown.classList.remove('hidden');
+            input.focus();
+            filtrarReasignar();
+        }
+    }
+
+    function cerrarDropdownReasignar() {
+        const dropdown = document.getElementById('dropdownReasignarList');
+        if (dropdown && !dropdown.classList.contains('hidden')) {
+            dropdown.classList.add('hidden');
+        }
+    }
+
+    // Cerrar al hacer clic fuera del dropdown
+    document.addEventListener('click', function(event) {
+        const container = document.getElementById('reasignarDropdownContainer');
+        if (container && !container.contains(event.target)) {
+            cerrarDropdownReasignar();
+        }
+    });
+
+    function filtrarReasignar() {
+        const input = document.getElementById('busquedaReasignar').value.toLowerCase().trim();
+        const items = document.querySelectorAll('.reasignar-item');
+        const noMsg = document.getElementById('noReasignarMsg');
+        const selectAllContainer = document.getElementById('opcionesReasignarOcultables');
+        let visibleCount = 0;
+
+        items.forEach(item => {
+            const nombre = item.getAttribute('data-nombre');
+            const area = item.getAttribute('data-area');
+            const doc = item.getAttribute('data-doc');
+            
+            // Ocultar si el empleado ya está en la lista de excluidos (los que rechazaron)
+            if (window.docsExcluidosReasignar && window.docsExcluidosReasignar.includes(doc)) {
+                item.classList.add('hidden');
+                item.classList.remove('flex');
+                return; // Continuar con el siguiente elemento (no incrementa validación de búsqueda)
+            }
+            
+            // Buscar por nombre, área o documento
+            if (input.length === 0 || nombre.includes(input) || area.includes(input) || doc.includes(input)) {
+                item.classList.remove('hidden');
+                item.classList.add('flex');
+                visibleCount++;
+            } else {
+                item.classList.add('hidden');
+                item.classList.remove('flex');
+            }
+        });
+
+        if (visibleCount === 0 && items.length > 0) {
+            noMsg.classList.remove('hidden');
+            if (selectAllContainer) selectAllContainer.classList.add('hidden');
+        } else {
+            noMsg.classList.add('hidden');
+            if (selectAllContainer) selectAllContainer.classList.remove('hidden');
+        }
+    }
+
+    function seleccionarTodosReasignarVisibles() {
+        const items = document.querySelectorAll('.reasignar-item.flex'); 
+        
+        let allSelected = true;
+        items.forEach(item => {
+            const checkbox = item.querySelector('.reasignar-checkbox');
+            if (checkbox && !checkbox.checked) {
+                allSelected = false;
+            }
+        });
+
+        items.forEach(item => {
+            const checkbox = item.querySelector('.reasignar-checkbox');
+            if (checkbox) {
+                const nombreCompleto = item.querySelector('.text-sm.font-medium').innerText;
+                const docId = checkbox.value;
+                
+                if (allSelected) {
+                    if (checkbox.checked) {
+                        checkbox.checked = false;
+                        actualizarPillsReasignar(checkbox, nombreCompleto, docId);
+                    }
+                } else {
+                    if (!checkbox.checked) {
+                        checkbox.checked = true;
+                        actualizarPillsReasignar(checkbox, nombreCompleto, docId);
+                    }
+                }
+            }
+        });
+        
+        document.getElementById('busquedaReasignar').focus();
+    }
+
+    function actualizarPillsReasignar(checkboxElem, nombreCompleto, docId) {
+        const container = document.getElementById('destinatariosReasignarSeleccionados');
+        const existingPill = document.getElementById(`pill_reasignar_${docId}`);
+
+        if (checkboxElem.checked) {
+            if (!existingPill) {
+                const pill = document.createElement('div');
+                pill.id = `pill_reasignar_${docId}`;
+                pill.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800 transition-all';
+                
+                pill.innerHTML = `
+                    <span class="material-symbols-outlined text-[16px]">person</span>
+                    ${nombreCompleto}
+                    <button type="button" class="text-blue-600 hover:text-red-500 dark:text-blue-400 dark:hover:text-red-400 ml-1 rounded-full w-4 h-4 flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-red-400" onclick="removerSeleccionReasignar('${docId}')" aria-label="Remover ${nombreCompleto}">
+                        <span class="material-symbols-outlined text-[14px]">close</span>
+                    </button>
+                `;
+                // Remover el mensaje vacío nativo usando CSS :empty pseudoclass (por eso tiene empty:hidden)
+                container.appendChild(pill);
+            }
+        } else {
+            if (existingPill) {
+                existingPill.remove();
+            }
+        }
+        validarDestinatariosReasignarMinimos();
+    }
+
+    function removerSeleccionReasignar(docId) {
+        const checkbox = document.querySelector(`.reasignar-checkbox[value="${docId}"]`);
+        if (checkbox) {
+            checkbox.checked = false;
+            actualizarPillsReasignar(checkbox, '', docId);
+        }
+    }
+
+    function validarDestinatariosReasignarMinimos() {
+        const checkboxes = document.querySelectorAll('.reasignar-checkbox');
+        let checkedCount = 0;
+        
+        checkboxes.forEach(cb => {
+            if (cb.checked) checkedCount++;
+        });
+        
+        if (checkboxes.length > 0) {
+            const firstCb = checkboxes[0];
+            if (checkedCount === 0) {
+                firstCb.setCustomValidity("Seleccione al menos un colaborador para reasignar.");
+            } else {
+                firstCb.setCustomValidity("");
+                checkboxes.forEach(cb => cb.setCustomValidity(""));
+            }
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Validación personalizada antes de enviar el formulario de gestión modal
+        const formGestion = document.querySelector('#modalGestionRechazo form');
+        if (formGestion) {
+            formGestion.addEventListener('submit', function(e) {
+                // Solo validar si la acción seleccionada es reasignar
+                const accionRadio = document.querySelector('input[name="accion"]:checked');
+                if (accionRadio && accionRadio.value === 'reasignar') {
+                    const checkboxes = document.querySelectorAll('.reasignar-checkbox');
+                    let checkedCount = 0;
+                    checkboxes.forEach(cb => { if (cb.checked) checkedCount++; });
+
+                    if (checkedCount === 0) {
+                        e.preventDefault();
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Colaborador requerido',
+                            text: 'Debe seleccionar al menos un colaborador al cual reasignar el trámite.',
+                        });
+                    }
+                }
+            });
+        }
+    });
 
 </script>
 
