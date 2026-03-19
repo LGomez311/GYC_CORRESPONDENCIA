@@ -12,17 +12,28 @@
             </p>
         </div>
         <div class="flex items-center gap-3">
-            <button class="bg-white dark:bg-slate-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2">
-                <span class="material-symbols-outlined text-lg">download</span>
-                Exportar PDF
-            </button>
-            <select class="form-select border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 text-sm px-4 py-2">
-                <option>Mes Actual (Marzo 2026)</option>
-                <option>Febrero 2026</option>
-                <option>Enero 2026</option>
-                <option>Últimos 3 Meses</option>
-                <option>Todo el año 2026</option>
-            </select>
+            <form id="filterForm" action="{{ route('empleado.reportes') }}" method="GET" class="flex flex-col sm:flex-row items-center gap-3">
+                <a href="{{ route('empleado.reportes.export.pdf', ['mes' => $mesSelect, 'rango' => $rangoSelect]) }}" target="_blank" class="bg-white dark:bg-slate-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2">
+                    <span class="material-symbols-outlined text-lg">download</span>
+                    Exportar PDF
+                </a>
+                
+                <input type="month" name="mes" value="{{ $mesSelect }}" max="{{ date('Y-m') }}" onchange="document.getElementById('filterForm').submit()" class="form-input border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 text-sm px-4 py-2" required title="Seleccionar Mes Base">
+                
+                <div class="flex items-center p-1 bg-gray-100 dark:bg-slate-900 rounded-lg">
+                    <button type="button" onclick="setRango('mes')" class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all {{ $rangoSelect == 'mes' ? 'bg-white dark:bg-slate-800 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300' }}">Mes</button>
+                    <button type="button" onclick="setRango('trimestre')" class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all {{ $rangoSelect == 'trimestre' ? 'bg-white dark:bg-slate-800 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300' }}">Trimestre</button>
+                    <button type="button" onclick="setRango('anio')" class="px-3 py-1.5 text-xs font-semibold rounded-md transition-all {{ $rangoSelect == 'anio' ? 'bg-white dark:bg-slate-800 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300' }}">Año</button>
+                </div>
+                <input type="hidden" name="rango" id="rangoInput" value="{{ $rangoSelect }}">
+            </form>
+
+            <script>
+                function setRango(val) {
+                    document.getElementById('rangoInput').value = val;
+                    document.getElementById('filterForm').submit();
+                }
+            </script>
         </div>
     </div>
 
@@ -115,71 +126,94 @@
 
     </div>
 
-    <!-- Bottom Data Summary -->
+    <!-- Bottom Data Summary / Interactive Chart.js -->
     <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-        <h3 class="font-bold text-lg dark:text-white mb-4">Sumario por Dependencia (Departamentos Asignados)</h3>
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
-                <thead class="text-xs text-gray-500 uppercase bg-gray-50 dark:bg-slate-900/50 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                    <tr>
-                        <th class="px-4 py-3 font-medium">Dependencia</th>
-                        <th class="px-4 py-3 font-medium text-center">Asignados</th>
-                        <th class="px-4 py-3 font-medium text-center">En Trámite</th>
-                        <th class="px-4 py-3 font-medium text-center">Finalizados</th>
-                        <th class="px-4 py-3 font-medium text-center text-red-500">Vencidos</th>
-                        <th class="px-4 py-3 font-medium text-right">Eficiencia</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                    <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50">
-                        <td class="px-4 py-3 font-medium dark:text-gray-300">Jurídica</td>
-                        <td class="px-4 py-3 text-center dark:text-gray-300">45</td>
-                        <td class="px-4 py-3 text-center dark:text-gray-300">10</td>
-                        <td class="px-4 py-3 text-center dark:text-gray-300">35</td>
-                        <td class="px-4 py-3 text-center text-red-500">0</td>
-                        <td class="px-4 py-3 text-right">
-                            <div class="flex items-center justify-end gap-2">
-                                <div class="w-16 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                                    <div class="h-full bg-green-500" style="width: 77%"></div>
-                                </div>
-                                <span class="text-xs text-gray-500 dark:text-gray-400 border-l border-gray-300 dark:border-gray-600 pl-2">77%</span>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50">
-                        <td class="px-4 py-3 font-medium dark:text-gray-300">Planeación</td>
-                        <td class="px-4 py-3 text-center dark:text-gray-300">30</td>
-                        <td class="px-4 py-3 text-center dark:text-gray-300">12</td>
-                        <td class="px-4 py-3 text-center dark:text-gray-300">15</td>
-                        <td class="px-4 py-3 text-center text-red-500 font-medium">3</td>
-                        <td class="px-4 py-3 text-right">
-                            <div class="flex items-center justify-end gap-2">
-                                <div class="w-16 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                                    <div class="h-full bg-yellow-400" style="width: 50%"></div>
-                                </div>
-                                <span class="text-xs text-gray-500 dark:text-gray-400 border-l border-gray-300 dark:border-gray-600 pl-2">50%</span>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50">
-                        <td class="px-4 py-3 font-medium dark:text-gray-300">Talento Humano</td>
-                        <td class="px-4 py-3 text-center dark:text-gray-300">15</td>
-                        <td class="px-4 py-3 text-center dark:text-gray-300">5</td>
-                        <td class="px-4 py-3 text-center dark:text-gray-300">10</td>
-                        <td class="px-4 py-3 text-center text-red-500">0</td>
-                        <td class="px-4 py-3 text-right">
-                            <div class="flex items-center justify-end gap-2">
-                                <div class="w-16 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                                    <div class="h-full bg-green-500" style="width: 66%"></div>
-                                </div>
-                                <span class="text-xs text-gray-500 dark:text-gray-400 border-l border-gray-300 dark:border-gray-600 pl-2">66%</span>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="font-bold text-lg dark:text-white">Métricas Consolidadas</h3>
+            <div class="bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2">
+                <span class="material-symbols-outlined text-lg">description</span>
+                Documentos: {{ $totalUnicos }}
+            </div>
+        </div>
+        <div class="w-full h-80 relative">
+            <canvas id="metricsChart"></canvas>
         </div>
     </div>
 
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('metricsChart').getContext('2d');
+        const data = {
+            labels: ['Recibidos', 'En Trámite', 'Finalizados', 'Rechazados', 'Archivados', 'Vencidos'],
+            datasets: [{
+                label: 'Documentos',
+                data: [
+                    {{ $countRecibido }},
+                    {{ $countTramite }},
+                    {{ $countFinalizado }},
+                    {{ $countRechazado }},
+                    {{ $countArchivado }},
+                    {{ $countVencidos }}
+                ],
+                backgroundColor: [
+                    'rgba(59, 130, 246, 0.7)',  
+                    'rgba(234, 179, 8, 0.7)',   
+                    'rgba(34, 197, 94, 0.7)',   
+                    'rgba(239, 68, 68, 0.7)',   
+                    'rgba(100, 116, 139, 0.7)', 
+                    'rgba(249, 115, 22, 0.7)'   
+                ],
+                borderColor: [
+                    'rgb(37, 99, 235)',
+                    'rgb(202, 138, 4)',
+                    'rgb(22, 163, 74)',
+                    'rgb(220, 38, 38)',
+                    'rgb(71, 85, 105)',
+                    'rgb(234, 88, 12)'
+                ],
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        };
+
+        const isDarkMode = document.documentElement.classList.contains('dark');
+        const textColor = isDarkMode ? '#e2e8f0' : '#334155';
+        const gridColor = isDarkMode ? '#334155' : '#e2e8f0';
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: data,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Documentos: ' + context.raw;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { color: textColor, precision: 0 },
+                        grid: { color: gridColor }
+                    },
+                    x: {
+                        ticks: { color: textColor },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    });
+</script>
 @endsection
