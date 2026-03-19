@@ -78,7 +78,7 @@ class HomeController extends Controller
                 $enviosEmpresa = Envio::whereHas('quienEnvia', function ($query) use ($user) {
                     $query->where('nit_empresa', $user->nit_empresa);
                 })
-                ->orWhereHas('quienDirigido', function ($query) use ($user) {
+                ->orWhereHas('detalles.quienRecibe', function ($query) use ($user) {
                     $query->where('nit_empresa', $user->nit_empresa);
                 })
                 ->get();
@@ -92,8 +92,10 @@ class HomeController extends Controller
                     // Pendientes (estado 0 = En espera)
                     $pendientes = $enviosEmpresa->where('id_estado_envio', 0)->count();
 
-                    // Recibidos (donde el usuario es el destinatario - nota: en el nuevo esquema esto aplica mayormente a remitentes)
-                    $recibidos = Envio::where('doc_quien_registra', $user->emple_doc)->count();
+                    // Recibidos (donde el usuario es el destinatario)
+                    $recibidos = Envio::whereHas('detalles', function ($query) use ($user) {
+                        $query->where('id_quien_recibe', $user->emple_doc);
+                    })->count();
 
                     // Enviados (donde el usuario es el remitente)
                     $enviados = Envio::where('doc_quien_envia', $user->emple_doc)->count();

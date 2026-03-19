@@ -14,7 +14,7 @@ class Tipo extends Model
         'tipo_nombre',
         'id_prioridad',
         'dias_respuesta',
-        'requiere_respuesta'
+        'requiere_respuesta',
     ];
 
     public function prioridad()

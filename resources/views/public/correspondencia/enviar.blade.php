@@ -175,8 +175,9 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-[#0d121b] dark:text-gray-200 mb-1">Radicado Interno de Empresa</label>
-                        <input type="text" name="radicado_empresa" value="{{ old('radicado_empresa') }}" class="w-full rounded-lg border @error('radicado_empresa') border-red-500 @else border-[#cfd7e7] dark:border-slate-700 @enderror bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none uppercase" maxlength="100" placeholder="Opcional. Ej: RAD-001">
+                        <label class="block text-sm font-medium text-[#0d121b] dark:text-gray-200 mb-1">Radicado Externo de la Empresa <span class="text-red-500">*</span></label>
+                        <input type="text" name="radicado_empresa" value="{{ old('radicado_empresa') }}" class="w-full rounded-lg border @error('radicado_empresa') border-red-500 @else border-[#cfd7e7] dark:border-slate-700 @enderror bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none uppercase" maxlength="100" required placeholder="Ej: EXT-2026-00123">
+                        <p class="text-xs text-slate-500 mt-1">Número de radicado interno que asignó su empresa a este documento.</p>
                         @error('radicado_empresa') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
 
@@ -214,20 +215,28 @@
                         <!-- Input oculto que pasa el valor seleccionado al backend -->
                         <input type="hidden" name="empresa_destino" id="empresa_destino_value" value="{{ old('empresa_destino') }}" required>
                         
-                        <!-- Botón simulador de Select -->
-                        <button type="button" id="btnToggleEmpresas" class="w-full flex items-center justify-between rounded-lg border @error('empresa_destino') border-red-500 @else border-[#cfd7e7] dark:border-slate-700 @enderror bg-white dark:bg-slate-800 text-left p-2.5 focus:ring-2 focus:ring-primary/50 outline-none transition-colors group">
-                            <span id="btnToggleEmpresasLabel" class="block truncate {{ old('empresa_destino') ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-gray-400' }}">
-                                @if(old('empresa_destino'))
-                                    @php
-                                        $oldEmp = $empresas->firstWhere('nit_empresa', old('empresa_destino'));
-                                    @endphp
-                                    {{ $oldEmp ? $oldEmp->nit_empresa . ' - ' . $oldEmp->nomb_empresa : 'Buscar y seleccionar empresa...' }}
-                                @else
-                                    Buscar y seleccionar empresa...
-                                @endif
-                            </span>
-                            <span class="material-symbols-outlined text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors pointer-events-none">expand_content</span>
-                        </button>
+                        <!-- Botón simulador de Select + botón X para limpiar -->
+                        <div class="flex items-center gap-2">
+                            <button type="button" id="btnToggleEmpresas" class="flex-1 flex items-center justify-between rounded-lg border @error('empresa_destino') border-red-500 @else border-[#cfd7e7] dark:border-slate-700 @enderror bg-white dark:bg-slate-800 text-left p-2.5 focus:ring-2 focus:ring-primary/50 outline-none transition-colors group">
+                                <span id="btnToggleEmpresasLabel" class="block truncate {{ old('empresa_destino') ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-gray-400' }}">
+                                    @if(old('empresa_destino'))
+                                        @php
+                                            $oldEmp = $empresas->firstWhere('nit_empresa', old('empresa_destino'));
+                                        @endphp
+                                        {{ $oldEmp ? $oldEmp->nit_empresa . ' - ' . $oldEmp->nomb_empresa : 'Buscar y seleccionar empresa...' }}
+                                    @else
+                                        Buscar y seleccionar empresa...
+                                    @endif
+                                </span>
+                                <span class="material-symbols-outlined text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors pointer-events-none">expand_content</span>
+                            </button>
+                            <!-- Botón X para limpiar la empresa seleccionada -->
+                            <button type="button" id="btnClearEmpresa"
+                                class="{{ old('empresa_destino') ? '' : 'hidden' }} flex-shrink-0 p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-400 hover:text-red-500 hover:border-red-300 transition-colors"
+                                title="Limpiar empresa seleccionada">
+                                <span class="material-symbols-outlined text-[18px]">close</span>
+                            </button>
+                        </div>
                         
                         <!-- Dropdown (Lista y Buscador) -->
                         <div id="empresasDropdown" class="hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl overflow-hidden">
@@ -315,16 +324,16 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div class="md:col-span-1">
                                 <label class="block text-sm font-medium text-[#0d121b] dark:text-gray-200 mb-1">Documento Principal Escaneado (SOLO PDF) <span class="text-red-500">*</span></label>
-                                <input type="file" name="archivo" id="archivoPrincipal" accept=".pdf" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-blue-700 file:cursor-pointer cursor-pointer border @error('archivo') border-red-500 @else border-[#cfd7e7] dark:border-slate-700 @enderror rounded-lg bg-white dark:bg-slate-800" required>
-                                <p class="text-xs text-slate-500 mt-1 pl-1">Formato permitido: PDF. Tamaño máximo por archivo: 10MB.</p>
+                                <input type="file" name="archivo" id="archivoPrincipal" accept=".pdf" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-blue-700 file:cursor-pointer cursor-pointer border @error('archivo') border-red-500 @else border-[#cfd7e7] dark:border-slate-700 @enderror bg-white dark:bg-slate-800" required>
+                                <p class="text-xs text-slate-500 mt-1 pl-1">Formato permitido: PDF. Tamaño máximo: <strong>5 MB</strong>.</p>
                                 @error('archivo') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                                 
                                 <div class="mt-4 border-t border-slate-200 dark:border-slate-700 pt-3">
-                                    <label class="block text-sm font-medium text-[#0d121b] dark:text-gray-200 mb-1">Anexos Adicionales (Opcional)</label>
-                                    <input type="file" name="anexos[]" id="archivosAnexos" accept=".pdf" multiple class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-slate-200 file:text-slate-700 hover:file:bg-slate-300 dark:file:bg-slate-700 dark:file:text-white dark:hover:file:bg-slate-600 file:cursor-pointer cursor-pointer border border-[#cfd7e7] dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800">
-                                    <p class="text-xs text-slate-500 mt-1 pl-1 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">info</span> Puede seleccionar hasta 5 Anexos (PDF).</p>
+                                    <label class="block text-sm font-medium text-[#0d121b] dark:text-gray-200 mb-1">Anexo Adicional (Opcional, máx. 1)</label>
+                                    <input type="file" name="anexos[]" id="archivosAnexos" accept=".pdf" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-slate-200 file:text-slate-700 hover:file:bg-slate-300 dark:file:bg-slate-700 dark:file:text-white dark:hover:file:bg-slate-600 file:cursor-pointer cursor-pointer border border-[#cfd7e7] dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800">
+                                    <p class="text-xs text-slate-500 mt-1 pl-1 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">info</span> 1 archivo PDF, máximo <strong>25 MB</strong>.</p>
                                     
-                                    <!-- Contenedor visual para listar archivos seleccionados -->
+                                    <!-- Contenedor visual para el anexo seleccionado -->
                                     <div id="listaAnexosVisual" class="mt-3 space-y-2"></div>
                                     
                                     @error('anexos') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
@@ -572,6 +581,9 @@
                             inputBuscarEmpresa.value = '';
                             validarCampoEspecial('empresa_destino', true);
                             renderEmpresas([], false);
+                            // Mostrar botón X
+                            const xBtn = document.getElementById('btnClearEmpresa');
+                            if (xBtn) xBtn.classList.remove('hidden');
                         });
                         listaEmpresasEl.appendChild(li);
                     }
@@ -597,6 +609,24 @@
                     if (!document.getElementById('empresa-destino-wrapper').contains(e.target)) dropdownEmpresas.classList.add('hidden');
                     if (!dropdownCiudades.classList.contains('hidden') && !document.getElementById('ciudad-proveniente-wrapper').contains(e.target)) dropdownCiudades.classList.add('hidden');
                 });
+
+                // Botón X: limpiar empresa seleccionada
+                const btnClearEmpresa = document.getElementById('btnClearEmpresa');
+                if (btnClearEmpresa) {
+                    btnClearEmpresa.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        hiddenEmpresa.value = '';
+                        const label = document.getElementById('btnToggleEmpresasLabel');
+                        if (label) {
+                            label.textContent = 'Buscar y seleccionar empresa...';
+                            label.className = label.className.replace('text-slate-900 dark:text-white', 'text-slate-400 dark:text-gray-400');
+                        }
+                        btnClearEmpresa.classList.add('hidden');
+                        // Reset search box
+                        const buscar = document.getElementById('buscarEmpresaInput');
+                        if (buscar) buscar.value = '';
+                    });
+                }
 
                 // ----- 3. Gestión Visual de Anexos -----
                 const inputPrincipal = document.getElementById('archivoPrincipal');
@@ -656,10 +686,11 @@
 
                 if (inputAnexos) {
                     inputAnexos.addEventListener('change', async (e) => {
-                        const files = Array.from(e.target.files).filter(f => f.type === 'application/pdf');
-                        listaArchivosAnexos = [...listaArchivosAnexos, ...files].slice(0, 5);
+                        // Solo aceptamos 1 archivo
+                        const files = Array.from(e.target.files).filter(f => f.type === 'application/pdf').slice(0, 1);
+                        listaArchivosAnexos = files; // Reemplaza completamente (no acumula)
                         await renderAnexosVisual();
-                        inputAnexos.value = ''; // Reset input so change triggers repeatedly
+                        inputAnexos.value = ''; // Reset so change triggers again if needed
                     });
                 }
                 // ----- 4. Validaciones En Vivo -----
@@ -853,16 +884,16 @@
                     // Validar Archivos Client-Side (Tamaño)
                     if (inputPrincipal.files.length > 0) {
                         const file = inputPrincipal.files[0];
-                        if (file.size > 10 * 1024 * 1024) {
-                            Swal.fire({ icon: 'error', title: 'Archivo Principal muy grande', text: 'El archivo principal no puede superar los 10MB.', confirmButtonColor: '#dc2626' });
+                        if (file.size > 5 * 1024 * 1024) {
+                            Swal.fire({ icon: 'error', title: 'Archivo Principal muy grande', text: 'El archivo principal no puede superar los 5MB.', confirmButtonColor: '#dc2626' });
                             return;
                         }
                     }
 
                     if (listaArchivosAnexos.length > 0) {
                         for (let f of listaArchivosAnexos) {
-                            if (f.size > 10 * 1024 * 1024) {
-                                Swal.fire({ icon: 'error', title: 'Anexo muy grande', text: `El anexo "${f.name}" supera los 10 MB.`, confirmButtonColor: '#dc2626' });
+                            if (f.size > 25 * 1024 * 1024) {
+                                Swal.fire({ icon: 'error', title: 'Anexo muy grande', text: `El anexo "${f.name}" supera los 25 MB.`, confirmButtonColor: '#dc2626' });
                                 return;
                             }
                         }
