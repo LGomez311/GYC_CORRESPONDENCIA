@@ -17,31 +17,88 @@ class DashboardController extends Controller
         $remitente = Auth::guard('remitente')->user();
         $remDoc = $remitente->rem_doc;
 
-        // --- HEALING LOGIC ---
-        // Sync parent table 'recibido' if any detail says it's rejected (11)
-        // This fixes legacy data or cases where sync might have failed.
-        DB::table('recibido')
-            ->where('doc_quien_registra', $remDoc)
-            ->where('id_estado_rec', '!=', 11)
-            ->whereIn('id_recibido', function($query) {
-                $query->select('det_id_recibido')
-                    ->from('detalle_recibido')
-                    ->where('id_estado_rec', 11);
-            })
-            ->update(['id_estado_rec' => 11]);
-        // ---------------------
+        $this->syncRejected($remDoc);
 
         // Statistics
-        $stats = [
-            'total' => DB::table('recibido')->where('doc_quien_registra', $remDoc)->count(),
-            'rejected' => DB::table('recibido')->where('doc_quien_registra', $remDoc)->where('id_estado_rec', 11)->count(),
-            'resolved' => DB::table('recibido')->where('doc_quien_registra', $remDoc)->whereIn('id_estado_rec', [9, 10])->count(),
-            'pending' => DB::table('recibido')->where('doc_quien_registra', $remDoc)->whereNotIn('id_estado_rec', [9, 10, 11])->count(),
-        ];
+        $stats = $this->getStats($remDoc);
 
-        // Correspondences list
-        // Ordered by Rejected (11) first, then by date descending
-        $correspondencias = Recibido::with([
+        // Dashboard: Show all records NOT "salientes" (14) or "finalizados" (10).
+        $correspondencias = $this->getBaseQuery($remDoc)
+            ->whereNotIn('id_estado_rec', [10, 14])
+            ->paginate(10);
+
+        $tipos = \App\Models\Tipo::all();
+        $empleados = \App\Models\Empleado::where('emple_rol', 3)->get();
+
+        return view('remitente.index', compact('stats', 'correspondencias', 'tipos', 'empleados'));
+    }
+
+    public function recibidosProceso()
+    {
+        $remitente = Auth::guard('remitente')->user();
+        $remDoc = $remitente->rem_doc;
+
+        $this->syncRejected($remDoc);
+        $stats = $this->getStats($remDoc);
+
+        // ONLY records received and registered by current sender WITHOUT response and NOT salientes/finalizados
+        $correspondencias = $this->getBaseQuery($remDoc)
+            ->whereNotIn('id_estado_rec', [10, 14])
+            ->whereDoesntHave('detalles', function($q) {
+                $q->whereNotNull('archivo_res');
+            })
+            ->paginate(10);
+
+        $tipos = \App\Models\Tipo::all();
+        $empleados = \App\Models\Empleado::where('emple_rol', 3)->get();
+
+        return view('remitente.recibidos_proceso', compact('stats', 'correspondencias', 'tipos', 'empleados'));
+    }
+
+    public function procesoSalientes()
+    {
+        $remitente = Auth::guard('remitente')->user();
+        $remDoc = $remitente->rem_doc;
+
+        $this->syncRejected($remDoc);
+        $stats = $this->getStats($remDoc);
+
+        // Records WITH response from employee and NOT salientes/finalizados
+        $correspondencias = $this->getBaseQuery($remDoc)
+            ->whereNotIn('id_estado_rec', [10, 14])
+            ->whereHas('detalles', function($q) {
+                $q->whereNotNull('archivo_res');
+            })
+            ->paginate(10);
+
+        $tipos = \App\Models\Tipo::all();
+        $empleados = \App\Models\Empleado::where('emple_rol', 3)->get();
+
+        return view('remitente.proceso_salientes', compact('stats', 'correspondencias', 'tipos', 'empleados'));
+    }
+
+    public function finalizados()
+    {
+        $remitente = Auth::guard('remitente')->user();
+        $remDoc = $remitente->rem_doc;
+
+        $this->syncRejected($remDoc);
+        $stats = $this->getStats($remDoc);
+
+        // ALL correspondence finished (14, 10)
+        $correspondencias = $this->getBaseQuery($remDoc)
+            ->whereIn('id_estado_rec', [10, 14])
+            ->paginate(10);
+
+        $tipos = \App\Models\Tipo::all();
+        $empleados = \App\Models\Empleado::where('emple_rol', 3)->get();
+
+        return view('remitente.finalizados', compact('stats', 'correspondencias', 'tipos', 'empleados'));
+    }
+
+    private function getBaseQuery($remDoc)
+    {
+        return Recibido::with([
             'estado', 
             'tipo', 
             'radicado', 
@@ -57,13 +114,30 @@ class DashboardController extends Controller
         ])
             ->where('doc_quien_registra', $remDoc)
             ->orderByRaw('CASE WHEN id_estado_rec = 11 THEN 0 ELSE 1 END')
-            ->orderBy('fecha_hora_recib', 'desc')
-            ->paginate(10);
+            ->orderBy('fecha_hora_recib', 'desc');
+    }
 
-        $tipos = \App\Models\Tipo::all();
-        $empleados = \App\Models\Empleado::where('emple_rol', 3)->get();
+    private function getStats($remDoc)
+    {
+        return [
+            'total' => DB::table('recibido')->where('doc_quien_registra', $remDoc)->count(),
+            'rejected' => DB::table('recibido')->where('doc_quien_registra', $remDoc)->where('id_estado_rec', 11)->count(),
+            'resolved' => DB::table('recibido')->where('doc_quien_registra', $remDoc)->whereIn('id_estado_rec', [9, 10, 14])->count(),
+            'pending' => DB::table('recibido')->where('doc_quien_registra', $remDoc)->whereNotIn('id_estado_rec', [9, 10, 11, 14])->count(),
+        ];
+    }
 
-        return view('remitente.index', compact('stats', 'correspondencias', 'tipos', 'empleados'));
+    private function syncRejected($remDoc)
+    {
+        DB::table('recibido')
+            ->where('doc_quien_registra', $remDoc)
+            ->where('id_estado_rec', '!=', 11)
+            ->whereIn('id_recibido', function($query) {
+                $query->select('det_id_recibido')
+                    ->from('detalle_recibido')
+                    ->where('id_estado_rec', 11);
+            })
+            ->update(['id_estado_rec' => 11]);
     }
 
     public function getHistory($id)

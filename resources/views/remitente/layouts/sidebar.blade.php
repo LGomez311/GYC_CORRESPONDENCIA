@@ -1,4 +1,3 @@
-<!-- Sidebar -->
 <script id="tailwind-config">
     tailwind.config = {
         darkMode: "class",
@@ -23,6 +22,25 @@
     }
 </script>
 
+<style>
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #cbd5e1;
+        border-radius: 20px;
+    }
+
+    .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #334155;
+    }
+</style>
+
 <aside id="sidebar"
     class="fixed md:relative z-50 md:z-auto
            w-64 h-full md:h-full
@@ -32,101 +50,117 @@
            dark:border-gray-800 bg-white dark:bg-[#161d2b]
            flex flex-col">
 
-
-
-    <div class="p-6 flex items-center gap-3">
-        <div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
-            <span class="material-symbols-outlined">shield_person</span>
+    <div class="p-4 flex items-center gap-3">
+        <div
+            class="size-8 bg-primary rounded-lg flex items-center justify-center text-white shrink-0 shadow-sm shadow-primary/30">
+            <span class="material-symbols-outlined text-[20px]">apartment</span>
         </div>
-        <h2 class="text-[#0d121b] dark:text-white text-lg font-bold leading-tight tracking-tight">
+        <h2 class="text-[#0d121b] dark:text-white text-base font-bold leading-tight tracking-tight truncate">
             {{ auth()->user()->empresa->nomb_empresa ?? 'Sin empresa asignada' }}
         </h2>
     </div>
 
-    <nav class="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
-        <div class="flex flex-col gap-1">
+    <nav class="flex-1 px-4 py-1 space-y-2 overflow-y-auto custom-scrollbar">
 
-            <h1 class="text-[#4c669a] dark:text-gray-400 text-[10px] uppercase font-bold px-3 py-2">
+        <div class="flex flex-col gap-0.5">
+            <h1 class="text-[#4c669a] dark:text-gray-500 text-[10px] uppercase font-bold px-3 pb-1 pt-2 tracking-wider">
                 Gestión Central
             </h1>
 
             {{-- Dashboard --}}
             <a href="{{ route('remitente.index') }}"
-                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {{ request()->is('remitente') ? 'bg-primary/10 text-primary' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}">
-                <span class="material-symbols-outlined fill">dashboard</span>
-                <p class="text-sm font-bold leading-normal">Dashboard</p>
-            </a>
-
-            {{-- INTERNA --}}
-            <a href="{{ route('remitente.interna') }}"
-                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {{ request()->routeIs('remitente.interna') ? 'bg-primary/10 text-primary font-bold' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}">
+                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('remitente.index') || request()->is('remitente') ? 'bg-primary/10 text-primary font-bold dark:bg-primary/20' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800' }}">
                 <span
-                    class="material-symbols-outlined {{ request()->routeIs('remitente.interna') ? 'fill' : '' }}">inbox</span>
-                <p class="text-sm font-medium leading-normal">Interna</p>
+                    class="material-symbols-outlined text-[20px] {{ request()->routeIs('remitente.index') || request()->is('remitente') ? 'fill' : '' }}">space_dashboard</span>
+                <p class="text-sm leading-normal">Dashboard</p>
             </a>
+        </div>
 
-            {{-- EXTERNA --}}
-            {{-- EXTERNA --}}
+        <div class="flex flex-col gap-0.5">
+            <h1 class="text-[#4c669a] dark:text-gray-500 text-[10px] uppercase font-bold px-3 pb-1 pt-2 tracking-wider">
+                Trámites Activos
+            </h1>
+
+            {{-- EXTERNA (En Proceso) --}}
             <details class="group"
                 {{ request()->routeIs('remitente.externarec', 'remitente.externaenv') ? 'open' : '' }}>
 
                 <summary
-                    class="flex items-center justify-between w-full gap-3 px-3 py-2 rounded-lg cursor-pointer list-none [&::-webkit-details-marker]:hidden transition-colors {{ request()->routeIs('remitente.externarec', 'remitente.externaenv') ? 'bg-primary/10 text-primary font-bold' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700' }}">
+                    class="flex items-center justify-between w-full gap-3 px-3 py-2 rounded-lg cursor-pointer list-none [&::-webkit-details-marker]:hidden transition-all duration-200 {{ request()->routeIs('remitente.externarec', 'remitente.externaenv') ? 'bg-primary/10 text-primary font-bold dark:bg-primary/20' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800' }}">
                     <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined">outbox</span>
-                        <p class="text-sm font-medium leading-normal">Externa</p>
+                        <span
+                            class="material-symbols-outlined text-[20px] {{ request()->routeIs('remitente.externarec', 'remitente.externaenv') ? 'text-primary fill' : 'text-gray-500 dark:text-gray-400' }}">mail</span>
+                        <p class="text-sm font-medium leading-normal">En proceso</p>
                     </div>
                     <span
-                        class="material-symbols-outlined text-sm transition-transform duration-200 group-open:rotate-180">
-                        keyboard_arrow_down
+                        class="material-symbols-outlined text-sm transition-transform duration-300 group-open:-rotate-180 {{ request()->routeIs('remitente.externarec', 'remitente.externaenv') ? 'text-primary' : 'text-gray-400' }}">
+                        expand_more
                     </span>
                 </summary>
 
-                <div class="mt-1 ml-4 border-l-2 border-gray-200 dark:border-gray-600">
-                    <a href="{{ route('remitente.externarec') }}"
-                        class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {{ request()->routeIs('remitente.externarec') ? 'text-primary bg-primary/5 font-semibold' : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
-                        <span class="material-symbols-outlined text-base">call_received</span>
+                <div class="mt-0.5 ml-4 pl-2 border-l-2 border-gray-100 dark:border-gray-700 flex flex-col gap-0.5">
+                    <a href="{{ route('remitente.recibidos_proceso') }}"
+                        class="flex items-center gap-3 px-3 py-1.5 rounded-lg transition-colors {{ request()->routeIs('remitente.recibidos_proceso') ? 'text-primary bg-primary/5 font-semibold dark:bg-primary/10' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200' }}">
+                        <span
+                            class="material-symbols-outlined text-[18px] {{ request()->routeIs('remitente.recibidos_proceso') ? 'fill' : '' }}">mark_email_unread</span>
                         <p class="text-sm">Recibidos</p>
                     </a>
 
-                    <a href="{{ route('remitente.externaenv') }}"
-                        class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {{ request()->routeIs('remitente.externaenv') ? 'text-primary bg-primary/5 font-semibold' : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
-                        <span class="material-symbols-outlined text-base">send</span>
+                    <a href="{{ route('remitente.proceso_salientes') }}"
+                        class="flex items-center gap-3 px-3 py-1.5 rounded-lg transition-colors {{ request()->routeIs('remitente.proceso_salientes') ? 'text-primary bg-primary/5 font-semibold dark:bg-primary/10' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200' }}">
+                        <span
+                            class="material-symbols-outlined text-[18px] {{ request()->routeIs('remitente.proceso_salientes') ? 'fill' : '' }}">forward_to_inbox</span>
                         <p class="text-sm">Salientes</p>
                     </a>
                 </div>
             </details>
         </div>
+
+        <div class="flex flex-col gap-0.5">
+            <h1 class="text-[#4c669a] dark:text-gray-500 text-[10px] uppercase font-bold px-3 pb-1 pt-2 tracking-wider">
+                Historial
+            </h1>
+
+            {{-- EXTERNA (Finalizadas) --}}
+            <a href="{{ route('remitente.finalizados') }}"
+                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('remitente.finalizados') ? 'bg-primary/10 text-primary font-bold dark:bg-primary/20' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800' }}">
+                <span
+                    class="material-symbols-outlined text-[20px] {{ request()->routeIs('remitente.finalizados') ? 'fill' : '' }}">inventory_2</span>
+                <p class="text-sm leading-normal">Finalizadas</p>
+            </a>
+        </div>
     </nav>
 
-    <div class="p-4 border-t border-[#cfd7e7] dark:border-gray-800">
-        <div class="flex items-center gap-3 px-2">
-            <div class="size-10 rounded-full bg-cover bg-center border-2 border-primary/20"
-                style='background-image: url("{{ auth()->user()->emple_img ? asset('storage/' . auth()->user()->emple_img) : asset('images/default-avatar.png') }}");'>
-            </div>
-            <div class="overflow-hidden">
-                <p class="text-sm font-bold truncate dark:text-white">
-                    Remitente
-                </p>
-                <p class="text-xs text-[#4c669a] truncate dark:text-gray-400">
-                    {{ auth()->user()->rem_nombres }} {{ auth()->user()->rem_apellidos }}
-                </p>
+    <div class="mt-auto">
+        <div class="p-3 border-t border-[#cfd7e7] dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/20">
+            <div class="flex items-center gap-3 px-2">
+                <div class="size-9 rounded-full bg-cover bg-center border border-gray-200 dark:border-gray-700 shrink-0 shadow-sm"
+                    style='background-image: url("{{ auth()->user()->emple_img ? asset('storage/' . auth()->user()->emple_img) : asset('images/default-avatar.png') }}");'>
+                </div>
+                <div class="overflow-hidden">
+                    <p class="text-sm font-bold truncate text-gray-900 dark:text-white">
+                        Remitente
+                    </p>
+                    <p class="text-xs text-[#4c669a] truncate dark:text-gray-400 font-medium">
+                        {{ auth()->user()->rem_nombres }} {{ auth()->user()->rem_apellidos }}
+                    </p>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="p-4 border-t border-[#cfd7e7] dark:border-gray-800">
-        <!-- Botón Cerrar Sesión -->
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit"
-                class="w-full flex items-center gap-3 px-3 py-2 rounded-lg
-                       text-red-600 dark:text-red-400
-                       hover:bg-red-50 dark:hover:bg-red-900/20
-                       transition-colors text-sm font-medium">
-                <span class="material-symbols-outlined text-base">logout</span>
-                Cerrar sesión
-            </button>
-        </form>
+
+        <div class="p-3 pt-1 border-t border-transparent">
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit"
+                    class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg
+                           text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-900/10
+                           hover:bg-red-100 dark:hover:bg-red-900/30
+                           transition-all duration-200 text-sm font-semibold shadow-sm">
+                    <span class="material-symbols-outlined text-[18px]">logout</span>
+                    Cerrar sesión
+                </button>
+            </form>
+        </div>
     </div>
 
 </aside>

@@ -416,6 +416,10 @@ Route::prefix('remitente')
         Route::get('/externarec/{id}/archivos', [ExternarecController::class, 'getArchivos'])->name('externarec.archivos');
 
         // Dashboard history and actions
+        Route::get('/recibidos-proceso', [RemitenteDashboardController::class, 'recibidosProceso'])->name('remitente.recibidos_proceso');
+        Route::get('/proceso-salientes', [RemitenteDashboardController::class, 'procesoSalientes'])->name('remitente.proceso_salientes');
+        Route::get('/finalizados', [RemitenteDashboardController::class, 'finalizados'])->name('remitente.finalizados');
+
         Route::get('/history/{id}', [RemitenteDashboardController::class, 'getHistory'])->name('remitente.history');
         Route::post('/{id}/finalize', [RemitenteDashboardController::class, 'finalize'])->name('remitente.finalize');
         Route::post('/{id}/store-saliente', [RemitenteDashboardController::class, 'storeSalienteFromResponse'])->name('remitente.store_saliente');

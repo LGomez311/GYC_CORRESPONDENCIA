@@ -12,7 +12,7 @@
                     <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
                         Mi Dashboard
                     </h1>
-                    <p class="text-gray-500 dark:text-gray-400 mt-1">Gestiona y rastrea tu correspondencia enviada.</p>
+                    <p class="text-gray-500 dark:text-gray-400 mt-1">Registros actuales en trámite (Recibidos y Salientes en Proceso).</p>
                 </div>
                 <div class="flex flex-wrap gap-4">
                     <a href="{{ route('remitente.externarec') }}"
@@ -30,72 +30,55 @@
             </div>
 
             <!-- Stats Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 <!-- Stat Card: Total -->
-                <div
-                    class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-hidden group">
-                    <div
-                        class="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-full group-hover:scale-110 transition-transform">
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <div class="p-3 bg-primary/10 rounded-xl text-primary">
-                            <span class="material-symbols-outlined">description</span>
+                <div class="bg-white dark:bg-gray-800 p-5 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+                    <div class="flex flex-col gap-3">
+                        <div class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors duration-300">
+                            <span class="material-symbols-outlined text-[20px]">description</span>
                         </div>
                         <div>
-                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Enviados</p>
-                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white">{{ $stats['total'] }}</h3>
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Registros</p>
+                            <h3 class="text-2xl font-black text-gray-900 dark:text-white mt-1">{{ $stats['total'] }}</h3>
                         </div>
                     </div>
                 </div>
 
                 <!-- Stat Card: Rejected -->
-                <div
-                    class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-hidden group">
-                    <div
-                        class="absolute -right-4 -top-4 w-24 h-24 bg-red-500/5 rounded-full group-hover:scale-110 transition-transform">
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <div class="p-3 bg-red-100 dark:bg-red-900/30 rounded-xl text-red-600 dark:text-red-400">
-                            <span class="material-symbols-outlined">cancel</span>
+                <div class="bg-white dark:bg-gray-800 p-5 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+                    <div class="flex flex-col gap-3">
+                        <div class="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center text-red-600 dark:text-red-400 group-hover:bg-red-600 group-hover:text-white transition-colors duration-300">
+                            <span class="material-symbols-outlined text-[20px]">cancel</span>
                         </div>
                         <div>
-                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Rechazados</p>
-                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white">{{ $stats['rejected'] }}</h3>
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Rechazados</p>
+                            <h3 class="text-2xl font-black text-gray-900 dark:text-white mt-1">{{ $stats['rejected'] }}</h3>
                         </div>
                     </div>
                 </div>
 
                 <!-- Stat Card: Pending -->
-                <div
-                    class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-hidden group">
-                    <div
-                        class="absolute -right-4 -top-4 w-24 h-24 bg-orange-500/5 rounded-full group-hover:scale-110 transition-transform">
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <div
-                            class="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-xl text-orange-600 dark:text-orange-400">
-                            <span class="material-symbols-outlined">pending_actions</span>
+                <div class="bg-white dark:bg-gray-800 p-5 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+                    <div class="flex flex-col gap-3">
+                        <div class="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-xl flex items-center justify-center text-orange-600 dark:text-orange-400 group-hover:bg-orange-600 group-hover:text-white transition-colors duration-300">
+                            <span class="material-symbols-outlined text-[20px]">pending_actions</span>
                         </div>
                         <div>
-                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">En Trámite</p>
-                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white">{{ $stats['pending'] }}</h3>
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">En Trámite</p>
+                            <h3 class="text-2xl font-black text-gray-900 dark:text-white mt-1">{{ $stats['pending'] }}</h3>
                         </div>
                     </div>
                 </div>
 
                 <!-- Stat Card: Resolved -->
-                <div
-                    class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-hidden group">
-                    <div
-                        class="absolute -right-4 -top-4 w-24 h-24 bg-green-500/5 rounded-full group-hover:scale-110 transition-transform">
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl text-green-600 dark:text-green-400">
-                            <span class="material-symbols-outlined">check_circle</span>
+                <div class="bg-white dark:bg-gray-800 p-5 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+                    <div class="flex flex-col gap-3">
+                        <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center text-green-600 dark:text-green-400 group-hover:bg-green-600 group-hover:text-white transition-colors duration-300">
+                            <span class="material-symbols-outlined text-[20px]">check_circle</span>
                         </div>
                         <div>
-                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Finalizados</p>
-                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white">{{ $stats['resolved'] }}</h3>
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Finalizados</p>
+                            <h3 class="text-2xl font-black text-gray-900 dark:text-white mt-1">{{ $stats['resolved'] }}</h3>
                         </div>
                     </div>
                 </div>
