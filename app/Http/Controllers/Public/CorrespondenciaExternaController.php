@@ -35,21 +35,13 @@ class CorrespondenciaExternaController extends Controller
 
         // 2. Procesamiento del archivo principal y cálculo de folios
         $rutaArchivo = null;
-        $folios = 1;
+        // 2. Procesamiento del archivo principal
+        $rutaArchivo = null;
+        $folios = $validated['folio'];
 
         if ($request->hasFile('archivo')) {
             $file = $request->file('archivo');
             $rutaArchivo = $file->store('correspondencia', 'public');
-
-            // Calcular folios automáticamente
-            try {
-                $parser = new \Smalot\PdfParser\Parser();
-                $pdf = $parser->parseFile($file->getPathname());
-                $folios = count($pdf->getPages());
-            } catch (\Exception $e) {
-                Log::warning('No se pudo contar las páginas del PDF principal: ' . $e->getMessage());
-                $folios = 1;
-            }
         }
         
         // Procesar 1 solo anexo (si lo hay)
@@ -66,15 +58,6 @@ class CorrespondenciaExternaController extends Controller
         if ($anexoFile && $anexoFile->isValid()) {
             $rutaAnexo     = $anexoFile->store('correspondencia', 'public');
             $nombreOriginal = $anexoFile->getClientOriginalName();
-
-            // Sumar folios del anexo al total
-            try {
-                $parser = new \Smalot\PdfParser\Parser();
-                $pdfAnexo = $parser->parseFile($anexoFile->getPathname());
-                $folios += count($pdfAnexo->getPages());
-            } catch (\Exception $e) {
-                Log::warning('No se pudo contar las páginas del anexo PDF: ' . $e->getMessage());
-            }
 
             $anexoData = [
                 'ruta_archivo'    => $rutaAnexo,

@@ -132,8 +132,8 @@
     </nav>
 
     <div class="mt-auto">
-        <div class="p-3 border-t border-[#cfd7e7] dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/20">
-            <div class="flex items-center gap-3 px-2">
+        <div class="p-3 border-t border-[#cfd7e7] dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/20 flex items-center justify-between">
+            <div class="flex items-center gap-3 px-2 overflow-hidden flex-1">
                 <div class="size-9 rounded-full bg-cover bg-center border border-gray-200 dark:border-gray-700 shrink-0 shadow-sm"
                     style='background-image: url("{{ auth()->user()->emple_img ? asset('storage/' . auth()->user()->emple_img) : asset('images/default-avatar.png') }}");'>
                 </div>
@@ -146,6 +146,12 @@
                     </p>
                 </div>
             </div>
+            <!-- Botón Configurar Perfil -->
+            <button type="button" onclick="openUserProfileModal()" 
+                class="p-1.5 text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" 
+                title="Configurar Perfil">
+                <span class="material-symbols-outlined text-[20px]">manage_accounts</span>
+            </button>
         </div>
 
         <div class="p-3 pt-1 border-t border-transparent">

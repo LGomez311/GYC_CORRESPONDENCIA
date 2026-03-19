@@ -29,6 +29,7 @@ class CorrespondenciaExternaRequest extends FormRequest
             'ciudad_proveniente' => 'required|exists:ciudad,ciudad_cod_post',
             'id_tipo'            => 'required|exists:tipo,id_tipo',
             'asunto'             => 'required|string|max:100',
+            'folio'              => 'required|integer|min:1',
             'observaciones'      => 'nullable|string|max:250',
             'archivo'            => 'required|file|mimes:pdf|max:5120',  // 5MB máximo, solo PDF
             'anexos'             => 'nullable|array|max:1',              // Máximo 1 anexo

@@ -101,38 +101,25 @@ class ProfileController extends Controller
         $user = auth('web')->user();
 
         $request->validate([
-            'code' => 'required|digits:6',
+            'password_old' => 'required|string',
             'password' => [
                 'required',
                 'string',
                 'max:64',
                 'confirmed',
-                Password::min(10)->letters()->mixedCase()->numbers()->symbols()->uncompromised()
+                Password::min(10)->letters()->mixedCase()->numbers()->symbols()
             ],
         ], [
-            'code.required' => 'El código es obligatorio.',
-            'code.digits' => 'El código debe tener 6 dígitos.',
-            'password.confirmed' => 'Las contraseñas no coinciden.',
+            'password_old.required' => 'La contraseña anterior es obligatoria.',
+            'password.confirmed' => 'La confirmación de la contraseña no coincide.',
         ]);
 
-        $record = DB::table('password_codes')->where('emple_correo', $user->emple_correo)->first();
-
-        if (!$record) {
-            return response()->json(['success' => false, 'message' => 'No existe una solicitud de código para este usuario.'], 400);
-        }
-
-        if (Carbon::now()->greaterThan($record->expires_at)) {
-            return response()->json(['success' => false, 'message' => 'El código ha expirado. Solicita uno nuevo.'], 400);
-        }
-
-        if ($record->code != $request->code) {
-            return response()->json(['success' => false, 'message' => 'El código ingresado no es válido.'], 400);
+        if (!Hash::check($request->password_old, $user->password)) {
+            return response()->json(['success' => false, 'message' => 'La contraseña anterior es incorrecta.'], 400);
         }
 
         $user->password = Hash::make($request->password);
         $user->save();
-
-        DB::table('password_codes')->where('emple_correo', $user->emple_correo)->delete();
 
         return response()->json(['success' => true, 'message' => 'Contraseña actualizada correctamente.']);
     }

@@ -183,11 +183,15 @@
                         });
                     </script>
 
-                    {{-- Contraseña --}}
-                    <label class="flex flex-col w-full">
+                            <label class="flex flex-col w-full">
                         <p class="text-base font-medium text-[#0d121b] dark:text-gray-200 pb-2">Contraseña</p>
-                        <input id="password" name="password" type="password" placeholder="Ingresa tu contraseña"
-                            class="form-input w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-background-light dark:bg-background-dark text-[#0d121b] dark:text-gray-100 p-3 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary" />
+                        <div class="relative w-full">
+                            <input id="password" name="password" type="password" placeholder="Ingresa tu contraseña"
+                                class="form-input w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-background-light dark:bg-background-dark text-[#0d121b] dark:text-gray-100 p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary" />
+                            <button type="button" id="togglePassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 select-none cursor-pointer focus:outline-none">
+                                <span class="material-symbols-outlined select-none" style="font-size: 20px;">visibility</span>
+                            </button>
+                        </div>
                         <!-- Mensaje de error -->
                         <p id="passHelp" class="text-sm mt-1 text-red-500 hidden"></p>
 
@@ -200,6 +204,24 @@
                         document.addEventListener('DOMContentLoaded', () => {
                             const input = document.getElementById('password');
                             const help = document.getElementById('passHelp');
+                            const toggleBtn = document.getElementById('togglePassword');
+                            const icon = toggleBtn.querySelector('span');
+
+                            const showPassword = () => { input.type = 'text'; icon.textContent = 'visibility_off'; };
+                            const hidePassword = () => { input.type = 'password'; icon.textContent = 'visibility'; };
+
+                            if (toggleBtn) {
+                                toggleBtn.addEventListener('mousedown', showPassword);
+                                toggleBtn.addEventListener('mouseup', hidePassword);
+                                toggleBtn.addEventListener('mouseleave', hidePassword);
+
+                                toggleBtn.addEventListener('touchstart', (e) => {
+                                    e.preventDefault();
+                                    showPassword();
+                                }, { passive: false });
+                                toggleBtn.addEventListener('touchend', hidePassword);
+                                toggleBtn.addEventListener('touchcancel', hidePassword);
+                            }
 
                             const showError = (msg) => {
                                 help.textContent = msg;

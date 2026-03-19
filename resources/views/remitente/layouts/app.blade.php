@@ -97,6 +97,7 @@
 
     {{-- ======= MODALES ======= --}}
     @yield('modals')
+    @include('admin.layouts.profile_modal')
 
 
     {{-- ======= ALERTAS SWEETALERT ======= --}}
