@@ -183,7 +183,7 @@ class CorrespondenciaExternaController extends Controller
                     'observaciones'    => 'Documento recibido desde formulario externo'
                 ]);
             }
-            */
+            
 
             DB::commit();
 
