@@ -62,6 +62,7 @@
                             <th class="px-4 sm:px-6 py-3 sm:py-4 text-xs font-bold text-[#4c669a] uppercase text-center">Tipo</th>
                             <th class="px-4 sm:px-6 py-3 sm:py-4 text-xs font-bold text-[#4c669a] uppercase text-center">Prioridad</th>
                             <th class="px-4 sm:px-6 py-3 sm:py-4 text-xs font-bold text-[#4c669a] uppercase text-center">Días Hábiles</th>
+                            <th class="px-4 sm:px-6 py-3 sm:py-4 text-xs font-bold text-[#4c669a] uppercase text-center">Req. Respuesta</th>
                             <th class="px-4 sm:px-6 py-3 sm:py-4 text-xs font-bold text-[#4c669a] uppercase text-center">Acciones</th>
                         </tr>
                     </thead>
@@ -80,8 +81,20 @@
                                 <td class="px-4 sm:px-6 py-3 sm:py-4 text-center">{{ $t->dias_respuesta }}</td>
 
                                 <td class="px-4 sm:px-6 py-3 sm:py-4 text-center">
+                                    @if($t->requiere_respuesta)
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Sí
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> No
+                                        </span>
+                                    @endif
+                                </td>
+
+                                <td class="px-4 sm:px-6 py-3 sm:py-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
-                                        <button onclick="openEditModal('{{ $t->id_tipo }}','{{ $t->tipo_nombre }}','{{ $t->id_prioridad }}', '{{ $t->dias_respuesta }}')"
+                                        <button onclick="openEditModal('{{ $t->id_tipo }}','{{ addslashes($t->tipo_nombre) }}','{{ $t->id_prioridad }}', '{{ $t->dias_respuesta }}', '{{ $t->requiere_respuesta }}')"
                                             class="p-2 text-[#4c669a] hover:text-primary transition">
                                             <span class="material-symbols-outlined text-[20px]">edit</span>
                                         </button>
@@ -161,6 +174,24 @@
                     @endif
                 </div>
 
+                {{-- Toggle Requiere Respuesta --}}
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">¿Requiere Respuesta?</label>
+                    {{-- Hidden input garantiza que se envíe 0 cuando el checkbox no está marcado --}}
+                    <input type="hidden" name="requiere_respuesta" value="0">
+                    <label class="inline-flex items-center gap-3 cursor-pointer select-none">
+                        <input type="checkbox" id="requiere_respuesta" name="requiere_respuesta" value="1"
+                            {{ (old('form_type') == 'create' && old('requiere_respuesta')) ? 'checked' : '' }}
+                            class="sr-only peer">
+                        <div class="relative w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-primary transition-colors
+                                    after:content-[''] after:absolute after:top-0.5 after:left-[2px] 
+                                    after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all
+                                    peer-checked:after:translate-x-full dark:bg-slate-700">
+                        </div>
+                        <span class="text-sm text-gray-600 dark:text-gray-300" id="create_rr_label">No</span>
+                    </label>
+                </div>
+
                 <div class="flex justify-end gap-3">
                     <button type="button" onclick="closeModals()" class="px-4 py-2 bg-gray-300 rounded-lg">Cancelar</button>
                     <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg">Guardar</button>
@@ -224,6 +255,23 @@
                             <p class="error-msg server-error text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
                     @endif
+                </div>
+
+                {{-- Toggle Requiere Respuesta (Edit) --}}
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">¿Requiere Respuesta?</label>
+                    <input type="hidden" name="requiere_respuesta" value="0">
+                    <label class="inline-flex items-center gap-3 cursor-pointer select-none">
+                        <input type="checkbox" id="edit_requiere_respuesta" name="requiere_respuesta" value="1"
+                            {{ (old('form_type') == 'edit' && old('requiere_respuesta')) ? 'checked' : '' }}
+                            class="sr-only peer">
+                        <div class="relative w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-primary transition-colors
+                                    after:content-[''] after:absolute after:top-0.5 after:left-[2px]
+                                    after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all
+                                    peer-checked:after:translate-x-full dark:bg-slate-700">
+                        </div>
+                        <span class="text-sm text-gray-600 dark:text-gray-300" id="edit_rr_label">No</span>
+                    </label>
                 </div>
 
                 <div class="flex justify-end gap-3">
@@ -350,7 +398,7 @@
                 toggleModal('createModal', true);
             }
 
-            window.openEditModal = function(id, nombre, prioridad, dias) {
+            window.openEditModal = function(id, nombre, prioridad, dias, reqResp) {
                 let url = "{{ route('admin.tipo.update', ['id' => '__ID__']) }}";
                 url = url.replace('__ID__', id);
                 document.getElementById('editForm').action = url;
@@ -358,6 +406,14 @@
                 document.getElementById('edit_tipo_nombre').value = nombre;
                 document.getElementById('edit_id_prioridad').value = prioridad;
                 document.getElementById('edit_dias_respuesta').value = dias;
+                
+                // Set toggle de requiere_respuesta
+                const editRR = document.getElementById('edit_requiere_respuesta');
+                const editRRLabel = document.getElementById('edit_rr_label');
+                if (editRR) {
+                    editRR.checked = (reqResp == '1' || reqResp === true);
+                    if (editRRLabel) editRRLabel.textContent = editRR.checked ? 'Sí' : 'No';
+                }
                 
                 document.getElementById('edit_tipo_nombre').dataset.dirty = '';
                 document.getElementById('edit_id_prioridad').dataset.dirty = '';
@@ -485,6 +541,18 @@
                 limpiarError(input);
                 return true;
             }
+
+            // Sincronizar labels del toggle con el estado del checkbox
+            function setupToggleLabel(checkboxId, labelId) {
+                const cb = document.getElementById(checkboxId);
+                const lbl = document.getElementById(labelId);
+                if (!cb || !lbl) return;
+                const sync = () => { lbl.textContent = cb.checked ? 'Sí' : 'No'; };
+                cb.addEventListener('change', sync);
+                sync();
+            }
+            setupToggleLabel('requiere_respuesta', 'create_rr_label');
+            setupToggleLabel('edit_requiere_respuesta', 'edit_rr_label');
 
             // Crear
             const inputCreate = document.getElementById('tipo_nombre');

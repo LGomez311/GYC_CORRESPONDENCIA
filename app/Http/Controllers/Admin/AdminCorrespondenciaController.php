@@ -13,11 +13,54 @@ class AdminCorrespondenciaController extends Controller
 {
     public function index()
     {
-        $data = $this->getCorrespondenciaFiltered();
-        return view('admin.correspondencia', [
-            'recibidos' => $data['recibidos'],
-            'envios' => $data['envios']
-        ]);
+        /** @var \App\Models\Empleado $user */
+        $user = \Illuminate\Support\Facades\Auth::user();
+        $nitEmpresa = $user->nit_empresa;
+
+        // ---- 1. Correspondencia Externa (Recibida) ----
+        $queryExt = Recibido::with(['destinatarios', 'registradoPor', 'estado', 'ciudad', 'radicado', 'tipo.prioridad', 'anexos'])
+            ->where(function($q) use ($nitEmpresa) {
+                $q->where('recibido.nit_empresa', $nitEmpresa)
+                  ->orWhereHas('registradoPor', function($q2) use ($nitEmpresa) {
+                      $q2->where('nit_empresa', $nitEmpresa);
+                  })
+                  ->orWhereHas('destinatarios', function($q2) use ($nitEmpresa) {
+                      $q2->where('nit_empresa', $nitEmpresa);
+                  });
+            });
+
+        $totalRecibidas = (clone $queryExt)->count();
+        $enTramite      = (clone $queryExt)->where('id_estado_rec', 8)->count();
+        $finalizadas    = (clone $queryExt)->where('id_estado_rec', 9)->count();
+        $archivadas     = (clone $queryExt)->where('id_estado_rec', 10)->count();
+        $vencidas       = 0; 
+
+        $correspondencias = $queryExt->orderBy('id_recibido', 'desc')->paginate(15, ['*'], 'ext_page');
+
+        // ---- 2. Correspondencia Interna (Envio) ----
+        $queryInt = \App\Models\Envio::with(['detalles.quienRecibe', 'quienEnvia', 'estadoEnvio', 'radicado', 'tipoEnvio.prioridad'])
+            ->where(function($q) use ($nitEmpresa) {
+                $q->where('envio.nit_empresa', $nitEmpresa)
+                  ->orWhereHas('quienEnvia', function($q2) use ($nitEmpresa) {
+                      $q2->where('nit_empresa', $nitEmpresa);
+                  })
+                  ->orWhereHas('detalles.quienRecibe', function($q2) use ($nitEmpresa) {
+                      $q2->where('nit_empresa', $nitEmpresa);
+                  });
+            });
+
+        $totalInternas = (clone $queryInt)->count();
+        $enTramiteInt  = (clone $queryInt)->where('id_estado_envio', 8)->count();
+        $finalizadasInt = (clone $queryInt)->where('id_estado_envio', 9)->count();
+        $archivadasInt  = (clone $queryInt)->where('id_estado_envio', 10)->count();
+        $vencidasInt   = 0; 
+
+        $correspondenciasInternas = $queryInt->orderBy('id_envio', 'desc')->paginate(15, ['*'], 'int_page');
+
+        return view('admin.correspondencia', compact(
+            'correspondencias', 'totalRecibidas', 'enTramite', 'finalizadas', 'archivadas', 'vencidas',
+            'correspondenciasInternas', 'totalInternas', 'enTramiteInt', 'finalizadasInt', 'archivadasInt', 'vencidasInt'
+        ));
     }
 
     private function getCorrespondenciaFiltered()
@@ -26,11 +69,12 @@ class AdminCorrespondenciaController extends Controller
         $user = \Illuminate\Support\Facades\Auth::user();
         $nitEmpresa = $user->nit_empresa;
 
-        // ---- Correspondencia Externa (Recibida) ----
-        // Incluye documentos donde la empresa sea la destinataria o la registró
+        // ---- Correspondencia Recibida (Interna + Externa/Pública) ----
+        // Consulta directa: todos los registros cuyo nit_empresa coincide,
+        // o donde algún empleado de la empresa es destinatario o registrador.
         $recibidos = Recibido::with(['destinatarios', 'registradoPor', 'estado', 'ciudad', 'radicado'])
             ->where(function($q) use ($nitEmpresa) {
-                $q->where('recibido.nit_empresa', $nitEmpresa)
+                $q->where('recibido.nit_empresa', $nitEmpresa)  // Captura externos/públicos
                   ->orWhereHas('registradoPor', function($q2) use ($nitEmpresa) {
                       $q2->where('nit_empresa', $nitEmpresa);
                   })
@@ -56,12 +100,12 @@ class AdminCorrespondenciaController extends Controller
 
                 return (object) [
                     'origen'              => 'Externa',
-                    'num_radicado_ext'    => $item->num_radicado_ext ?? 'N/A',
+                    'num_radicado_ext'    => $item->num_radicado_ext ?? null,
                     'num_radicado_int'    => $radicadoNum,
                     'nom_institucion'     => $item->nom_institucion ?? ($item->nombre_persona ?? 'Externo'),
                     'ciudad'              => $item->ciudad ? $item->ciudad->ciudad_nom : $item->ciudad_proveniente,
-                    'asunto'             => $item->asunto,
-                    'fecha'              => $item->fecha_hora_recib,
+                    'asunto'              => $item->asunto,
+                    'fecha'               => $item->fecha_hora_recib,
                     'registrado_por_nombre' => $item->registradoPor
                                              ? $item->registradoPor->emple_nombres . ' ' . $item->registradoPor->emple_apellidos
                                              : ($item->nombre_persona ?? 'Ciudadano/Externo'),
@@ -77,14 +121,16 @@ class AdminCorrespondenciaController extends Controller
             ->sortByDesc('fecha')
             ->values();
 
-        // ---- Correspondencia Interna (Envio) ----
-        // Incluye documentos donde la empresa sea el remitente o el destinatario
-        $envios = \App\Models\Envio::with(['quienDirigido', 'quienEnvia', 'estadoEnvio', 'radicado'])
+        // ---- Correspondencia Interna (Envío entre empleados) ----
+        // Filtra por nit_empresa directamente en la tabla envio,
+        // O cuando el remitente o destinatario pertenezcan a la empresa.
+        $envios = \App\Models\Envio::with(['detalles.quienRecibe', 'quienEnvia', 'estadoEnvio', 'radicado'])
             ->where(function($q) use ($nitEmpresa) {
-                $q->whereHas('quienEnvia', function($q2) use ($nitEmpresa) {
+                $q->where('envio.nit_empresa', $nitEmpresa)     // Directamente por nit_empresa
+                  ->orWhereHas('quienEnvia', function($q2) use ($nitEmpresa) {
                       $q2->where('nit_empresa', $nitEmpresa);
                   })
-                  ->orWhereHas('quienDirigido', function($q2) use ($nitEmpresa) {
+                  ->orWhereHas('detalles.quienRecibe', function($q2) use ($nitEmpresa) {
                       $q2->where('nit_empresa', $nitEmpresa);
                   });
             })
@@ -92,9 +138,21 @@ class AdminCorrespondenciaController extends Controller
             ->map(function ($item) {
                 $radicadoNum = $item->radicado ? $item->radicado->num_radicado : 'N/A';
 
+                // Determinar el destinatario basado en la relación detalles
+                $destNombre = $item->destino ?? 'Destino no especificado';
+                $destDoc = null;
+
+                if ($item->detalles->count() > 0) {
+                    $det = $item->detalles->first();
+                    if ($det && $det->quienRecibe) {
+                        $destNombre = $det->quienRecibe->emple_nombres . ' ' . $det->quienRecibe->emple_apellidos;
+                        $destDoc = $det->quienRecibe->emple_doc;
+                    }
+                }
+
                 return (object) [
                     'origen'              => 'Interna',
-                    'num_radicado_ext'    => 'N/A',
+                    'num_radicado_ext'    => null,
                     'num_radicado_int'    => $radicadoNum,
                     'nom_institucion'     => $item->quienEnvia
                                              ? $item->quienEnvia->emple_nombres . ' ' . $item->quienEnvia->emple_apellidos
@@ -106,10 +164,8 @@ class AdminCorrespondenciaController extends Controller
                                              ? $item->quienEnvia->emple_nombres . ' ' . $item->quienEnvia->emple_apellidos
                                              : 'N/A',
                     'doc_registra'        => $item->quienEnvia ? $item->quienEnvia->emple_doc : '-',
-                    'destinatario_nombre' => $item->quienDirigido
-                                             ? $item->quienDirigido->emple_nombres . ' ' . $item->quienDirigido->emple_apellidos
-                                             : ($item->destino ?? 'Destino no especificado'),
-                    'doc_destinatario'    => $item->doc_quien_dirigido,
+                    'destinatario_nombre' => $destNombre,
+                    'doc_destinatario'    => $destDoc,
                     'folio'               => $item->folio,
                     'anexo'               => null,
                     'estado_nomb'         => $item->estadoEnvio ? $item->estadoEnvio->estado_nomb : 'Desconocido',

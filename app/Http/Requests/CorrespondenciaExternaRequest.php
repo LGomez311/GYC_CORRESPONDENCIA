@@ -30,9 +30,9 @@ class CorrespondenciaExternaRequest extends FormRequest
             'id_tipo'            => 'required|exists:tipo,id_tipo',
             'asunto'             => 'required|string|max:100',
             'observaciones'      => 'nullable|string|max:250',
-            'archivo'            => 'required|file|mimes:pdf|max:10240', // 10MB máximo, solo PDF
-            'anexos'             => 'nullable|array|max:5', // Máximo 5 anexos
-            'anexos.*'           => 'file|mimes:pdf|max:10240', // Solo PDF, 10MB máximo cada uno
+            'archivo'            => 'required|file|mimes:pdf|max:5120',  // 5MB máximo, solo PDF
+            'anexos'             => 'nullable|array|max:1',              // Máximo 1 anexo
+            'anexos.*'           => 'file|mimes:pdf|max:25600',          // Solo PDF, 25MB máximo
         ];
 
         if ($this->input('tipo_remitente') === 'Empresa') {
@@ -41,7 +41,7 @@ class CorrespondenciaExternaRequest extends FormRequest
                 'nombre_empresa'        => 'required|string|max:100',
                 'correo_empresa'        => 'required|email|max:255',
                 'tel_empresa'           => 'nullable|string|max:25',
-                'radicado_empresa'      => 'nullable|string|max:100',
+                'radicado_empresa'      => 'required|string|max:100', // Obligatorio para Empresas
             ]);
         } else {
             $rules = array_merge($rules, [
@@ -78,6 +78,7 @@ class CorrespondenciaExternaRequest extends FormRequest
             'nombre_empresa.required'        => 'El nombre de la empresa es obligatorio.',
             'correo_empresa.required'        => 'El correo electrónico de la empresa es obligatorio.',
             'correo_empresa.email'           => 'El correo electrónico debe tener un formato válido.',
+            'radicado_empresa.required'      => 'El número de radicado externo de la empresa es obligatorio.',
             
             'ciudad_proveniente.required' => 'Debe seleccionar una ciudad válida.',
             'ciudad_proveniente.exists'   => 'La ciudad seleccionada no es válida.',
@@ -86,12 +87,13 @@ class CorrespondenciaExternaRequest extends FormRequest
             'asunto.required'             => 'El asunto es obligatorio.',
             'archivo.required'            => 'Debe adjuntar un archivo principal.',
             'archivo.mimes'               => 'El archivo principal debe ser un PDF.',
-            'archivo.max'                 => 'El archivo principal no debe pesar más de 10MB.',
+            'archivo.max'                 => 'El archivo principal no debe pesar más de 5MB.',
             
             'anexos.array'                => 'El formato de los anexos es inválido.',
-            'anexos.*.file'               => 'Uno o más anexos no son un archivo válido.',
-            'anexos.*.mimes'              => 'Todos los anexos deben ser en formato PDF.',
-            'anexos.*.max'                => 'Cada anexo no debe pesar más de 10MB.',
+            'anexos.max'                  => 'Solo puede adjuntar máximo 1 anexo.',
+            'anexos.*.file'               => 'El anexo no es un archivo válido.',
+            'anexos.*.mimes'              => 'El anexo debe estar en formato PDF.',
+            'anexos.*.max'                => 'El anexo no debe pesar más de 25MB.',
         ];
     }
 }

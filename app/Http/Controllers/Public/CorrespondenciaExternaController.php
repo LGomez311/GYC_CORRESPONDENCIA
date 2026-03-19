@@ -48,59 +48,74 @@ class CorrespondenciaExternaController extends Controller
                 $folios = count($pdf->getPages());
             } catch (\Exception $e) {
                 Log::warning('No se pudo contar las páginas del PDF principal: ' . $e->getMessage());
-                // Si falla el conteo, dejamos por defecto 1
                 $folios = 1;
             }
         }
         
-        // Contar folios extra de los anexos (si los hay) al total de folios en recibidos
-        $anexosArchivos = [];
+        // Procesar 1 solo anexo (si lo hay)
+        $anexoData = null;
+        $anexoFile = null;
+
+        // Aceptar tanto 'anexos' como array o como campo único
         if ($request->hasFile('anexos')) {
-            $parser = new \Smalot\PdfParser\Parser();
-            foreach ($request->file('anexos') as $anexoFile) {
-                // Almacenamos f&iacute;sicamente el anexo
-                $rutaAnexo = $anexoFile->store('correspondencia_anexos', 'public');
-                $nombreOriginal = $anexoFile->getClientOriginalName();
-                
-                // Intentamos sumar los folios del anexo al total
-                try {
-                    $pdfAnexo = $parser->parseFile($anexoFile->getPathname());
-                    $folios += count($pdfAnexo->getPages());
-                } catch (\Exception $e) {
-                    Log::warning('No se pudo contar las p&aacute;ginas del anexo PDF: ' . $e->getMessage());
-                }
-                
-                $anexosArchivos[] = [
-                    'ruta_archivo'    => $rutaAnexo,
-                    'nombre_original' => $nombreOriginal,
-                ];
+            $archivosAnexos = $request->file('anexos');
+            // Si viene como array tomamos el primero, si viene como archivo único lo usamos directamente
+            $anexoFile = is_array($archivosAnexos) ? ($archivosAnexos[0] ?? null) : $archivosAnexos;
+        }
+
+        if ($anexoFile && $anexoFile->isValid()) {
+            $rutaAnexo     = $anexoFile->store('correspondencia', 'public');
+            $nombreOriginal = $anexoFile->getClientOriginalName();
+
+            // Sumar folios del anexo al total
+            try {
+                $parser = new \Smalot\PdfParser\Parser();
+                $pdfAnexo = $parser->parseFile($anexoFile->getPathname());
+                $folios += count($pdfAnexo->getPages());
+            } catch (\Exception $e) {
+                Log::warning('No se pudo contar las páginas del anexo PDF: ' . $e->getMessage());
             }
+
+            $anexoData = [
+                'ruta_archivo'    => $rutaAnexo,
+                'nombre_original' => $nombreOriginal,
+            ];
         }
 
         // Definir la empresa receptora (desde el formulario)
         $nitEmpresa = $validated['empresa_destino'];
         
-        // Empleado por defecto para recepción (rol 4 o 2)
-        $empleadoRecepcion = \App\Models\Empleado::whereIn('emple_rol', [2, 4])->first();
+        // Empleado de recepción: admin (rol=2) de la empresa destino
+        $empleadoRecepcion = \App\Models\Empleado::where('nit_empresa', $nitEmpresa)
+            ->where('emple_rol', 2)
+            ->where('emple_estado', 1)
+            ->first();
+        
+        // Si no hay admin activo, buscamos cualquier empleado activo de la empresa
+        if (!$empleadoRecepcion) {
+            $empleadoRecepcion = \App\Models\Empleado::where('nit_empresa', $nitEmpresa)
+                ->where('emple_estado', 1)
+                ->first();
+        }
+        
         $docDestinatario = $empleadoRecepcion ? $empleadoRecepcion->emple_doc : null;
 
         // Determinar datos del remitente
         $tipoRemitente = $validated['tipo_remitente'];
         if ($tipoRemitente === 'Empresa') {
-            $docPersona = $validated['nit_empresa_remitente'];
-            $nombrePersona = $validated['nombre_empresa'];
-            $correoPersona = $validated['correo_empresa'];
-            $telPersona = $validated['tel_empresa'] ?? null;
-            $radicadoEmpresa = $validated['radicado_empresa'] ?? null;
-            // Para empresas, usamos NIT como tipo de documento "observaciones" base si se quiere
-            $tipoDoc = 'NIT';
+            $docPersona     = $validated['nit_empresa_remitente'];
+            $nombrePersona  = $validated['nombre_empresa'];
+            $correoPersona  = $validated['correo_empresa'];
+            $telPersona     = $validated['tel_empresa'] ?? null;
+            $radicadoEmpresa = $validated['radicado_empresa']; // Ahora obligatorio
+            $tipoDoc        = 'NIT';
         } else {
-            $docPersona = $validated['numero_documento'];
-            $nombrePersona = $validated['nombre_persona'];
-            $correoPersona = $validated['correo_persona'];
-            $telPersona = $validated['tel_persona'] ?? null;
+            $docPersona     = $validated['numero_documento'];
+            $nombrePersona  = $validated['nombre_persona'];
+            $correoPersona  = $validated['correo_persona'];
+            $telPersona     = $validated['tel_persona'] ?? null;
             $radicadoEmpresa = null;
-            $tipoDoc = $validated['tipo_documento'];
+            $tipoDoc        = $validated['tipo_documento'];
         }
 
         DB::beginTransaction();
@@ -109,7 +124,6 @@ class CorrespondenciaExternaController extends Controller
             // 3. Generación del Radicado Seguro (INT-AÑO-NUMERO)
             $currentYear = date('Y');
             
-            // Usamos lockForUpdate para bloquear la lectura y prevenir radicados duplicados por concurrencia
             $latestRadicado = Radicado::where('nit_empresa', $nitEmpresa)
                 ->where('num_radicado', 'like', 'INT-' . $currentYear . '-%')
                 ->lockForUpdate()
@@ -118,7 +132,7 @@ class CorrespondenciaExternaController extends Controller
 
             if ($latestRadicado) {
                 $lastNumber = intval(substr($latestRadicado->num_radicado, -5));
-                $newNumber = $lastNumber + 1;
+                $newNumber  = $lastNumber + 1;
             } else {
                 $newNumber = 1;
             }
@@ -133,7 +147,7 @@ class CorrespondenciaExternaController extends Controller
             // 4. Inserción en tabla Recibido
             $idRecibido = DB::table('recibido')->insertGetId([
                 'num_radicado_int'   => $radicado->id_radicado,
-                'num_radicado_ext'   => $radicadoEmpresa, // radicado_empresa goes here
+                'num_radicado_ext'   => $radicadoEmpresa, // radicado externo (obligatorio si es Empresa)
                 'fecha_hora_recib'   => now(),
                 'nom_institucion'    => $tipoRemitente === 'Empresa' ? $nombrePersona : null,
                 'nit_empresa'        => $nitEmpresa,
@@ -150,8 +164,8 @@ class CorrespondenciaExternaController extends Controller
                 'tel_persona'        => $telPersona,
             ]);
             
-            // Insercion de anexos
-            foreach ($anexosArchivos as $anexoData) {
+            // 5. Insertar el anexo en anexo_recibido (si existe)
+            if ($anexoData) {
                 DB::table('anexo_recibido')->insert([
                     'id_recibido'     => $idRecibido,
                     'ruta_archivo'    => $anexoData['ruta_archivo'],
@@ -159,7 +173,7 @@ class CorrespondenciaExternaController extends Controller
                 ]);
             }
 
-            // 5. Trazabilidad
+            // 6. Trazabilidad
             if ($docDestinatario) {
                 DB::table('detalle_recibido')->insert([
                     'det_id_recibido'  => $idRecibido,
@@ -172,7 +186,7 @@ class CorrespondenciaExternaController extends Controller
 
             DB::commit();
 
-            // 6. Enviar correo de confirmación al remitente
+            // 7. Enviar correo de confirmación al remitente
             try {
                 \Illuminate\Support\Facades\Mail::send([], [], function ($message) use ($correoPersona, $nuevoNumRadicado) {
                     $message->to($correoPersona)
@@ -196,7 +210,6 @@ class CorrespondenciaExternaController extends Controller
                 });
             } catch (\Exception $mailEx) {
                 Log::error('Error al enviar correo de radicación: ' . $mailEx->getMessage());
-                // No revertimos transaccion si solo falla el correo
             }
 
             return redirect()->route('public.correspondencia.enviar')->with('success', 'Correspondencia enviada exitosamente. Su número de radicado es: ' . $radicado->num_radicado . '. Se ha enviado un correo con esta información.');

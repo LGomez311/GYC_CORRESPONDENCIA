@@ -3,467 +3,362 @@
 @section('title', 'Consulta de Correspondencia')
 
 @section('content')
-    <div class="w-full max-w-7xl mx-auto p-4 md:px-6 lg:px-8 py-6">
-        
-        <!-- ================= HEADER ================= -->
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
-            <div>
-                <h1 class="text-[#0d121b] dark:text-white text-2xl sm:text-3xl font-black tracking-tight mb-1">
-                    Consulta de Correspondencia
-                </h1>
-                <p class="text-[#4c669a] dark:text-gray-400 text-sm sm:text-base">
-                    Vista detallada del historial de documentos vinculados a tu empresa.
-                </p>
-            </div>
-            <div class="flex gap-3">
-                <button onclick="openExportModalCor()"
-                    class="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#161d2b] border border-[#cfd7e7] dark:border-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors dark:text-white">
-                    <span class="material-symbols-outlined text-[18px]">download</span>
-                    Exportar
-                </button>
-            </div>
+<div class="space-y-6">
+
+    <!-- Header Page -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Consulta de Correspondencia</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Haz seguimiento a todos los documentos radicados vinculados a tu empresa.
+            </p>
         </div>
-
-                <!-- ================= EXTERNAL CORRESPONDENCE CONTAINER ================= -->
-        <div class="bg-white dark:bg-[#161d2b] border border-[#cfd7e7] dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm mb-8">
-            
-            <!-- Table Header / Search -->
-            <div class="px-6 py-4 border-b border-[#cfd7e7] dark:border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50/50 dark:bg-background-dark/20">
-                <div>
-                    <h2 class="text-lg font-bold text-[#0d121b] dark:text-white">Correspondencia Externa (Recibida)</h2>
-                    <p class="text-xs text-[#4c669a] dark:text-gray-400">Documentos que provienen del exterior u otras instituciones.</p>
-                </div>
-                <div class="relative w-full md:w-96">
-                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#4c669a] text-lg">search</span>
-                    <input type="text" id="searchRecibidos" placeholder="Buscar por radicado o asunto..." 
-                        class="pl-10 pr-4 py-2 bg-white dark:bg-[#0d121b] border border-[#cfd7e7] dark:border-gray-800 rounded-lg text-sm focus:outline-none focus:border-primary transition-all w-full shadow-sm">
-                </div>
-            </div>
-
-            <div class="overflow-x-auto w-full">
-                <table class="w-full text-left min-w-full whitespace-nowrap responsive-table">
-                    <thead>
-                        <tr class="bg-slate-50/30 dark:bg-background-dark/10 border-b border-[#cfd7e7] dark:border-gray-800">
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Radicados</th>
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Origen / Institución</th>
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Asunto</th>
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Destinatario</th>
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Folios / Anexos</th>
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Estado</th>
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider text-right">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableRecibidos" class="divide-y divide-[#cfd7e7] dark:divide-gray-800">
-                        @forelse($recibidos as $cor)
-                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" 
-                            data-search="{{ strtolower($cor->num_radicado_ext . ' ' . $cor->num_radicado_int . ' ' . $cor->asunto) }}">
-                            <td class="px-6 py-4" data-label="Radicados">
-                                <div class="flex flex-col">
-                                    <span class="inline-flex items-center w-max px-2 py-0.5 rounded text-[10px] uppercase font-bold {{ $cor->origen == 'Interna' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400' : 'bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-900/40 dark:text-fuchsia-400' }} mb-1">
-                                        {{ $cor->origen }}
-                                    </span>
-                                    <span class="font-bold text-[#0d121b] dark:text-white">EXT: {{ $cor->num_radicado_ext }}</span>
-                                    <span class="text-xs text-[#4c669a] font-mono">INT: {{ $cor->num_radicado_int }}</span>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4" data-label="Origen / Institución">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-gray-800 flex items-center justify-center text-[#4c669a] shrink-0">
-                                        <span class="material-symbols-outlined text-[18px]">business</span>
-                                    </div>
-                                    <div class="flex flex-col">
-                                        <span class="text-sm font-bold dark:text-white">{{ $cor->nom_institucion }}</span>
-                                        <span class="text-xs text-[#4c669a]">{{ $cor->ciudad }}</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4" data-label="Asunto">
-                                <div class="flex flex-col">
-                                    <span class="text-sm text-[#0d121b] dark:text-white font-medium" title="{{ $cor->asunto }}">
-                                        {{ $cor->asunto }}
-                                    </span>
-                                    <span class="text-xs text-[#4c669a]">{{ \Carbon\Carbon::parse($cor->fecha)->format('d M, Y H:i') }}</span>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4" data-label="Destinatario">
-                                <div class="flex flex-col">
-                                    <span class="text-sm font-bold dark:text-white">{{ $cor->destinatario_nombre }}</span>
-                                    <span class="text-xs text-[#4c669a]">Doc: {{ $cor->doc_destinatario }}</span>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4" data-label="Folios / Anexos">
-                                <div class="flex flex-col text-xs text-[#4c669a]">
-                                    <span>Folios: {{ $cor->folio }}</span>
-                                    <span>Anexos: {{ $cor->anexo ?? 'Ninguno' }}</span>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4" data-label="Estado">
-                                @php
-                                    $estadoNom = $cor->estado_nomb;
-                                    $bgColor = 'bg-slate-100 text-slate-700 dark:bg-gray-800 dark:text-gray-300';
-                                    if(stripos($estadoNom, 'activo') !== false || stripos($estadoNom, 'radicado') !== false) {
-                                        $bgColor = 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400';
-                                    } elseif(stripos($estadoNom, 'proceso') !== false || stripos($estadoNom, 'tramite') !== false) {
-                                        $bgColor = 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400';
-                                    }
-                                @endphp
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $bgColor }}">
-                                    {{ $estadoNom }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-right actions-cell" data-label="Acciones">
-                                <div class="flex justify-end gap-1">
-                                    <button class="p-2 text-[#4c669a] hover:text-primary transition-colors btn-view-cor" title="Ver detalle"
-                                        data-ext="{{ $cor->num_radicado_ext }}"
-                                        data-int="{{ $cor->num_radicado_int }}"
-                                        data-institucion="{{ $cor->nom_institucion }}"
-                                        data-ciudad="{{ $cor->ciudad }}"
-                                        data-asunto="{{ $cor->asunto }}"
-                                        data-fecha="{{ \Carbon\Carbon::parse($cor->fecha)->format('d M, Y H:i') }}"
-                                        data-destinatario="{{ $cor->destinatario_nombre }}"
-                                        data-docdest="{{ $cor->doc_destinatario }}"
-                                        data-folios="{{ $cor->folio }}"
-                                        data-anexos="{{ $cor->anexo ?? 'Ninguno' }}"
-                                        data-estado="{{ $estadoNom }}"
-                                        data-archivo="{{ $cor->archivo ? asset('storage/' . $cor->archivo) : '' }}">
-                                        <span class="material-symbols-outlined text-[20px]">visibility</span>
-                                    </button>
-                                    @if($cor->archivo)
-                                    <a href="{{ asset('storage/' . $cor->archivo) }}" target="_blank" class="p-2 text-[#4c669a] hover:text-primary transition-colors" title="Ver Archivo">
-                                        <span class="material-symbols-outlined text-[20px]">description</span>
-                                    </a>
-                                    @endif
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="7" class="px-6 py-12 text-center">
-                                <div class="flex flex-col items-center justify-center">
-                                    <span class="material-symbols-outlined text-4xl text-[#cfd7e7] dark:text-gray-700 mb-2">mail</span>
-                                    <p class="text-sm text-[#4c669a] dark:text-gray-400">No se encontraron registros de correspondencia externa.</p>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- PAGINATION -->
-            <div class="px-6 py-4 bg-slate-50 dark:bg-background-dark/30 border-t border-[#cfd7e7] dark:border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <p class="text-sm text-[#4c669a]">
-                    Total: <span class="font-medium text-[#0d121b] dark:text-white">{{ count($recibidos) }}</span> registros vinculados
-                </p>
-                <div class="flex gap-2">
-                    <button class="px-4 py-2 text-sm font-bold text-[#4c669a] bg-white dark:bg-gray-800 border border-[#cfd7e7] dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50" disabled>
-                        Anterior
-                    </button>
-                    <button class="px-4 py-2 text-sm font-bold text-[#4c669a] bg-white dark:bg-gray-800 border border-[#cfd7e7] dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50" disabled>
-                        Siguiente
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- ================= INTERNAL CORRESPONDENCE CONTAINER ================= -->
-        <div class="bg-white dark:bg-[#161d2b] border border-[#cfd7e7] dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm mb-8">
-            
-            <!-- Table Header / Search -->
-            <div class="px-6 py-4 border-b border-[#cfd7e7] dark:border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50/50 dark:bg-background-dark/20">
-                <div>
-                    <h2 class="text-lg font-bold text-[#0d121b] dark:text-white">Correspondencia Interna (Enviada)</h2>
-                    <p class="text-xs text-[#4c669a] dark:text-gray-400">Documentos generados internamente hacia otras dependencias o instituciones.</p>
-                </div>
-                <div class="relative w-full md:w-96">
-                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#4c669a] text-lg">search</span>
-                    <input type="text" id="searchEnvios" placeholder="Buscar por radicado o asunto..." 
-                        class="pl-10 pr-4 py-2 bg-white dark:bg-[#0d121b] border border-[#cfd7e7] dark:border-gray-800 rounded-lg text-sm focus:outline-none focus:border-primary transition-all w-full shadow-sm">
-                </div>
-            </div>
-
-            <div class="overflow-x-auto w-full">
-                <table class="w-full text-left min-w-full whitespace-nowrap responsive-table">
-                    <thead>
-                        <tr class="bg-slate-50/30 dark:bg-background-dark/10 border-b border-[#cfd7e7] dark:border-gray-800">
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Radicados</th>
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Origen / Institución</th>
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Asunto</th>
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Destinatario</th>
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Folios / Anexos</th>
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Estado</th>
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider text-right">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableEnvios" class="divide-y divide-[#cfd7e7] dark:divide-gray-800">
-                        @forelse($envios as $cor)
-                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" 
-                            data-search="{{ strtolower($cor->num_radicado_int . ' ' . $cor->asunto . ' ' . $cor->destinatario_nombre) }}">
-                            <td class="px-6 py-4" data-label="Radicados">
-                                <div class="flex flex-col">
-                                    <span class="inline-flex items-center w-max px-2 py-0.5 rounded text-[10px] uppercase font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400 mb-1">
-                                        {{ $cor->origen }}
-                                    </span>
-                                    <span class="font-bold text-[#0d121b] dark:text-white">INT: {{ $cor->num_radicado_int }}</span>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4" data-label="Enviado por">
-                                <div class="flex flex-col">
-                                    <span class="text-sm font-bold dark:text-white">{{ $cor->registrado_por_nombre }}</span>
-                                    <span class="text-xs text-[#4c669a]">Doc: {{ $cor->doc_registra }}</span>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4" data-label="Asunto">
-                                <div class="flex flex-col">
-                                    <span class="text-sm text-[#0d121b] dark:text-white font-medium" title="{{ $cor->asunto }}">
-                                        {{ $cor->asunto }}
-                                    </span>
-                                    <span class="text-xs text-[#4c669a]">{{ \Carbon\Carbon::parse($cor->fecha)->format('d M, Y H:i') }}</span>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4" data-label="Destinatario">
-                                <div class="flex flex-col">
-                                    <span class="text-sm font-bold dark:text-white">{{ $cor->destinatario_nombre }}</span>
-                                    <span class="text-xs text-[#4c669a]">Doc: {{ $cor->doc_destinatario ?? 'N/A' }}</span>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4" data-label="Folios / Anexos">
-                                <div class="flex flex-col text-xs text-[#4c669a]">
-                                    <span>Folios: {{ $cor->folio }}</span>
-                                    <span>Anexos: {{ $cor->anexo ?? 'Ninguno' }}</span>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4" data-label="Estado">
-                                @php
-                                    $estadoNom = $cor->estado_nomb;
-                                    $bgColor = 'bg-slate-100 text-slate-700 dark:bg-gray-800 dark:text-gray-300';
-                                    if(stripos($estadoNom, 'activo') !== false || stripos($estadoNom, 'radicado') !== false || stripos($estadoNom, 'enviado') !== false) {
-                                        $bgColor = 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400';
-                                    } elseif(stripos($estadoNom, 'proceso') !== false || stripos($estadoNom, 'tramite') !== false || stripos($estadoNom, 'pendiente') !== false) {
-                                        $bgColor = 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400';
-                                    } elseif(stripos($estadoNom, 'rechazado') !== false) {
-                                        $bgColor = 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400';
-                                    }
-                                @endphp
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $bgColor }}">
-                                    {{ $estadoNom }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-right actions-cell" data-label="Acciones">
-                                <div class="flex justify-end gap-1">
-                                    <button class="p-2 text-[#4c669a] hover:text-primary transition-colors btn-view-cor" title="Ver detalle"
-                                        data-ext="{{ $cor->num_radicado_ext }}"
-                                        data-int="{{ $cor->num_radicado_int }}"
-                                        data-institucion="{{ $cor->nom_institucion }}"
-                                        data-ciudad="{{ $cor->ciudad }}"
-                                        data-asunto="{{ $cor->asunto }}"
-                                        data-fecha="{{ \Carbon\Carbon::parse($cor->fecha)->format('d M, Y H:i') }}"
-                                        data-destinatario="{{ $cor->destinatario_nombre }}"
-                                        data-docdest="{{ $cor->doc_destinatario ?? 'N/A' }}"
-                                        data-folios="{{ $cor->folio }}"
-                                        data-anexos="{{ $cor->anexo ?? 'Ninguno' }}"
-                                        data-estado="{{ $estadoNom }}"
-                                        data-archivo="{{ $cor->archivo ? asset('storage/' . $cor->archivo) : '' }}">
-                                        <span class="material-symbols-outlined text-[20px]">visibility</span>
-                                    </button>
-                                    @if($cor->archivo)
-                                    <a href="{{ asset('storage/' . $cor->archivo) }}" target="_blank" class="p-2 text-[#4c669a] hover:text-primary transition-colors" title="Ver Archivo">
-                                        <span class="material-symbols-outlined text-[20px]">description</span>
-                                    </a>
-                                    @endif
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="7" class="px-6 py-12 text-center">
-                                <div class="flex flex-col items-center justify-center">
-                                    <span class="material-symbols-outlined text-4xl text-[#cfd7e7] dark:text-gray-700 mb-2">mail</span>
-                                    <p class="text-sm text-[#4c669a] dark:text-gray-400">No se encontraron registros de correspondencia interna.</p>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- PAGINATION -->
-            <div class="px-6 py-4 bg-slate-50 dark:bg-background-dark/30 border-t border-[#cfd7e7] dark:border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <p class="text-sm text-[#4c669a]">
-                    Total: <span class="font-medium text-[#0d121b] dark:text-white">{{ count($envios) }}</span> registros vinculados
-                </p>
-                <div class="flex gap-2">
-                    <button class="px-4 py-2 text-sm font-bold text-[#4c669a] bg-white dark:bg-gray-800 border border-[#cfd7e7] dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50" disabled>
-                        Anterior
-                    </button>
-                    <button class="px-4 py-2 text-sm font-bold text-[#4c669a] bg-white dark:bg-gray-800 border border-[#cfd7e7] dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50" disabled>
-                        Siguiente
-                    </button>
-                </div>
-            </div>
-            <div> 
-        </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            function setupSearch(inputId, tableBodyId) {
-                const searchInput = document.getElementById(inputId);
-                const tableBody = document.getElementById(tableBodyId);
-                if (searchInput && tableBody) {
-                    const rows = tableBody.querySelectorAll('tr[data-search]');
-                    searchInput.addEventListener('input', function() {
-                        const term = this.value.toLowerCase();
-                        rows.forEach(row => {
-                            const searchData = row.getAttribute('data-search');
-                            if (searchData.includes(term)) {
-                                row.style.display = '';
-                            } else {
-                                row.style.display = 'none';
-                            }
-                        });
-                    });
-                }
-            }
-            setupSearch('searchRecibidos', 'tableRecibidos');
-            setupSearch('searchEnvios', 'tableEnvios');
-
-            // MODAL DE DETALLES DE CORRESPONDENCIA
-            const modalDetallesCor = document.getElementById('detallesCorModal');
-            
-            document.querySelectorAll('.btn-view-cor').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    document.getElementById('detExt').textContent = btn.dataset.ext;
-                    document.getElementById('detInt').textContent = btn.dataset.int;
-                    document.getElementById('detInst').textContent = btn.dataset.institucion;
-                    document.getElementById('detCiudad').textContent = btn.dataset.ciudad;
-                    document.getElementById('detAsunto').textContent = btn.dataset.asunto;
-                    document.getElementById('detFecha').textContent = btn.dataset.fecha;
-                    document.getElementById('detDest').textContent = btn.dataset.destinatario;
-                    document.getElementById('detDocDest').textContent = btn.dataset.docdest;
-                    document.getElementById('detFolios').textContent = btn.dataset.folios;
-                    document.getElementById('detAnexos').textContent = btn.dataset.anexos;
-                    
-                    const estado = btn.dataset.estado;
-                    document.getElementById('detEstado').textContent = estado;
-
-                    const btnArchivo = document.getElementById('detBtnArchivo');
-                    if(btn.dataset.archivo) {
-                        btnArchivo.href = btn.dataset.archivo;
-                        btnArchivo.style.display = 'inline-flex';
-                    } else {
-                        btnArchivo.style.display = 'none';
-                    }
-
-                    modalDetallesCor.classList.remove('hidden');
-                });
-            });
-
-            document.querySelectorAll('.btn-close-cor').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    btn.closest('.fixed').classList.add('hidden');
-                });
-            });
-        });
-    </script>
-
-    {{-- MODAL VER DETALLES CORRESPONDENCIA --}}
-    <div id="detallesCorModal" class="fixed inset-0 bg-black/40 flex items-center justify-center hidden z-50 p-4">
-        <div class="bg-white dark:bg-[#161d2b] w-full max-w-2xl rounded-xl shadow-xl relative my-10 max-h-[90vh] flex flex-col overflow-hidden">
-            <div class="px-6 pt-6 pb-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
-                <h2 class="text-xl font-semibold text-[#0d121b] dark:text-white">Detalles de Correspondencia</h2>
-                <button class="btn-close-cor text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white">
-                    <span class="material-symbols-outlined">close</span>
-                </button>
-            </div>
-            
-            <div class="p-6 overflow-y-auto text-sm text-[#4c669a] dark:text-gray-300">
-                <div class="flex flex-col md:flex-row gap-6 mb-6 items-start">
-                    <div class="w-16 h-16 rounded-xl bg-slate-100 dark:bg-gray-800 flex-shrink-0 flex justify-center items-center border border-[#cfd7e7] dark:border-gray-700">
-                        <span class="material-symbols-outlined text-3xl text-gray-400">mail</span>
-                    </div>
-                    <div class="flex flex-col gap-1 flex-1">
-                        <h3 class="text-xl font-bold text-[#0d121b] dark:text-white" id="detAsunto">-</h3>
-                        <p class="text-sm font-medium flex items-center gap-2 text-primary">EXT: <span id="detExt" class="font-bold">-</span> <span class="text-xs text-gray-400">|</span> INT: <span id="detInt" class="font-bold">-</span></p>
-                        <p class="flex items-center gap-2 w-fit px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs font-semibold mt-1">
-                            <span id="detEstado">-</span>
-                        </p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Institución / Origen</label>
-                        <p class="text-base text-[#0d121b] dark:text-white font-medium break-all" id="detInst">-</p>
-                        <p class="text-xs mt-0.5" id="detCiudad">-</p>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Fecha de Ingreso</label>
-                        <p class="text-base text-[#0d121b] dark:text-white font-medium" id="detFecha">-</p>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Destinatario (Dirigido a)</label>
-                        <p class="text-base text-[#0d121b] dark:text-white font-medium" id="detDest">-</p>
-                        <p class="text-xs mt-0.5">Doc: <span id="detDocDest">-</span></p>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Documentos</label>
-                        <p class="text-sm text-[#0d121b] dark:text-white font-medium">Folios: <span id="detFolios">-</span></p>
-                        <p class="text-sm text-[#0d121b] dark:text-white font-medium">Anexos: <span id="detAnexos">-</span></p>
-                    </div>
-                </div>
-                
-                <div class="mt-6 pt-4 border-t border-gray-100 dark:border-gray-800 flex justify-center">
-                    <a href="#" id="detBtnArchivo" target="_blank" class="px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-lg flex items-center gap-2 hover:bg-primary hover:text-white transition-colors text-sm font-semibold" style="display:none;">
-                        <span class="material-symbols-outlined text-[18px]">download</span> Ver Documento Adjunto
-                    </a>
-                </div>
-            </div>
-            
-            <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-800 flex justify-end">
-                <button class="btn-close-cor px-6 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 transition-colors font-medium">Cerrar</button>
-            </div>
-        </div>
-    </div>
-
-    {{-- MODAL EXPORTAR --}}
-    <div id="exportModalCor" class="fixed inset-0 bg-black/40 flex items-center justify-center hidden z-50 p-4">
-        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg w-72 p-5 relative">
-            <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-4">
-                Exportar Correspondencia
-            </h3>
-            <div class="flex flex-col gap-3">
-                <!-- PDF -->
-                <a href="{{ route('admin.correspondencia.export.pdf') }}"
-                    class="flex items-center gap-2 px-4 py-2 text-sm font-semibold border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-white dark:border-gray-700 transition">
-                    <span class="material-symbols-outlined text-red-600">picture_as_pdf</span>
-                    PDF
-                </a>
-                <!-- Excel -->
-                <a href="{{ route('admin.correspondencia.export.excel') }}"
-                    class="flex items-center gap-2 px-4 py-2 text-sm font-semibold border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-white dark:border-gray-700 transition">
-                    <span class="material-symbols-outlined text-green-600">grid_on</span>
-                    Excel
-                </a>
-            </div>
-            <button onclick="closeExportModalCor()"
-                class="mt-4 w-full text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 font-medium pb-1">
-                Cancelar
+        <div>
+            <button onclick="openExportModalCor()" class="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#161d2b] border border-[#cfd7e7] dark:border-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors dark:text-white shadow-sm">
+                <span class="material-symbols-outlined text-[18px]">download</span>
+                Exportar
             </button>
         </div>
     </div>
 
-    <script>
-        function openExportModalCor() {
-            const modal = document.getElementById('exportModalCor');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
+    <!-- Tabs -->
+    <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
+        <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="correspondenciaTabs" role="tablist">
+            <li class="mr-2" role="presentation">
+                <button class="inline-block p-4 border-b-2 rounded-t-lg border-primary text-primary dark:border-blue-500 dark:text-blue-500 transition-colors" id="externa-tab" type="button" role="tab" onclick="switchTab('externa')">Bandeja Externa</button>
+            </li>
+            <li class="mr-2" role="presentation">
+                <button class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 dark:text-gray-400 text-gray-500 transition-colors" id="interna-tab" type="button" role="tab" onclick="switchTab('interna')">Bandeja Interna</button>
+            </li>
+        </ul>
+    </div>
+
+    <div id="tabContent">
+        <!-- ================= EXTERNA TAB ================= -->
+        <div id="externa" role="tabpanel">
+            <!-- Stats Boxes -->
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                        <span class="material-symbols-outlined">inbox</span>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Total Recibidas</p>
+                        <p class="text-2xl font-bold dark:text-white">{{ $totalRecibidas }}</p>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center text-yellow-600 dark:text-yellow-400">
+                        <span class="material-symbols-outlined">hourglass_empty</span>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">En Trámite</p>
+                        <p class="text-2xl font-bold dark:text-white">{{ $enTramite }}</p>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400">
+                        <span class="material-symbols-outlined">check_circle</span>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Finalizadas</p>
+                        <p class="text-2xl font-bold dark:text-white">{{ $finalizadas }}</p>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400">
+                        <span class="material-symbols-outlined">folder</span>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Archivadas</p>
+                        <p class="text-2xl font-bold dark:text-white">{{ $archivadas }}</p>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400">
+                        <span class="material-symbols-outlined">error</span>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Vencidas / Alerta</p>
+                        <p class="text-2xl font-bold dark:text-white">{{ $vencidas }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Section Externa -->
+            <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="text-xs text-gray-500 uppercase bg-gray-50 dark:bg-slate-900/50 dark:text-gray-400">
+                            <tr>
+                                <th class="px-6 py-3 font-medium">Radicados</th>
+                                <th class="px-6 py-3 font-medium">Procedencia</th>
+                                <th class="px-6 py-3 font-medium">Detalles Documento</th>
+                                <th class="px-6 py-3 font-medium hidden lg:table-cell">Detalles Técnicos</th>
+                                <th class="px-6 py-3 font-medium hidden lg:table-cell">Ingreso / Registro</th>
+                                <th class="px-6 py-3 font-medium">Archivos / Anexos</th>
+                                <th class="px-6 py-3 font-medium">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                            @forelse($correspondencias as $rec)
+                                @php
+                                    $estadoNombL = strtolower($rec->estado ? $rec->estado->estado_nomb : '');
+                                    $isRechazado = str_contains($estadoNombL, 'rechazado');
+                                    $isFinalizedExt = str_contains($estadoNombL, 'finalizado') || str_contains($estadoNombL, 'resuelto') || str_contains($estadoNombL, 'archivado') || $isRechazado;
+
+                                    $esPersona = !empty($rec->nombre_persona) || !empty($rec->doc_persona);
+                                    $procedencia = $esPersona ? ($rec->nombre_persona ?? $rec->doc_persona ?? '—') : ($rec->nom_institucion ?? '—');
+                                @endphp
+                                <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors align-top">
+                                    <td class="px-6 py-4">
+                                        <div class="font-medium text-primary dark:text-blue-400">
+                                            {{ $rec->radicado ? $rec->radicado->num_radicado : 'S/R' }}
+                                        </div>
+                                        @if($rec->num_radicado_ext)
+                                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">EXT: {{ $rec->num_radicado_ext }}</div>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="font-medium dark:text-white max-w-[180px] break-words whitespace-normal">{{ $procedencia }}</div>
+                                        <span class="inline-flex items-center gap-0.5 text-xs {{ $esPersona ? 'text-purple-500' : 'text-blue-500' }} mt-0.5">
+                                            <span class="material-symbols-outlined" style="font-size:13px">{{ $esPersona ? 'person' : 'business' }}</span>
+                                            {{ $esPersona ? 'Persona Natural' : 'Entidad / Empresa' }}
+                                        </span>
+                                        @if($rec->ciudad)
+                                            <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+                                                <span class="material-symbols-outlined text-[14px]">location_on</span>
+                                                {{ $rec->ciudad->ciudad_nom ?? 'Desconocida' }}
+                                            </div>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 text-sm">
+                                        <div class="font-medium text-gray-900 dark:text-gray-100 mb-1 max-w-[200px] whitespace-normal break-words">{{ $rec->asunto }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 hidden lg:table-cell">
+                                        <div class="flex flex-col gap-1.5 text-[11px] leading-tight text-gray-600 dark:text-gray-400">
+                                            <div><span class="material-symbols-outlined text-[14px] align-text-bottom">description</span> {{ $rec->tipo ? $rec->tipo->tipo_nombre : 'Externo' }}</div>
+                                            <div><span class="material-symbols-outlined text-[14px] align-text-bottom">layers</span> Folios: {{ $rec->folio ?? 0 }}</div>
+                                            @if($rec->tipo)
+                                                @php
+                                                    $prioColor = 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
+                                                    $prioNombre = $rec->tipo->prioridad->prioridad_nombre ?? 'N/A';
+                                                    $prioUpper = strtoupper($prioNombre);
+                                                    if (str_contains($prioUpper, 'URGENTE')) $prioColor = 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+                                                    elseif (str_contains($prioUpper, 'ALTA')) $prioColor = 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400';
+                                                    elseif (str_contains($prioUpper, 'MEDIA')) $prioColor = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
+                                                    elseif (str_contains($prioUpper, 'BAJA')) $prioColor = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+                                                @endphp
+                                                <div class="flex items-center gap-1">
+                                                    <span class="material-symbols-outlined text-[14px]">flag</span>
+                                                    <span class="px-1 rounded {{ $prioColor }}">{{ $prioNombre }}</span>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 hidden lg:table-cell">
+                                        <div class="font-medium text-gray-900 dark:text-white">{{ $rec->fecha_hora_recib ? \Carbon\Carbon::parse($rec->fecha_hora_recib)->format('d M Y') : 'N/A' }}</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        @php
+                                            $archivosDatos = [
+                                                'principal' => $rec->archivo ? asset('storage/' . $rec->archivo) : null,
+                                                'anexos' => [],
+                                                'anexo_texto' => $rec->anexo,
+                                                'folios' => $rec->folio
+                                            ];
+                                            if ($rec->anexos) {
+                                                foreach($rec->anexos as $ax) {
+                                                    $archivosDatos['anexos'][] = ['nombre' => $ax->nombre_original, 'ruta' => asset('storage/' . $ax->ruta_archivo)];
+                                                }
+                                            }
+                                        @endphp
+                                        <button type="button" data-archivos="{{ json_encode($archivosDatos) }}" onclick="abrirModalArchivos(this.dataset.archivos)" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-400 rounded-md transition-colors shadow-sm">
+                                            <span class="material-symbols-outlined text-[16px]">folder_open</span> Ver Docs
+                                        </button>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        @php
+                                            $bgClass = 'bg-gray-100 text-gray-800';
+                                            if (str_contains($estadoNombL, 'recibido')) $bgClass = 'bg-blue-100 text-blue-800';
+                                            elseif (str_contains($estadoNombL, 'tramite') || str_contains($estadoNombL, 'trámite')) $bgClass = 'bg-yellow-100 text-yellow-800';
+                                            elseif (str_contains($estadoNombL, 'finalizado')) $bgClass = 'bg-green-100 text-green-800';
+                                        @endphp
+                                        <span class="px-2 py-0.5 rounded-full text-xs {{ $bgClass }}">{{ $rec->estado ? $rec->estado->estado_nomb : 'Sin estado' }}</span>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="7" class="px-6 py-8 text-center text-gray-500">No hay correspondencias externas registradas.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+                    {{ $correspondencias->appends(['int_page' => request('int_page'), 'tab' => 'externa'])->links() }}
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= INTERNA TAB ================= -->
+        <div id="interna" class="hidden" role="tabpanel">
+            <!-- Stats Boxes Interna -->
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+                <!-- Similar design as Externa -->
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600"><span class="material-symbols-outlined">inbox</span></div>
+                    <div><p class="text-sm text-gray-500">Total Internas</p><p class="text-2xl font-bold">{{ $totalInternas }}</p></div>
+                </div>
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600"><span class="material-symbols-outlined">hourglass_empty</span></div>
+                    <div><p class="text-sm text-gray-500">En Trámite</p><p class="text-2xl font-bold">{{ $enTramiteInt }}</p></div>
+                </div>
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600"><span class="material-symbols-outlined">check_circle</span></div>
+                    <div><p class="text-sm text-gray-500">Finalizadas</p><p class="text-2xl font-bold">{{ $finalizadasInt }}</p></div>
+                </div>
+            </div>
+
+            <!-- Table Section Interna -->
+            <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="text-xs text-gray-500 uppercase bg-gray-50 dark:bg-slate-900/50">
+                            <tr>
+                                <th class="px-6 py-3 font-medium">Radicado</th>
+                                <th class="px-6 py-3 font-medium">De / Remitente</th>
+                                <th class="px-6 py-3 font-medium">Para / Destinatario</th>
+                                <th class="px-6 py-3 font-medium">Asunto</th>
+                                <th class="px-6 py-3 font-medium">Fecha</th>
+                                <th class="px-6 py-3 font-medium">Documentos</th>
+                                <th class="px-6 py-3 font-medium">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                            @forelse($correspondenciasInternas as $int)
+                                <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors align-top">
+                                    <td class="px-6 py-4 font-medium text-primary">{{ $int->radicado ? $int->radicado->num_radicado : 'INT-N/A' }}</td>
+                                    <td class="px-6 py-4">{{ $int->quienEnvia ? $int->quienEnvia->emple_nombres . ' ' . $int->quienEnvia->emple_apellidos : 'N/A' }}</td>
+                                    <td class="px-6 py-4">
+                                        @if($int->detalles->count() > 0)
+                                            {{ $int->detalles->first()->quienRecibe ? $int->detalles->first()->quienRecibe->emple_nombres : 'N/A' }}
+                                        @else
+                                            N/A
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4">{{ $int->asunto }}</td>
+                                    <td class="px-6 py-4">{{ \Carbon\Carbon::parse($int->fecha)->format('d M Y') }}</td>
+                                    <td class="px-6 py-4">
+                                        @php
+                                            $archivosInt = [
+                                                'principal' => $int->archivo ? asset('storage/' . $int->archivo) : null,
+                                                'folios' => $int->folio
+                                            ];
+                                        @endphp
+                                        <button type="button" data-archivos="{{ json_encode($archivosInt) }}" onclick="abrirModalArchivos(this.dataset.archivos)" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md">
+                                            <span class="material-symbols-outlined text-[16px]">folder_open</span> Docs
+                                        </button>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-800">{{ $int->estadoEnvio ? $int->estadoEnvio->estado_nomb : 'Sin estado' }}</span>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="7" class="px-6 py-8 text-center text-gray-500">No hay correspondencias internas registradas.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+                    {{ $correspondenciasInternas->appends(['ext_page' => request('ext_page'), 'tab' => 'interna'])->links() }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Modal Ver Archivos (Unificado) -->
+<div id="modalArchivos" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-slate-900 rounded-[1rem] shadow-xl w-full max-w-2xl flex flex-col max-h-[90vh] overflow-hidden">
+        <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50">
+            <h3 class="font-bold text-lg text-gray-800 dark:text-white flex items-center gap-2">
+                <span class="material-symbols-outlined text-blue-600">folder_open</span>
+                Documentos y Anexos
+            </h3>
+            <button onclick="toggleModal('modalArchivos')" class="text-gray-400 hover:text-gray-600"><span class="material-symbols-outlined">close</span></button>
+        </div>
+        <div class="p-6 space-y-4 overflow-y-auto flex-1" id="modalArchivosContent"></div>
+        <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end bg-gray-50"><button type="button" onclick="toggleModal('modalArchivos')" class="px-4 py-2 bg-gray-200 rounded-lg text-sm text-gray-800">Cerrar</button></div>
+    </div>
+</div>
+
+<!-- Modal Exportar -->
+<div id="exportModalCor" class="fixed inset-0 bg-black/40 flex items-center justify-center hidden z-50 p-4">
+    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg w-72 p-5 relative">
+        <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-4">Exportar Correspondencia</h3>
+        <div class="flex flex-col gap-3">
+            <a href="{{ route('admin.correspondencia.export.pdf') }}" class="flex items-center gap-2 px-4 py-2 text-sm font-semibold border rounded-lg hover:bg-gray-100 dark:text-white"><span class="material-symbols-outlined text-red-600">picture_as_pdf</span> PDF</a>
+            <a href="{{ route('admin.correspondencia.export.excel') }}" class="flex items-center gap-2 px-4 py-2 text-sm font-semibold border rounded-lg hover:bg-gray-100 dark:text-white"><span class="material-symbols-outlined text-green-600">grid_on</span> Excel</a>
+        </div>
+        <button onclick="closeExportModalCor()" class="mt-4 w-full text-xs text-gray-500 hover:text-gray-700">Cancelar</button>
+    </div>
+</div>
+
+<script>
+    function toggleModal(id) { document.getElementById(id).classList.toggle('hidden'); }
+
+    function switchTab(tab) {
+        const extBtn = document.getElementById('externa-tab'), intBtn = document.getElementById('interna-tab');
+        const extContent = document.getElementById('externa'), intContent = document.getElementById('interna');
+        const active = ['border-primary', 'text-primary'], inactive = ['border-transparent', 'text-gray-500'];
+
+        if (tab === 'externa') {
+            extContent.classList.remove('hidden'); intContent.classList.add('hidden');
+            extBtn.classList.add(...active); extBtn.classList.remove(...inactive);
+            intBtn.classList.add(...inactive); intBtn.classList.remove(...active);
+        } else {
+            intContent.classList.remove('hidden'); extContent.classList.add('hidden');
+            intBtn.classList.add(...active); intBtn.classList.remove(...inactive);
+            extBtn.classList.add(...inactive); extBtn.classList.remove(...active);
+        }
+        sessionStorage.setItem('activeCorrespondenceTab', tab);
+    }
+
+    function abrirModalArchivos(datosJson) {
+        const datos = JSON.parse(datosJson);
+        const container = document.getElementById('modalArchivosContent');
+        let html = '<div class="space-y-4">';
+
+        if (datos.principal) {
+            html += `<div class="flex items-center justify-between bg-gray-50 p-3 rounded-lg border">
+                        <span class="text-sm font-medium">Documento Principal</span>
+                        <a href="${datos.principal}" target="_blank" class="px-3 py-1 bg-blue-50 text-blue-700 rounded text-xs">Ver archivo</a>
+                     </div>`;
         }
 
-        function closeExportModalCor() {
-            const modal = document.getElementById('exportModalCor');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
+        if (datos.anexo_texto) html += `<p class="text-sm text-gray-600"><strong>Anexo Físico:</strong> ${datos.anexo_texto}</p>`;
+        if (datos.folios > 0) html += `<p class="text-sm text-gray-600"><strong>Folios:</strong> ${datos.folios}</p>`;
+
+        if (datos.anexos && datos.anexos.length > 0) {
+            html += `<h4 class="text-xs font-bold text-gray-500 uppercase">Anexos digitales</h4><div class="grid grid-cols-1 gap-2">`;
+            datos.anexos.forEach(ax => {
+                html += `<a href="${ax.ruta}" target="_blank" class="flex items-center gap-2 p-2 border rounded hover:bg-gray-50 text-sm"><span class="material-symbols-outlined text-gray-400">attachment</span> ${ax.nombre}</a>`;
+            });
+            html += `</div>`;
         }
-    </script>
+        html += '</div>';
+        container.innerHTML = html;
+        toggleModal('modalArchivos');
+    }
+
+    function openExportModalCor() { document.getElementById('exportModalCor').classList.remove('hidden'); }
+    function closeExportModalCor() { document.getElementById('exportModalCor').classList.add('hidden'); }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const tab = urlParams.get('tab') || sessionStorage.getItem('activeCorrespondenceTab') || 'externa';
+        if (tab) switchTab(tab);
+    });
+</script>
+
 @endsection

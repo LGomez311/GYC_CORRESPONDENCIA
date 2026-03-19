@@ -30,8 +30,9 @@ class TipoController extends Controller
                 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/',
                 'unique:tipo,tipo_nombre'
             ],
-            'id_prioridad' => 'required|integer|exists:prioridad,id_prioridad',
-            'dias_respuesta' => 'required|integer|min:1'
+            'id_prioridad'      => 'required|integer|exists:prioridad,id_prioridad',
+            'dias_respuesta'    => 'required|integer|min:1',
+            'requiere_respuesta'=> 'required|boolean',
         ], [
             'tipo_nombre.required' => 'El nombre del tipo es obligatorio.',
             'tipo_nombre.min' => 'Debe tener mínimo 3 caracteres.',
@@ -42,9 +43,11 @@ class TipoController extends Controller
             'id_prioridad.exists' => 'La prioridad seleccionada no es válida.',
             'dias_respuesta.required' => 'Debe indicar los días hábiles de respuesta.',
             'dias_respuesta.min' => 'Los días de respuesta deben ser al menos 1.',
+            'requiere_respuesta.required' => 'Debe indicar si el tipo requiere respuesta.',
         ]);
 
         $validated['tipo_nombre'] = ucfirst(strtolower(trim($validated['tipo_nombre'])));
+        $validated['requiere_respuesta'] = $request->boolean('requiere_respuesta') ? 1 : 0;
 
         Tipo::create($validated);
 
@@ -62,8 +65,9 @@ class TipoController extends Controller
                 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/',
                 'unique:tipo,tipo_nombre,' . $id . ',id_tipo'
             ],
-            'id_prioridad' => 'required|integer|exists:prioridad,id_prioridad',
-            'dias_respuesta' => 'required|integer|min:1'
+            'id_prioridad'       => 'required|integer|exists:prioridad,id_prioridad',
+            'dias_respuesta'     => 'required|integer|min:1',
+            'requiere_respuesta' => 'required|boolean',
         ], [
             'tipo_nombre.required' => 'El nombre del tipo es obligatorio.',
             'tipo_nombre.min' => 'Debe tener mínimo 3 caracteres.',
@@ -74,13 +78,15 @@ class TipoController extends Controller
             'id_prioridad.exists' => 'La prioridad seleccionada no es válida.',
             'dias_respuesta.required' => 'Debe indicar los días hábiles de respuesta.',
             'dias_respuesta.min' => 'Los días de respuesta deben ser al menos 1.',
+            'requiere_respuesta.required' => 'Debe indicar si el tipo requiere respuesta.',
         ]);
 
         $t = Tipo::findOrFail($id);
         $t->update([
-            'tipo_nombre' => $request->tipo_nombre,
-            'id_prioridad' => $request->id_prioridad,
-            'dias_respuesta' => $request->dias_respuesta
+            'tipo_nombre'        => $request->tipo_nombre,
+            'id_prioridad'       => $request->id_prioridad,
+            'dias_respuesta'     => $request->dias_respuesta,
+            'requiere_respuesta' => $request->boolean('requiere_respuesta') ? 1 : 0,
         ]);
 
         return redirect()->route('admin.tipo.index')->with('success', 'Tipo actualizado correctamente');
