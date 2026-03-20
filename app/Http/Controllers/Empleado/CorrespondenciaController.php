@@ -244,10 +244,11 @@ class CorrespondenciaController extends Controller
         $nuevoRegistro->id_estado_rec = $estado->id_estado;
         $nuevoRegistro->observaciones = $request->observaciones;
 
-        // Propagar el archivo de respuesta anterior si no se sube uno nuevo
-        $nuevoRegistro->archivo_res = $detalleAntiguo->archivo_res;
+        // No propagar el archivo de respuesta anterior
         if ($request->hasFile('archivo_respuesta')) {
             $nuevoRegistro->archivo_res = $request->file('archivo_respuesta')->store('correspondencia', 'public');
+        } else {
+            $nuevoRegistro->archivo_res = null;
         }
 
         // Propagar los folios de respuesta o actualizar
@@ -289,15 +290,7 @@ class CorrespondenciaController extends Controller
             }
         }
 
-        // Duplicar los Anexos de Respuesta previos para el nuevo registro usando id_detalle
-        $anexosPrevios = \App\Models\AnexoRespuesta::where('id_detalle', $detalleAntiguo->id_det_recibido)->get();
-        foreach ($anexosPrevios as $anexo) {
-            \App\Models\AnexoRespuesta::create([
-                'id_detalle'      => $nuevoRegistro->id_det_recibido,
-                'ruta_archivo'    => $anexo->ruta_archivo,
-                'nombre_original' => $anexo->nombre_original
-            ]);
-        }
+        // Ya no iteramos sobre Anexos previos para evitar duplicados en la trazabilidad
 
         // Guardar nuevos anexos si se subieron usando id_detalle
         if ($request->hasFile('archivos_respuesta')) {
@@ -372,24 +365,13 @@ class CorrespondenciaController extends Controller
         if ($request->hasFile('archivo_respuesta')) {
             $path = $request->file('archivo_respuesta')->store('correspondencia', 'public');
             $nuevoRegistro->archivo_respuesta = $path;
-        }
-        else {
-            // Mantener el archivo previo si existe o dejar nulo (depende la regla de negocio, 
-            // usualmente el archivo de respuesta es único al finalizar, pero lo propagamos por si acaso)
-            $nuevoRegistro->archivo_respuesta = $detalleAntiguo->archivo_respuesta;
+        } else {
+            $nuevoRegistro->archivo_respuesta = null;
         }
 
         $nuevoRegistro->save();
 
-        // Duplicate any existing AnexosRespuesta (Interna usa id_det_interna)
-        $anexosAntiguos = \App\Models\AnexoRespuesta::where('id_det_interna', $detalleAntiguo->id_detalle)->get();
-        foreach ($anexosAntiguos as $anexo) {
-            \App\Models\AnexoRespuesta::create([
-                'id_det_interna' => $nuevoRegistro->id_detalle,
-                'ruta_archivo' => $anexo->ruta_archivo,
-                'nombre_original' => $anexo->nombre_original,
-            ]);
-        }
+        // Ya no duplicamos los Anexos antiguos para evitar repetición en el historial
 
         // Process new Anexos Respuesta Múltiples as part of the overall Envio thread (Usa id_det_interna)
         if ($request->hasFile('archivos_respuesta')) {
