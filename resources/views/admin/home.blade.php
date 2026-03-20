@@ -99,6 +99,46 @@
                 @endif
             </div>
         </div>
+
+        <!-- Accesos Rápidos -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+            <a href="{{ route('admin.index') }}" class="group bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4 hover:border-primary transition-all">
+                <div class="size-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                    <span class="material-symbols-outlined">group</span>
+                </div>
+                <div>
+                    <h3 class="font-bold text-sm dark:text-white">Usuarios</h3>
+                    <p class="text-xs text-slate-400">Gestionar</p>
+                </div>
+            </a>
+            <a href="{{ route('admin.correspondencia') }}" class="group bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4 hover:border-primary transition-all">
+                <div class="size-10 bg-green-500/10 rounded-lg flex items-center justify-center text-green-500 group-hover:bg-green-500 group-hover:text-white transition-colors">
+                    <span class="material-symbols-outlined">mail</span>
+                </div>
+                <div>
+                    <h3 class="font-bold text-sm dark:text-white">Correspondencia</h3>
+                    <p class="text-xs text-slate-400">Ver historial</p>
+                </div>
+            </a>
+            <a href="{{ route('admin.planes') }}" class="group bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4 hover:border-primary transition-all">
+                <div class="size-10 bg-purple-500/10 rounded-lg flex items-center justify-center text-purple-500 group-hover:bg-purple-500 group-hover:text-white transition-colors">
+                    <span class="material-symbols-outlined">payments</span>
+                </div>
+                <div>
+                    <h3 class="font-bold text-sm dark:text-white">Planes</h3>
+                    <p class="text-xs text-slate-400">Pagar suscripción</p>
+                </div>
+            </a>
+            <a href="{{ route('admin.otros') }}" class="group bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4 hover:border-primary transition-all">
+                <div class="size-10 bg-orange-500/10 rounded-lg flex items-center justify-center text-orange-500 group-hover:bg-orange-500 group-hover:text-white transition-colors">
+                    <span class="material-symbols-outlined">settings</span>
+                </div>
+                <div>
+                    <h3 class="font-bold text-sm dark:text-white">Otros</h3>
+                    <p class="text-xs text-slate-400">Configuraciones</p>
+                </div>
+            </a>
+        </div>
     </section>
 
     {{-- Stats Grid --}}
@@ -164,6 +204,54 @@
         @endif
 
     </section>
+
+    <!-- Actividad Reciente -->
+    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+        <h3 class="font-bold text-lg dark:text-white mb-4">Actividad Reciente</h3>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead class="text-xs text-gray-500 uppercase bg-gray-50 dark:bg-slate-800/50 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                    <tr>
+                        <th class="px-4 py-3 font-medium">Asunto</th>
+                        <th class="px-4 py-3 font-medium">Radicado Int.</th>
+                        <th class="px-4 py-3 font-medium text-center">Estado</th>
+                        <th class="px-4 py-3 font-medium text-right">Fecha</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+                    @foreach($recientes as $reciente)
+                        <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50">
+                            <td class="px-4 py-3 font-medium dark:text-gray-300">
+                                <span class="truncate block max-w-xs" title="{{ $reciente->asunto }}">
+                                    {{ $reciente->asunto }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 dark:text-gray-300">
+                                {{ $reciente->num_radicado_int ?? 'N/A' }}
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                                    {{ $reciente->estadoEnvio->estado_nomb ?? 'En espera' }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-right dark:text-gray-400">
+                                {{ $reciente->fecha->format('d/m/Y H:i') }}
+                            </td>
+                        </tr>
+                    @endforeach
+
+                    @if($recientes->isEmpty())
+                        <tr>
+                            <td colspan="4" class="px-4 py-4 text-center text-gray-500">
+                                No hay actividad registrada recientemente.
+                            </td>
+                        </tr>
+                    @endif
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     @else
     <section class="w-full">
         <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6">

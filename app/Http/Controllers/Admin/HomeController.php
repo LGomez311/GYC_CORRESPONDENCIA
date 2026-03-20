@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Licencia;
 use App\Models\Envio;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
@@ -67,6 +68,7 @@ class HomeController extends Controller
         $recibidos = 0;
         $enviados = 0;
         $mensajeCorrespondencia = '';
+        $recientes = []; // Para actividad reciente
 
         // Solo mostrar datos si la licencia está activa
         if ($estaActiva) {
@@ -99,6 +101,15 @@ class HomeController extends Controller
 
                     // Enviados (donde el usuario es el remitente)
                     $enviados = Envio::where('doc_quien_envia', $user->emple_doc)->count();
+
+                    // --- ACTIVIDAD RECIENTE ---
+                    $recientes = Envio::whereHas('quienEnvia', function ($query) use ($user) {
+                        $query->where('nit_empresa', $user->nit_empresa);
+                    })
+                    ->with('estadoEnvio')
+                    ->orderBy('fecha', 'desc')
+                    ->take(5)
+                    ->get();
                 }
             }
         }
@@ -114,7 +125,8 @@ class HomeController extends Controller
             'pendientes',
             'recibidos',
             'enviados',
-            'mensajeCorrespondencia'
+            'mensajeCorrespondencia',
+            'recientes'
         ));
     }
 }

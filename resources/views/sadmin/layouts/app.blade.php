@@ -83,6 +83,7 @@
     </div>
 
     @yield('modals')
+    @include('admin.layouts.profile_modal')
 
     <script>
         function toggleSidebar() {

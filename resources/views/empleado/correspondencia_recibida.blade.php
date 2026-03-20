@@ -124,10 +124,10 @@
                             $isFinalizedExt = str_contains($estadoNombL, 'finalizado') || str_contains($estadoNombL, 'resuelto') || str_contains($estadoNombL, 'archivado') || $isRechazado;
 
                             // Procedencia
-                            $esPersona = !empty($rec?->nombre_persona) || !empty($rec?->doc_persona);
-                            $procedencia = $esPersona
-                                ? ($rec?->nombre_persona ?? $rec?->doc_persona ?? '—')
-                                : ($rec?->nom_institucion ?? '—');
+                            $esEmpresa = !empty($rec?->nom_institucion);
+                            $procedencia = $esEmpresa
+                                ? $rec?->nom_institucion
+                                : ($rec?->nombre_persona ?? $rec?->doc_persona ?? '—');
                         @endphp
                         <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors align-top">
                             <!-- 1. Radicados -->
@@ -145,9 +145,9 @@
                             <!-- 2. Procedencia -->
                             <td class="px-6 py-4">
                                 <div class="font-medium dark:text-white max-w-[180px] break-words whitespace-normal">{{ $procedencia }}</div>
-                                <span class="inline-flex items-center gap-0.5 text-xs {{ $esPersona ? 'text-purple-500' : 'text-blue-500' }} mt-0.5">
-                                    <span class="material-symbols-outlined" style="font-size:13px">{{ $esPersona ? 'person' : 'business' }}</span>
-                                    {{ $esPersona ? 'Persona Natural' : 'Entidad / Empresa' }}
+                                <span class="inline-flex items-center gap-0.5 text-xs {{ $esEmpresa ? 'text-blue-500' : 'text-purple-500' }} mt-0.5">
+                                    <span class="material-symbols-outlined" style="font-size:13px">{{ $esEmpresa ? 'business' : 'person' }}</span>
+                                    {{ $esEmpresa ? 'Entidad / Empresa' : 'Persona Natural' }}
                                 </span>
                                 @if($rec?->ciudad)
                                 <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
