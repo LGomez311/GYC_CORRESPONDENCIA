@@ -47,7 +47,7 @@ class Envio extends Model
         return $this->belongsTo(Empleado::class, 'doc_quien_envia', 'emple_doc');
     }
 
-    public function quienRegistra()
+    public function quienDirigido()
     {
         return $this->belongsTo(Remitente::class, 'doc_quien_registra', 'rem_doc');
     }

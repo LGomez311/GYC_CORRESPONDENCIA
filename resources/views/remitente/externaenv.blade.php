@@ -26,24 +26,110 @@
             </div>
         @endif
 
-        {{-- Cabecera y Botón Nueva Correspondencia --}}
-        <div class="flex flex-wrap justify-between items-center gap-3">
-            <h1 class="text-gray-900 dark:text-white text-3xl font-black leading-tight tracking-[-0.033em]">
-                Correspondencia Externa Enviada
-            </h1>
+        {{-- Cabecera y Stats --}}
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+            <div>
+                <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                    Correspondencia Externa Enviada
+                </h1>
+                <p class="text-gray-500 dark:text-gray-400 mt-1">Administre y consulte todos los envíos realizados.</p>
+            </div>
+            <div class="flex flex-wrap gap-4">
+                <a href="{{ route('remitente.recibidos') }}"
+                    class="flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 active:scale-95">
+                    <span class="material-symbols-outlined text-[20px]">move_to_inbox</span>
+                    Registrar Recibido
+                </a>
 
-            <button id="btnAbrirModal"
-                class="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition-all shadow-sm dark:bg-blue-500 dark:hover:bg-blue-600 w-max">
-                <span class="material-symbols-outlined text-base">add</span>
-                Nueva Correspondencia
-            </button>
+                <button id="btnAbrirModal" type="button"
+                    class="flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-emerald-600 rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200 active:scale-95">
+                    <span class="material-symbols-outlined text-[20px]">outbox</span>
+                    Registrar Saliente
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <!-- Stat Card: Total -->
+            <div
+                class="bg-white dark:bg-gray-800 p-5 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+                <div class="flex flex-col gap-3">
+                    <div
+                        class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors duration-300">
+                        <span class="material-symbols-outlined text-[20px]">description</span>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Registros</p>
+                        <h3 class="text-2xl font-black text-gray-900 dark:text-white mt-1">{{ $stats['total'] }}</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stat Card: Rejected -- (We change icon to match 'Rechazados') -->
+            <div
+                class="bg-white dark:bg-gray-800 p-5 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+                <div class="flex flex-col gap-3">
+                    <div
+                        class="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center text-red-600 dark:text-red-400 group-hover:bg-red-600 group-hover:text-white transition-colors duration-300">
+                        <span class="material-symbols-outlined text-[20px]">cancel</span>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Rechazados</p>
+                        <h3 class="text-2xl font-black text-gray-900 dark:text-white mt-1">{{ $stats['rejected'] }}</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stat Card: Pending -- (We change icon to map 'Pendientes') -->
+            <div
+                class="bg-white dark:bg-gray-800 p-5 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+                <div class="flex flex-col gap-3">
+                    <div
+                        class="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-xl flex items-center justify-center text-orange-600 dark:text-orange-400 group-hover:bg-orange-600 group-hover:text-white transition-colors duration-300">
+                        <span class="material-symbols-outlined text-[20px]">pending_actions</span>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Pendientes</p>
+                        <h3 class="text-2xl font-black text-gray-900 dark:text-white mt-1">{{ $stats['pending'] }}</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stat Card: Resolved -- (We change to match 'Enviados') -->
+            <div
+                class="bg-white dark:bg-gray-800 p-5 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+                <div class="flex flex-col gap-3">
+                    <div
+                        class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center text-green-600 dark:text-green-400 group-hover:bg-green-600 group-hover:text-white transition-colors duration-300">
+                        <span class="material-symbols-outlined text-[20px]">check_circle</span>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Enviados</p>
+                        <h3 class="text-2xl font-black text-gray-900 dark:text-white mt-1">{{ $stats['resolved'] }}</h3>
+                    </div>
+                </div>
+            </div>
         </div>
 
         {{-- Barra de Búsqueda y Filtros --}}
         <div class="mt-6 flex flex-col sm:flex-row gap-4">
             <div class="flex-grow">
-                <form id="formSearchGlobal" method="GET" action="{{ route('remitente.externaenv') }}" class="flex flex-col min-w-40 h-10 w-full">
-                    <div class="flex w-full flex-1 items-stretch rounded-lg h-full">
+                <form id="formSearchGlobal" method="GET" action="{{ route('remitente.externaenv') }}"
+                    class="flex flex-col sm:flex-row min-w-40 sm:h-10 w-full gap-3">
+                    <div class="w-full sm:w-48 h-10 sm:h-full">
+                        <select name="estado_id" onchange="this.form.submit()"
+                            class="block w-full h-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-sm focus:ring-primary focus:border-primary dark:text-white">
+                            <option value="">Todos los estados</option>
+                            @foreach ($estados as $est)
+                                <option value="{{ $est->id_estado }}"
+                                    {{ request('estado_id') == $est->id_estado ? 'selected' : '' }}>
+                                    {{ $est->estado_nomb }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="flex w-full flex-1 items-stretch rounded-lg h-10 sm:h-full">
                         <div
                             class="text-gray-500 dark:text-gray-400 flex border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 items-center justify-center pl-4 rounded-l-lg border-r-0">
                             <span id="searchIconGlobal" class="material-symbols-outlined">search</span>
@@ -51,8 +137,9 @@
                         <input id="searchInputGlobal" type="text" autocomplete="off" name="search"
                             class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden {{ request('search') ? '' : 'rounded-r-lg' }} text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 h-full placeholder:text-gray-500 dark:placeholder:text-gray-400 px-4 rounded-l-none border-l-0 pl-2 text-sm font-normal leading-normal"
                             placeholder="Buscar documento enviado..." value="{{ request('search') }}" />
-                        <button type="button" id="btnClearSearchGlobal" 
-                            class="{{ request('search') ? 'flex' : 'hidden' }} items-center justify-center px-4 border border-gray-200 border-l-0 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-r-lg transition-colors" title="Limpiar búsqueda">
+                        <button type="button" id="btnClearSearchGlobal"
+                            class="{{ request('search') ? 'flex' : 'hidden' }} items-center justify-center px-4 border border-gray-200 border-l-0 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-r-lg transition-colors"
+                            title="Limpiar búsqueda">
                             <span class="material-symbols-outlined text-sm">close</span>
                         </button>
                     </div>
@@ -84,11 +171,12 @@
                     <thead
                         class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
                         <tr>
-                            <th class="px-6 py-3 font-bold w-12 text-center" scope="col">Tipo</th>
                             <th class="px-6 py-3 font-bold" scope="col">Asunto</th>
-                            <th class="px-6 py-3 font-bold" scope="col">Destinatario</th>
+                            <th class="px-6 py-3 font-bold" scope="col">Destino</th>
                             <th class="px-6 py-3 font-bold" scope="col">Fecha de Envío</th>
+                            <th class="px-6 py-3 font-bold" scope="col">Prioridad</th>
                             <th class="px-6 py-3 font-bold" scope="col">Estado</th>
+                            <th class="px-6 py-3 font-bold" scope="col">Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="tablaEnviadosBody">
@@ -96,64 +184,92 @@
                             @php
                                 // Ajustamos el acceso a las relaciones según tu modelo Envio
                                 $nombrePrioridad = $envio->tipoEnvio->prioridad->prioridad_nombre ?? 'Baja'; // Asume que Tipo tiene relación con Prioridad
-
-                                $colorPrioridad = match (strtolower($nombrePrioridad)) {
-                                    'alta', 'urgente' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
-                                    'media' => 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
-                                    default => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-                                };
+                                $pl = strtolower($nombrePrioridad);
+                                $priorClases = 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300';
+                                if (
+                                    str_contains($pl, 'alta') ||
+                                    str_contains($pl, 'urgente') ||
+                                    str_contains($pl, 'critica') ||
+                                    str_contains($pl, 'crítica')
+                                ) {
+                                    $priorClases = 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+                                } elseif (
+                                    str_contains($pl, 'media') ||
+                                    str_contains($pl, 'normal') ||
+                                    str_contains($pl, 'moderada')
+                                ) {
+                                    $priorClases =
+                                        'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300';
+                                } elseif (str_contains($pl, 'baja') || str_contains($pl, 'bajo')) {
+                                    $priorClases = 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+                                }
 
                                 $nombreEstado = $envio->estadoEnvio->estado_nomb ?? 'Desconocido';
-                                $colorEstado = match (strtolower($nombreEstado)) {
-                                    'enviado',
-                                    'resuelto',
-                                    'digitalizado'
-                                        => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-                                    'pendiente',
-                                    'en espera',
-                                    'en tramite'
-                                        => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-                                    'rechazado' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
-                                    default => 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200',
-                                };
+                                if (str_contains(strtolower($nombreEstado), 'saliente')) {
+                                    $nombreEstado = 'Respuesta Enviada';
+                                }
+                                $low = strtolower($nombreEstado);
+                                if (str_contains($low, 'pendiente') || str_contains($low, 'en espera')) {
+                                    $estadoClases =
+                                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+                                } elseif (
+                                    str_contains($low, 'enviado') ||
+                                    str_contains($low, 'resuelto') ||
+                                    str_contains($low, 'respuesta enviada') ||
+                                    str_contains($low, 'digitalizado') ||
+                                    str_contains($low, 'en tramite')
+                                ) {
+                                    $estadoClases = 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+                                } elseif (str_contains($low, 'rechazado')) {
+                                    $estadoClases = 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+                                } else {
+                                    $estadoClases = 'bg-gray-100 text-gray-700 dark:bg-gray-600 dark:text-gray-200';
+                                }
 
                                 // Aquí concatenas el nombre del destinatario según lo que devuelva tu relación quienDirigido
                                 $nombreDestinatario = $envio->quienDirigido
-                                    ? $envio->quienDirigido->emple_nombres . ' ' . $envio->quienDirigido->emple_apellidos
+                                    ? $envio->quienDirigido->emple_nombres .
+                                        ' ' .
+                                        $envio->quienDirigido->emple_apellidos
                                     : $envio->destino ?? 'Destino no especificado';
 
-                                $fechaEnvio = $envio->fecha->format('d M, Y - h:i A'); // Como tienes 'fecha' => 'datetime' en tus $casts
-                                $numRadicado = $envio->radicado->num_radicado ?? 'Sin Radicado';
+                                $fechaEnvio = $envio->fecha
+                                    ? \Carbon\Carbon::parse($envio->fecha)->format('d M, Y - H:i')
+                                    : '—';
+                                $numRadicado = $envio->radicado->num_radicado ?? '';
 
                                 $iconoDoc = str_ends_with(strtolower($envio->archivo), '.pdf')
                                     ? 'picture_as_pdf'
                                     : 'description';
-                                $colorIcono = str_ends_with(strtolower($envio->archivo), '.pdf')
-                                    ? 'text-red-500'
-                                    : 'text-blue-500';
-                                $rutaArchivo = asset('storage/' . $envio->archivo);
+                                $rutaArchivo = $envio->archivo ? asset('storage/' . $envio->archivo) : '';
+                                $tipoDoc = $envio->tipoEnvio->tipo_nombre ?? '';
                             @endphp
 
                             <tr class="fila-registro border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer bg-white dark:bg-gray-800 transition-colors"
                                 data-id="{{ $envio->id_envio }}" data-asunto="{{ $envio->asunto }}"
-                                data-radicado="{{ $numRadicado }}"
-                                data-destinatario="{{ $nombreDestinatario }}"
+                                data-radicado="{{ $numRadicado }}" data-destinatario="{{ $nombreDestinatario }}"
                                 data-fecha="{{ $fechaEnvio }}" data-prioridad="{{ $nombrePrioridad }}"
-                                data-estado="{{ $nombreEstado }}" data-icono="{{ $iconoDoc }}"
-                                data-archivo="{{ $rutaArchivo }}" data-anexos='@json($envio->anexos)'>
+                                data-prioridad-clases="{{ $priorClases }}" data-estado="{{ $nombreEstado }}"
+                                data-estado-clases="{{ $estadoClases }}" data-icono="{{ $iconoDoc }}"
+                                data-tipo-doc="{{ $tipoDoc }}" data-archivo="{{ $rutaArchivo }}"
+                                data-anexos='@json($envio->anexos)'>
 
-                                <td class="px-6 py-4 text-center">
-                                    <span class="material-symbols-outlined {{ $colorIcono }}">{{ $iconoDoc }}</span>
-                                </td>
-
-                                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                                    {{ $envio->asunto ?? 'Sin asunto' }}
-                                    <span class="block text-xs text-blue-600 font-normal">Radicado: {{ $numRadicado }}</span>
+                                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                                    {{ $envio->asunto ?? '(Sin asunto)' }}
+                                    @if ($numRadicado)
+                                        <span class="block text-xs text-blue-600 font-normal">Radicado:
+                                            {{ $numRadicado }}</span>
+                                    @endif
                                 </td>
 
                                 <td class="px-6 py-4">
                                     <span
                                         class="font-medium text-gray-900 dark:text-white">{{ $nombreDestinatario }}</span>
+                                    <span
+                                        class="flex items-center gap-0.5 text-[10px] uppercase tracking-wider font-bold text-blue-500 mt-1.5 pt-1 border-t border-slate-100 dark:border-slate-700/50 w-fit">
+                                        <span class="material-symbols-outlined" style="font-size:12px">location_on</span>
+                                        Destino
+                                    </span>
                                 </td>
 
                                 <td class="px-6 py-4 text-gray-600 dark:text-gray-300 whitespace-nowrap">
@@ -162,117 +278,44 @@
 
                                 <td class="px-6 py-4">
                                     <span
-                                        class="text-xs font-medium px-2.5 py-0.5 rounded-full {{ $colorEstado }}">{{ $nombreEstado }}</span>
+                                        class="{{ $priorClases }} text-xs font-medium px-2.5 py-0.5 rounded-full">{{ $nombrePrioridad }}</span>
+                                </td>
+
+                                <td class="px-6 py-4">
+                                    <span
+                                        class="{{ $estadoClases }} text-xs font-medium px-2.5 py-0.5 rounded-full">{{ $nombreEstado }}</span>
+                                </td>
+
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <button type="button"
+                                            class="btn-ver-detalle flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 rounded-lg text-xs font-bold transition-colors">
+                                            <span class="material-symbols-outlined text-sm">visibility</span>
+                                            Detalle
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         @empty
-                            <tr>
-                                <td colspan="6" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-                                    <span class="material-symbols-outlined text-4xl mb-2">inbox</span>
-                                    <p>No se encontraron registros de correspondencia enviada.</p>
+                            <tr id="emptyStateRow">
+                                <td colspan="6" class="px-6 py-14 text-center text-gray-400 dark:text-gray-500">
+                                    <span class="material-symbols-outlined text-5xl mb-3 block">inbox</span>
+                                    <p class="text-sm font-medium">No se encontraron registros de correspondencia enviada.
+                                    </p>
                                 </td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
-                {{-- Paginación Real de Laravel --}}
-                <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+                {{-- Paginación fuera del scroll, pegada al borde inferior de la card --}}
+                <div id="paginacionEnviados"
+                    class="px-6 py-3 border-t border-gray-200 dark:border-gray-700 flex justify-end">
                     {{ $envios->links() }}
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- ===== ASIDE DE DETALLES (Igual al de Entrante) ===== --}}
-    <aside id="asideDetalle"
-        class="w-80 shrink-0 border-l border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex flex-col sticky top-0 h-screen overflow-y-auto z-40">
-
-        {{-- Estado vacío --}}
-        <div id="asideVacio" class="flex flex-col items-center justify-center h-full p-6 text-center">
-            <div class="w-16 h-16 rounded-2xl bg-gray-50 dark:bg-gray-700/50 flex items-center justify-center mb-4">
-                <span class="material-symbols-outlined text-4xl text-gray-300 dark:text-gray-500">outbox</span>
-            </div>
-            <p class="text-sm font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Detalle de Envío</p>
-            <p class="text-xs text-gray-400 dark:text-gray-600 mt-2">Selecciona un registro para ver su trazabilidad</p>
-        </div>
-
-        {{-- Contenido dinámico --}}
-        <div id="asideContenido" class="hidden flex flex-col h-full">
-            
-            {{-- Cabecera --}}
-            <div class="px-5 pt-6 pb-4 border-b border-gray-100 dark:border-gray-700 flex items-start justify-between gap-3 bg-gray-50/50 dark:bg-gray-900/20">
-                <div class="flex items-center gap-3 min-w-0">
-                    <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
-                        <span id="aside-tipo-icon-header" class="material-symbols-outlined text-blue-600 dark:text-blue-400">description</span>
-                    </div>
-                    <div class="min-w-0">
-                        <h2 id="aside-asunto" class="text-sm font-black text-gray-900 dark:text-white leading-tight line-clamp-2 uppercase tracking-tight"></h2>
-                        <p id="aside-radicados" class="text-[10px] font-bold text-blue-500 mt-1 uppercase tracking-widest"></p>
-                    </div>
-                </div>
-                <button id="btnCerrarAside" class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 transition-colors">
-                    <span class="material-symbols-outlined text-lg">close</span>
-                </button>
-            </div>
-
-            <div class="flex-1 overflow-y-auto px-5 py-6 space-y-8">
-                
-                {{-- Info Section --}}
-                <div class="grid grid-cols-1 gap-6">
-                    {{-- Destino --}}
-                    <div>
-                        <span class="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest block mb-2">Destino / Institución</span>
-                        <div class="flex items-start gap-2.5 p-3 rounded-2xl bg-gray-50 dark:bg-gray-900/40 border border-gray-100 dark:border-gray-800">
-                            <span class="material-symbols-outlined text-gray-400 text-lg mt-0.5">location_on</span>
-                            <span id="aside-destinatario" class="text-xs font-bold text-gray-700 dark:text-gray-300 leading-relaxed"></span>
-                        </div>
-                    </div>
-
-                    {{-- Metadata Row --}}
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <span class="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest block mb-2">Fecha Envío</span>
-                            <p id="aside-fecha" class="text-xs font-bold text-gray-900 dark:text-white"></p>
-                        </div>
-                        <div>
-                            <span class="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest block mb-2">Prioridad</span>
-                            <span id="aside-prioridad" class="inline-block text-[10px] font-bold px-2.5 py-1 rounded-lg"></span>
-                        </div>
-                    </div>
-
-                    <div>
-                        <span class="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest block mb-2">Estado Actual</span>
-                        <span id="aside-estado" class="inline-block text-[10px] font-bold px-3 py-1.5 rounded-xl"></span>
-                    </div>
-                </div>
-
-                {{-- Trazabilidad Section --}}
-                <div class="pt-6 border-t border-gray-100 dark:border-gray-700">
-                    <div class="flex items-center justify-between mb-6">
-                        <span class="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest flex items-center gap-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
-                            Trazabilidad Digital
-                        </span>
-                        <span id="history-spinner" class="hidden material-symbols-outlined animate-spin text-blue-500 text-sm">progress_activity</span>
-                    </div>
-
-                    <div id="history-timeline" class="relative">
-                        {{-- Timeline items here --}}
-                    </div>
-                </div>
-
-                {{-- Acciones --}}
-                <div class="pt-6 border-t border-gray-100 dark:border-gray-700 space-y-3">
-                    <button id="btnVerDocumento"
-                        class="w-full h-11 flex items-center justify-center gap-2 px-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-lg shadow-blue-200 dark:shadow-blue-900/20 active:scale-[0.98]">
-                        <span class="material-symbols-outlined text-lg">visibility</span> 
-                        VER EXPEDIENTE COMPLETO
-                    </button>
-                    <p class="text-[10px] text-gray-400 text-center font-medium italic">Incluye documento principal y anexos</p>
-                </div>
-            </div>
-        </div>
-    </aside>
 
 @endsection
 
@@ -477,6 +520,10 @@
             btnCerrar.addEventListener('click', () => toggleModal(false));
             btnCerrarX.addEventListener('click', () => toggleModal(false));
 
+            if (new URLSearchParams(window.location.search).get('abrir') === 'nuevo') {
+                toggleModal(true);
+            }
+
             // --- AJAX SEARCH HELPERS ---
             function setupSearch(inputId, resultsId, hiddenId, url) {
                 const input = document.getElementById(inputId);
@@ -545,29 +592,39 @@
                     this.classList.add('bg-blue-50', 'dark:bg-blue-900/10');
 
                     const data = this.dataset;
-                    
+
                     // Llenar datos base
-                    document.getElementById('aside-asunto').textContent = data.asunto;
-                    document.getElementById('aside-radicados').textContent = 'Radicado: ' + data.radicado;
-                    document.getElementById('aside-destinatario').textContent = data.destinatario;
-                    document.getElementById('aside-fecha').textContent = data.fecha;
-                    
+                    document.getElementById('aside-asunto').textContent = data.asunto ||
+                        '(Sin asunto)';
+                    document.getElementById('aside-radicados').textContent = data.radicado ?
+                        'Radicado: ' + data.radicado : '';
+                    document.getElementById('aside-destinatario').textContent = data.destinatario ||
+                        '—';
+                    document.getElementById('aside-fecha').textContent = data.fecha || '—';
+
+                    const tipoDocWrap = document.getElementById('aside-tipo-doc-wrap');
+                    if (data.tipoDoc) {
+                        document.getElementById('aside-tipo-doc').textContent = data.tipoDoc;
+                        tipoDocWrap.classList.remove('hidden');
+                    } else {
+                        tipoDocWrap.classList.add('hidden');
+                    }
+
                     // Estilos Prioridad
                     const priorityEl = document.getElementById('aside-prioridad');
-                    priorityEl.textContent = data.prioridad;
-                    priorityEl.className = 'inline-block text-[10px] font-bold px-2.5 py-1 rounded-lg ' + 
-                        (data.prioridad === 'Alta' ? 'bg-red-50 text-red-600 dark:bg-red-900/20' : 
-                         data.prioridad === 'Media' ? 'bg-amber-50 text-amber-600 dark:bg-amber-900/20' : 
-                         'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20');
+                    priorityEl.textContent = data.prioridad || '—';
+                    priorityEl.className = 'text-xs font-medium px-2 py-0.5 rounded-full ' + (data
+                        .prioridadClases || 'bg-gray-100 text-gray-700');
 
                     // Estilos Estado
                     const statusEl = document.getElementById('aside-estado');
-                    statusEl.textContent = data.estado;
-                    statusEl.className = 'inline-block text-[10px] font-bold px-3 py-1.5 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-900/20';
+                    statusEl.textContent = data.estado || '—';
+                    statusEl.className = 'text-xs font-medium px-2 py-0.5 rounded-full ' + (data
+                        .estadoClases || 'bg-gray-100 text-gray-700');
 
                     // Actualizar icono cabecera
                     const iconHeader = document.getElementById('aside-tipo-icon-header');
-                    iconHeader.textContent = data.icono;
+                    if (iconHeader) iconHeader.textContent = data.icono;
 
                     // Almacenar datos para el visor
                     const btnVer = document.getElementById('btnVerDocumento');
@@ -585,7 +642,7 @@
             function loadHistory(id) {
                 const timeline = document.getElementById('history-timeline');
                 const spinner = document.getElementById('history-spinner');
-                
+
                 timeline.innerHTML = '';
                 spinner.classList.remove('hidden');
 
@@ -594,14 +651,22 @@
                     .then(data => {
                         spinner.classList.add('hidden');
                         if (data.length === 0) {
-                            timeline.innerHTML = '<p class="text-[10px] text-gray-400 p-4 font-bold uppercase tracking-widest text-center">Sin trazabilidad registrada</p>';
+                            timeline.innerHTML =
+                                '<p class="text-[10px] text-gray-400 p-4 font-bold uppercase tracking-widest text-center">Sin trazabilidad registrada</p>';
                             return;
                         }
 
                         data.forEach((item, index) => {
                             const date = new Date(item.fecha);
-                            const dateStr = date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
-                            const timeStr = date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                            const dateStr = date.toLocaleDateString('es-ES', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric'
+                            });
+                            const timeStr = date.toLocaleTimeString('es-ES', {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            });
                             const isLast = index === data.length - 1;
 
                             let icon = 'info';
@@ -612,12 +677,31 @@
                                 circleClass = 'bg-blue-100 text-blue-600';
                             } else {
                                 switch (parseInt(item.id_estado_rec)) {
-                                    case 7: icon = 'mark_email_read'; circleClass = 'bg-green-100 text-green-600'; break;
-                                    case 8: icon = 'pending_actions'; circleClass = 'bg-amber-100 text-amber-600'; break;
-                                    case 9: case 10: icon = 'check_circle'; circleClass = 'bg-emerald-100 text-emerald-600'; break;
-                                    case 11: icon = 'cancel'; circleClass = 'bg-red-100 text-red-600'; break;
-                                    case 12: icon = 'send'; circleClass = 'bg-blue-100 text-blue-600'; break;
-                                    case 14: icon = 'outbox'; circleClass = 'bg-emerald-100 text-emerald-600'; break;
+                                    case 7:
+                                        icon = 'mark_email_read';
+                                        circleClass = 'bg-green-100 text-green-600';
+                                        break;
+                                    case 8:
+                                        icon = 'pending_actions';
+                                        circleClass = 'bg-amber-100 text-amber-600';
+                                        break;
+                                    case 9:
+                                    case 10:
+                                        icon = 'check_circle';
+                                        circleClass = 'bg-emerald-100 text-emerald-600';
+                                        break;
+                                    case 11:
+                                        icon = 'cancel';
+                                        circleClass = 'bg-red-100 text-red-600';
+                                        break;
+                                    case 12:
+                                        icon = 'send';
+                                        circleClass = 'bg-blue-100 text-blue-600';
+                                        break;
+                                    case 14:
+                                        icon = 'outbox';
+                                        circleClass = 'bg-emerald-100 text-emerald-600';
+                                        break;
                                 }
                             }
 
@@ -652,32 +736,32 @@
                                         </div>
 
                                         ${item.observaciones ? `
-                                            <div class="relative p-3 bg-white dark:bg-gray-800 border-l-2 border-blue-500/20 rounded-r-xl shadow-sm group hover:border-blue-500 transition-colors">
-                                                <span class="material-symbols-outlined absolute -right-1 -top-1 text-blue-500/5 text-2xl">format_quote</span>
-                                                <p class="text-[10px] text-gray-600 dark:text-gray-400 italic leading-relaxed">"${item.observaciones}"</p>
-                                            </div>
-                                        ` : ''}
+                                                <div class="relative p-3 bg-white dark:bg-gray-800 border-l-2 border-blue-500/20 rounded-r-xl shadow-sm group hover:border-blue-500 transition-colors">
+                                                    <span class="material-symbols-outlined absolute -right-1 -top-1 text-blue-500/5 text-2xl">format_quote</span>
+                                                    <p class="text-[10px] text-gray-600 dark:text-gray-400 italic leading-relaxed">"${item.observaciones}"</p>
+                                                </div>
+                                            ` : ''}
 
                                         ${item.archivo_res ? `
-                                            <div class="mt-3">
-                                                <a href="/storage/${item.archivo_res}" target="_blank" 
-                                                   class="inline-flex items-center gap-2 px-3 py-1.5 text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-lg hover:bg-emerald-100 transition-all">
-                                                    <span class="material-symbols-outlined text-[16px]">task</span>
-                                                    DOCUMENTO DE RESPUESTA
-                                                </a>
-                                            </div>
-                                        ` : ''}
+                                                <div class="mt-3">
+                                                    <a href="/storage/${item.archivo_res}" target="_blank" 
+                                                       class="inline-flex items-center gap-2 px-3 py-1.5 text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-lg hover:bg-emerald-100 transition-all">
+                                                        <span class="material-symbols-outlined text-[16px]">task</span>
+                                                        DOCUMENTO DE RESPUESTA
+                                                    </a>
+                                                </div>
+                                            ` : ''}
                                         
                                         ${item.anexos && item.anexos.length > 0 ? `
-                                            <div class="mt-2 flex flex-wrap gap-2">
-                                                ${item.anexos.map(a => `
+                                                <div class="mt-2 flex flex-wrap gap-2">
+                                                    ${item.anexos.map(a => `
                                                     <a href="/storage/${a.ruta_archivo}" target="_blank" class="flex items-center gap-1.5 px-2 py-1 bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 rounded-lg text-[9px] font-bold text-amber-700 hover:bg-amber-100 transition-colors">
                                                         <span class="material-symbols-outlined text-[14px]">attachment</span>
                                                         ${a.nombre_original}
                                                     </a>
                                                 `).join('')}
-                                            </div>
-                                        ` : ''}
+                                                </div>
+                                            ` : ''}
                                     </div>
                                 </div>
                             `;
@@ -686,7 +770,8 @@
                     })
                     .catch(err => {
                         spinner.classList.add('hidden');
-                        timeline.innerHTML = '<p class="text-[10px] text-red-500 p-4 font-bold uppercase tracking-widest text-center">Error al cargar trazabilidad</p>';
+                        timeline.innerHTML =
+                            '<p class="text-[10px] text-red-500 p-4 font-bold uppercase tracking-widest text-center">Error al cargar trazabilidad</p>';
                         console.error(err);
                     });
             }

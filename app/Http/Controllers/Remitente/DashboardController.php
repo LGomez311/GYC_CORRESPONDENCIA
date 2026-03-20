@@ -12,7 +12,7 @@ use App\Models\Empleado;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $remitente = Auth::guard('remitente')->user();
         $remDoc = $remitente->rem_doc;
@@ -21,38 +21,65 @@ class DashboardController extends Controller
 
         // Statistics
         $stats = $this->getStats($remDoc);
+        $estadoId = $request->input('estado_id');
 
         // Dashboard: Show all records NOT "salientes" (14) or "finalizados" (10).
-        $correspondencias = $this->getBaseQuery($remDoc)
-            ->whereNotIn('id_estado_rec', [10, 14])
-            ->paginate(10);
+        $query = $this->getBaseQuery($remDoc)
+            ->whereNotIn('id_estado_rec', [10, 14]);
+
+        if ($estadoId) {
+            $query->where('id_estado_rec', $estadoId);
+        }
+
+        $correspondencias = $query->paginate(10)->appends($request->query());
 
         $tipos = \App\Models\Tipo::all();
         $empleados = \App\Models\Empleado::where('emple_rol', 3)->get();
+        $estados = \App\Models\Estado::all();
 
-        return view('remitente.index', compact('stats', 'correspondencias', 'tipos', 'empleados'));
+        return view('remitente.index', compact('stats', 'correspondencias', 'tipos', 'empleados', 'estados', 'estadoId'));
     }
 
-    public function recibidosProceso()
+    public function recibidosProceso(Request $request)
     {
         $remitente = Auth::guard('remitente')->user();
         $remDoc = $remitente->rem_doc;
 
         $this->syncRejected($remDoc);
         $stats = $this->getStats($remDoc);
+        $estadoId = $request->input('estado_id');
 
-        // ONLY records received and registered by current sender WITHOUT response and NOT salientes/finalizados
-        $correspondencias = $this->getBaseQuery($remDoc)
-            ->whereNotIn('id_estado_rec', [10, 14])
-            ->whereDoesntHave('detalles', function($q) {
-                $q->whereNotNull('archivo_res');
-            })
-            ->paginate(10);
+        // ONLY records received that are Terminados (9), Archivados (10) or Salientes (14)
+        $query = $this->getBaseQuery($remDoc)
+            ->whereIn('id_estado_rec', [9, 10, 14]);
+            
+        if ($estadoId) {
+            $query->where('id_estado_rec', $estadoId);
+        }
+
+        $correspondencias = $query->paginate(10)->appends($request->query());
 
         $tipos = \App\Models\Tipo::all();
         $empleados = \App\Models\Empleado::where('emple_rol', 3)->get();
+        $estados = \App\Models\Estado::all();
+        $ciudades = \App\Models\Ciudad::with('departamento')->orderBy('ciudad_nom')->get();
 
-        return view('remitente.recibidos_proceso', compact('stats', 'correspondencias', 'tipos', 'empleados'));
+        $todosDestinatarios = \App\Models\Empleado::with('area')
+            ->where('emple_rol', '=', 3)
+            ->get()
+            ->map(function($e) {
+                return [
+                    'emple_doc' => (string) $e->emple_doc,
+                    'emple_nombres' => $e->emple_nombres,
+                    'emple_apellidos' => $e->emple_apellidos,
+                    'tipo' => 'empleado',
+                    'area_nombre' => $e->area ? $e->area->area_nom : null
+                ];
+            })
+            ->sortBy('emple_nombres')
+            ->values();
+
+        return view('remitente.recibidos', compact('stats', 'correspondencias', 'tipos', 'empleados', 'estados', 'estadoId', 'ciudades', 'todosDestinatarios'));
     }
 
     public function procesoSalientes()

@@ -15,13 +15,13 @@
                     <p class="text-gray-500 dark:text-gray-400 mt-1">Registros actuales en trámite (Recibidos y Salientes en Proceso).</p>
                 </div>
                 <div class="flex flex-wrap gap-4">
-                    <a href="{{ route('remitente.externarec') }}"
+                    <a href="{{ route('remitente.recibidos') }}?abrir=nuevo"
                         class="flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 active:scale-95">
                         <span class="material-symbols-outlined text-[20px]">move_to_inbox</span>
                         Registrar Recibido
                     </a>
 
-                    <a href="{{ route('remitente.externaenv') }}"
+                    <a href="{{ route('remitente.externaenv') }}?abrir=nuevo"
                         class="flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-emerald-600 rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200 active:scale-95">
                         <span class="material-symbols-outlined text-[20px]">outbox</span>
                         Registrar Saliente
@@ -87,20 +87,29 @@
             <!-- Correspondence Table -->
             <div
                 class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col flex-1">
-                <div
-                    class="p-6 border-b border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
                         <h2 class="text-lg font-bold text-gray-900 dark:text-white">Correspondencia Reciente</h2>
                         <p class="text-xs text-gray-500 mt-0.5">Listado de tus registros y sus estados actuales.</p>
                     </div>
-                    <div class="relative w-full sm:w-64">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3">
-                            <span class="material-symbols-outlined text-gray-400 text-sm">search</span>
-                        </span>
-                        <input type="text" id="tableSearch"
-                            class="block w-full pl-10 pr-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-sm focus:ring-primary focus:border-primary dark:text-white"
-                            placeholder="Filtrar por asunto, radicado...">
-                    </div>
+                    <form method="GET" action="{{ route('remitente.index') }}" class="flex flex-col sm:flex-row w-full md:w-auto gap-3">
+                        <div class="relative w-full sm:w-48">
+                            <select name="estado_id" onchange="this.form.submit()" class="block w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-sm focus:ring-primary focus:border-primary dark:text-white">
+                                <option value="">Todos los estados</option>
+                                @foreach($estados as $est)
+                                    <option value="{{ $est->id_estado }}" {{ request('estado_id') == $est->id_estado ? 'selected' : '' }}>{{ $est->estado_nomb }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="relative w-full sm:w-64">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                                <span class="material-symbols-outlined text-gray-400 text-sm">search</span>
+                            </span>
+                            <input type="text" id="tableSearch"
+                                class="block w-full pl-10 pr-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-sm focus:ring-primary focus:border-primary dark:text-white"
+                                placeholder="Filtrar por asunto, radicado...">
+                        </div>
+                    </form>
                 </div>
                 <div class="overflow-x-auto flex-1">
                     <table class="w-full text-left border-collapse">

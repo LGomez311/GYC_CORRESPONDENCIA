@@ -81,53 +81,27 @@
                 Trámites Activos
             </h1>
 
-            {{-- EXTERNA (En Proceso) --}}
-            <details class="group"
-                {{ request()->routeIs('remitente.externarec', 'remitente.externaenv') ? 'open' : '' }}>
+            <a href="{{ route('remitente.recibidos') }}"
+                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {{ request()->routeIs('remitente.recibidos') ? 'text-primary bg-primary/10 font-bold dark:bg-primary/20' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800' }}">
+                <span
+                    class="material-symbols-outlined text-[20px] {{ request()->routeIs('remitente.recibidos') ? 'fill' : 'text-gray-500 dark:text-gray-400' }}">mark_email_unread</span>
+                <p class="text-sm font-medium leading-normal">Recibidos</p>
+            </a>
 
-                <summary
-                    class="flex items-center justify-between w-full gap-3 px-3 py-2 rounded-lg cursor-pointer list-none [&::-webkit-details-marker]:hidden transition-all duration-200 {{ request()->routeIs('remitente.externarec', 'remitente.externaenv') ? 'bg-primary/10 text-primary font-bold dark:bg-primary/20' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800' }}">
-                    <div class="flex items-center gap-3">
-                        <span
-                            class="material-symbols-outlined text-[20px] {{ request()->routeIs('remitente.externarec', 'remitente.externaenv') ? 'text-primary fill' : 'text-gray-500 dark:text-gray-400' }}">mail</span>
-                        <p class="text-sm font-medium leading-normal">En proceso</p>
-                    </div>
-                    <span
-                        class="material-symbols-outlined text-sm transition-transform duration-300 group-open:-rotate-180 {{ request()->routeIs('remitente.externarec', 'remitente.externaenv') ? 'text-primary' : 'text-gray-400' }}">
-                        expand_more
-                    </span>
-                </summary>
-
-                <div class="mt-0.5 ml-4 pl-2 border-l-2 border-gray-100 dark:border-gray-700 flex flex-col gap-0.5">
-                    <a href="{{ route('remitente.recibidos_proceso') }}"
-                        class="flex items-center gap-3 px-3 py-1.5 rounded-lg transition-colors {{ request()->routeIs('remitente.recibidos_proceso') ? 'text-primary bg-primary/5 font-semibold dark:bg-primary/10' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200' }}">
-                        <span
-                            class="material-symbols-outlined text-[18px] {{ request()->routeIs('remitente.recibidos_proceso') ? 'fill' : '' }}">mark_email_unread</span>
-                        <p class="text-sm">Recibidos</p>
-                    </a>
-
-                    <a href="{{ route('remitente.proceso_salientes') }}"
-                        class="flex items-center gap-3 px-3 py-1.5 rounded-lg transition-colors {{ request()->routeIs('remitente.proceso_salientes') ? 'text-primary bg-primary/5 font-semibold dark:bg-primary/10' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200' }}">
-                        <span
-                            class="material-symbols-outlined text-[18px] {{ request()->routeIs('remitente.proceso_salientes') ? 'fill' : '' }}">forward_to_inbox</span>
-                        <p class="text-sm">Salientes</p>
-                    </a>
-                </div>
-            </details>
+            <a href="{{ route('remitente.externaenv') }}"
+                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {{ request()->routeIs('remitente.externaenv') ? 'text-primary bg-primary/10 font-bold dark:bg-primary/20' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800' }}">
+                <span
+                    class="material-symbols-outlined text-[20px] {{ request()->routeIs('remitente.externaenv') ? 'fill' : 'text-gray-500 dark:text-gray-400' }}">forward_to_inbox</span>
+                <p class="text-sm font-medium leading-normal">Enviados</p>
+            </a>
         </div>
 
         <div class="flex flex-col gap-0.5">
             <h1 class="text-[#4c669a] dark:text-gray-500 text-[10px] uppercase font-bold px-3 pb-1 pt-2 tracking-wider">
-                Historial
+                Reportes
             </h1>
 
-            {{-- EXTERNA (Finalizadas) --}}
-            <a href="{{ route('remitente.finalizados') }}"
-                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('remitente.finalizados') ? 'bg-primary/10 text-primary font-bold dark:bg-primary/20' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800' }}">
-                <span
-                    class="material-symbols-outlined text-[20px] {{ request()->routeIs('remitente.finalizados') ? 'fill' : '' }}">inventory_2</span>
-                <p class="text-sm leading-normal">Finalizadas</p>
-            </a>
+        
         </div>
     </nav>
 

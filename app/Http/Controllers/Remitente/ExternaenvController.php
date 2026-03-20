@@ -22,6 +22,7 @@ class ExternaenvController extends Controller
         $nitEmpresa = $remitente ? $remitente->nit_empresa : null;
 
         $search = $request->input('search');
+        $estadoId = $request->input('estado_id');
 
         // Traemos los envíos con sus relaciones cargadas.
         $query = Envio::with([
@@ -43,13 +44,30 @@ class ExternaenvController extends Controller
             });
         }
 
-        $envios = $query->paginate(10)->appends(['search' => $search]);
+        if ($estadoId) {
+            $query->where('id_estado_envio', $estadoId);
+        }
+
+        $envios = $query->paginate(10)->appends(['search' => $search, 'estado_id' => $estadoId]);
+
+        $stats = [
+            'total' => Envio::where('nit_empresa', $nitEmpresa)->count(),
+            'rejected' => Envio::where('nit_empresa', $nitEmpresa)->whereHas('estadoEnvio', function ($q) {
+                $q->where('estado_nomb', 'like', '%rechazado%');
+            })->count(),
+            'pending' => Envio::where('nit_empresa', $nitEmpresa)->whereHas('estadoEnvio', function ($q) {
+                $q->where('estado_nomb', 'like', '%pendiente%')->orWhere('estado_nomb', 'like', '%espera%');
+            })->count(),
+            'resolved' => Envio::where('nit_empresa', $nitEmpresa)->whereHas('estadoEnvio', function ($q) {
+                $q->where('estado_nomb', 'like', '%enviado%')->orWhere('estado_nomb', 'like', '%resuelto%');
+            })->count(),
+        ];
 
         $tipos = Tipo::all();
         $estados = Estado::all();
         $ciudades = Ciudad::orderBy('ciudad_nom')->get();
 
-        return view('remitente.externaenv', compact('envios', 'tipos', 'estados', 'ciudades', 'search'));
+        return view('remitente.externaenv', compact('envios', 'tipos', 'estados', 'ciudades', 'search', 'estadoId', 'stats'));
     }
 
     public function store(Request $request)
