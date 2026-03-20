@@ -3,6 +3,70 @@
 @section('title', 'Gestión de Usuarios')
 
 @section('content')
+<style>
+    @media (max-width: 1024px) {
+        .responsive-table table,
+        .responsive-table thead,
+        .responsive-table tbody,
+        .responsive-table tr,
+        .responsive-table td {
+            display: block !important;
+            width: 100% !important;
+        }
+        .responsive-table thead tr {
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+        }
+        .responsive-table tr {
+            border-bottom: 2px solid #e2e8f0;
+            padding: 1.5rem 1rem;
+            margin-bottom: 1rem;
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .responsive-table td {
+            border: none;
+            border-bottom: 1px dotted #e2e8f0;
+            position: relative;
+            padding: 0.75rem 0.5rem 0.75rem 45% !important;
+            text-align: right !important;
+            white-space: normal !important;
+        }
+        .responsive-table td:last-child {
+            border-bottom: none;
+        }
+        .responsive-table td::before {
+            content: attr(data-label);
+            position: absolute;
+            left: 0.5rem;
+            width: 40%;
+            padding-right: 1.5rem;
+            white-space: nowrap;
+            text-align: left;
+            font-weight: 700;
+            color: #4c669a;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .responsive-table td.actions-cell,
+        .responsive-table td:last-child {
+            padding-left: 0.5rem !important;
+            text-align: center !important;
+        }
+        .responsive-table td.actions-cell::before,
+        .responsive-table td:last-child::before {
+            display: none !important;
+        }
+        .responsive-table .flex-col,
+        .responsive-table .flex {
+            justify-content: flex-end !important;
+            align-items: flex-end !important;
+        }
+    }
+</style>
     <div class="w-full max-w-7xl mx-auto p-4 md:px-6 lg:px-8 py-6">
         
         <!-- ================= HEADER ================= -->
@@ -82,14 +146,12 @@
                 </div>
             </div>
             <div class="overflow-x-auto w-full">
-                <table class="w-full text-left border-collapse min-w-full whitespace-nowrap">
+                <table class="w-full text-left border-collapse min-w-full whitespace-nowrap responsive-table">
                     <thead>
                         <tr class="bg-slate-50 dark:bg-background-dark/50 border-b border-[#cfd7e7] dark:border-gray-800">
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Nombre Completo</th>
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Correo Electrónico</th>
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Rol</th>
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Área</th>
-                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Empresa</th>
+                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Nombre / Info</th>
+                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Documento</th>
+                            <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Rol / Área</th>
                             <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider">Estado</th>
                             <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider text-right">Acciones</th>
                         </tr>
@@ -142,12 +204,12 @@
                             <td class="px-6 py-4" data-label="Estado">
                                 <span
                                     class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border
-                                    {{ $empleado->emple_estado == 'activo'
+                                    {{ $empleado->emple_estado == 1
                                         ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800'
                                         : 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800' }}">
                                     <span
-                                        class="w-1.5 h-1.5 rounded-full {{ $empleado->emple_estado == 'activo' ? 'bg-emerald-500' : 'bg-red-500' }}"></span>
-                                    {{ ucfirst($empleado->emple_estado) }}
+                                        class="w-1.5 h-1.5 rounded-full {{ $empleado->emple_estado == 1 ? 'bg-emerald-500' : 'bg-red-500' }}"></span>
+                                    {{ $empleado->estado->estado_nomb ?? 'Desconocido' }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-right">
@@ -238,7 +300,7 @@
                     <tbody id="tableRemitentes" class="divide-y divide-[#cfd7e7] dark:divide-gray-800">
                         @forelse($remitentes as $rem)
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" data-doc="{{ $rem->rem_doc }}">
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4" data-label="Nombre Completo">
                                 <div class="flex items-center gap-3">
                                     <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-gray-800 flex items-center justify-center font-bold text-xs text-[#4c669a]">
                                         {{ strtoupper(substr($rem->rem_nombres, 0, 1) . substr($rem->rem_apellidos, 0, 1)) }}
@@ -249,40 +311,15 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-sm text-[#4c669a]">
+                            <td class="px-6 py-4 text-sm text-[#4c669a]" data-label="Correo Electrónico">
                                 {{ $rem->rem_correo }}
                             </td>
-                            <td class="px-6 py-4 text-sm text-[#4c669a]">{{ $rem->ciudad->ciudad_nom ?? 'N/A' }}</td>
-                            <td class="px-6 py-4 text-sm text-[#4c669a]">{{ $rem->rem_tel }}</td>
-                            <td class="px-6 py-4 text-xs text-[#4c669a]">
+                            <td class="px-6 py-4 text-sm text-[#4c669a]" data-label="Ciudad">{{ $rem->ciudad->ciudad_nom ?? 'N/A' }}</td>
+                            <td class="px-6 py-4 text-sm text-[#4c669a]" data-label="Teléfono">{{ $rem->rem_tel }}</td>
+                            <td class="px-6 py-4 text-xs text-[#4c669a]" data-label="Empresa">
                                 <div class="font-bold text-[#0d121b] dark:text-white">{{ $rem->empresa->nomb_empresa ?? 'N/A' }}</div>
-                            <td class="px-6 py-4" data-label="Nombre Completo">
-                                <div class="flex flex-col">
-                                    <span class="text-sm font-bold text-[#0d121b] dark:text-white">{{ $rem->rem_nombres }} {{ $rem->rem_apellidos }}</span>
-                                    <span class="text-xs text-[#4c669a] dark:text-gray-400">Documento: {{ $rem->rem_doc }}</span>
-                                </div>
                             </td>
-                            <td class="px-6 py-4" data-label="Correo Electrónico">
-                                <div class="flex flex-col">
-                                    <span class="text-sm text-[#4c669a] dark:text-gray-300">{{ $rem->rem_correo }}</span>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4" data-label="Ciudad">
-                                <span class="px-2.5 py-1 text-xs font-medium rounded border border-[#cfd7e7] dark:border-gray-700 bg-white dark:bg-[#161d2b] text-[#4c669a] dark:text-gray-300">
-                                    {{ $rem->ciudad->ciudad_nom ?? 'No definida' }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-sm text-[#0d121b] dark:text-white" data-label="Teléfono">
-                                {{ $rem->rem_tel ?: 'No registrado' }}
-                            </td>
-                            <td class="px-6 py-4" data-label="Empresa">
-                                <div class="flex flex-col">
-                                    <span class="font-bold text-[#0d121b] dark:text-white text-sm">{{ $rem->empresa->nomb_empresa ?? 'Ninguna' }}</span>
-                                    @if($rem->empresa)
-                                    <span class="text-xs text-[#4c669a] dark:text-gray-400">NIT: {{ $rem->empresa->nit_empresa }}</span>
-                                    @endif
-                                </div>
-                            </td>
+
                             <td class="px-6 py-4" data-label="Estado">
                                 @if($rem->rem_estado == 1)
                                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800">
@@ -678,6 +715,297 @@
         </form>
     </div>
 </div>
+
+{{-- MODAL EDITAR REMITENTE --}}
+<div id="remitenteModalEdit" class="fixed inset-0 bg-black/40 flex items-center justify-center hidden z-50 p-4">
+    <div class="bg-white dark:bg-[#161d2b] w-full max-w-3xl rounded-xl shadow-xl relative my-10 max-h-[90vh] flex flex-col overflow-hidden">
+        <div class="px-6 pt-6">
+            <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-4 mb-4">
+                <div>
+                    <h2 class="text-xl font-semibold text-[#0d121b] dark:text-white">Editar Remitente</h2>
+                    <p class="text-sm text-[#4c669a] dark:text-gray-400">Modifique los datos, los campos con (*) son obligatorios.</p>
+                </div>
+                <button class="btn-close text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+        </div>
+
+        <form method="POST" id="formEditRemitente" class="flex-1 overflow-y-auto px-6 pb-6 space-y-6">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="modal_type_remitente" value="edit">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- DOCUMENTO -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Documento (*)</label>
+                    <input type="text" name="rem_doc" id="edit_doc_remitente" maxlength="15" readonly class="mt-1 w-full rounded-lg border-gray-300 bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 cursor-not-allowed">
+                </div>
+
+                <!-- CIUDAD -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Ciudad (*)</label>
+                    <select name="rem_ciudad" id="edit_ciudad_remitente" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-[#0d121b] dark:text-white select2-ciudad" required>
+                        <option value="">Seleccionar ciudad...</option>
+                        @foreach($ciudades as $ciudad)
+                            <option value="{{ $ciudad->ciudad_cod_post }}">{{ $ciudad->ciudad_nom }} - {{ $ciudad->departamento->dpto_nombre ?? '' }}</option>
+                        @endforeach
+                    </select>
+                    <p id="edit-error-ciu-rem" class="text-sm text-red-600 hidden"></p>
+                </div>
+
+                <!-- NOMBRES -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nombres (*)</label>
+                    <input type="text" name="rem_nombres" id="edit_nom_remitente" maxlength="50" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-[#0d121b] dark:text-white">
+                    <p id="edit-error-nom-rem" class="text-sm text-red-600 hidden"></p>
+                </div>
+
+                <!-- APELLIDOS -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Apellidos (*)</label>
+                    <input type="text" name="rem_apellidos" id="edit_ape_remitente" maxlength="50" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-[#0d121b] dark:text-white">
+                    <p id="edit-error-ape-rem" class="text-sm text-red-600 hidden"></p>
+                </div>
+
+                <!-- TELÉFONO -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Teléfono (*)</label>
+                    <input type="text" name="rem_tel" id="edit_tel_remitente" maxlength="12" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-[#0d121b] dark:text-white">
+                    <p id="edit-error-tel-rem" class="text-sm text-red-600 hidden"></p>
+                </div>
+
+                <!-- CORREO -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Correo (*)</label>
+                    <input type="email" name="rem_correo" id="edit_cor_remitente" maxlength="150" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-[#0d121b] dark:text-white">
+                    <p id="edit-error-cor-rem" class="text-sm text-red-600 hidden"></p>
+                </div>
+
+
+                <!-- ESTADO -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Estado</label>
+                    <select name="rem_estado" id="edit_estado_remitente" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-[#0d121b] dark:text-white">
+                        <option value="">Seleccionar estado...</option>
+                        @foreach($estados as $estado)
+                            @if(in_array($estado->id_estado, [1, 2]))
+                                <option value="{{ $estado->id_estado }}" {{ old('rem_estado') == $estado->id_estado ? 'selected' : '' }}>
+                                    {{ $estado->estado_nomb }}
+                                </option>
+                            @endif
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+
+            <!-- BOTONES -->
+            <div class="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-800">
+                <button type="button" class="btn-close px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800">Cancelar</button>
+                <button id="btnGuardarEditRemitente" type="submit" class="px-6 py-2 rounded-lg bg-primary text-white flex items-center gap-2 hover:bg-primary/90 transition-colors">
+                    <span class="material-symbols-outlined">save</span>
+                    Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- MODAL VER DETALLES --}}
+<div id="detallesModal" class="fixed inset-0 bg-black/40 flex items-center justify-center hidden z-50 p-4">
+    <div class="bg-white dark:bg-[#161d2b] w-full max-w-2xl rounded-xl shadow-xl relative my-10 max-h-[90vh] flex flex-col overflow-hidden">
+        <div class="px-6 pt-6 pb-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+            <h2 class="text-xl font-semibold text-[#0d121b] dark:text-white" id="detallesTitle">Detalles del Usuario</h2>
+            <button class="btn-close text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        
+        <div class="p-6 overflow-y-auto text-sm text-[#4c669a] dark:text-gray-300">
+            <div class="flex flex-col md:flex-row gap-6 mb-6 items-start">
+                <div class="w-24 h-24 rounded-full bg-slate-100 dark:bg-gray-800 flex-shrink-0 flex justify-center items-center overflow-hidden border border-[#cfd7e7] dark:border-gray-700" id="detallesAvatarContainer">
+                    <span class="material-symbols-outlined text-4xl text-gray-400">person</span>
+                </div>
+                <div class="flex flex-col gap-1 flex-1">
+                    <h3 class="text-2xl font-bold text-[#0d121b] dark:text-white" id="detallesNombres">-</h3>
+                    <p class="text-base font-medium flex items-center gap-2"><span class="material-symbols-outlined text-sm">badge</span> <span id="detallesDoc">-</span></p>
+                    <p class="flex items-center gap-2 w-fit px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs font-semibold mt-1" id="detallesEstadoContainer">
+                        <span id="detallesEstado">-</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Correo Electrónico</label>
+                    <p class="text-base text-[#0d121b] dark:text-white font-medium break-all" id="detallesCorreo">-</p>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Teléfono</label>
+                    <p class="text-base text-[#0d121b] dark:text-white font-medium" id="detallesTelefono">-</p>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Empresa Asociada</label>
+                    <p class="text-base text-[#0d121b] dark:text-white font-medium" id="detallesEmpresa">-</p>
+                    <p class="text-xs mt-0.5">NIT: <span id="detallesNit">-</span></p>
+                </div>
+                <div id="detallesExtra1Container">
+                    <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1" id="detallesExtra1Label">Extra 1</label>
+                    <p class="text-base text-[#0d121b] dark:text-white font-medium" id="detallesExtra1Value">-</p>
+                </div>
+                <div id="detallesExtra2Container">
+                    <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1" id="detallesExtra2Label">Extra 2</label>
+                    <p class="text-base text-[#0d121b] dark:text-white font-medium" id="detallesExtra2Value">-</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-800 flex justify-end">
+            <button class="btn-close px-6 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 transition-colors font-medium">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+@endsection
+
+@section('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        /* ===========================
+           VARIABLES GENERALES
+        ============================*/
+        const btnOpenEmpleado = document.getElementById('btnOpenCrearEmpleado');
+        const modalEmpleado = document.getElementById('empleadoModal');
+        const modalEmpleadoEdit = document.getElementById('empleadoModalEdit');
+
+        const btnOpenRemitente = document.getElementById('btnOpenCrearRemitente');
+        const modalRemitente = document.getElementById('remitenteModal');
+        const modalRemitenteEdit = document.getElementById('remitenteModalEdit');
+
+        const modalDetalles = document.getElementById('detallesModal');
+
+        // Inicializar Select2
+        try {
+            $('#ciudad_remitente').select2({
+                placeholder: "Buscar ciudad...",
+                allowClear: true,
+                width: '100%',
+                dropdownParent: $('#remitenteModal')
+            });
+            $('#edit_ciudad_remitente').select2({
+                placeholder: "Buscar ciudad...",
+                allowClear: true,
+                width: '100%',
+                dropdownParent: $('#remitenteModalEdit')
+            });
+            
+            // Validar Select2 en real-time
+            $('#ciudad_remitente').on('change', function() {
+                camposTocados['ciudad_remitente'] = true;
+                if(typeof validarCampoIndividual === 'function') {
+                    validarCampoIndividual('ciudad_remitente', reglasCrearRemitente);
+                }
+            });
+            $('#edit_ciudad_remitente').on('change', function() {
+                if(typeof validarCampoEditar === 'function') {
+                    validarCampoEditar('edit_ciudad_remitente', reglasEditarRemitente);
+                }
+            });
+        } catch (error) {
+            console.error('Select2 initialization error:', error);
+        }
+
+        /* ===========================
+           MODALES ABRIR / CERRAR
+        ============================*/
+        if (btnOpenEmpleado) {
+            btnOpenEmpleado.addEventListener('click', () => modalEmpleado.classList.remove('hidden'));
+        }
+        if (btnOpenRemitente) {
+            btnOpenRemitente.addEventListener('click', () => modalRemitente.classList.remove('hidden'));
+        }
+
+        // Toggle eye button for passwords
+        document.querySelectorAll('.btn-toggle-password').forEach(btn => {
+            const input = btn.previousElementSibling;
+            const icon = btn.querySelector('.material-symbols-outlined');
+            
+            const showPassword = () => {
+                input.type = 'text';
+                icon.textContent = 'visibility_off';
+            };
+            
+            const hidePassword = () => {
+                input.type = 'password';
+                icon.textContent = 'visibility';
+            };
+
+            btn.addEventListener('mousedown', showPassword);
+            btn.addEventListener('mouseup', hidePassword);
+            btn.addEventListener('mouseleave', hidePassword);
+            
+            // For mobile
+            btn.addEventListener('touchstart', showPassword, {passive: true});
+            btn.addEventListener('touchend', hidePassword, {passive: true});
+        });
+
+        document.querySelectorAll('.btn-close').forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.closest('.fixed').classList.add('hidden');
+            });
+        });
+
+        const btnGuardarEditEmpleado = document.getElementById('btnGuardarEditEmpleado');
+        const btnGuardarEditRemitente = document.getElementById('btnGuardarEditRemitente');
+
+        let originalEditEmpleadoData = {};
+        let originalEditRemitenteData = {};
+
+        /* ===========================
+           MODAL EDITAR EMPLEADO
+        ============================*/
+        document.querySelectorAll('.btn-open-edit-empleado').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const data = {
+                    documento: btn.dataset.documento || '',
+                    nombres: btn.dataset.nombres || '',
+                    apellidos: btn.dataset.apellidos || '',
+                    telefono: btn.dataset.telefono || '',
+                    correo: btn.dataset.correo || '',
+                    area: btn.dataset.area || '',
+                    estado: btn.dataset.estado || ''
+                };
+
+                originalEditEmpleadoData = { ...data };
+
+                document.getElementById('edit_doc_empleado').value = data.documento;
+                document.getElementById('edit_nom_empleado').value = data.nombres;
+                document.getElementById('edit_ape_empleado').value = data.apellidos;
+                document.getElementById('edit_tel_empleado').value = data.telefono;
+                document.getElementById('edit_cor_empleado').value = data.correo;
+                document.getElementById('edit_area_empleado').value = data.area;
+                document.getElementById('edit_estado_empleado').value = data.estado;
+
+                document.getElementById('formEditEmpleado').action = "{{ url('admin/usuarios/empleado') }}/" + data.documento;
+
+                if(btnGuardarEditEmpleado) {
+                    btnGuardarEditEmpleado.disabled = false;
+                    btnGuardarEditEmpleado.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+
+                // Reset validations
+                Object.keys(reglasEditarEmpleado).forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el) el.classList.remove('border-red-500', 'border-green-500');
+                    const err = document.getElementById(reglasEditarEmpleado[id].error);
+                    if(err) err.classList.add('hidden');
+                });
+
+                modalEmpleadoEdit.classList.remove('hidden');
+            });
+        });
 
 {{-- MODAL EDITAR REMITENTE --}}
 <div id="remitenteModalEdit" class="fixed inset-0 bg-black/40 flex items-center justify-center hidden z-50 p-4">

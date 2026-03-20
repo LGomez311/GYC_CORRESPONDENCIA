@@ -17,17 +17,22 @@ class ProfileController extends Controller
 {
     public function updateProfile(Request $request)
     {
-        $user = auth('web')->user();
+        $user = auth()->user();
+        $isEmpleado = $user instanceof \App\Models\Empleado;
+        
+        $emailField = $isEmpleado ? 'emple_correo' : 'rem_correo';
+        $docField = $isEmpleado ? 'emple_doc' : 'rem_doc';
+        $tableName = $isEmpleado ? 'empleado' : 'remitente';
 
         $request->validate([
-            'emple_correo' => 'required|email|max:150|unique:empleado,emple_correo,' . $user->emple_doc . ',emple_doc',
+            $emailField => "required|email|max:150|unique:$tableName,$emailField," . $user->$docField . ",$docField",
             'emple_img' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ], [
-            'emple_correo.unique' => 'Este correo ya está en uso por otro empleado.',
+            "$emailField.unique" => 'Este correo ya está en uso por otro usuario.',
             'emple_img.max' => 'La imagen no debe superar los 2MB.',
         ]);
 
-        $user->emple_correo = $request->emple_correo;
+        $user->$emailField = $request->$emailField;
 
         if ($request->hasFile('emple_img')) {
             $image = $request->file('emple_img');
@@ -60,7 +65,7 @@ class ProfileController extends Controller
 
     public function sendVerificationCode(Request $request)
     {
-        $user = auth('web')->user();
+        $user = auth()->user();
         $code = rand(100000, 999999);
 
         DB::table('password_codes')->updateOrInsert(
@@ -98,7 +103,7 @@ class ProfileController extends Controller
 
     public function updatePassword(Request $request)
     {
-        $user = auth('web')->user();
+        $user = auth()->user();
 
         $request->validate([
             'password_old' => 'required|string',

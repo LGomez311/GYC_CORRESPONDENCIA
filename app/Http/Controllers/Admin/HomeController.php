@@ -106,7 +106,7 @@ class HomeController extends Controller
                     $recientes = Envio::whereHas('quienEnvia', function ($query) use ($user) {
                         $query->where('nit_empresa', $user->nit_empresa);
                     })
-                    ->with('estadoEnvio')
+                    ->with(['estadoEnvio', 'radicado'])
                     ->orderBy('fecha', 'desc')
                     ->take(5)
                     ->get();

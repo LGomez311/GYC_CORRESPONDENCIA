@@ -567,7 +567,7 @@
                                                 <span class="material-symbols-outlined text-xl">lock</span>
                                             </button>
                                         @else
-                                            <button title="Actualizar estado" onclick="openEstadoModal({{ $int->id_detalle }}, '{{ $int->estado ? $int->estado->estado_nomb : '' }}', '{{ $int->envio->radicado->num_radicado ?? '' }}', 'interna')" class="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-blue-400 p-1">
+                                            <button title="Actualizar estado" onclick="openEstadoModal({{ $int->id_detalle }}, '{{ $int->estado ? $int->estado->estado_nomb : '' }}', '{{ $int->envio->radicado->num_radicado ?? '' }}', 'interna', {{ $int->envio->tipoEnvio?->requiere_respuesta ?? 0 }})\" class="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-blue-400 p-1">
                                                 <span class="material-symbols-outlined text-xl">edit_document</span>
                                             </button>
                                         @endif
@@ -665,10 +665,12 @@
             </button>
         </div>
         
-        <form id="formUpdateEstado" method="POST" action="" enctype="multipart/form-data" class="flex flex-col overflow-hidden">
+        <form id="formUpdateEstado" method="POST" action="" enctype="multipart/form-data" class="flex flex-col overflow-hidden" onsubmit="return validarEnvioEstado(this)">
             @csrf
             <!-- Hidden input to know which pagination page to return to -->
             <input type="hidden" name="int_page" id="intPageInput" value="1">
+            <!-- Hidden input for requiring response validation -->
+            <input type="hidden" id="requiere_respuesta_hidden" value="0">
 
             <div class="p-6 space-y-4 overflow-y-auto flex-1">
                 <div>
@@ -1064,7 +1066,10 @@
         // Interceptar envíos de formulario (si los hay en esta vista)
         const forms = document.querySelectorAll('form');
         forms.forEach(form => {
-            form.addEventListener('submit', () => {
+            form.addEventListener('submit', (e) => {
+                // Si la validación falló (e.defaultPrevented ya es true), no mostrar cargando
+                if (e.defaultPrevented) return;
+
                 sessionStorage.setItem('scrollPositionFinalizada', window.scrollY);
                 const submitBtn = form.querySelector('button[type="submit"]');
                 if (submitBtn) {
@@ -1077,7 +1082,19 @@
 
     let currentModalType = '';
 
-    function openEstadoModal(id, estadoActual, radicado, tipo) {
+    function openEstadoModal(id, estadoActual, radicado, tipo, requiereRespuesta = 0) {
+        document.getElementById('requiere_respuesta_hidden').value = requiereRespuesta;
+        
+        // Update label with asterisk if required
+        const labelArchivo = document.querySelector('#archivoRespuestaContainer label');
+        if (labelArchivo) {
+            if (requiereRespuesta == 1) {
+                labelArchivo.innerHTML = 'Archivo de Respuesta <span class="text-red-500 font-bold">*</span> <span class="text-xs font-normal text-gray-500 dark:text-gray-400 ml-1">(Obligatorio PDF)</span>';
+            } else {
+                labelArchivo.innerHTML = 'Archivo de Respuesta <span class="text-xs font-normal text-gray-500 dark:text-gray-400 ml-1">(Opcional PDF)</span>';
+            }
+        }
+
         document.getElementById('modalEstadoTitle').innerText = 'Actualizar Radicado ' + (radicado || '');
         document.getElementById('estado_actual_input').value = estadoActual || 'Sin Estado';
         
@@ -1175,22 +1192,42 @@
         const select = document.getElementById('estadoSelectOptions');
         const fileContainer = document.getElementById('archivoRespuestaContainer');
         const formAction = document.getElementById('formUpdateEstado').action;
+        const requiereRespuesta = document.getElementById('requiere_respuesta_hidden').value;
         
-        // Only toggle for internal correspondence forms when changing state
-        if (formAction.includes('interna')) {
-            if (select.value === 'Resuelto') {
-                fileContainer.classList.remove('hidden');
-            } else {
-                fileContainer.classList.add('hidden');
-                
-                // Clear the main answer file
-                const fileInputMain = fileContainer.querySelector('input[name="archivo_respuesta"]');
-                if(fileInputMain) fileInputMain.value = '';
-                
-                // Clear custom anexos responses
-                clearCustomFileInput('archivos_respuesta_input', 'respuestasList');
+        // Show file containers for BOTH internal and external when "Resuelto" (or similar final state) is selected
+        if (select.value === 'Resuelto') {
+            fileContainer.classList.remove('hidden');
+        } else {
+            fileContainer.classList.add('hidden');
+            
+            // Clear the main answer file
+            const fileInputMain = fileContainer.querySelector('input[name="archivo_respuesta"]');
+            if(fileInputMain) fileInputMain.value = '';
+            
+            // Clear custom anexos responses
+            clearCustomFileInput('archivos_respuesta_input', 'respuestasList');
+        }
+    }
+
+    function validarEnvioEstado(form) {
+        const nuevoEstado = document.getElementById('estadoSelectOptions').value;
+        const requiereRespuesta = document.getElementById('requiere_respuesta_hidden').value;
+        
+        if (nuevoEstado === 'Resuelto' && requiereRespuesta == 1) {
+            const archivoPrincipal = form.querySelector('input[name="archivo_respuesta"]');
+            const anexos = document.getElementById('archivos_respuesta_input');
+            
+            // Check if at least one file is selected
+            if ((!archivoPrincipal || archivoPrincipal.files.length === 0) && (!anexos || anexos.files.length === 0)) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Respuesta Obligatoria',
+                    text: 'Este tipo de documento requiere obligatoriamente adjuntar un archivo de respuesta para poder marcarlo como Resuelto/Finalizado.'
+                });
+                return false;
             }
         }
+        return true;
     }
 
     // ==========================================

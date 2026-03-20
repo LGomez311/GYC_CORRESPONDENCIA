@@ -169,12 +169,12 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 relative z-10">
                         <div>
                             <p class="text-slate-500 dark:text-slate-400 font-medium">Radicado</p>
-                            <p class="text-[#0d121b] dark:text-gray-100 font-bold text-base">{{ $resultado->num_radicado }}</p>
+                            <p class="text-[#0d121b] dark:text-gray-100 font-bold text-base">{{ $resultado->radicado->num_radicado }}</p>
                         </div>
                         <div>
                             <p class="text-slate-500 dark:text-slate-400 font-medium">Estado del trámite</p>
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ stripos($resultado->estado_nomb, 'finalizado') !== false ? 'bg-green-100 text-green-800' : (stripos($resultado->estado_nomb, 'rechazado') !== false ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800') }}">
-                                {{ $resultado->estado_nomb }}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ stripos($resultado->estado->estado_nomb, 'finalizado') !== false ? 'bg-green-100 text-green-800' : (stripos($resultado->estado->estado_nomb, 'rechazado') !== false ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800') }}">
+                                {{ $resultado->estado->estado_nomb }}
                             </span>
                         </div>
                         <div class="sm:col-span-2">
@@ -183,13 +183,60 @@
                         </div>
                         <div class="sm:col-span-2">
                             <p class="text-slate-500 dark:text-slate-400 font-medium">Tipo de Correspondencia</p>
-                            <p class="text-[#0d121b] dark:text-gray-100">{{ $resultado->tipo_nombre }}</p>
+                            <p class="text-[#0d121b] dark:text-gray-100">{{ $resultado->tipo->tipo_nombre }}</p>
                         </div>
                         <div>
                             <p class="text-slate-500 dark:text-slate-400 font-medium">Fecha de Recepción</p>
                             <p class="text-[#0d121b] dark:text-gray-100">{{ \Carbon\Carbon::parse($resultado->fecha_hora_recib)->format('d/m/Y h:i A') }}</p>
                         </div>
                     </div>
+
+                    {{-- Sección de Documentos de Respuesta --}}
+                    @if($resultado->detalles && $resultado->detalles->count() > 0)
+                        <div class="mt-4 pt-4 border-t border-blue-100 dark:border-slate-700 relative z-10">
+                            <h4 class="text-sm font-bold text-primary dark:text-blue-400 mb-3 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-lg">task</span>
+                                Documentos de Respuesta
+                            </h4>
+                            <div class="space-y-3">
+                                @foreach($resultado->detalles as $detalle)
+                                    @if($detalle->archivo_res)
+                                        <div class="flex items-center justify-between bg-white dark:bg-slate-900/50 p-3 rounded-xl border border-blue-100 dark:border-slate-700">
+                                            <div class="flex items-center gap-3">
+                                                <span class="material-symbols-outlined text-emerald-500">description</span>
+                                                <div class="flex flex-col">
+                                                    <p class="text-[11px] font-bold text-slate-700 dark:text-slate-300 leading-none">Respuesta Oficial</p>
+                                                    <p class="text-[9px] text-slate-500 mt-1">Soporte principal de respuesta</p>
+                                                </div>
+                                            </div>
+                                            <a href="{{ asset('storage/' . $detalle->archivo_res) }}" target="_blank" class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 text-white rounded-lg text-[10px] font-bold hover:bg-emerald-600 transition-colors shrink-0">
+                                                <span class="material-symbols-outlined text-sm">visibility</span>
+                                                Ver
+                                            </a>
+                                        </div>
+                                    @endif
+
+                                    @if($detalle->anexosRespuesta && $detalle->anexosRespuesta->count() > 0)
+                                        @foreach($detalle->anexosRespuesta as $anexo)
+                                            <div class="flex items-center justify-between bg-white dark:bg-slate-900/50 p-3 rounded-xl border border-blue-100 dark:border-slate-700">
+                                                <div class="flex items-center gap-3">
+                                                    <span class="material-symbols-outlined text-amber-500">attach_file</span>
+                                                    <div class="flex flex-col">
+                                                        <p class="text-[11px] font-bold text-slate-700 dark:text-slate-300 leading-none">Anexo de Respuesta</p>
+                                                        <p class="text-[9px] text-slate-500 mt-1 truncate max-w-[150px]">{{ $anexo->nombre_original }}</p>
+                                                    </div>
+                                                </div>
+                                                <a href="{{ asset('storage/' . $anexo->ruta_archivo) }}" target="_blank" class="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 text-white rounded-lg text-[10px] font-bold hover:bg-amber-600 transition-colors shrink-0">
+                                                    <span class="material-symbols-outlined text-sm">visibility</span>
+                                                    Ver
+                                                </a>
+                                            </div>
+                                        @endforeach
+                                    @endif
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
         @endif

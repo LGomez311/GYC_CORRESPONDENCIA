@@ -394,10 +394,10 @@
                         @endforeach
 
                         @if (
-                            $rechazosInternos->isEmpty() &&
-                                $nuevasExternas->isEmpty() &&
-                                $nuevasInternas->isEmpty() &&
-                                $respuestasInternas->isEmpty())
+                            count($rechazosInternos) === 0 &&
+                                count($nuevasExternas) === 0 &&
+                                count($nuevasInternas) === 0 &&
+                                count($respuestasInternas) === 0)
                             <li class="p-10 text-center text-gray-500 dark:text-gray-400">
                                 <span
                                     class="material-symbols-outlined text-5xl mb-3 block opacity-20">notifications_off</span>

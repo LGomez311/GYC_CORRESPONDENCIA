@@ -181,7 +181,7 @@ Route::prefix('admin')
         Route::get('/correspondencia/export/excel', [\App\Http\Controllers\Admin\AdminCorrespondenciaController::class, 'exportExcel'])->name('admin.correspondencia.export.excel');
         Route::get('/correspondencia/export/pdf', [\App\Http\Controllers\Admin\AdminCorrespondenciaController::class, 'exportPdf'])->name('admin.correspondencia.export.pdf');
 
-        
+
 
 
         // Usuarios (Empleados y Remitentes)
@@ -436,7 +436,7 @@ use App\Http\Controllers\Public\CorrespondenciaExternaController;
 Route::prefix('correspondencia')->name('public.correspondencia.')->group(function () {
     Route::get('/enviar', [CorrespondenciaExternaController::class, 'create'])->name('enviar');
     Route::post('/enviar', [CorrespondenciaExternaController::class, 'store'])->name('store')->middleware('throttle:5,1');
-    
+
     Route::get('/consultar', [CorrespondenciaExternaController::class, 'consultar'])->name('consultar');
     Route::post('/buscar', [CorrespondenciaExternaController::class, 'buscarRadicado'])->name('buscar');
 });

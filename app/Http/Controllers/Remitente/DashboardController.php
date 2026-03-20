@@ -37,7 +37,22 @@ class DashboardController extends Controller
         $empleados = \App\Models\Empleado::where('emple_rol', 3)->get();
         $estados = \App\Models\Estado::all();
 
-        return view('remitente.index', compact('stats', 'correspondencias', 'tipos', 'empleados', 'estados', 'estadoId'));
+        $todosDestinatarios = \App\Models\Empleado::with('area')
+            ->where('emple_rol', '=', 3)
+            ->get()
+            ->map(function($e) {
+                return [
+                    'emple_doc' => (string) $e->emple_doc,
+                    'emple_nombres' => $e->emple_nombres,
+                    'emple_apellidos' => $e->emple_apellidos,
+                    'tipo' => 'empleado',
+                    'area_nombre' => $e->area ? $e->area->area_nom : null
+                ];
+            })
+            ->sortBy('emple_nombres')
+            ->values();
+
+        return view('remitente.index', compact('stats', 'correspondencias', 'tipos', 'empleados', 'estados', 'estadoId', 'todosDestinatarios'));
     }
 
     public function recibidosProceso(Request $request)
@@ -125,6 +140,9 @@ class DashboardController extends Controller
 
     private function getBaseQuery($remDoc)
     {
+        $remitente = Auth::guard('remitente')->user();
+        $nitEmpresa = $remitente ? $remitente->nit_empresa : null;
+
         return Recibido::with([
             'estado', 
             'tipo', 
@@ -139,25 +157,46 @@ class DashboardController extends Controller
             'detalles.empleado.area',
             'detalles.estado'
         ])
-            ->where('doc_quien_registra', $remDoc)
+            ->where('nit_empresa', $nitEmpresa)
+            ->where(function($q) use ($remDoc) {
+                $q->where('doc_quien_registra', $remDoc)
+                  ->orWhereNull('doc_quien_registra');
+            })
             ->orderByRaw('CASE WHEN id_estado_rec = 11 THEN 0 ELSE 1 END')
             ->orderBy('fecha_hora_recib', 'desc');
     }
 
     private function getStats($remDoc)
     {
+        $remitente = Auth::guard('remitente')->user();
+        $nitEmpresa = $remitente ? $remitente->nit_empresa : null;
+
+        $base = DB::table('recibido')
+            ->where('nit_empresa', $nitEmpresa)
+            ->where(function($q) use ($remDoc) {
+                $q->where('doc_quien_registra', $remDoc)
+                  ->orWhereNull('doc_quien_registra');
+            });
+
         return [
-            'total' => DB::table('recibido')->where('doc_quien_registra', $remDoc)->count(),
-            'rejected' => DB::table('recibido')->where('doc_quien_registra', $remDoc)->where('id_estado_rec', 11)->count(),
-            'resolved' => DB::table('recibido')->where('doc_quien_registra', $remDoc)->whereIn('id_estado_rec', [9, 10, 14])->count(),
-            'pending' => DB::table('recibido')->where('doc_quien_registra', $remDoc)->whereNotIn('id_estado_rec', [9, 10, 11, 14])->count(),
+            'total' => (clone $base)->count(),
+            'rejected' => (clone $base)->where('id_estado_rec', 11)->count(),
+            'resolved' => (clone $base)->whereIn('id_estado_rec', [9, 10, 14])->count(),
+            'pending' => (clone $base)->whereNotIn('id_estado_rec', [9, 10, 11, 14])->count(),
         ];
     }
 
     private function syncRejected($remDoc)
     {
+        $remitente = Auth::guard('remitente')->user();
+        $nitEmpresa = $remitente ? $remitente->nit_empresa : null;
+
         DB::table('recibido')
-            ->where('doc_quien_registra', $remDoc)
+            ->where('nit_empresa', $nitEmpresa)
+            ->where(function($q) use ($remDoc) {
+                $q->where('doc_quien_registra', $remDoc)
+                  ->orWhereNull('doc_quien_registra');
+            })
             ->where('id_estado_rec', '!=', 11)
             ->whereIn('id_recibido', function($query) {
                 $query->select('det_id_recibido')

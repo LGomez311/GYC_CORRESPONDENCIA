@@ -230,10 +230,17 @@ class CorrespondenciaController extends Controller
             return back()->with('error', 'No está permitido regresar la correspondencia a un estado anterior.');
         }
 
-        // Validación requiere_respuesta: No se puede archivar (10) si requiere respuesta
+        // Validación requiere_respuesta: No se puede archivar (10) o Resolver (9) si requiere respuesta y no hay archivo
         $requiereRespuesta = $detalleAntiguo->recibido?->tipo?->requiere_respuesta ?? 0;
-        if ($estado->id_estado == 10 && $requiereRespuesta == 1) {
+        if ($requiereRespuesta == 1) {
+            if ($estado->id_estado == 10) {
             return back()->with('error', 'Esta correspondencia requiere una respuesta obligatoria y no puede ser archivada sin ser resuelta.');
+            }
+            if ($estado->id_estado == 9) {
+                if (!$request->hasFile('archivo_respuesta') && !$request->hasFile('archivos_respuesta')) {
+                    return back()->with('error', 'Este tipo de documento requiere obligatoriamente adjuntar un archivo de respuesta para poder marcarlo como Resuelto/Finalizado.');
+                }
+            }
         }
 
         // Crear un NUEVO registro para la trazabilidad
@@ -345,10 +352,17 @@ class CorrespondenciaController extends Controller
             return back()->with('error', 'No está permitido regresar la correspondencia interna a un estado anterior.');
         }
 
-        // Validación requiere_respuesta: No se puede archivar (10) si requiere respuesta
+        // Validación requiere_respuesta: No se puede archivar (10) o Resolver (9) si requiere respuesta y no hay archivo
         $requiereRespuestaInt = $detalleAntiguo->envio?->tipoEnvio?->requiere_respuesta ?? 0;
-        if ($estado->id_estado == 10 && $requiereRespuestaInt == 1) {
+        if ($requiereRespuestaInt == 1) {
+            if ($estado->id_estado == 10) {
             return back()->with('error', 'Esta correspondencia interna requiere una respuesta obligatoria y no puede ser archivada sin ser resuelta.');
+            }
+            if ($estado->id_estado == 9) {
+                if (!$request->hasFile('archivo_respuesta') && !$request->hasFile('archivos_respuesta')) {
+                    return back()->with('error', 'Esta correspondencia interna requiere obligatoriamente adjuntar un archivo de respuesta para poder marcarla como Resuelto/Finalizado.');
+                }
+            }
         }
 
         // Create new trace for internal

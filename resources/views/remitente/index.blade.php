@@ -376,6 +376,12 @@
                                                         <span
                                                             class="material-symbols-outlined text-[20px] font-variation-icon">outbox</span>
                                                     </button>
+                                                @elseif($c->id_estado_rec == 12 && count($filteredDetalles) === 0)
+                                                    <button onclick="openAssignModal({{ $c->id_recibido }})"
+                                                        class="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors border border-blue-100 dark:border-blue-800"
+                                                        title="Asignar Destinatarios">
+                                                        <span class="material-symbols-outlined text-[20px]">person_add</span>
+                                                    </button>
                                                 @else
                                                     <div class="p-1.5 text-gray-300 dark:text-gray-700 cursor-not-allowed">
                                                         <span class="material-symbols-outlined text-[20px]">lock</span>
@@ -582,19 +588,13 @@
                                         <span class="material-symbols-outlined text-gray-400 text-xs">search</span>
                                     </span>
                                     <input type="text" id="recipientSearch"
-                                        class="block w-full pl-7 pr-2 py-1.5 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-[10px] focus:ring-primary focus:border-primary dark:text-white"
+                                        class="block w-full pl-7 pr-2 py-1.5 border border-gray-100 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700 text-[10px] focus:ring-primary focus:border-primary dark:text-white"
                                         placeholder="Documento, nombre o área...">
                                 </div>
                             </div>
                             <div
                                 class="bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-600 rounded-xl overflow-hidden">
                                 <div id="recipientList" class="max-h-56 overflow-y-auto p-2 space-y-1">
-                                    @php
-                                        $empleados = \App\Models\Empleado::with('area')
-                                            ->where('emple_rol', '=', 3)
-                                            ->orderBy('emple_nombres')
-                                            ->get();
-                                    @endphp
                                     @foreach ($empleados as $e)
                                         <label
                                             class="recipient-item flex items-center gap-3 p-2 rounded-lg hover:bg-white dark:hover:bg-gray-700 cursor-pointer transition-all border border-transparent hover:border-gray-100 dark:hover:border-gray-600"
@@ -648,6 +648,80 @@
         </div>
     </div>
 
+    <!-- Assign Modal -->
+    <div id="assignModal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeModal('assignModal')"></div>
+            <div class="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden transform transition-all font-display">
+                <form id="assignForm" method="POST">
+                    @csrf
+                    <div class="px-8 py-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-blue-50/50 dark:bg-blue-900/20">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-2xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                                <span class="material-symbols-outlined">person_add</span>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">Asignar Destinatarios</h3>
+                                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest" id="assignRadText">Radicado: -</p>
+                            </div>
+                        </div>
+                        <button type="button" onclick="closeModal('assignModal')" class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+
+                    <div class="p-8 space-y-6">
+                        <div>
+                            <div class="flex justify-between items-end mb-3">
+                                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Seleccionar Funcionarios</label>
+                                <div class="relative w-48">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-2">
+                                        <span class="material-symbols-outlined text-gray-400 text-xs">search</span>
+                                    </span>
+                                    <input type="text" id="assignRecipientSearch" class="block w-full pl-7 pr-2 py-1.5 border border-gray-100 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900/50 text-[10px] focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none dark:text-white" placeholder="Buscar...">
+                                </div>
+                            </div>
+                            <div class="bg-gray-50/50 dark:bg-gray-900/30 border border-gray-100 dark:border-gray-700 rounded-2xl overflow-hidden">
+                                <div id="assignRecipientList" class="max-h-64 overflow-y-auto p-2 space-y-1">
+                                    @foreach($todosDestinatarios as $e)
+                                        <label class="assign-recipient-item flex items-center gap-3 p-2.5 rounded-xl hover:bg-white dark:hover:bg-gray-800 cursor-pointer transition-all border border-transparent hover:border-gray-100 dark:hover:border-gray-700 select-none"
+                                            data-name="{{ strtolower($e['emple_nombres'] . ' ' . $e['emple_apellidos']) }}" 
+                                            data-doc="{{ $e['emple_doc'] }}" 
+                                            data-area="{{ strtolower($e['area_nombre'] ?? 'sin área') }}">
+                                            <input type="checkbox" name="destinatarios[]" value="{{ $e['emple_doc'] }}" 
+                                                class="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500/20 dark:bg-gray-700 dark:border-gray-600">
+                                            
+                                            <div class="flex items-center gap-3 flex-1 min-w-0">
+                                                <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-sm border border-blue-700">
+                                                    {{ strtoupper(substr($e['emple_nombres'], 0, 1)) }}{{ strtoupper(substr($e['emple_apellidos'], 0, 1)) }}
+                                                </div>
+                                                <div class="flex flex-col min-w-0">
+                                                    <span class="text-sm font-semibold text-gray-700 dark:text-gray-200 truncate">{{ $e['emple_nombres'] }} {{ $e['emple_apellidos'] }}</span>
+                                                    <span class="text-[10px] text-gray-400 truncate">{{ $e['area_nombre'] ?? 'Sin área' }} • {{ $e['emple_doc'] }}</span>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
+                            <p class="text-[9px] text-gray-400 mt-3 px-1 flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[12px]">info</span>
+                                Puedes seleccionar varios empleados para asignarles esta correspondencia.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="p-6 bg-gray-50/50 dark:bg-gray-900/30 border-t border-gray-100 dark:border-gray-700 flex gap-3">
+                        <button type="button" onclick="closeModal('assignModal')" class="flex-1 px-5 py-3 text-xs font-black uppercase tracking-widest text-gray-500 hover:text-gray-700 transition-all">Cancelar</button>
+                        <button type="submit" class="flex-[2] flex items-center justify-center gap-2 px-6 py-3 text-xs font-bold text-white bg-blue-600 rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 dark:shadow-blue-900/30 active:scale-[0.98]">
+                            <span class="material-symbols-outlined text-[18px]">person_add</span>
+                            Confirmar Asignación
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
     <script>
         // Global data store to avoid quote/escaping issues in onclick handlers
         window.correspondenceData = @json($correspondencias->keyBy('id_recibido'));
@@ -662,6 +736,49 @@
             document.getElementById(id).classList.add('hidden');
             document.body.style.overflow = '';
         }
+
+        // Assignment Modal Logic
+        function openAssignModal(id) {
+            const c = window.correspondenceData[id];
+            if (!c) return;
+
+            document.getElementById('assignRadText').textContent = `Radicado: ${c.radicado ? c.radicado.num_radicado : 'SIN RADICADO'}`;
+            document.getElementById('assignForm').action = `/remitente/externarec/${id}/asignar`;
+            
+            // Clear previous selections
+            document.querySelectorAll('#assignRecipientList input[type="checkbox"]').forEach(cb => cb.checked = false);
+            
+            openModal('assignModal');
+        }
+
+        // Unified Search Logic for Recipients
+        function setupRecipientSearch(inputId, listId, itemClass) {
+            const searchInput = document.getElementById(inputId);
+            const items = document.querySelectorAll(`.${itemClass}`);
+
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const query = this.value.toLowerCase().trim();
+                    
+                    items.forEach(item => {
+                        const name = item.getAttribute('data-name') || '';
+                        const doc = item.getAttribute('data-doc') || '';
+                        const area = item.getAttribute('data-area') || '';
+                        
+                        if (name.includes(query) || doc.includes(query) || area.includes(query)) {
+                            item.style.display = 'flex';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            setupRecipientSearch('recipientSearch', 'recipientList', 'recipient-item');
+            setupRecipientSearch('assignRecipientSearch', 'assignRecipientList', 'assign-recipient-item');
+        });
 
         // Helper for initials/avatar
         function getAvatarHtml(dest) {
@@ -1155,18 +1272,38 @@
                 // Start page counting
                 const folioInput = document.getElementById('salienteFolio');
                 folioInput.value = '...';
-                folioInput.disabled = true;
+                folioInput.readOnly = true;
 
+                let totalPages = 0;
                 try {
-                    const pdfPath = `/storage/${responseDetail.archivo_res}`;
-                    const loadingTask = pdfjsLib.getDocument(pdfPath);
-                    const pdf = await loadingTask.promise;
-                    folioInput.value = pdf.numPages;
+                    // Count main document
+                    if (responseDetail.archivo_res && responseDetail.archivo_res.toLowerCase().endsWith('.pdf')) {
+                        const loadingTask = pdfjsLib.getDocument(`/storage/${responseDetail.archivo_res}`);
+                        const pdf = await loadingTask.promise;
+                        totalPages += pdf.numPages;
+                    } else if (responseDetail.archivo_res) {
+                        totalPages += 1;
+                    }
+
+                    // Count annexes
+                    for (const anexo of responseAnnexes) {
+                        if (anexo.ruta_archivo && anexo.ruta_archivo.toLowerCase().endsWith('.pdf')) {
+                            try {
+                                const loadingTask = pdfjsLib.getDocument(`/storage/${anexo.ruta_archivo}`);
+                                const pdf = await loadingTask.promise;
+                                totalPages += pdf.numPages;
+                            } catch (annexError) {
+                                console.error('Error counting annex PDF:', annexError);
+                                totalPages += 1;
+                            }
+                        } else {
+                            totalPages += 1;
+                        }
+                    }
+                    folioInput.value = totalPages > 0 ? totalPages : 1;
                 } catch (error) {
                     console.error('Error counting PDF pages:', error);
                     folioInput.value = 1;
-                } finally {
-                    folioInput.disabled = false;
                 }
             }
 
@@ -1291,8 +1428,8 @@
                         <div>
                             <label
                                 class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Folios</label>
-                            <input type="text" name="folio" id="salienteFolio" required
-                                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none dark:text-white">
+                            <input type="text" name="folio" id="salienteFolio" required readonly
+                                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none dark:text-white cursor-not-allowed">
                         </div>
                     </div>
 

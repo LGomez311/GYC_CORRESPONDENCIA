@@ -227,7 +227,7 @@
                                 </span>
                             </td>
                             <td class="px-4 py-3 dark:text-gray-300">
-                                {{ $reciente->num_radicado_int ?? 'N/A' }}
+                                {{ $reciente->radicado ? $reciente->radicado->num_radicado : 'N/A' }}
                             </td>
                             <td class="px-4 py-3 text-center">
                                 <span class="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
@@ -240,7 +240,7 @@
                         </tr>
                     @endforeach
 
-                    @if($recientes->isEmpty())
+                    @if(count($recientes) === 0)
                         <tr>
                             <td colspan="4" class="px-4 py-4 text-center text-gray-500">
                                 No hay actividad registrada recientemente.

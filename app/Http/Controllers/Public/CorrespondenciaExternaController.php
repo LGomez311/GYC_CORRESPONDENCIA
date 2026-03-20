@@ -68,21 +68,6 @@ class CorrespondenciaExternaController extends Controller
         // Definir la empresa receptora (desde el formulario)
         $nitEmpresa = $validated['empresa_destino'];
         
-        // Empleado de recepción: admin (rol=2) de la empresa destino
-        $empleadoRecepcion = \App\Models\Empleado::where('nit_empresa', $nitEmpresa)
-            ->where('emple_rol', 2)
-            ->where('emple_estado', 1)
-            ->first();
-        
-        // Si no hay admin activo, buscamos cualquier empleado activo de la empresa
-        if (!$empleadoRecepcion) {
-            $empleadoRecepcion = \App\Models\Empleado::where('nit_empresa', $nitEmpresa)
-                ->where('emple_estado', 1)
-                ->first();
-        }
-        
-        $docDestinatario = $empleadoRecepcion ? $empleadoRecepcion->emple_doc : null;
-
         // Determinar datos del remitente
         $tipoRemitente = $validated['tipo_remitente'];
         if ($tipoRemitente === 'Empresa') {
@@ -156,16 +141,9 @@ class CorrespondenciaExternaController extends Controller
                 ]);
             }
 
-            // 6. Trazabilidad
-            if ($docDestinatario) {
-                DB::table('detalle_recibido')->insert([
-                    'det_id_recibido'  => $idRecibido,
-                    'det_doc_empleado' => $docDestinatario,
-                    'fecha_re'         => now(),
-                    'id_estado_rec'    => 7,
-                    'observaciones'    => 'Documento recibido desde formulario externo'
-                ]);
-            }
+            // 6. Traceability logic removed to allow manual assignment from dashboard
+
+
             
 
             DB::commit();
@@ -232,29 +210,29 @@ class CorrespondenciaExternaController extends Controller
         }
 
         try {
-            $query = DB::table('recibido')
-                ->join('radicados', 'recibido.num_radicado_int', '=', 'radicados.id_radicado')
-                ->join('tipo', 'recibido.id_tipo', '=', 'tipo.id_tipo')
-                ->join('estado', 'recibido.id_estado_rec', '=', 'estado.id_estado')
-                ->where('radicados.num_radicado', $request->numero_radicado)
-                ->where('recibido.doc_persona', $documentoBuscado);
+            // Refactorizado para usar Eloquent y cargar relaciones de respuesta
+            $query = \App\Models\Recibido::with([
+                'radicado', 
+                'tipo', 
+                'estado', 
+                'detalles' => function($q) {
+                    $q->whereNotNull('archivo_res')
+                      ->orWhereHas('anexosRespuesta');
+                },
+                'detalles.anexosRespuesta'
+            ])
+            ->whereHas('radicado', function($q) use ($request) {
+                $q->where('num_radicado', $request->numero_radicado);
+            })
+            ->where('doc_persona', $documentoBuscado);
 
-            // Refinar la búsqueda basándonos en cómo guardamos el registro (con o sin nom_institucion)
             if ($request->tipo_remitente === 'Empresa') {
-                $query->whereNotNull('recibido.nom_institucion');
+                $query->whereNotNull('nom_institucion');
             } else {
-                $query->whereNull('recibido.nom_institucion');
+                $query->whereNull('nom_institucion');
             }
 
-            $resultado = $query->select(
-                    'radicados.num_radicado',
-                    'recibido.asunto',
-                    'recibido.fecha_hora_recib',
-                    'estado.estado_nomb',
-                    'tipo.tipo_nombre',
-                    'recibido.observaciones'
-                )
-                ->first();
+            $resultado = $query->first();
 
             if (!$resultado) {
                 return redirect()->back()->withInput()->withErrors(['error' => 'No se encontró correspondencia con los datos proporcionados. Verifique el radicado y el documento.']);

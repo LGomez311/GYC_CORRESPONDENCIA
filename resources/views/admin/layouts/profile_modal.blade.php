@@ -1,4 +1,15 @@
 <!-- Global User Settings Modal -->
+@php
+    $profileUser = null;
+    $profileGuard = null;
+    if (auth('web')->check()) {
+        $profileUser = auth('web')->user();
+        $profileGuard = 'web';
+    } elseif (auth('remitente')->check()) {
+        $profileUser = auth('remitente')->user();
+        $profileGuard = 'remitente';
+    }
+@endphp
 <div id="userProfileModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-[100]">
     <div class="bg-white dark:bg-[#161d2b] w-[95%] sm:w-full max-w-lg rounded-xl shadow-2xl overflow-hidden flex flex-col">
         <!-- Header -->
@@ -25,31 +36,34 @@
             <div id="tabContentGeneral" class="block">
                 <form id="formProfileGeneral" onsubmit="submitProfileGeneral(event)">
                     @csrf
-                    <!-- Foto -->
-                    <div class="flex flex-col items-center mb-6">
-                        <div class="w-24 h-24 rounded-full bg-slate-100 dark:bg-gray-800 border-2 border-[#cfd7e7] dark:border-gray-700 overflow-hidden mb-3 relative group flex items-center justify-center" id="profileImagePreviewContainer">
-                            @if(auth('web')->user()->emple_img)
-                                <img src="{{ asset('storage/' . auth('web')->user()->emple_img) }}" class="w-full h-full object-cover" id="profileImagePreview">
-                                <span class="material-symbols-outlined text-4xl text-gray-400 hidden" id="profileImagePlaceholder">person</span>
-                            @else
-                                <img src="" class="w-full h-full object-cover hidden" id="profileImagePreview">
-                                <span class="material-symbols-outlined text-4xl text-gray-400" id="profileImagePlaceholder">person</span>
-                            @endif
-                            <label for="profile_img_input" class="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center cursor-pointer transition-all">
-                                <span class="material-symbols-outlined text-white">photo_camera</span>
-                            </label>
+                    @if ($profileGuard === 'web')
+                        <!-- Foto -->
+                        <div class="flex flex-col items-center mb-6">
+                            <div class="w-24 h-24 rounded-full bg-slate-100 dark:bg-gray-800 border-2 border-[#cfd7e7] dark:border-gray-700 overflow-hidden mb-3 relative group flex items-center justify-center" id="profileImagePreviewContainer">
+                                @if($profileUser && $profileUser->emple_img)
+                                    <img src="{{ asset('storage/' . $profileUser->emple_img) }}" class="w-full h-full object-cover" id="profileImagePreview">
+                                    <span class="material-symbols-outlined text-4xl text-gray-400 hidden" id="profileImagePlaceholder">person</span>
+                                @else
+                                    <img src="" class="w-full h-full object-cover hidden" id="profileImagePreview">
+                                    <span class="material-symbols-outlined text-4xl text-gray-400" id="profileImagePlaceholder">person</span>
+                                @endif
+                                <label for="profile_img_input" class="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center cursor-pointer transition-all">
+                                    <span class="material-symbols-outlined text-white">photo_camera</span>
+                                </label>
+                            </div>
+                            <input type="file" id="profile_img_input" name="emple_img" accept=".jpg,.jpeg,.png,.webp" class="hidden" onchange="previewProfileImage(event)">
+                            <label for="profile_img_input" class="text-sm font-medium text-primary cursor-pointer hover:underline mb-1">Cambiar foto de perfil</label>
+                            <p class="text-xs text-[#4c669a] dark:text-gray-400">Archivos: JPG, PNG, WEBP (Max 2MB)</p>
                         </div>
-                        <input type="file" id="profile_img_input" name="emple_img" accept=".jpg,.jpeg,.png,.webp" class="hidden" onchange="previewProfileImage(event)">
-                        <label for="profile_img_input" class="text-sm font-medium text-primary cursor-pointer hover:underline mb-1">Cambiar foto de perfil</label>
-                        <p class="text-xs text-[#4c669a] dark:text-gray-400">Archivos: JPG, PNG, WEBP (Max 2MB)</p>
-                    </div>
+                    @endif
 
                     <!-- Email -->
                     <div class="mb-5">
                         <label class="block text-sm font-bold text-[#0d121b] dark:text-white mb-2">Correo Electrónico</label>
                         <div class="relative">
                             <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">mail</span>
-                            <input type="email" name="emple_correo" value="{{ auth('web')->user()->emple_correo }}" required
+                            <input type="email" name="{{ $profileGuard === 'web' ? 'emple_correo' : 'rem_correo' }}" 
+                                value="{{ $profileUser ? ($profileGuard === 'web' ? $profileUser->emple_correo : $profileUser->rem_correo) : '' }}" required
                                 class="w-full pl-10 pr-3 py-2 border border-[#cfd7e7] dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm transition-all dark:text-white">
                         </div>
                     </div>
@@ -104,7 +118,11 @@
                     </div>
 
                     <div class="flex justify-between items-center pt-4 border-t border-[#cfd7e7] dark:border-gray-800">
-                        <a href="{{ route('empleado.password.forgot') }}" class="text-sm font-medium text-primary hover:underline">Olvidé mi contraseña</a>
+                        @if ($profileGuard === 'web')
+                            <a href="{{ route('empleado.password.forgot') }}" class="text-sm font-medium text-primary hover:underline">Olvidé mi contraseña</a>
+                        @else
+                            <span></span>
+                        @endif
                         <button type="submit" id="btnSavePassword" class="px-5 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary/90 flex items-center gap-2 transition-all">
                             Actualizar Contraseña
                         </button>

@@ -176,7 +176,7 @@
 
                     <div>
                         <label class="block text-sm font-medium text-[#0d121b] dark:text-gray-200 mb-1">Radicado Externo de la Empresa <span class="text-red-500">*</span></label>
-                        <input type="text" name="radicado_empresa" value="{{ old('radicado_empresa') }}" class="w-full rounded-lg border @error('radicado_empresa') border-red-500 @else border-[#cfd7e7] dark:border-slate-700 @enderror bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none uppercase" maxlength="100" required placeholder="Ej: EXT-2026-00123">
+                        <input type="text" name="radicado_empresa" id="radicado_empresa" value="{{ old('radicado_empresa') }}" class="w-full rounded-lg border @error('radicado_empresa') border-red-500 @else border-[#cfd7e7] dark:border-slate-700 @enderror bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none uppercase" maxlength="100" required placeholder="Ej: EXT-2026-00123">
                         <p class="text-xs text-slate-500 mt-1">Número de radicado interno que asignó su empresa a este documento.</p>
                         @error('radicado_empresa') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
@@ -402,6 +402,7 @@
                     document.getElementById('nit_empresa_remitente').setAttribute('required', 'required');
                     document.getElementById('nombre_empresa').setAttribute('required', 'required');
                     document.getElementById('correo_empresa').setAttribute('required', 'required');
+                    document.getElementById('radicado_empresa').setAttribute('required', 'required');
 
                     hiddenInput.value = 'Empresa';
                 } else {
@@ -419,6 +420,7 @@
                     document.getElementById('nit_empresa_remitente').removeAttribute('required');
                     document.getElementById('nombre_empresa').removeAttribute('required');
                     document.getElementById('correo_empresa').removeAttribute('required');
+                    document.getElementById('radicado_empresa').removeAttribute('required');
                     
                     document.getElementById('tipo_documento').setAttribute('required', 'required');
                     document.getElementById('numero_documento').setAttribute('required', 'required');
@@ -707,10 +709,10 @@
                         mensajes: { required: 'El documento es obligatorio.', min: 'Mínimo 6 dígitos.', max: 'Máximo 10 dígitos.', regex: 'Solo números.', custom: 'Evite números repetidos.' }
                     },
                     nombre_persona: {
-                        required: true, min: 3, max: 60, regex: /^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3,}( [A-Za-zÁÉÍÓÚáéíóúÑñ]{3,})?$/,
-                        custom: function(valor) { return valor.trim().split(/\s+/).length <= 2; },
+                        required: true, min: 3, max: 100, regex: /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/,
+                        custom: function(valor) { return valor.trim().split(/\s+/).length >= 1; },
                         error: 'error-nombre_persona',
-                        mensajes: { required: 'El nombre es obligatorio.', min: 'Debe tener al menos 3 letras.', max: 'Máximo 60 caracteres.', regex: 'Solo letras y tildes.', custom: 'Máximo 2 palabras.' }
+                        mensajes: { required: 'El nombre es obligatorio.', min: 'Debe tener al menos 3 letras.', max: 'Máximo 100 caracteres.', regex: 'Solo letras y tildes.', custom: 'Escriba su nombre completo.' }
                     },
                     correo_persona: {
                         required: true, regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
@@ -834,19 +836,7 @@
                     else btn.classList.add('border-red-500');
                 }
 
-                document.querySelectorAll('input[name="tipo_remitente"]').forEach(radio => {
-                    radio.addEventListener('change', () => {
-                        document.querySelectorAll('#seccion_persona input, #seccion_empresa input').forEach(inp => {
-                            inp.classList.remove('border-red-500', 'border-green-500');
-                            inp.classList.add('border-[#cfd7e7]', 'dark:border-slate-700');
-                            const errId = reglasCrear[inp.id] ? reglasCrear[inp.id].error : null;
-                            if (errId) {
-                                const errEl = document.getElementById(errId);
-                                if (errEl) errEl.classList.add('hidden');
-                            }
-                        });
-                    });
-                });
+                // El tipo de remitente se maneja mediante tabs y activarTab()
 
                 document.getElementById('form-correspondencia').addEventListener('submit', function(e) {
                     e.preventDefault();
@@ -916,7 +906,7 @@
                             inputAnexos.files = dt.files;
 
                             Swal.fire({ title: 'Procesando...', text: 'Registrando correspondencia, por favor espere.', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-                            this.submit();
+                            document.getElementById('form-correspondencia').submit();
                         }
                     });
                 });

@@ -719,10 +719,12 @@
             </button>
         </div>
         
-        <form id="formUpdateEstado" method="POST" action="" enctype="multipart/form-data" class="flex flex-col overflow-hidden">
+        <form id="formUpdateEstado" method="POST" action="" enctype="multipart/form-data" class="flex flex-col overflow-hidden" onsubmit="return validarEnvioEstado(this)">
             @csrf
             <!-- Hidden input to know which pagination page to return to -->
             <input type="hidden" name="int_page" id="intPageInput" value="1">
+            <!-- Hidden input for requiring response validation -->
+            <input type="hidden" id="requiere_respuesta_hidden" value="0">
 
             <div class="p-6 space-y-4 overflow-y-auto flex-1">
                 <div>
@@ -1298,7 +1300,11 @@
         // Interceptar envíos de formulario para guardar estado y mostrar loading
         const forms = document.querySelectorAll('form');
         forms.forEach(form => {
-            form.addEventListener('submit', () => {
+            form.addEventListener('submit', (e) => {
+                // Si la validación falló (e.defaultPrevented ya es true), no mostrar cargando
+                // Usamos un pequeño delay opcional o simplemente el check si onsubmit ya disparó
+                if (e.defaultPrevented) return;
+
                 sessionStorage.setItem('scrollPosition', window.scrollY);
                 
                 // Mostrar un loader simple (opcional, mejora la percepción)
@@ -1314,6 +1320,18 @@
     let currentModalType = '';
 
     function openEstadoModal(id, estadoActual, radicado, tipo, requiereRespuesta = 0) {
+        document.getElementById('requiere_respuesta_hidden').value = requiereRespuesta;
+        
+        // Update label with asterisk if required
+        const labelArchivo = document.querySelector('#archivoRespuestaContainer label');
+        if (labelArchivo) {
+            if (requiereRespuesta == 1) {
+                labelArchivo.innerHTML = 'Archivo de Respuesta <span class="text-red-500 font-bold">*</span> <span class="text-xs font-normal text-gray-500 dark:text-gray-400 ml-1">(Obligatorio PDF)</span>';
+            } else {
+                labelArchivo.innerHTML = 'Archivo de Respuesta <span class="text-xs font-normal text-gray-500 dark:text-gray-400 ml-1">(Opcional PDF)</span>';
+            }
+        }
+
         document.getElementById('modalEstadoTitle').innerText = 'Actualizar Radicado ' + (radicado || '');
         document.getElementById('estado_actual_input').value = estadoActual || 'Sin Estado';
         
@@ -1409,6 +1427,7 @@
     function toggleArchivoRespuesta() {
         const select = document.getElementById('estadoSelectOptions');
         const fileContainer = document.getElementById('archivoRespuestaContainer');
+        const requiereRespuesta = document.getElementById('requiere_respuesta_hidden').value;
         
         // Show file containers for BOTH internal and external when "Resuelto" (or similar final state) is selected
         if (select.value === 'Resuelto') {
@@ -1429,6 +1448,27 @@
             const foliosInput = document.getElementById('folios_respuesta_input');
             if (foliosInput) foliosInput.value = 0;
         }
+    }
+
+    function validarEnvioEstado(form) {
+        const nuevoEstado = document.getElementById('estadoSelectOptions').value;
+        const requiereRespuesta = document.getElementById('requiere_respuesta_hidden').value;
+        
+        if (nuevoEstado === 'Resuelto' && requiereRespuesta == 1) {
+            const archivoPrincipal = document.getElementById('archivo_respuesta_input');
+            const anexos = document.getElementById('archivos_respuesta_input');
+            
+            // Check if at least one file is selected
+            if ((!archivoPrincipal || archivoPrincipal.files.length === 0) && (!anexos || anexos.files.length === 0)) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Respuesta Obligatoria',
+                    text: 'Este tipo de documento requiere obligatoriamente adjuntar un archivo de respuesta para poder marcarlo como Resuelto/Finalizado.'
+                });
+                return false;
+            }
+        }
+        return true;
     }
 
     // ==========================================
