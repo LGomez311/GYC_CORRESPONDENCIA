@@ -42,4 +42,26 @@ class Pago extends Model
     {
         return $this->belongsTo(Empleado::class, 'id_admin');
     }
+
+    // 🔹 Obtener la ruta segura del comprobante
+    public function getRutaArchivoAttribute()
+    {
+        if (!$this->comprobante) return null;
+        $data = json_decode($this->comprobante, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($data) && isset($data['ruta'])) {
+            return $data['ruta'];
+        }
+        return $this->comprobante;
+    }
+
+    // 🔹 Obtener el motivo del rechazo
+    public function getMotivoRechazoAttribute()
+    {
+        if (!$this->comprobante) return null;
+        $data = json_decode($this->comprobante, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($data) && isset($data['motivo'])) {
+            return $data['motivo'];
+        }
+        return null;
+    }
 }

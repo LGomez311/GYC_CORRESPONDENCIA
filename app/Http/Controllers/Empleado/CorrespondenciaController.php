@@ -265,7 +265,6 @@ class CorrespondenciaController extends Controller
 
         // Implementación de lógica: Si un empleado pone la correspondencia 'En Trámite' (8) o 'Resuelto' (9),
         // se le quita a los demás destinatarios de su bandeja de entrada (pasan a Archivado 10).
-        // NOTA: Se eliminó 'Rechazado' (11) de esta lista para que el rechazo sea individual.
         if (in_array($estado->id_estado, [8, 9])) {
             $otrosDestinatarios = DetalleRecibido::where('det_id_recibido', $nuevoRegistro->det_id_recibido)
                 ->where('det_doc_empleado', '!=', $user->emple_doc)
@@ -284,14 +283,40 @@ class CorrespondenciaController extends Controller
                     'det_doc_empleado' => $otro->det_doc_empleado,
                     'fecha_re'         => now(),
                     'id_estado_rec'    => 10, // Archivado
-                    'observaciones'    => ($estado->id_estado == 11 ? 'Rechazado por: ' : 'Tomado por: ') . $user->emple_nombres . ' ' . $user->emple_apellidos,
+                    'observaciones'    => 'Tomado por: ' . $user->emple_nombres . ' ' . $user->emple_apellidos,
                     'visto'            => 1 // Marcado como visto para que desaparezca de notificaciones
                 ]);
             }
+        }
 
-            // Actualizar el estado global del documento Recibido
+        // Actualizar el estado global del documento Recibido en casos donde se deba alterar (ej. Trámite, Resuelto o Rechazado 11)
+        if (in_array($estado->id_estado, [8, 9, 11])) {
             $recibido = $nuevoRegistro->recibido;
             if ($recibido && $recibido->id_estado_rec != $estado->id_estado) {
+                // Si es un rechazo (11), archivar a los demás destinatarios también
+                if ($estado->id_estado == 11) {
+                    $otrosDestinatariosRechazo = DetalleRecibido::where('det_id_recibido', $nuevoRegistro->det_id_recibido)
+                        ->where('det_doc_empleado', '!=', $user->emple_doc)
+                        ->whereIn('id_det_recibido', function ($query) use ($nuevoRegistro) {
+                            $query->selectRaw('MAX(id_det_recibido)')
+                                ->from('detalle_recibido')
+                                ->where('det_id_recibido', $nuevoRegistro->det_id_recibido)
+                                ->groupBy('det_doc_empleado');
+                        })
+                        ->where('id_estado_rec', 7)
+                        ->get();
+                    foreach ($otrosDestinatariosRechazo as $otroRechazo) {
+                        DetalleRecibido::create([
+                            'det_id_recibido'  => $otroRechazo->det_id_recibido,
+                            'det_doc_empleado' => $otroRechazo->det_doc_empleado,
+                            'fecha_re'         => now(),
+                            'id_estado_rec'    => 10, // Archivado
+                            'observaciones'    => 'Rechazado por: ' . $user->emple_nombres . ' ' . $user->emple_apellidos,
+                            'visto'            => 1
+                        ]);
+                    }
+                }
+                
                 $recibido->id_estado_rec = $estado->id_estado;
                 $recibido->save();
             }
