@@ -163,6 +163,8 @@ Route::prefix('admin')
         // Dashboard
         Route::get('/', [\App\Http\Controllers\Admin\UsuarioController::class, 'index'])->name('admin.index');
         Route::get('/home', [AdminHomeController::class, 'index'])->name('admin.home');
+        Route::get('/reportes', [\App\Http\Controllers\Admin\ReporteController::class, 'index'])->name('admin.reportes');
+        Route::post('/reportes/export/pdf', [\App\Http\Controllers\Admin\ReporteController::class, 'exportPdf'])->name('admin.reportes.export.pdf');
 
         // Planes
         Route::get('/planes', [AdminPlanController::class, 'index'])->name('admin.planes');

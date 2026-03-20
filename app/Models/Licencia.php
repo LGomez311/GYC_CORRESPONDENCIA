@@ -128,7 +128,9 @@ class Licencia extends Model
         }
 
         $diasRestantes = $this->diasRestantes();
-        return (int) (($diasRestantes / $duracionTotal) * 100);
+        $porcentaje = (int) (($diasRestantes / $duracionTotal) * 100);
+        
+        return min(100, max(0, $porcentaje));
     }
 
     /**
