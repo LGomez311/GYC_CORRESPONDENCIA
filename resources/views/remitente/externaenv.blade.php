@@ -408,6 +408,112 @@
         </div>
     </div>
 
+    <!-- View Details Modal (Externa Envíos) -->
+    <div id="detailsModal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen w-full p-4">
+            <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+                onclick="closeModal('detailsModal')"></div>
+            <div
+                class="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden transform transition-all">
+                <div class="absolute top-4 right-4 z-10">
+                    <button onclick="closeModal('detailsModal')"
+                        class="p-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-colors text-gray-500 dark:text-gray-400">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+
+                <div class="flex flex-col md:flex-row h-full">
+                    <!-- Detail Header Area -->
+                    <div
+                        class="w-full md:w-1/3 bg-gray-50 dark:bg-gray-900/50 p-8 border-b md:border-b-0 md:border-r border-gray-100 dark:border-gray-700">
+                        <div class="flex flex-col items-center text-center">
+                            <div class="p-4 bg-primary/10 rounded-2xl text-primary mb-4">
+                                <span class="material-symbols-outlined text-4xl" id="detailIconHeader">description</span>
+                            </div>
+                            <h3 id="detailRadicado" class="text-xl font-bold text-gray-900 dark:text-white mb-1"></h3>
+                            <span id="detailStatus" class="px-3 py-1 rounded-full text-[10px] font-bold mb-6"></span>
+
+                            <div class="w-full space-y-4 text-left">
+                                <div>
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Fecha Envío</p>
+                                    <p id="detailDate" class="text-sm font-medium text-gray-700 dark:text-gray-300"></p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Tipo Documento</p>
+                                    <p id="detailType" class="text-sm font-medium text-gray-700 dark:text-gray-300"></p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Prioridad</p>
+                                    <p id="detailPriority" class="text-sm font-medium text-gray-700 dark:text-gray-300"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detail Content Area -->
+                    <div class="flex-1 p-8 space-y-6">
+                        <div>
+                            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Asunto</h4>
+                            <p id="detailAsunto" class="text-lg font-bold text-gray-900 dark:text-white leading-tight"></p>
+                        </div>
+
+                        <div>
+                            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Destinatario / Institución</h4>
+                            <p id="detailDestinatario" class="text-sm text-gray-700 dark:text-gray-300 font-bold"></p>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between items-center mb-4">
+                                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Trazabilidad Reciente</h4>
+                                <button id="btnVerTrazabilidadCompleta" class="text-[10px] font-black text-primary uppercase tracking-widest hover:underline">Ver Historial</button>
+                            </div>
+                            <div id="detailTimeline" class="space-y-4 max-h-48 overflow-y-auto pr-2">
+                                <!-- Mini timeline here -->
+                                <p class="text-[10px] text-gray-400 italic">Cargando trazabilidad...</p>
+                            </div>
+                        </div>
+
+                        <div class="pt-4">
+                            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Documentos del Envío</h4>
+                            <div id="detailActionsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <!-- Documents buttons here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div id="historyModal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen w-full p-4">
+            <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeModal('historyModal')"></div>
+            <div class="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden transform transition-all">
+                <div class="px-8 py-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-900/20">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">Trazabilidad de Envío</h3>
+                        <p class="text-xs text-gray-500 mt-0.5" id="historyRadText"></p>
+                    </div>
+                    <button onclick="closeModal('historyModal')" class="p-2 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+                <div class="p-8 max-h-[70vh] overflow-y-auto bg-white dark:bg-gray-800">
+                    <div id="history-timeline" class="relative space-y-6">
+                        <!-- Timeline items injected here -->
+                        <div id="history-spinner" class="flex justify-center p-8">
+                             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="px-8 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/20 flex justify-end">
+                    <button onclick="closeModal('historyModal')" class="px-6 py-2 text-sm font-bold text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Modal Nueva Correspondencia Enviada --}}
     <div id="modalCorrespondencia" tabindex="-1" aria-hidden="true"
         class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
@@ -581,63 +687,146 @@
             setupSearch('searchEnvia', 'resultsEnvia', 'doc_quien_envia',
                 '{{ route('remitente.buscar_empleados') }}');
 
-            // --- ASIDE ---
-            const asideVacio = document.getElementById('asideVacio');
-            const asideContenido = document.getElementById('asideContenido');
+            // --- DETALLE LOGIC ---
+            window.openModal = function(id) {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.classList.remove('hidden');
+                    el.classList.add('flex');
+                    document.body.style.overflow = 'hidden';
+                }
+            }
+
+            window.closeModal = function(id) {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.classList.add('hidden');
+                    el.classList.remove('flex');
+                    document.body.style.overflow = '';
+                }
+            }
 
             document.querySelectorAll('.fila-registro').forEach(fila => {
                 fila.addEventListener('click', function() {
-                    document.querySelectorAll('.fila-registro').forEach(r => r.classList.remove(
-                        'bg-blue-50', 'dark:bg-blue-900/10'));
-                    this.classList.add('bg-blue-50', 'dark:bg-blue-900/10');
-
                     const data = this.dataset;
-
-                    // Llenar datos base
-                    document.getElementById('aside-asunto').textContent = data.asunto ||
-                        '(Sin asunto)';
-                    document.getElementById('aside-radicados').textContent = data.radicado ?
-                        'Radicado: ' + data.radicado : '';
-                    document.getElementById('aside-destinatario').textContent = data.destinatario ||
-                        '—';
-                    document.getElementById('aside-fecha').textContent = data.fecha || '—';
-
-                    const tipoDocWrap = document.getElementById('aside-tipo-doc-wrap');
-                    if (data.tipoDoc) {
-                        document.getElementById('aside-tipo-doc').textContent = data.tipoDoc;
-                        tipoDocWrap.classList.remove('hidden');
-                    } else {
-                        tipoDocWrap.classList.add('hidden');
-                    }
-
-                    // Estilos Prioridad
-                    const priorityEl = document.getElementById('aside-prioridad');
-                    priorityEl.textContent = data.prioridad || '—';
-                    priorityEl.className = 'text-xs font-medium px-2 py-0.5 rounded-full ' + (data
-                        .prioridadClases || 'bg-gray-100 text-gray-700');
-
-                    // Estilos Estado
-                    const statusEl = document.getElementById('aside-estado');
-                    statusEl.textContent = data.estado || '—';
-                    statusEl.className = 'text-xs font-medium px-2 py-0.5 rounded-full ' + (data
-                        .estadoClases || 'bg-gray-100 text-gray-700');
-
-                    // Actualizar icono cabecera
-                    const iconHeader = document.getElementById('aside-tipo-icon-header');
-                    if (iconHeader) iconHeader.textContent = data.icono;
-
-                    // Almacenar datos para el visor
-                    const btnVer = document.getElementById('btnVerDocumento');
-                    btnVer.dataset.archivo = data.archivo;
-                    btnVer.dataset.anexos = data.anexos;
-
-                    asideVacio.classList.add('hidden');
-                    asideContenido.classList.remove('hidden');
-
-                    // Cargar Historial
-                    loadHistory(data.id);
+                    openDetalleModal(data);
                 });
             });
+
+            // Prevent row click when clicking the "Detalle" button specifically
+            document.querySelectorAll('.btn-ver-detalle').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const fila = this.closest('.fila-registro');
+                    if (fila) openDetalleModal(fila.dataset);
+                });
+            });
+
+            function openDetalleModal(data) {
+                try {
+                    // Llenar datos base Modal
+                    document.getElementById('detailRadicado').textContent = data.radicado || 'SIN RADICADO';
+                    document.getElementById('detailAsunto').textContent = data.asunto || '(Sin asunto)';
+                    document.getElementById('detailDestinatario').textContent = data.destinatario || '—';
+                    document.getElementById('detailDate').textContent = data.fecha || '—';
+                    document.getElementById('detailType').textContent = data.tipoDoc || 'No especificado';
+                    document.getElementById('detailPriority').textContent = data.prioridad || '—';
+                    
+                    if (document.getElementById('detailIconHeader')) {
+                        document.getElementById('detailIconHeader').textContent = data.icono || 'description';
+                    }
+
+                    // Estilos Estado
+                    const statusEl = document.getElementById('detailStatus');
+                    statusEl.textContent = data.estado || '—';
+                    statusEl.className = 'px-3 py-1 rounded-full text-[10px] font-bold mb-6 ' + (data.estadoClases || 'bg-gray-100 text-gray-700');
+
+                    // Documentos
+                    const actionArea = document.getElementById('detailActionsContainer');
+                    actionArea.innerHTML = '';
+
+                    // Principal
+                    if (data.archivo) {
+                        const btn = document.createElement('a');
+                        btn.href = data.archivo;
+                        btn.target = '_blank';
+                        btn.className = 'flex items-center gap-2 px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400 rounded-xl hover:bg-blue-100 transition-all border border-blue-100 dark:border-blue-800';
+                        btn.innerHTML = '<span class="material-symbols-outlined text-[18px]">description</span> Principal';
+                        actionArea.appendChild(btn);
+                    }
+
+                    // Anexos
+                    let anexos = [];
+                    try {
+                        anexos = JSON.parse(data.anexos || '[]');
+                    } catch (e) {
+                        console.error("Error parsing anexos JSOn:", e);
+                    }
+
+                    if (anexos.length > 0) {
+                        anexos.forEach((anexo, idx) => {
+                            const btn = document.createElement('a');
+                            btn.href = `/storage/${anexo.ruta_archivo}`;
+                            btn.target = '_blank';
+                            btn.className = 'flex items-center gap-2 px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-400 rounded-xl hover:bg-gray-100 transition-all border border-gray-100 dark:border-gray-600';
+                            btn.title = anexo.nombre_original;
+                            btn.innerHTML = `<span class="material-symbols-outlined text-[18px]">attach_file</span> Anexo ${idx + 1}`;
+                            actionArea.appendChild(btn);
+                        });
+                    }
+
+                    // Configurar botón "Ver Historial"
+                    document.getElementById('btnVerTrazabilidadCompleta').onclick = () => {
+                        window.closeModal('detailsModal');
+                        showHistoryModal(data.id, data.radicado);
+                    };
+
+                    // Cargar mini-trazabilidad
+                    loadMiniHistory(data.id);
+
+                    window.openModal('detailsModal');
+                } catch (err) {
+                    console.error("Error in openDetalleModal:", err);
+                }
+            }
+
+            function loadMiniHistory(id) {
+                const timeline = document.getElementById('detailTimeline');
+                timeline.innerHTML = '<p class="text-[10px] text-gray-400 italic animate-pulse">Cargando...</p>';
+
+                fetch(`/remitente/externaenv/${id}/history`)
+                    .then(res => res.json())
+                    .then(data => {
+                        timeline.innerHTML = '';
+                        if (data.length === 0) {
+                            timeline.innerHTML = '<p class="text-[10px] text-gray-400 italic">Sin movimientos registrados</p>';
+                            return;
+                        }
+
+                        // Mostrar últimos 3 movimientos
+                        data.slice(0, 3).forEach(item => {
+                            const date = new Date(item.fecha);
+                            const dateStr = date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
+                            
+                            const div = document.createElement('div');
+                            div.className = 'flex gap-3 text-[11px]';
+                            div.innerHTML = `
+                                <span class="text-gray-400 font-bold shrink-0">${dateStr}</span>
+                                <div class="flex flex-col">
+                                    <span class="font-bold text-gray-800 dark:text-gray-200 uppercase tracking-tight">${item.estado_nomb}</span>
+                                    <span class="text-gray-500 text-[10px]">${item.nombres} ${item.apellidos}</span>
+                                </div>
+                            `;
+                            timeline.appendChild(div);
+                        });
+                    });
+            }
+
+            function showHistoryModal(id, radicado) {
+                document.getElementById('historyRadText').textContent = radicado ? `Radicado: ${radicado}` : 'Historial de movimientos';
+                loadHistory(id);
+                openModal('historyModal');
+            }
 
             function loadHistory(id) {
                 const timeline = document.getElementById('history-timeline');
@@ -776,12 +965,7 @@
                     });
             }
 
-            document.getElementById('btnCerrarAside').addEventListener('click', () => {
-                asideVacio.classList.remove('hidden');
-                asideContenido.classList.add('hidden');
-                document.querySelectorAll('.fila-registro').forEach(r => r.classList.remove('bg-blue-50',
-                    'dark:bg-blue-900/10'));
-            });
+            // Removed non-existent aside logic
 
             // --- VISOR DE DOCUMENTOS ---
             const modalVisor = document.getElementById('modalVisorDocumentos');

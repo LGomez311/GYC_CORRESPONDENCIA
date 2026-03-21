@@ -9,6 +9,9 @@ use App\Models\Licencia;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\TwoFactorCode;
+use Illuminate\Support\Facades\Session;
 
 class LoginController extends Controller
 {
@@ -80,7 +83,29 @@ class LoginController extends Controller
             $empleado = Auth::guard('web')->user();
 
             /**
-             * 🔓 SuperAdmin → siempre entra
+             * 🔓 2FA para SuperAdmin (1) y Admin Empresa (2)
+             */
+            if (in_array($empleado->emple_rol, [1, 2])) {
+                // Cerrar sesión temporalmente
+                Auth::guard('web')->logout();
+
+                // Generar código de 6 dígitos
+                $code = rand(100000, 999999);
+
+                // Almacenar en sesión
+                Session::put('2fa_user_doc', $empleado->emple_doc);
+                Session::put('2fa_code', $code);
+                Session::put('2fa_attempts', 0);
+                Session::put('2fa_expires_at', now()->addMinutes(10));
+
+                // Enviar correo
+                Mail::to($empleado->emple_correo)->send(new TwoFactorCode($code));
+
+                return redirect()->route('2fa.index');
+            }
+
+            /**
+             * 🔓 SuperAdmin → siempre entra (si no pasó por 2FA arriba, pero ahora sí pasa)
              */
             if ($empleado->emple_rol == 1) {
                 return redirect()->route('sadmin.index');

@@ -404,4 +404,111 @@ class ExternarecController extends Controller
             return redirect()->back()->withErrors(['error' => 'Error al asignar destinatarios: ' . $e->getMessage()]);
         }
     }
+
+    /**
+     * Rechaza una correspondencia y notifica al remitente original.
+     */
+    public function rechazar(Request $request, $id)
+    {
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'observaciones' => 'required|string|max:250',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('error', $validator->errors()->first());
+        }
+
+        $validated = $validator->validated();
+
+        $remitente = Auth::guard('remitente')->user();
+        $nitEmpresa = $remitente ? $remitente->nit_empresa : null;
+
+        // Verificar que la correspondencia pertenezca a la empresa
+        $recibido = DB::table('recibido')
+            ->where('id_recibido', $id)
+            ->where('nit_empresa', $nitEmpresa)
+            ->first();
+
+        if (!$recibido) {
+            return redirect()->back()->with('error', 'No se encontró la correspondencia o no tiene permisos.');
+        }
+
+        DB::beginTransaction();
+        try {
+            // 1. Actualizar estado de la correspondencia a Rechazado (11)
+            DB::table('recibido')->where('id_recibido', $id)->update([
+                'id_estado_rec' => 11,
+                'doc_quien_registra' => $remitente->rem_doc
+            ]);
+
+            // 2. Insertar registro en detalle_recibido
+            DB::table('detalle_recibido')->insert([
+                'det_id_recibido'  => $id,
+                'det_doc_empleado' => null,
+                'fecha_re'         => now(),
+                'id_estado_rec'    => 11, // Rechazado
+                'observaciones'    => 'Correspondencia Rechazada por Remitente: ' . $validated['observaciones'],
+            ]);
+
+            DB::commit();
+
+            // 3. Notificar por correo si hay un correo registrado
+            if (!empty($recibido->correo_persona)) {
+                $correoDestino = $recibido->correo_persona;
+                $asuntoEmail = 'Su correspondencia ha sido RECHAZADA';
+                $motivo = $validated['observaciones'];
+                $urlEnviar = route('public.correspondencia.enviar');
+
+                try {
+                    \Illuminate\Support\Facades\Mail::send([], [], function ($message) use ($correoDestino, $asuntoEmail, $motivo, $recibido, $urlEnviar) {
+                        $message->to($correoDestino)
+                            ->subject($asuntoEmail)
+                            ->html("
+                            <div style='font-family: Arial, sans-serif; background-color: #f8fafc; padding: 40px;'>
+                                <div style='max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 16px; padding: 40px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #e2e8f0;'>
+                                    <div style='text-align: center; margin-bottom: 32px;'>
+                                        <div style='display: inline-block; padding: 12px; background-color: #fef2f2; border-radius: 12px;'>
+                                            <span style='font-size: 32px;'>❌</span>
+                                        </div>
+                                    </div>
+                                    <h2 style='color: #991b1b; font-size: 24px; font-weight: 700; text-align: center; margin-bottom: 8px;'>Su correspondencia ha sido rechazada</h2>
+                                    <p style='color: #64748b; font-size: 16px; text-align: center; margin-bottom: 32px;'>Le informamos que su solicitud ha sido rechazada por el siguiente motivo:</p>
+                                    
+                                    <div style='background-color: #fff1f2; border-left: 4px solid #f43f5e; border-radius: 8px; padding: 24px; margin-bottom: 32px;'>
+                                        <p style='color: #9f1239; font-size: 16px; font-weight: 600; margin: 0;'>$motivo</p>
+                                    </div>
+
+                                    <div style='background-color: #f1f5f9; border-radius: 12px; padding: 24px; margin-bottom: 32px;'>
+                                        <div style='margin-bottom: 12px;'>
+                                            <span style='color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;'>Asunto Original</span>
+                                            <p style='color: #1e293b; font-size: 14px; font-weight: 600; margin: 4px 0 0;'>{$recibido->asunto}</p>
+                                        </div>
+                                        <div>
+                                            <span style='color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;'>Fecha de Registro</span>
+                                            <p style='color: #1e293b; font-size: 14px; font-weight: 600; margin: 4px 0 0;'>".\Carbon\Carbon::parse($recibido->fecha_hora_recib)->format('d/m/Y h:i A')."</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style='text-align: center; margin-bottom: 32px;'>
+                                        <p style='color: #334155; font-size: 15px; margin-bottom: 16px;'>Por favor, corrija los inconvenientes mencionados y vuelva a radicar su correspondencia haciendo clic en el siguiente botón:</p>
+                                        <a href='{$urlEnviar}' style='background-color: #2563eb; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;'>Volver a Enviar Documento</a>
+                                    </div>
+                                    
+                                    <p style='font-size: 11px; color: #94a3b8; text-align: center; margin: 0;'>Este es un mensaje automático generado por el Sistema de Gestión Documental. Por favor no responda a este correo.</p>
+                                </div>
+                            </div>");
+                    });
+                } catch (\Exception $mailEx) {
+                    \Illuminate\Support\Facades\Log::error('Error enviando correo de rechazo: ' . $mailEx->getMessage());
+                    // Correo falló pero se continua con el éxito del rechazo en base de datos.
+                }
+            }
+
+            return redirect()->back()->with('success', 'Correspondencia rechazada exitosamente.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Error al rechazar correspondencia: ' . $e->getMessage());
+        }
+    }
 }

@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\Sadmin\UsuarioController;
 use App\Http\Controllers\Sadmin\EmpresaController;
 use App\Exports\PagosExport;
@@ -63,6 +64,10 @@ use App\Http\Controllers\Sadmin\LicenciaController;
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+// 2FA
+Route::get('/2fa', [TwoFactorController::class, 'showTwoFactorForm'])->name('2fa.index');
+Route::post('/2fa', [TwoFactorController::class, 'verifyTwoFactor'])->name('2fa.verify');
 
 
 // ================= DASHBOARDS ================= --KEVIN SABADO 14/02--
@@ -411,6 +416,7 @@ Route::prefix('remitente')
 
         Route::post('/externarec', [ExternarecController::class, 'store'])->name('externarec.store');
         Route::post('/externarec/{id}/asignar', [ExternarecController::class, 'asignarDestinatarios'])->name('externarec.asignar');
+        Route::post('/externarec/{id}/rechazar', [ExternarecController::class, 'rechazar'])->name('externarec.rechazar');
 
         Route::get('/empleados/buscar', [ExternaenvController::class, 'buscarEmpleados'])->name('remitente.buscar_empleados');
 
@@ -426,6 +432,7 @@ Route::prefix('remitente')
         Route::get('/history/{id}', [RemitenteDashboardController::class, 'getHistory'])->name('remitente.history');
         Route::post('/{id}/finalize', [RemitenteDashboardController::class, 'finalize'])->name('remitente.finalize');
         Route::post('/{id}/store-saliente', [RemitenteDashboardController::class, 'storeSalienteFromResponse'])->name('remitente.store_saliente');
+        Route::post('/envio/{id}/store-saliente', [RemitenteDashboardController::class, 'storeSalienteFromEnvio'])->name('remitente.store_saliente_envio');
         Route::post('/{id}/update-rejected', [RemitenteDashboardController::class, 'updateRejected'])->name('remitente.update_rejected');
     });
 

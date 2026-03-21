@@ -601,7 +601,7 @@ class CorrespondenciaController extends Controller
 
             $user = Auth::user();
             $estadoRecibidoId = 7; // Recibido/Inicial
-            $estadoEnviadoId = 9; // Resuelto (para el emisor)
+            $estadoEnviadoId = 0; // 0 = En espera
 
             // Create Radicado (using sequential numbering SAL-YYYY-00001)
             $currentYear = date('Y');

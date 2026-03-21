@@ -131,6 +131,84 @@
                             </tr>
                         </thead>
                         <tbody id="correspondenceTableBody" class="divide-y divide-gray-50 dark:divide-gray-800/50">
+                            @if(isset($enviosPendientes) && $enviosPendientes->count() > 0)
+                                @foreach($enviosPendientes as $envio)
+                                    <tr class="bg-orange-50/10 dark:bg-orange-900/5 group hover:bg-orange-50/30 dark:hover:bg-orange-900/20 transition-all duration-200">
+                                        <!-- Radicados -->
+                                        <td class="px-4 py-4 whitespace-nowrap align-middle">
+                                            <div class="flex flex-col gap-1">
+                                                <span class="text-sm font-bold text-gray-900 dark:text-white tracking-tight">
+                                                    {{ $envio->radicado ? $envio->radicado->num_radicado : 'SIN RADICADO' }}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <!-- Procedencia -->
+                                        <td class="px-4 py-4 align-middle">
+                                            <div class="flex flex-col gap-1.5">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="px-1.5 py-0.5 bg-indigo-50/50 dark:bg-indigo-900/10 text-indigo-600 dark:text-indigo-400 text-[10px] font-semibold rounded border border-indigo-100/50 dark:border-indigo-800/50">Interno</span>
+                                                    <span class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate max-w-[200px]">
+                                                        {{ $envio->quienEnvia ? $envio->quienEnvia->emple_nombres . ' ' . $envio->quienEnvia->emple_apellidos : 'Empleado' }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <!-- Asunto -->
+                                        <td class="px-4 py-4 align-middle">
+                                            <div class="flex flex-col gap-1">
+                                                <span class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 max-w-[250px]" title="{{ $envio->asunto }}">
+                                                    {{ $envio->asunto }}
+                                                </span>
+                                                <div class="hidden flex-wrap gap-1 mt-1">
+                                                    <div class="flex items-center gap-0.5 bg-gray-100 dark:bg-gray-700/50 px-1.5 py-0.5 rounded text-[8px] font-bold text-gray-500 uppercase tracking-tighter">
+                                                        <span class="material-symbols-outlined text-[10px] font-variation-icon">layers</span>
+                                                        F: {{ $envio->folio ?? 0 }}
+                                                    </div>
+                                                    @if ($envio->id_tipo_envio)
+                                                        <div class="flex items-center gap-0.5 bg-orange-50 dark:bg-orange-900/10 px-1.5 py-0.5 rounded text-[8px] font-bold text-orange-600 uppercase tracking-tighter">
+                                                            {{ $envio->tipoEnvio ? $envio->tipoEnvio->tipo_nombre : 'TIPO' }}
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <!-- Destinatarios (En este caso, Ventanilla es quien lo procesa) -->
+                                        <td class="px-4 py-4 align-middle">
+                                            <div class="flex flex-wrap gap-2 max-w-[200px]">
+                                                <span class="text-xs text-gray-500 italic">Ventanilla (Tú)</span>
+                                            </div>
+                                        </td>
+                                        <!-- Registro -->
+                                        <td class="px-4 py-4 text-center whitespace-nowrap align-middle">
+                                            <div class="inline-flex flex-col items-center">
+                                                <span class="text-xs font-medium text-gray-900 dark:text-gray-200">
+                                                    {{ \Carbon\Carbon::parse($envio->fecha)->format('d M, Y') }}
+                                                </span>
+                                                <span class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
+                                                    {{ \Carbon\Carbon::parse($envio->fecha)->format('h:i A') }}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <!-- Estado -->
+                                        <td class="px-4 py-4 text-center align-middle">
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-semibold tracking-wide border bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800">
+                                                EN ESPERA
+                                            </span>
+                                        </td>
+                                        <!-- Acciones -->
+                                        <td class="px-4 py-4 text-center align-middle">
+                                            <div class="flex items-center justify-center gap-2">
+                                                <button onclick="openSalienteModalEnvio({{ $envio->id_envio }})"
+                                                    class="p-1.5 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors border border-emerald-100 dark:border-emerald-800"
+                                                    title="Registrar Saliente">
+                                                    <span class="material-symbols-outlined text-[20px] font-variation-icon">outbox</span>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            @endif
+
                             @forelse($correspondencias as $c)
                                 <tr class="group hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-all duration-200">
 
@@ -363,6 +441,9 @@
                                                     title="Finalizar">
                                                     <span class="material-symbols-outlined text-[20px]">check_circle</span>
                                                 </button>
+                                                <form id="finalize-form-{{ $c->id_recibido }}" action="{{ route('remitente.finalize', $c->id_recibido) }}" method="POST" class="hidden">
+                                                    @csrf
+                                                </form>
                                             @else
                                                 @php
                                                     $hasResponse = $c->detalles->contains(
@@ -377,11 +458,18 @@
                                                             class="material-symbols-outlined text-[20px] font-variation-icon">outbox</span>
                                                     </button>
                                                 @elseif($c->id_estado_rec == 12 && count($filteredDetalles) === 0)
-                                                    <button onclick="openAssignModal({{ $c->id_recibido }})"
-                                                        class="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors border border-blue-100 dark:border-blue-800"
-                                                        title="Asignar Destinatarios">
-                                                        <span class="material-symbols-outlined text-[20px]">person_add</span>
-                                                    </button>
+                                                    <div class="flex items-center gap-2">
+                                                        <button onclick="openAssignModal({{ $c->id_recibido }})"
+                                                            class="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors border border-blue-100 dark:border-blue-800"
+                                                            title="Asignar Destinatarios">
+                                                            <span class="material-symbols-outlined text-[20px]">person_add</span>
+                                                        </button>
+                                                        <button onclick="openRejectModal({{ $c->id_recibido }})"
+                                                            class="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors border border-red-100 dark:border-red-800"
+                                                            title="Rechazar Correspondencia">
+                                                            <span class="material-symbols-outlined text-[20px]">cancel</span>
+                                                        </button>
+                                                    </div>
                                                 @else
                                                     <div class="p-1.5 text-gray-300 dark:text-gray-700 cursor-not-allowed">
                                                         <span class="material-symbols-outlined text-[20px]">lock</span>
@@ -392,6 +480,7 @@
                                     </td>
                                 </tr>
                             @empty
+                                @if(!isset($enviosPendientes) || count($enviosPendientes) == 0)
                                 <tr>
                                     <td colspan="7" class="px-6 py-20 text-center">
                                         <div class="flex flex-col items-center gap-3">
@@ -405,6 +494,7 @@
                                         </div>
                                     </td>
                                 </tr>
+                                @endif
                             @endforelse
                         </tbody>
                     </table>
@@ -725,6 +815,7 @@
     <script>
         // Global data store to avoid quote/escaping issues in onclick handlers
         window.correspondenceData = @json($correspondencias->keyBy('id_recibido'));
+        window.enviosPendientesData = @json($enviosPendientes->keyBy('id_envio'));
 
         // Modal general logic
         function openModal(id) {
@@ -1179,7 +1270,7 @@
         });
 
         // Search table logic
-        document.getElementById('tableSearch').addEventListener('input', function(e) {
+        document.getElementById('tableSearch')?.addEventListener('input', function(e) {
             const term = e.target.value.toLowerCase();
             const rows = document.querySelectorAll('#correspondenceTableBody tr');
 
@@ -1206,6 +1297,8 @@
                 customClass: {
                     container: 'font-display',
                     popup: 'rounded-3xl border-none shadow-2xl dark:bg-gray-800 dark:text-white',
+                    confirmButton: 'rounded-xl px-6 py-2.5 font-bold',
+                    cancelButton: 'rounded-xl px-6 py-2.5 font-bold'
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
@@ -1213,6 +1306,34 @@
                 }
             });
         }
+
+        // SweetAlert for Reject Confirmation
+        document.getElementById('rejectForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const form = this;
+            
+            Swal.fire({
+                title: '¿Confirmar rechazo?',
+                text: "Se notificará al remitente por correo electrónico con el motivo proporcionado. ¿Está seguro de continuar?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, rechazar',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true,
+                customClass: {
+                    container: 'font-display',
+                    popup: 'rounded-3xl border-none shadow-2xl dark:bg-gray-800 dark:text-white',
+                    confirmButton: 'rounded-xl px-6 py-2.5 font-bold',
+                    cancelButton: 'rounded-xl px-6 py-2.5 font-bold'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
         // Session Success Notifications (SweetAlert)
         @if (session('success'))
             Swal.fire({
@@ -1327,16 +1448,93 @@
 
             // Set Notification Email
             const emailInput = document.getElementById('salienteEmailNotif');
-            const emailContainer = document.getElementById('emailNotifContainer');
             if (c.correo_persona) {
                 emailInput.value = c.correo_persona;
-                emailContainer.classList.remove('hidden');
             } else {
                 emailInput.value = '';
-                emailContainer.classList.add('hidden');
             }
 
+            // Clear observaciones
+            document.getElementById('salienteObservaciones').value = '';
+
             openModal('salienteModal');
+        }
+
+        async function openSalienteModalEnvio(id) {
+            const envio = window.enviosPendientesData[id];
+            if (!envio) return;
+
+            document.getElementById('salienteForm').action = `/remitente/envio/${id}/store-saliente`;
+            document.getElementById('salienteAsunto').value = envio.asunto;
+            document.getElementById('salienteDestino').value = envio.destino && envio.destino !== 'Ventanilla' ? envio
+                .destino : '';
+
+            // Pre-fill fields
+            const typeSelect = document.getElementById('salienteTipo');
+            if (envio.id_tipo_envio) typeSelect.value = envio.id_tipo_envio;
+
+            const officialSelect = document.getElementById('salienteFuncionario');
+            officialSelect.value = envio.doc_quien_envia || '';
+
+            // File Preview Section
+            const previewContainer = document.getElementById('salienteFilePreview');
+            previewContainer.innerHTML = '';
+
+            if (envio.archivo) {
+                const mainFileDiv = document.createElement('div');
+                mainFileDiv.className =
+                    'flex items-center gap-3 p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-2xl mb-2 group cursor-pointer hover:bg-emerald-100 transition-all';
+                mainFileDiv.onclick = () => window.open(`/storage/${envio.archivo}`, '_blank');
+                mainFileDiv.innerHTML = `
+                    <span class="material-symbols-outlined text-emerald-600">description</span>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-[11px] font-bold text-emerald-900 dark:text-emerald-100 truncate">Documento a Enviar</p>
+                        <p class="text-[9px] text-emerald-600 font-medium">Click para ver documento</p>
+                    </div>
+                    <span class="material-symbols-outlined text-emerald-400 text-sm group-hover:translate-x-0.5 transition-transform">open_in_new</span>
+                `;
+                previewContainer.appendChild(mainFileDiv);
+            }
+
+            // Render Annexes
+            const anexos = envio.anexos || [];
+            if (anexos.length > 0) {
+                const annexGrid = document.createElement('div');
+                annexGrid.className = 'grid grid-cols-1 gap-2';
+                anexos.forEach((anexo, idx) => {
+                    const div = document.createElement('div');
+                    div.className =
+                        'flex items-center gap-3 p-2.5 bg-gray-50 dark:bg-gray-900/40 border border-gray-100 dark:border-gray-700/50 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group';
+                    div.onclick = () => window.open(`/storage/${anexo.ruta_archivo}`, '_blank');
+                    div.innerHTML = `
+                        <span class="material-symbols-outlined text-gray-400 text-[18px]">attachment</span>
+                        <p class="text-[10px] font-medium text-gray-600 dark:text-gray-300 truncate flex-1">${anexo.nombre_original || `Anexo ${idx + 1}`}</p>
+                        <span class="material-symbols-outlined text-gray-300 text-sm group-hover:translate-x-0.5 transition-transform">visibility</span>
+                    `;
+                    annexGrid.appendChild(div);
+                });
+                previewContainer.appendChild(annexGrid);
+            }
+
+            const folioInput = document.getElementById('salienteFolio');
+            folioInput.value = envio.folio || 1;
+            folioInput.readOnly = true;
+
+            document.getElementById('salienteEmailNotif').value = '';
+            document.getElementById('salienteObservaciones').value = '';
+
+            openModal('salienteModal');
+        }
+
+        function openRejectModal(id) {
+            const c = window.correspondenceData[id];
+            if (!c) return;
+
+            document.getElementById('rejectRadText').textContent = `Radicado: ${c.radicado ? c.radicado.num_radicado : 'SIN RADICADO'}`;
+            document.getElementById('rejectForm').action = `/remitente/externarec/${id}/rechazar`;
+            document.getElementById('rejectObs').value = '';
+            
+            openModal('rejectModal');
         }
     </script>
 @endsection
@@ -1359,7 +1557,7 @@
                     <div>
                         <h3 class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">Registrar
                             Saliente</h3>
-                        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Generar Radicado SAL-
+                        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Respuesta Oficial
                         </p>
                     </div>
                 </div>
@@ -1391,22 +1589,27 @@
                             placeholder="Asunto del envío">
                     </div>
 
-                    <!-- Email de Notificación -->
-                    <div id="emailNotifContainer" class="hidden">
+                    <!-- Observaciones -->
+                    <div>
                         <label
-                            class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Correo de Notificación</label>
+                            class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Observaciones</label>
+                        <textarea name="observaciones" id="salienteObservaciones" rows="2"
+                            class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none dark:text-white"
+                            placeholder="Añada observaciones adicionales (opcional)"></textarea>
+                    </div>
+
+                    <!-- Email de Notificación -->
+                    <div id="emailNotifContainer">
+                        <label
+                            class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Correo (Opcional)</label>
                         <div class="relative">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3">
                                 <span class="material-symbols-outlined text-emerald-500 text-sm">mail</span>
                             </span>
-                            <input type="email" id="salienteEmailNotif" disabled
-                                class="w-full pl-10 pr-4 py-3 bg-emerald-50/30 dark:bg-emerald-900/10 border border-emerald-100/50 dark:border-emerald-800/50 rounded-2xl text-xs font-bold text-emerald-700 dark:text-emerald-400 cursor-not-allowed transition-all outline-none"
-                                placeholder="No hay correo registrado">
+                            <input type="email" name="correo" id="salienteEmailNotif"
+                                class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-2xl text-xs font-bold text-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-emerald-500/20 transition-all outline-none"
+                                placeholder="Correo de la persona a notificar">
                         </div>
-                        <p class="text-[9px] text-gray-400 mt-1.5 px-1 flex items-center gap-1">
-                            <span class="material-symbols-outlined text-[12px]">info</span>
-                            Se enviará un correo de notificación a esta dirección.
-                        </p>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
@@ -1469,6 +1672,53 @@
                         class="flex-[2] flex items-center justify-center gap-2 px-6 py-3 text-xs font-bold text-white bg-emerald-600 rounded-2xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200 dark:shadow-emerald-900/30 active:scale-[0.98]">
                         <span class="material-symbols-outlined text-[18px]">done_all</span>
                         Registrar Envío Saliente
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div id="rejectModal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeModal('rejectModal')"></div>
+        <div class="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all font-display">
+            <form id="rejectForm" method="POST">
+                @csrf
+                <div class="px-8 py-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-red-50/50 dark:bg-red-900/20">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-red-100 dark:bg-red-900/40 flex items-center justify-center text-red-600 dark:text-red-400">
+                            <span class="material-symbols-outlined">cancel</span>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">Rechazar Correspondencia</h3>
+                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest" id="rejectRadText">Radicado: -</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="closeModal('rejectModal')" class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+
+                <div class="p-8 space-y-6">
+                    <div>
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Motivo de Rechazo (Obligatorio)</label>
+                        <textarea name="observaciones" id="rejectObs" rows="4" required
+                            class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all outline-none dark:text-white"
+                            placeholder="Describa el motivo por el cual se rechaza esta correspondencia..."></textarea>
+                        <p class="text-[9px] text-gray-400 mt-3 px-1 flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[12px]">info</span>
+                            Se notificará al remitente por correo electrónico sobre este rechazo y el motivo proporcionado.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="p-6 bg-gray-50/50 dark:bg-gray-900/30 border-t border-gray-100 dark:border-gray-700 flex gap-3">
+                    <button type="button" onclick="closeModal('rejectModal')" class="flex-1 px-5 py-3 text-xs font-black uppercase tracking-widest text-gray-500 hover:text-gray-700 transition-all">Cancelar</button>
+                    <button type="submit" class="flex-[2] flex items-center justify-center gap-2 px-6 py-3 text-xs font-bold text-white bg-red-600 rounded-2xl hover:bg-red-700 transition-all shadow-lg shadow-red-200 dark:shadow-red-900/30 active:scale-[0.98]">
+                        <span class="material-symbols-outlined text-[18px]">send</span>
+                        Confirmar Rechazo
                     </button>
                 </div>
             </form>

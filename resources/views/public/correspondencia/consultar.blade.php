@@ -103,7 +103,7 @@
                     <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
                         <span class="material-symbols-outlined text-xl">tag</span>
                     </span>
-                    <input type="text" name="numero_radicado" value="{{ old('numero_radicado') }}" class="w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 pl-10 p-3 focus:ring-2 focus:ring-primary/50 outline-none uppercase" required placeholder="Ej: EXT-2026-00001">
+                    <input type="text" name="numero_radicado" value="{{ old('numero_radicado', request('radicado')) }}" class="w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 pl-10 p-3 focus:ring-2 focus:ring-primary/50 outline-none uppercase" required placeholder="Ej: EXT-2026-00001">
                 </div>
             </div>
 

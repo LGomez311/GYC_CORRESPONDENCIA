@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use App\Models\Recibido;
 use App\Models\DetalleRecibido;
 use App\Models\Empleado;
@@ -33,6 +34,12 @@ class DashboardController extends Controller
 
         $correspondencias = $query->paginate(10)->appends($request->query());
 
+        $enviosPendientes = \App\Models\Envio::with(['radicado', 'tipoEnvio', 'quienEnvia', 'anexos'])
+            ->where('doc_quien_registra', $remDoc)
+            ->where('id_estado_envio', 0)
+            ->orderBy('fecha', 'desc')
+            ->get();
+
         $tipos = \App\Models\Tipo::all();
         $empleados = \App\Models\Empleado::where('emple_rol', 3)->get();
         $estados = \App\Models\Estado::all();
@@ -52,7 +59,7 @@ class DashboardController extends Controller
             ->sortBy('emple_nombres')
             ->values();
 
-        return view('remitente.index', compact('stats', 'correspondencias', 'tipos', 'empleados', 'estados', 'estadoId', 'todosDestinatarios'));
+        return view('remitente.index', compact('stats', 'correspondencias', 'enviosPendientes', 'tipos', 'empleados', 'estados', 'estadoId', 'todosDestinatarios'));
     }
 
     public function recibidosProceso(Request $request)
@@ -368,21 +375,13 @@ class DashboardController extends Controller
 
         DB::beginTransaction();
         try {
-            // 1. Radicado SAL- Logic
-            $currentYear = date('Y');
-            $prefix = 'SAL-' . $currentYear . '-';
-            
-            $latestRadicado = \App\Models\Radicado::where('nit_empresa', $nitEmpresa)
-                ->where('num_radicado', 'like', $prefix . '%')
-                ->orderBy('num_radicado', 'desc')
-                ->first();
+            // 1. SKIP Radicado SAL- Logic. Use existing Radicado INT-
+            $radicado = $recibido->radicado;
+            if (!$radicado) {
+                // Should not happen for public registration, but for safety:
+                throw new \Exception('La correspondencia no tiene un radicado asociado.');
+            }
 
-            $newNumber = $latestRadicado ? intval(substr($latestRadicado->num_radicado, -5)) + 1 : 1;
-            
-            $radicado = \App\Models\Radicado::create([
-                'num_radicado' => $prefix . str_pad($newNumber, 5, '0', STR_PAD_LEFT),
-                'nit_empresa'  => $nitEmpresa,
-            ]);
 
             // 2. Identify the response file and annexes
             $responseDetail = $recibido->detalles()->whereNotNull('archivo_res')->first();
@@ -429,7 +428,7 @@ class DashboardController extends Controller
                     'det_doc_empleado' => $request->doc_quien_envia,
                     'fecha_re'         => now(),
                     'id_estado_rec'    => 14,
-                    'observaciones'    => 'Registrado como envío saliente con radicado: ' . $radicado->num_radicado,
+                    'observaciones'    => 'Registrado como envío saliente (Respuesta enviada).',
                     'visto'            => 1
                 ]);
             }
@@ -459,13 +458,9 @@ class DashboardController extends Controller
                                     <p style='color: #64748b; font-size: 16px; text-align: center; margin-bottom: 32px;'>Le informamos que se ha registrado una respuesta oficial a su solicitud en nuestro sistema de gestión documental.</p>
                                     
                                     <div style='background-color: #f1f5f9; border-radius: 12px; padding: 24px; margin-bottom: 32px;'>
-                                        <div style='margin-bottom: 16px;'>
-                                            <span style='color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;'>Radicado Inicial</span>
-                                            <p style='color: #1e293b; font-size: 18px; font-weight: 700; margin: 4px 0 0;'>" . ($recibido->radicado ? $recibido->radicado->num_radicado : 'N/A') . "</p>
-                                        </div>
-                                        <div>
-                                            <span style='color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;'>Radicado de Respuesta</span>
-                                            <p style='color: #059669; font-size: 18px; font-weight: 700; margin: 4px 0 0;'>$numRadicado</p>
+                                        <div style='text-align: center;'>
+                                            <span style='color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;'>Número de Radicado</span>
+                                            <p style='color: #059669; font-size: 24px; font-weight: 700; margin: 8px 0 0;'>$numRadicado</p>
                                         </div>
                                     </div>
 
@@ -489,10 +484,118 @@ class DashboardController extends Controller
             }
 
             DB::commit();
-            return redirect()->back()->with('success', 'Envío saliente registrado exitosamente con radicado: ' . $radicado->num_radicado);
+            return redirect()->back()->with('success', 'Envío saliente registrado exitosamente con el radicado: ' . $radicado->num_radicado);
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Error al registrar envío: ' . $e->getMessage());
+        }
+    }
+
+    public function storeSalienteFromEnvio(Request $request, $id)
+    {
+        $remitente = Auth::guard('remitente')->user();
+        $nitEmpresa = $remitente ? $remitente->nit_empresa : null;
+
+        $envio = \App\Models\Envio::where('id_envio', $id)
+            ->where('nit_empresa', $nitEmpresa)
+            ->firstOrFail();
+
+        $request->validate([
+            'destino' => 'required|string|max:200',
+            'asunto'  => 'required|string|max:100',
+            'correo'  => 'nullable|email|max:150',
+            'observaciones' => 'nullable|string|max:250',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $envio->destino = $request->destino;
+            $envio->asunto = $request->asunto;
+            
+            $obs = $request->observaciones ?? '';
+            if ($request->filled('correo')) {
+                $obs = trim($obs . ' [Correo Notificación: ' . $request->correo . ']');
+            }
+            $envio->observaciones = substr($obs, 0, 250);
+            
+            $envio->id_estado_envio = 12; // Enviado
+            $envio->save();
+            
+            // Log trazabilidad if needed
+            DB::table('detalle_envio')->insert([
+                'id_envio' => $envio->id_envio,
+                'id_quien_envie' => $envio->doc_quien_envia,
+                'id_quien_recibe' => $envio->doc_quien_envia, // Copiamos el mismo ID o dejamos null
+                'fecha_traslado' => now(),
+                'id_estado_rec' => 12,
+                'observaciones' => 'Envío procesado por ventanilla. ' . $envio->observaciones
+            ]);
+
+            DB::commit();
+            
+            // Send Notification Email if requested
+            if ($request->filled('correo')) {
+                try {
+                    $radNum = $envio->radicado ? $envio->radicado->num_radicado : 'N/A';
+                    // URL to the public consultation page with pre-filled radicado
+                    $url = route('consultar', ['radicado' => $radNum]);
+                    
+                    $html = '
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta charset="utf-8">
+                        <title>Notificación de Correspondencia Saliente</title>
+                    </head>
+                    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+                        
+                        <div style="background-color: #f8f9fa; border-radius: 8px; padding: 20px; border: 1px solid #e9ecef;">
+                            <h2 style="color: #1a56db; margin-top: 0;">Tiene una nueva correspondencia</h2>
+                            
+                            <p>Estimado/a señor/a,</p>
+                            
+                            <p>Le informamos que se ha generado una nueva correspondencia a su nombre en nuestro sistema.</p>
+                            
+                            <div style="background-color: #fff; border-left: 4px solid #1a56db; padding: 15px; margin: 20px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                                <p style="margin: 0; font-size: 16px;">
+                                    <strong>Número de Radicado:</strong> <span style="color: #1a56db; font-weight: bold; font-size: 18px;">'.$radNum.'</span>
+                                </p>
+                            </div>
+                            
+                            <p>Para consultar el documento y sus detalles, por favor ingrese al siguiente enlace y utilice el número de radicado proporcionado:</p>
+                            
+                            <div style="text-align: center; margin: 30px 0;">
+                                <a href="'.$url.'" style="background-color: #1a56db; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+                                    Consultar Correspondencia
+                                </a>
+                            </div>
+                            
+                            <p style="font-size: 13px; color: #6c757d; margin-top: 30px; border-top: 1px solid #e9ecef; padding-top: 20px;">
+                                <small>
+                                    Este es un mensaje automático, por favor no responda a este correo. Si no puede hacer clic en el botón, copie y pegue la siguiente URL en su navegador:<br>
+                                    <a href="'.$url.'" style="color: #1a56db; word-break: break-all;">'.$url.'</a>
+                                </small>
+                            </p>
+                        </div>
+                    </body>
+                    </html>';
+
+                    Mail::html($html, function ($message) use ($request, $radNum) {
+                        $message->to($request->correo)
+                                ->subject('Notificación de Correspondencia Saliente - Radicado ' . $radNum);
+                    });
+                } catch (\Exception $mailEx) {
+                    \Illuminate\Support\Facades\Log::error('Error enviando correo de notificacion saliente: ' . $mailEx->getMessage());
+                    // we still proceed to return success even if mail fails, just log it.
+                }
+            }
+            
+            // If we need to return the URL for printing
+            // Since it's a form submit, we can just redirect back and maybe flash a message or a print URL
+            return redirect()->back()->with('success', 'Envío procesado exitosamente. Radicado: ' . ($envio->radicado ? $envio->radicado->num_radicado : 'N/A'));
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Error al procesar el envío: ' . $e->getMessage());
         }
     }
 }
