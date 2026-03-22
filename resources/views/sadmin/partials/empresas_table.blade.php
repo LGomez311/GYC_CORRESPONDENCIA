@@ -1,23 +1,23 @@
 <div class="overflow-x-auto min-h-[260px]">
-    <table class="w-full text-sm text-left">
-        <thead class="text-xs text-gray-500 uppercase bg-gray-50 dark:bg-gray-800/50 dark:text-gray-400">
+    <table class="w-full text-left border-collapse">
+        <thead class="bg-background-light dark:bg-background-dark/50">
             <tr>
-                <th scope="col" class="px-4 py-3 rounded-l-lg">Empresa</th>
-                <th scope="col" class="px-4 py-3">NIT</th>
-                <th scope="col" class="px-4 py-3">Estado Licencia</th>
-                <th scope="col" class="px-4 py-3 rounded-r-lg">Vigencia</th>
+                <th scope="col" class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Empresa</th>
+                <th scope="col" class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">NIT</th>
+                <th scope="col" class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Estado Licencia</th>
+                <th scope="col" class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase text-right">Vigencia</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody class="divide-y divide-[#cfd7e7] dark:divide-gray-800">
             @forelse($empresasPaginadas as $datos)
-                <tr class="border-b dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                    <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                    <td class="px-6 py-4 text-sm font-bold text-[#0d121b] dark:text-white">
                         {{ $datos['empresa']->nomb_empresa }}
                     </td>
-                    <td class="px-4 py-3 text-gray-500 dark:text-gray-400">
+                    <td class="px-6 py-4 text-sm text-[#4c669a] dark:text-gray-400">
                         {{ $datos['empresa']->nit_empresa }}
                     </td>
-                    <td class="px-4 py-3">
+                    <td class="px-6 py-4">
                         @if($datos['activa'] && !$datos['vence_pronto'])
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
                                 Activa
@@ -32,7 +32,7 @@
                             </span>
                         @endif
                     </td>
-                    <td class="px-4 py-3 text-gray-500 dark:text-gray-400">
+                    <td class="px-6 py-4 text-sm text-[#4c669a] dark:text-gray-400 text-right">
                         @if($datos['tiene_licencia'] && $datos['mejor_licencia'])
                             @if($datos['activa'])
                                 Quedan {{ $datos['dias_restantes'] }}
@@ -46,7 +46,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="4" class="px-4 py-8 text-center text-gray-500">
+                    <td colspan="4" class="px-6 py-10 text-center text-[#4c669a] dark:text-gray-400 text-sm">
                         No hay empresas que coincidan con la búsqueda
                     </td>
                 </tr>

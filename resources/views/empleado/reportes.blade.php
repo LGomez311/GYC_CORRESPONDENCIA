@@ -110,16 +110,16 @@
             </div>
         </div>
 
-        <!-- Total Radicados Únicos -->
-        <div class="bg-slate-900 dark:bg-white p-6 rounded-xl border border-transparent shadow-sm relative overflow-hidden">
-            <div class="absolute right-0 top-0 h-full w-24 bg-gradient-to-l from-primary/20 to-transparent"></div>
+        <!-- Total de Documentos -->
+        <div class="bg-slate-900 border border-slate-900 dark:bg-white p-6 rounded-xl shadow-sm relative overflow-hidden group">
+            <div class="absolute right-0 top-0 h-full w-32 bg-gradient-to-l from-primary/30 to-transparent opacity-80"></div>
             <div class="flex items-start justify-between relative z-10">
                 <div>
-                    <p class="text-sm font-medium text-slate-400 dark:text-gray-500 mb-1">Total Único</p>
-                    <h3 class="text-3xl font-bold text-white dark:text-gray-900">{{ $totalUnicos }}</h3>
+                    <p class="text-xs uppercase font-bold tracking-widest text-[#a8b8d8] dark:text-gray-500 mb-1">Total General</p>
+                    <h3 class="text-3xl font-bold text-white dark:text-gray-900">{{ $totalDocs }}</h3>
                 </div>
-                <div class="w-10 h-10 rounded-full bg-white/10 dark:bg-slate-100 flex items-center justify-center text-white dark:text-slate-900">
-                    <span class="material-symbols-outlined">tag</span>
+                <div class="w-12 h-12 rounded-full bg-white/10 dark:bg-slate-100 flex items-center justify-center text-white dark:text-slate-900 group-hover:scale-110 transition-transform">
+                    <span class="material-symbols-outlined">calculate</span>
                 </div>
             </div>
         </div>
@@ -130,9 +130,9 @@
     <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
         <div class="flex items-center justify-between mb-6">
             <h3 class="font-bold text-lg dark:text-white">Métricas Consolidadas</h3>
-            <div class="bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2">
-                <span class="material-symbols-outlined text-lg">description</span>
-                Documentos: {{ $totalUnicos }}
+            <div class="bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-sm">
+                <span class="material-symbols-outlined text-lg">format_list_numbered</span>
+                Total de Trámites: {{ $totalDocs }}
             </div>
         </div>
         <div class="w-full h-80 relative">

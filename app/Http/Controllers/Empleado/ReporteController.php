@@ -113,14 +113,24 @@ class ReporteController extends Controller
             $end = $baseDate->copy()->endOfMonth();
         }
 
+        // 1. Internos (DetalleEnvio) - Solo lo que le asignaron a él
         $latestDetalleSubquery = DetalleEnvio::select(DB::raw('MAX(id_detalle) as id_detalle'))
             ->where('id_quien_recibe', $user->emple_doc)
             ->whereBetween('fecha_traslado', [$start, $end])
             ->groupBy('id_envio');
 
-        $totales = DetalleEnvio::with(['estado', 'envio.tipoEnvio'])
+        $totalesInt = DetalleEnvio::with(['estado', 'envio.tipoEnvio'])
             ->whereIn('id_detalle', $latestDetalleSubquery)
-            ->where('id_quien_recibe', $user->emple_doc)
+            ->get();
+
+        // 2. Externos (DetalleRecibido)
+        $latestExtSubquery = \App\Models\DetalleRecibido::select(DB::raw('MAX(id_det_recibido) as id_det_recibido'))
+            ->where('det_doc_empleado', $user->emple_doc)
+            ->whereBetween('fecha_re', [$start, $end])
+            ->groupBy('det_id_recibido');
+
+        $totalesExt = \App\Models\DetalleRecibido::with(['estado', 'recibido.tipo.prioridad'])
+            ->whereIn('id_det_recibido', $latestExtSubquery)
             ->get();
 
         $countRecibido = 0;
@@ -130,7 +140,8 @@ class ReporteController extends Controller
         $countRechazado = 0;
         $countVencidos = 0;
 
-        foreach ($totales as $detalle) {
+        // Procesar Internos
+        foreach ($totalesInt as $detalle) {
             $estadoNomb = strtolower($detalle->estado->estado_nomb ?? '');
 
             $isActive = false;
@@ -158,7 +169,35 @@ class ReporteController extends Controller
             }
         }
 
-        $totalUnicos = $totales->count();
+        // Procesar Externos
+        foreach ($totalesExt as $detalleExt) {
+            $estadoNomb = strtolower($detalleExt->estado->estado_nomb ?? '');
+            $isActive = false;
+
+            if (str_contains($estadoNomb, 'recibido')) {
+                $countRecibido++;
+                $isActive = true;
+            } elseif (str_contains($estadoNomb, 'tramit') || str_contains($estadoNomb, 'trámit')) {
+                $countTramite++;
+                $isActive = true;
+            } elseif (str_contains($estadoNomb, 'finalizado') || str_contains($estadoNomb, 'resuelto')) {
+                $countFinalizado++;
+            } elseif (str_contains($estadoNomb, 'archivado')) {
+                $countArchivado++;
+            } elseif (str_contains($estadoNomb, 'rechazado')) {
+                $countRechazado++;
+            }
+
+            if ($isActive && $detalleExt->recibido && $detalleExt->recibido->tipo && $detalleExt->recibido->tipo->dias_respuesta) {
+                $fechaEnvio = Carbon::parse($detalleExt->fecha_re);
+                $limite = $fechaEnvio->copy()->addDays($detalleExt->recibido->tipo->dias_respuesta);
+                if ($now->greaterThan($limite)) {
+                    $countVencidos++;
+                }
+            }
+        }
+
+        $totalDocs = $totalesInt->count() + $totalesExt->count();
 
         return [
             'countRecibido' => $countRecibido,
@@ -167,7 +206,7 @@ class ReporteController extends Controller
             'countArchivado' => $countArchivado,
             'countRechazado' => $countRechazado,
             'countVencidos' => $countVencidos,
-            'totalUnicos' => $totalUnicos,
+            'totalDocs' => $totalDocs,
             'mesSelect' => $mes,
             'rangoSelect' => $rango,
             'rangoFechas' => ucfirst($start->translatedFormat('1 F Y')) . " - " . ucfirst($end->translatedFormat('t F Y'))

@@ -93,6 +93,7 @@ Route::middleware(['auth:web', 'licencia.activa'])->group(function () {
     Route::get('/empleado/correspondencia-interna/{id}/historial', [\App\Http\Controllers\Empleado\CorrespondenciaController::class, 'historialInterna'])->name('empleado.historial_interna');
     Route::get('/empleado/envios-internos', [\App\Http\Controllers\Empleado\CorrespondenciaController::class, 'enviosInternos'])->name('empleado.envios_internos');
     Route::get('/empleado/reportes', [\App\Http\Controllers\Empleado\ReporteController::class, 'index'])->name('empleado.reportes');
+    Route::get('/empleado/reportes/export/pdf', [\App\Http\Controllers\Empleado\ReporteController::class, 'exportPdf'])->name('empleado.reportes.export.pdf');
 
     // Perfil / Ajustes de cuenta (Compartido)
     Route::post('/perfil/actualizar', [\App\Http\Controllers\Admin\ProfileController::class, 'updateProfile'])->name('admin.profile.update');

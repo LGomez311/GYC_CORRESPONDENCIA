@@ -18,7 +18,7 @@
             <div class="flex gap-3">
                 <button id="btnOpenCrear"
                     class="px-4 py-2 bg-primary text-white rounded-lg font-bold text-sm flex items-center gap-2 shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all">
-                    <span class="material-symbols-outlined text-sm">person_add</span>
+                    <span class="material-symbols-outlined" style="font-size: 18px;">person_add</span>
                     Crear Nuevo Admin
                 </button>
             </div>
@@ -29,27 +29,24 @@
         <div
             class="bg-white dark:bg-[#161d2b] rounded-xl border border-[#cfd7e7] dark:border-gray-800 overflow-hidden shadow-sm">
             <div
-                class="bg-white dark:bg-[#161d2b] rounded-xl border border-[#cfd7e7] dark:border-gray-800 overflow-hidden shadow-sm">
-                <div
-                    class="p-6 border-b border-[#cfd7e7] dark:border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                class="p-6 border-b border-[#cfd7e7] dark:border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
 
-                    <h2 class="text-[#0d121b] dark:text-white text-lg font-bold leading-tight">Administradores de Empresas
-                    </h2>
+                <h2 class="text-[#0d121b] dark:text-white text-lg font-bold leading-tight">Administradores de Empresas
+                </h2>
 
-                    <div class="flex items-center gap-3">
-                        <button id="btnOpenHistorial"
-                            class="px-3 py-2 border border-[#cfd7e7] dark:border-gray-700 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors dark:text-white">
-                            <span class="material-symbols-outlined text-sm">history</span>
-                            Historial
-                        </button>
-                        <button onclick="openExportModal()"
-                            class="px-3 py-2 border border-[#cfd7e7] dark:border-gray-700 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors dark:text-white">
-                            <span class="material-symbols-outlined text-sm">download</span>
-                            Exportar
-                        </button>
-                    </div>
-
+                <div class="flex items-center gap-3">
+                    <button id="btnOpenHistorial"
+                        class="px-3 py-2 border border-[#cfd7e7] dark:border-gray-700 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors dark:text-white">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">history</span>
+                        Historial
+                    </button>
+                    <button onclick="openExportModal()"
+                        class="px-3 py-2 border border-[#cfd7e7] dark:border-gray-700 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors dark:text-white">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">download</span>
+                        Exportar
+                    </button>
                 </div>
+
             </div>
 
             {{-- MODAL HISTORIAL --}}
@@ -114,7 +111,7 @@
                                             <td class="px-4 py-3 text-center">
                                                 <button onclick="verDetallesCambio({{ $auditoria->id_log }})"
                                                     class="text-primary hover:text-blue-700 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 mx-auto transition-colors">
-                                                    <span class="material-symbols-outlined text-[16px]">visibility</span>
+                                                    <span class="material-symbols-outlined" style="font-size: 16px;">visibility</span>
                                                     Ver Cambios
                                                 </button>
                                                 <!-- Datos Ocultos para JS -->
@@ -375,22 +372,6 @@
                                     {{ $empresa->nit_empresa }} - {{ $empresa->nomb_empresa }}
                                 </option>
                             @endforeach
-
-                            @if ($users->count() == 0)
-                                <tr>
-                                    <td colspan="6" class="px-6 py-10 text-center">
-                                        <div
-                                            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-sm">
-                                            <span class="material-symbols-outlined text-[18px]">info</span>
-                                            No hay registros disponibles
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endif
-                            </tbody>
-                            </table>
-                            <div class="p-4 border-t border-[#cfd7e7] dark:border-gray-800">
-                                {{ $users->links() }}
                         </select>
                         <p id="error-nit" class="text-sm text-red-600 hidden"></p>
                     </div>

@@ -69,30 +69,18 @@
                                     @endif
                                 </div>
                                 
-                                <div class="space-y-1">
-                                    @foreach($envio->destinatarios_actuales->take(2) as $dest)
-                                        @php
-                                            $estN = strtolower($dest->estado?->estado_nomb ?? '');
-                                            $dotClass = 'bg-gray-400';
-                                            if(str_contains($estN, 'recibido')) $dotClass = 'bg-blue-500';
-                                            elseif(str_contains($estN, 'tramite')) $dotClass = 'bg-yellow-500';
-                                            elseif(str_contains($estN, 'finalizado') || str_contains($estN, 'resuelto')) $dotClass = 'bg-green-500';
-                                        @endphp
-                                        <div class="flex items-center gap-1.5 text-[10px]">
-                                            <span class="w-1.5 h-1.5 rounded-full {{ $dotClass }}"></span>
-                                            <span class="font-medium dark:text-gray-300">{{ explode(' ', $dest->quienRecibe->emple_nombres)[0] }}:</span>
-                                            <span class="text-gray-500">{{ $dest->estado?->estado_nomb }}</span>
-                                        </div>
-                                    @endforeach
-                                    @if($envio->destinatarios_actuales->count() > 2)
-                                        <button onclick="abrirModalDestinatarios({{ json_encode($envio->destinatarios_actuales->map(function($d){ 
-                                            return [
-                                                'nombre' => $d->quienRecibe->emple_nombres . ' ' . $d->quienRecibe->emple_apellidos,
-                                                'estado' => $d->estado?->estado_nomb,
-                                                'area' => $d->quienRecibe->area->area_nom ?? 'N/A'
-                                            ];
-                                        })) }})" class="text-[10px] text-primary hover:underline font-bold">Ver todos los destinatarios...</button>
-                                    @endif
+                                <div class="mt-2 text-left">
+                                    <button onclick="abrirModalDestinatarios({{ json_encode($envio->destinatarios_actuales->map(function($d){ 
+                                        return [
+                                            'nombre' => trim(($d->quienRecibe->emple_nombres ?? '') . ' ' . ($d->quienRecibe->emple_apellidos ?? '')),
+                                            'doc' => $d->quienRecibe->emple_doc ?? 'N/A',
+                                            'estado' => $d->estado?->estado_nomb ?? 'N/A',
+                                            'area' => $d->quienRecibe->area->area_nom ?? 'Sin Área'
+                                        ];
+                                    })) }})" class="inline-flex items-center gap-1.5 text-[11px] text-primary hover:text-blue-700 bg-primary/10 hover:bg-primary/20 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 dark:text-blue-400 px-3 py-1.5 rounded-lg font-bold transition-colors w-fit shadow-sm">
+                                        <span class="material-symbols-outlined text-[15px]">groups</span>
+                                        Ver {{ $envio->destinatarios_actuales->count() }} destinatario(s) y estados
+                                    </button>
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-right">
@@ -169,18 +157,25 @@ function abrirModalDestinatarios(destinatarios) {
         else if(estN.includes('finalizado') || estN.includes('resuelto')) dotClass = 'bg-green-500';
 
         li.innerHTML = `
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 font-bold text-xs">
-                    ${d.nombre.charAt(0)}
+            <div class="flex items-start gap-4 w-full">
+                <!-- Avatar -->
+                <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/40 flex-shrink-0 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-sm shadow-inner">
+                    ${d.nombre.charAt(0).toUpperCase()}
                 </div>
-                <div>
-                    <p class="text-sm font-bold dark:text-white">${d.nombre}</p>
-                    <p class="text-[10px] text-gray-500">${d.area}</p>
+                
+                <!-- Info principal -->
+                <div class="flex-1 min-w-0 flex flex-col justify-center">
+                    <p class="text-sm font-bold text-gray-800 dark:text-white truncate" title="${d.nombre}">${d.nombre}</p>
+                    <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 font-medium">Doc: <span class="text-gray-700 dark:text-gray-300">${d.doc}</span> • <span class="text-blue-600 dark:text-blue-400">${d.area}</span></p>
                 </div>
-            </div>
-            <div class="flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full ${dotClass}"></span>
-                <span class="text-xs font-medium dark:text-gray-300">${d.estado}</span>
+                
+                <!-- Estado flotante -->
+                <div class="flex items-center flex-shrink-0">
+                    <div class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-gray-700 shadow-sm">
+                        <span class="w-2 h-2 rounded-full ${dotClass}"></span>
+                        <span class="text-[10px] font-bold uppercase tracking-wide text-gray-700 dark:text-gray-300">${d.estado}</span>
+                    </div>
+                </div>
             </div>
         `;
         lista.appendChild(li);

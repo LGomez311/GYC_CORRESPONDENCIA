@@ -166,7 +166,7 @@
                                             </div>
                                             <div>
                                                 <p class="text-sm font-bold dark:text-white">
-                                                    {{ $ultimo->quienRecibe->emple_nombres }}</p>
+                                                    {{ $ultimo->quienRecibe->emple_nombres }} {{ $ultimo->quienRecibe->emple_apellidos }}</p>
                                                 <p class="text-[10px] text-gray-500">
                                                     {{ $ultimo->quienRecibe->area->area_nom ?? 'Sin Área' }}</p>
                                             </div>
@@ -242,10 +242,15 @@
                                                     {{ $trace->fecha_traslado->translatedFormat('d M, Y - h:i A') }}
                                                 </span>
                                             </div>
-                                            <span
-                                                class="text-[11px] font-bold text-primary dark:text-blue-400 bg-primary/5 px-2 py-0.5 rounded">
-                                                {{ $trace->quienRecibe->emple_nombres }}
-                                            </span>
+                                            <div class="flex flex-col md:items-end">
+                                                <span
+                                                    class="text-[12px] font-bold text-primary dark:text-blue-400 bg-primary/5 px-2 py-0.5 rounded mb-0.5">
+                                                    {{ $trace->quienRecibe->emple_nombres }} {{ $trace->quienRecibe->emple_apellidos }}
+                                                </span>
+                                                <span class="text-[10px] text-gray-500 dark:text-gray-400 font-medium tracking-tight">
+                                                    Área: {{ $trace->quienRecibe->area->area_nom ?? 'Sin Área' }}
+                                                </span>
+                                            </div>
                                             @if ($trace->id_estado_rec == 11 && Auth::user()->emple_doc == $detalle->envio->doc_quien_envia)
                                                 @if ($trace->id_detalle == $destinatarios[$trace->id_quien_recibe]->last()->id_detalle)
                                                     <button

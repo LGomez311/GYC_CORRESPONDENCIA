@@ -29,7 +29,7 @@
         <!-- ================= EXTERNA TAB ================= -->
         <div id="externa" role="tabpanel">
     <!-- Stats Boxes -->
-    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6" id="stats-externa">
         <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center gap-4">
             <div class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
                 <span class="material-symbols-outlined">inbox</span>
@@ -81,24 +81,35 @@
     <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         
         <!-- Filters -->
-        <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex flex-col md:flex-row gap-4 justify-between items-center">
-            <div class="flex gap-2 w-full md:w-auto">
+        <form id="formFiltroExt" method="GET" action="{{ route('empleado.correspondencia_recibida') }}" class="p-4 border-b border-gray-200 dark:border-gray-700 flex flex-col md:flex-row gap-4 justify-between items-center bg-white dark:bg-slate-800">
+            <input type="hidden" name="tab" value="externa">
+            <div class="flex flex-col md:flex-row gap-2 w-full md:w-auto">
                 <div class="relative flex-1 md:w-64">
                     <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">search</span>
-                    <input type="text" placeholder="Buscar por radicado, asunto..." 
-                           class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50">
+                    <input type="text" name="search_ext" value="{{ request('search_ext') }}" placeholder="Buscar por radicado, asunto o tipo..." 
+                           class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50"
+                           oninput="clearTimeout(this.delay); this.delay = setTimeout(() => { document.getElementById('formFiltroExt').submit(); }, 600);">
+                </div>
+                <div class="relative flex-1 md:w-48">
+                    <select name="estado_ext" onchange="document.getElementById('formFiltroExt').submit();" class="w-full pl-3 pr-8 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 appearance-none">
+                        <option value="">Todos (En Trámite o Recibidos)</option>
+                        <option value="7" {{ request('estado_ext') == '7' ? 'selected' : '' }}>Recibidos</option>
+                        <option value="8" {{ request('estado_ext') == '8' ? 'selected' : '' }}>En Trámite</option>
+                    </select>
                 </div>
             </div>
+            
             <div class="flex gap-2 w-full md:w-auto">
-                <button onclick="toggleModal('modalNuevaVentanilla')" class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm whitespace-nowrap">
+                <button type="button" onclick="toggleModal('modalNuevaVentanilla')" class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm whitespace-nowrap">
                     <span class="material-symbols-outlined text-[18px]">outgoing_mail</span>
                     Nueva a Ventanilla
                 </button>
             </div>
-        </div>
+        </form>
 
         <!-- Table -->
-        <div class="overflow-x-auto">
+        <div id="table-externa">
+            <div class="overflow-x-auto">
             <table class="w-full text-left text-sm">
                 <thead class="text-xs text-gray-500 uppercase bg-gray-50 dark:bg-slate-900/50 dark:text-gray-400">
                     <tr>
@@ -328,7 +339,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                            <td colspan="10" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                                 <span class="material-symbols-outlined text-4xl mb-2 text-gray-400">inbox</span>
                                 <p>No hay correspondencias recibidas registradas.</p>
                             </td>
@@ -344,8 +355,9 @@
                 Mostrando {{ $correspondencias->firstItem() ?? 0 }} a {{ $correspondencias->lastItem() ?? 0 }} de {{ $correspondencias->total() }} correspondencias
             </div>
             <div class="w-full md:w-auto">
-                {{ $correspondencias->appends(['int_page' => request('int_page')])->links() }}
+                {{ $correspondencias->appends(['int_page' => request('int_page'), 'search_ext' => request('search_ext'), 'estado_ext' => request('estado_ext')])->links() }}
             </div>
+        </div>
         </div>
 
     </div>
@@ -354,7 +366,7 @@
         <!-- ================= INTERNA TAB ================= -->
         <div id="interna" class="hidden" role="tabpanel">
             <!-- Stats Boxes Interna -->
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6" id="stats-interna">
                 <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center gap-4">
                     <div class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
                         <span class="material-symbols-outlined">inbox</span>
@@ -404,14 +416,34 @@
 
             <!-- Table Interna -->
             <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50">
-                    <h2 class="font-bold text-gray-800 dark:text-white">Correspondencia Interna</h2>
-                    <button onclick="toggleModal('modalNuevaInterna')" class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm">
-                        <span class="material-symbols-outlined text-[18px]">add_circle</span>
-                        Nueva Interna
-                    </button>
-                </div>
-                <div class="overflow-x-auto">
+                <!-- Filters Interna -->
+                <form id="formFiltroInt" method="GET" action="{{ route('empleado.correspondencia_recibida') }}" class="p-4 border-b border-gray-200 dark:border-gray-700 flex flex-col md:flex-row gap-4 justify-between items-center bg-white dark:bg-slate-800">
+                    <input type="hidden" name="tab" value="interna">
+                    <div class="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+                        <div class="relative flex-1 md:w-64">
+                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">search</span>
+                            <input type="text" name="search_int" value="{{ request('search_int') }}" placeholder="Buscar por radicado, asunto o tipo..." 
+                                   class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50"
+                                   oninput="clearTimeout(this.delay); this.delay = setTimeout(() => { document.getElementById('formFiltroInt').submit(); }, 600);">
+                        </div>
+                        <div class="relative flex-1 md:w-48">
+                            <select name="estado_int" onchange="document.getElementById('formFiltroInt').submit();" class="w-full pl-3 pr-8 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 appearance-none">
+                                <option value="">Todos (En Trámite o Recibidos)</option>
+                                <option value="7" {{ request('estado_int') == '7' ? 'selected' : '' }}>Recibidos</option>
+                                <option value="8" {{ request('estado_int') == '8' ? 'selected' : '' }}>En Trámite</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-2 w-full md:w-auto">
+                        <button type="button" onclick="toggleModal('modalNuevaInterna')" class="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm whitespace-nowrap">
+                            <span class="material-symbols-outlined text-[18px]">add_circle</span>
+                            Nueva Interna
+                        </button>
+                    </div>
+                </form>
+                <div id="table-interna">
+                    <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm">
                         <thead class="text-xs text-gray-500 uppercase bg-gray-50 dark:bg-slate-900/50 dark:text-gray-400">
                             <tr>
@@ -420,7 +452,7 @@
                                 <th class="px-6 py-3 font-medium">Detalles Documento</th>
                                 <th class="px-6 py-3 font-medium hidden lg:table-cell">Detalles Técnicos</th>
                                 <th class="px-6 py-3 font-medium hidden md:table-cell">Fecha</th>
-                                <th class="px-6 py-3 font-medium">Documentos <br> y Anexos</th>
+                                <th class="px-6 py-3 font-medium">Archivos/Anexos</th>
                                 <th class="px-6 py-3 font-medium">Estado</th>
                                 <th class="px-6 py-3 font-medium text-right">Acciones</th>
                             </tr>
@@ -629,7 +661,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                                    <td colspan="10" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                                         <span class="material-symbols-outlined text-4xl mb-2 text-gray-400">inbox</span>
                                         <p>No hay correspondencias internas registradas.</p>
                                     </td>
@@ -643,14 +675,130 @@
                         Mostrando {{ $correspondenciasInternas->firstItem() ?? 0 }} a {{ $correspondenciasInternas->lastItem() ?? 0 }} de {{ $correspondenciasInternas->total() }} correspondencias
                     </div>
                     <div class="w-full md:w-auto">
-                        {{ $correspondenciasInternas->appends(['ext_page' => request('ext_page')])->links() }}
+                        {{ $correspondenciasInternas->appends(['ext_page' => request('ext_page'), 'search_int' => request('search_int'), 'estado_int' => request('estado_int')])->links() }}
                     </div>
+                </div>
                 </div>
             </div>
         </div>
     </div>
 
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const tab = urlParams.get('tab');
+        if (tab && typeof switchTab === "function") {
+            switchTab(tab);
+        }
+
+        let extInput = document.querySelector('input[name="search_ext"]');
+        let intInput = document.querySelector('input[name="search_int"]');
+        
+        if (urlParams.has('search_ext') && extInput) {
+            extInput.focus();
+            let val = extInput.value;
+            extInput.value = '';
+            extInput.value = val;
+        } else if (urlParams.has('search_int') && intInput) {
+            intInput.focus();
+            let val = intInput.value;
+            intInput.value = '';
+            intInput.value = val;
+        }
+
+        function interceptSearch(formId, targetDivId) {
+            const form = document.getElementById(formId);
+            if (!form) return;
+            
+            let typingTimer;
+            const doneTypingInterval = 500;
+            
+            const inputs = form.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                input.removeAttribute('oninput');
+                input.removeAttribute('onchange');
+                
+                input.addEventListener('input', () => {
+                    clearTimeout(typingTimer);
+                    typingTimer = setTimeout(fetchData, doneTypingInterval);
+                });
+                input.addEventListener('change', () => {
+                    if(input.tagName === 'SELECT') {
+                        clearTimeout(typingTimer);
+                        fetchData();
+                    }
+                });
+            });
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                fetchData();
+            });
+
+            function fetchData() {
+                const url = new URL(form.action);
+                const formData = new FormData(form);
+                const params = new URLSearchParams(window.location.search);
+                for (const [key, value] of formData.entries()) {
+                    params.set(key, value);
+                }
+                url.search = params.toString();
+
+                fetch(url, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html' }
+                })
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    
+                    const newStats = doc.getElementById('stats-' + targetDivId);
+                    const oldStats = document.getElementById('stats-' + targetDivId);
+                    if(newStats && oldStats) oldStats.innerHTML = newStats.innerHTML;
+
+                    const newTable = doc.getElementById('table-' + targetDivId);
+                    const oldTable = document.getElementById('table-' + targetDivId);
+                    if(newTable && oldTable) oldTable.innerHTML = newTable.innerHTML;
+                    
+                    window.history.replaceState({}, '', url);
+                });
+            }
+            
+            document.addEventListener('click', function(e) {
+                const tableContainer = document.getElementById('table-' + targetDivId);
+                if(tableContainer && tableContainer.contains(e.target)) {
+                    const link = e.target.closest('.pagination a, [rel="next"], [rel="prev"], nav a');
+                    if (link) {
+                        e.preventDefault();
+                        const navUrl = new URL(link.href);
+                        fetch(navUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html' } })
+                        .then(response => response.text())
+                        .then(html => {
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(html, 'text/html');
+                            
+                            const newStats = doc.getElementById('stats-' + targetDivId);
+                            const oldStats = document.getElementById('stats-' + targetDivId);
+                            if(newStats && oldStats) oldStats.innerHTML = newStats.innerHTML;
+
+                            const newTable = doc.getElementById('table-' + targetDivId);
+                            const oldTable = document.getElementById('table-' + targetDivId);
+                            if(newTable && oldTable) oldTable.innerHTML = newTable.innerHTML;
+                            
+                            window.history.replaceState({}, '', navUrl);
+                        });
+                    }
+                }
+            });
+        }
+
+        interceptSearch('formFiltroExt', 'externa');
+        interceptSearch('formFiltroInt', 'interna');
+    });
+</script>
+
 @endsection
 
 @section('modals')
@@ -817,7 +965,10 @@
                         
                         <!-- Header Opcional -->
                         <div class="sticky top-0 bg-white dark:bg-slate-800 p-2 border-b border-gray-100 dark:border-gray-700 z-10 flex justify-between items-center">
-                            <span class="text-xs text-gray-500 font-medium">Resultados de búsqueda</span>
+                            <span class="text-xs text-gray-500 font-medium ml-2">Resultados de búsqueda</span>
+                            <button type="button" onclick="document.getElementById('dropdownReasignarList').classList.add('hidden')" class="text-gray-400 hover:text-red-500 bg-gray-100 dark:bg-slate-700 hover:bg-red-50 dark:hover:bg-red-900/30 p-1 rounded flex items-center justify-center transition-colors" title="Cerrar Lista">
+                                <span class="material-symbols-outlined text-[16px]">close</span>
+                            </button>
                         </div>
 
                         <div id="listaReasignar" class="flex flex-col">
@@ -880,7 +1031,7 @@
         <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50 shrink-0">
             <h3 class="font-bold text-lg text-gray-800 dark:text-white flex items-center gap-2">
                 <span class="material-symbols-outlined text-blue-600 dark:text-blue-400">folder_open</span>
-                Documentos y Anexos
+                Archivos/Anexos
             </h3>
             <button onclick="toggleModal('modalArchivos')" class="text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors p-1 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700">
                 <span class="material-symbols-outlined">close</span>
@@ -933,12 +1084,17 @@
                     <div id="dropdownDestinatariosList" class="hidden absolute z-10 w-full mt-1 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-800 shadow-lg max-h-60 overflow-y-auto">
                         
                         <!-- Select All Visible Button -->
-                        <div id="selectAllContainer" class="sticky top-0 bg-white dark:bg-slate-800 p-2 border-b border-gray-100 dark:border-gray-700 z-10 flex justify-between items-center">
-                            <span class="text-xs text-gray-500 font-medium">Resultados de búsqueda</span>
-                            <button type="button" onclick="seleccionarTodosVisibles()" class="text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1 bg-blue-50 dark:bg-blue-900/40 hover:bg-blue-100 dark:hover:bg-blue-900/60 px-2 py-1 rounded transition-colors">
-                                <span class="material-symbols-outlined text-[14px]">done_all</span>
-                                Seleccionar todos los visibles
-                            </button>
+                        <div id="selectAllContainer" class="sticky top-0 bg-white dark:bg-slate-800 p-2 border-b border-gray-100 dark:border-gray-700 z-[70] flex justify-between items-center">
+                            <span class="text-xs text-gray-500 font-medium hidden sm:inline ml-2">Resultados</span>
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="seleccionarTodosVisibles()" class="text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1 bg-blue-50 dark:bg-blue-900/40 hover:bg-blue-100 dark:hover:bg-blue-900/60 px-2 py-1 rounded transition-colors">
+                                    <span class="material-symbols-outlined text-[14px]">done_all</span>
+                                    Seleccionar todos
+                                </button>
+                                <button type="button" onclick="document.getElementById('dropdownDestinatariosList').classList.add('hidden')" class="text-gray-400 hover:text-red-500 bg-gray-100 dark:bg-slate-700 hover:bg-red-50 dark:hover:bg-red-900/30 p-1 rounded flex items-center justify-center transition-colors" title="Cerrar Lista">
+                                    <span class="material-symbols-outlined text-[16px]">close</span>
+                                </button>
+                            </div>
                         </div>
 
                         <div id="listaDestinatarios" class="flex flex-col">
@@ -982,14 +1138,35 @@
                     </div>
 
                     <!-- Tipo de Documento -->
-                    <div>
+                    <div class="relative" id="tipoDropdownContainerInt">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo de Documento <span class="text-red-500">*</span></label>
-                        <select name="id_tipo_envio" required class="w-full border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 dark:text-white py-2.5 px-3 text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors">
-                            <option value="">Seleccione el tipo...</option>
-                            @foreach($tipos ?? [] as $tipo)
-                                <option value="{{ $tipo->id_tipo }}">{{ $tipo->tipo_nombre }}</option>
-                            @endforeach
-                        </select>
+                        <div id="tipoInputContainerInt" class="flex flex-wrap items-center gap-1.5 w-full min-h-[42px] px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 focus-within:ring-2 focus-within:ring-primary/50 cursor-text transition-all" onclick="abrirDropdownTipoInt()">
+                            <input type="text" id="busquedaTipoInt" placeholder="Buscar o seleccionar tipo..." 
+                                class="flex-1 w-full bg-transparent border-none p-0 focus:ring-0 text-sm dark:text-white dark:placeholder-gray-400 m-0"
+                                autocomplete="off"
+                                onkeyup="filtrarTipoInt()" onfocus="abrirDropdownTipoInt()" oninput="hideTipoTextInt()">
+                        </div>
+                        <div id="dropdownTipoListInt" class="hidden absolute z-[60] w-full mt-1 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-800 shadow-lg max-h-48 overflow-y-auto">
+                            <div class="sticky top-0 bg-white dark:bg-slate-800 p-2 border-b border-gray-100 dark:border-gray-700 z-[70] flex justify-between items-center">
+                                <span class="text-xs text-gray-500 font-medium ml-2">Tipos de Documento</span>
+                                <button type="button" onclick="document.getElementById('dropdownTipoListInt').classList.add('hidden')" class="text-gray-400 hover:text-red-500 bg-gray-100 dark:bg-slate-700 hover:bg-red-50 dark:hover:bg-red-900/30 p-1 rounded flex items-center justify-center transition-colors" title="Cerrar Lista">
+                                    <span class="material-symbols-outlined text-[16px]">close</span>
+                                </button>
+                            </div>
+                            <div id="listaTipoInt" class="flex flex-col">
+                                @foreach($tipos ?? [] as $tipo)
+                                    <div class="tipo-item-int flex items-center px-4 py-2 hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0 transition-colors" 
+                                           data-nombre="{{ strtolower($tipo->tipo_nombre) }}" 
+                                           onclick="seleccionarTipoInt('{{ addslashes($tipo->tipo_nombre) }}', '{{ $tipo->id_tipo }}')">
+                                        <span class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ $tipo->tipo_nombre }}</span>
+                                    </div>
+                                @endforeach
+                                <div id="noTipoMsgInt" class="hidden px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                                    No se encontraron tipos.
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="id_tipo_envio" id="id_tipo_envio_int_hidden" required>
                     </div>
                 </div>
 
@@ -1116,6 +1293,12 @@
 
                     <!-- Dropdown List -->
                     <div id="dropdownVentanillaList" class="hidden absolute z-10 w-full mt-1 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-800 shadow-lg max-h-60 overflow-y-auto">
+                        <div class="sticky top-0 bg-white dark:bg-slate-800 p-2 border-b border-gray-100 dark:border-gray-700 z-[70] flex justify-between items-center">
+                            <span class="text-xs text-gray-500 font-medium ml-2">Destinatarios de Ventanilla</span>
+                            <button type="button" onclick="document.getElementById('dropdownVentanillaList').classList.add('hidden')" class="text-gray-400 hover:text-red-500 bg-gray-100 dark:bg-slate-700 hover:bg-red-50 dark:hover:bg-red-900/30 p-1 rounded flex items-center justify-center transition-colors" title="Cerrar Lista">
+                                <span class="material-symbols-outlined text-[16px]">close</span>
+                            </button>
+                        </div>
                         <div id="listaVentanilla" class="flex flex-col">
                             @foreach($remitentes ?? [] as $rem)
                                 <div class="ventanilla-item flex items-center px-4 py-2 hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0 transition-colors" 
@@ -1151,14 +1334,35 @@
                     </div>
 
                     <!-- Tipo de Documento -->
-                    <div>
+                    <div class="relative" id="tipoDropdownContainerVent">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo de Documento <span class="text-red-500">*</span></label>
-                        <select name="id_tipo_envio" required class="w-full border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 dark:text-white py-2.5 px-3 text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors">
-                            <option value="">Seleccione el tipo...</option>
-                            @foreach($tipos ?? [] as $tipo)
-                                <option value="{{ $tipo->id_tipo }}">{{ $tipo->tipo_nombre }}</option>
-                            @endforeach
-                        </select>
+                        <div id="tipoInputContainerVent" class="flex flex-wrap items-center gap-1.5 w-full min-h-[42px] px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 focus-within:ring-2 focus-within:ring-primary/50 cursor-text transition-all" onclick="abrirDropdownTipoVent()">
+                            <input type="text" id="busquedaTipoVent" placeholder="Buscar o seleccionar tipo..." 
+                                class="flex-1 w-full bg-transparent border-none p-0 focus:ring-0 text-sm dark:text-white dark:placeholder-gray-400 m-0"
+                                autocomplete="off"
+                                onkeyup="filtrarTipoVent()" onfocus="abrirDropdownTipoVent()" oninput="hideTipoTextVent()">
+                        </div>
+                        <div id="dropdownTipoListVent" class="hidden absolute z-[60] w-full mt-1 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-800 shadow-lg max-h-48 overflow-y-auto">
+                            <div class="sticky top-0 bg-white dark:bg-slate-800 p-2 border-b border-gray-100 dark:border-gray-700 z-[70] flex justify-between items-center">
+                                <span class="text-xs text-gray-500 font-medium ml-2">Tipos de Documento</span>
+                                <button type="button" onclick="document.getElementById('dropdownTipoListVent').classList.add('hidden')" class="text-gray-400 hover:text-red-500 bg-gray-100 dark:bg-slate-700 hover:bg-red-50 dark:hover:bg-red-900/30 p-1 rounded flex items-center justify-center transition-colors" title="Cerrar Lista">
+                                    <span class="material-symbols-outlined text-[16px]">close</span>
+                                </button>
+                            </div>
+                            <div id="listaTipoVent" class="flex flex-col">
+                                @foreach($tipos ?? [] as $tipo)
+                                    <div class="tipo-item-vent flex items-center px-4 py-2 hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0 transition-colors" 
+                                           data-nombre="{{ strtolower($tipo->tipo_nombre) }}" 
+                                           onclick="seleccionarTipoVent('{{ addslashes($tipo->tipo_nombre) }}', '{{ $tipo->id_tipo }}')">
+                                        <span class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ $tipo->tipo_nombre }}</span>
+                                    </div>
+                                @endforeach
+                                <div id="noTipoMsgVent" class="hidden px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                                    No se encontraron tipos.
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="id_tipo_envio" id="id_tipo_envio_vent_hidden" required>
                     </div>
                 </div>
 
@@ -1454,6 +1658,18 @@
         const nuevoEstado = document.getElementById('estadoSelectOptions').value;
         const requiereRespuesta = document.getElementById('requiere_respuesta_hidden').value;
         
+        if (nuevoEstado.toLowerCase().includes('rechazado')) {
+            const observacionesText = form.querySelector('textarea[name="observaciones"], #observacionesInput');
+            if (observacionesText && observacionesText.value.trim() === '') {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Observación Obligatoria',
+                    text: 'Es obligatorio redactar una observación explicando el motivo por el cual estás rechazando este documento.'
+                });
+                return false;
+            }
+        }
+
         if (nuevoEstado === 'Resuelto' && requiereRespuesta == 1) {
             const archivoPrincipal = document.getElementById('archivo_respuesta_input');
             const anexos = document.getElementById('archivos_respuesta_input');
@@ -2208,6 +2424,78 @@
         document.getElementById('reasignarSeleccionado').innerHTML = '';
     }
 
+    // --- Dropdown Tipo Documento Ventanilla ---
+    function abrirDropdownTipoVent() {
+        document.getElementById('dropdownTipoListVent').classList.remove('hidden');
+    }
+    function hideTipoTextVent() {
+        document.getElementById('id_tipo_envio_vent_hidden').value = '';
+    }
+    function filtrarTipoVent() {
+        abrirDropdownTipoVent();
+        const input = document.getElementById('busquedaTipoVent');
+        const filter = input.value.toLowerCase().trim();
+        const container = document.getElementById('listaTipoVent');
+        const items = container.getElementsByClassName('tipo-item-vent');
+        let count = 0;
+        for (let i = 0; i < items.length; i++) {
+            const nombre = items[i].getAttribute('data-nombre');
+            if (nombre.indexOf(filter) > -1) { items[i].style.display = ""; count++; }
+            else { items[i].style.display = "none"; }
+        }
+        const msg = document.getElementById('noTipoMsgVent');
+        if (msg) msg.style.display = count === 0 ? "block" : "none";
+    }
+    function seleccionarTipoVent(nombre, id) {
+        document.getElementById('id_tipo_envio_vent_hidden').value = id;
+        document.getElementById('busquedaTipoVent').value = nombre;
+        document.getElementById('dropdownTipoListVent').classList.add('hidden');
+    }
+    
+    // --- Dropdown Tipo Documento Interna ---
+    function abrirDropdownTipoInt() {
+        document.getElementById('dropdownTipoListInt').classList.remove('hidden');
+    }
+    function hideTipoTextInt() {
+        document.getElementById('id_tipo_envio_int_hidden').value = '';
+    }
+    function filtrarTipoInt() {
+        abrirDropdownTipoInt();
+        const input = document.getElementById('busquedaTipoInt');
+        const filter = input.value.toLowerCase().trim();
+        const container = document.getElementById('listaTipoInt');
+        const items = container.getElementsByClassName('tipo-item-int');
+        let count = 0;
+        for (let i = 0; i < items.length; i++) {
+            const nombre = items[i].getAttribute('data-nombre');
+            if (nombre.indexOf(filter) > -1) { items[i].style.display = ""; count++; }
+            else { items[i].style.display = "none"; }
+        }
+        const msg = document.getElementById('noTipoMsgInt');
+        if (msg) msg.style.display = count === 0 ? "block" : "none";
+    }
+    function seleccionarTipoInt(nombre, id) {
+        document.getElementById('id_tipo_envio_int_hidden').value = id;
+        document.getElementById('busquedaTipoInt').value = nombre;
+        document.getElementById('dropdownTipoListInt').classList.add('hidden');
+    }
+
+    document.addEventListener('click', function(e) {
+        const ddVent = document.getElementById('tipoDropdownContainerVent');
+        if (ddVent && !ddVent.contains(e.target)) {
+            document.getElementById('dropdownTipoListVent').classList.add('hidden');
+            if (!document.getElementById('id_tipo_envio_vent_hidden').value) {
+                document.getElementById('busquedaTipoVent').value = '';
+            }
+        }
+        const ddInt = document.getElementById('tipoDropdownContainerInt');
+        if (ddInt && !ddInt.contains(e.target)) {
+            document.getElementById('dropdownTipoListInt').classList.add('hidden');
+            if (!document.getElementById('id_tipo_envio_int_hidden').value) {
+                document.getElementById('busquedaTipoInt').value = '';
+            }
+        }
+    });
 </script>
 
 @endsection

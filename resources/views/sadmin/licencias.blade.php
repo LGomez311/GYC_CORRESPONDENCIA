@@ -26,47 +26,45 @@
             <div class="flex items-center gap-3">
                 {{-- Botón Historial --}}
                 <button id="btnOpenHistorial" class="px-3 py-2 border border-[#cfd7e7] dark:border-gray-700 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors dark:text-white">
-                    <span class="material-symbols-outlined text-sm">history</span>
+                    <span class="material-symbols-outlined" style="font-size: 18px;">history</span>
                     Historial
                 </button>
 
                 {{-- Botón Exportar --}}
                 <button onclick="openExportModal()" class="px-3 py-2 border border-[#cfd7e7] dark:border-gray-700 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors dark:text-white">
-                    <span class="material-symbols-outlined text-sm">download</span>
+                    <span class="material-symbols-outlined" style="font-size: 18px;">download</span>
                     Exportar
                 </button>
             </div>
 
-            <!-- Modal Exportar -->
-            <div id="exportModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-                <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg w-72 p-5 relative">
-                    <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-4">Exportar como</h3>
+        </div>
 
-                    <div class="flex flex-col gap-3">
-                        <!-- PDF -->
-                        <a href="{{ route('sadmin.licencias.export.pdf') }}"
-                            class="flex items-center gap-2 px-4 py-2 text-sm font-semibold border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
-                            <span class="material-symbols-outlined text-red-600">picture_as_pdf</span>
-                            PDF
-                        </a>
+        <!-- Modal Exportar -->
+        <div id="exportModal" class="fixed inset-0 bg-black/40 hidden flex items-center justify-center z-50">
+            <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg w-72 p-5 relative">
+                <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-4">Exportar como</h3>
 
-                        <!-- Excel -->
-                        <a href="{{ route('sadmin.licencias.export.excel') }}"
-                            class="flex items-center gap-2 px-4 py-2 text-sm font-semibold border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
-                            <span class="material-symbols-outlined text-green-600">grid_on</span>
-                            Excel
-                        </a>
-                    </div>
+                <div class="flex flex-col gap-3">
+                    <!-- PDF -->
+                    <a href="{{ route('sadmin.licencias.export.pdf') }}"
+                        class="flex items-center gap-2 px-4 py-2 text-sm font-semibold border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                        <span class="material-symbols-outlined text-red-600">picture_as_pdf</span>
+                        PDF
+                    </a>
 
-                    <button onclick="closeExportModal()"
-                        class="mt-4 w-full text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-                        Cancelar
-                    </button>
+                    <!-- Excel -->
+                    <a href="{{ route('sadmin.licencias.export.excel') }}"
+                        class="flex items-center gap-2 px-4 py-2 text-sm font-semibold border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                        <span class="material-symbols-outlined text-green-600">grid_on</span>
+                        Excel
+                    </a>
                 </div>
+
+                <button onclick="closeExportModal()"
+                    class="mt-4 w-full text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                    Cancelar
+                </button>
             </div>
-
-
-
         </div>
 
         {{-- TABLA --}}
@@ -140,7 +138,7 @@
         </div>
 
         {{-- PAGINACIÓN --}}
-        <div class="flex gap-1">
+        <div class="px-6 py-4 border-t border-[#cfd7e7] dark:border-gray-800">
             {{ $licencias->links() }}
         </div>
 
@@ -205,7 +203,7 @@
                                 <td class="px-4 py-3 text-center">
                                     <button onclick="verDetallesCambio({{ $auditoria->id_log }})"
                                         class="text-primary hover:text-blue-700 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 mx-auto transition-colors">
-                                        <span class="material-symbols-outlined text-[16px]">visibility</span>
+                                        <span class="material-symbols-outlined" style="font-size: 16px;">visibility</span>
                                         Ver Cambios
                                     </button>
                                     <!-- Datos Ocultos para JS -->

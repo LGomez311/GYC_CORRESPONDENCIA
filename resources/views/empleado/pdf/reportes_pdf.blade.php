@@ -168,7 +168,7 @@
                 style="width: 100%; max-width: 600px; border: 1px solid #ddd; border-radius: 5px; padding: 10px; background: #fff;"
                 alt="Gráfica de Correspondencia" />
             <div style="margin-top: 15px; font-size: 16px; color: #1d4ed8; font-weight: bold;">
-                Documentos: {{ $totalUnicos }}
+                Trámites Totales: {{ $totalDocs }}
             </div>
         @else
             <p style="color: #999; padding: 30px; border: 1px dashed #ccc;">No se pudo graficar la información visual,

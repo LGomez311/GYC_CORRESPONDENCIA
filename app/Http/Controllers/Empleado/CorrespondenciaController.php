@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Log;
 
 class CorrespondenciaController extends Controller
 {
-    public function recibida()
+    public function recibida(Request $request)
     {
         // Get the current user
         $user = Auth::user();
@@ -39,13 +39,32 @@ class CorrespondenciaController extends Controller
         $archivadas     = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 10)->count();
         $vencidas       = 0;
 
+        $searchExt = $request->input('search_ext', '');
+        $estadoExt = $request->input('estado_ext', '');
+
+        $estadosPermitidosExt = [7, 8];
+        if ($estadoExt == '7') {
+            $estadosPermitidosExt = [7];
+        } elseif ($estadoExt == '8') {
+            $estadosPermitidosExt = [8];
+        }
+
         // Solo mostramos los que el empleado aún tiene activos (Recibido=7, En Tramite=8)
         $correspondencias = (clone $queryBandejaUnicaExt)
-            ->whereIn('detalle_recibido.id_estado_rec', [7, 8])
+            ->whereIn('detalle_recibido.id_estado_rec', $estadosPermitidosExt)
             ->with(['recibido.radicado', 'recibido.tipo.prioridad', 'recibido.ciudad', 'recibido.anexos', 'estado', 'anexosRespuesta', 'recibido.destinatarios'])
             ->leftJoin('recibido', 'detalle_recibido.det_id_recibido', '=', 'recibido.id_recibido')
             ->leftJoin('tipo', 'recibido.id_tipo', '=', 'tipo.id_tipo')
             ->leftJoin('prioridad', 'tipo.id_prioridad', '=', 'prioridad.id_prioridad')
+            ->leftJoin('radicados', 'recibido.num_radicado_int', '=', 'radicados.id_radicado')
+            ->where(function ($q) use ($searchExt) {
+                if ($searchExt) {
+                    $q->where('radicados.num_radicado', 'like', '%' . $searchExt . '%')
+                      ->orWhere('recibido.num_radicado_ext', 'like', '%' . $searchExt . '%')
+                      ->orWhere('recibido.asunto', 'like', '%' . $searchExt . '%')
+                      ->orWhere('tipo.tipo_nombre', 'like', '%' . $searchExt . '%');
+                }
+            })
             ->select('detalle_recibido.*')
             ->orderByRaw("
                 CASE 
@@ -82,14 +101,32 @@ class CorrespondenciaController extends Controller
         $archivadasInt = (clone $queryBandejaUnicaInt)->where('id_estado_rec', 10)->count();
         $vencidasInt = 0; // Same, placeholder for overdue.
 
+        $searchInt = $request->input('search_int', '');
+        $estadoInt = $request->input('estado_int', '');
+
+        $estadosPermitidosInt = [7, 8];
+        if ($estadoInt == '7') {
+            $estadosPermitidosInt = [7];
+        } elseif ($estadoInt == '8') {
+            $estadosPermitidosInt = [8];
+        }
+
         // Custom Sorting for Internas
         $correspondenciasInternas = clone $queryBandejaUnicaInt;
         $correspondenciasInternas = $correspondenciasInternas
-            ->whereIn('detalle_envio.id_estado_rec', [7, 8])
+            ->whereIn('detalle_envio.id_estado_rec', $estadosPermitidosInt)
             ->with(['envio', 'envio.tipoEnvio.prioridad', 'envio.radicado', 'quienEnvia', 'quienEnvia.area', 'estado', 'anexosRespuesta', 'envio.recipients'])
             ->leftJoin('envio', 'detalle_envio.id_envio', '=', 'envio.id_envio')
             ->leftJoin('tipo', 'envio.id_tipo_envio', '=', 'tipo.id_tipo')
             ->leftJoin('prioridad', 'tipo.id_prioridad', '=', 'prioridad.id_prioridad')
+            ->leftJoin('radicados', 'envio.num_radicado_int', '=', 'radicados.id_radicado')
+            ->where(function ($q) use ($searchInt) {
+                if ($searchInt) {
+                    $q->where('radicados.num_radicado', 'like', '%' . $searchInt . '%')
+                      ->orWhere('envio.asunto', 'like', '%' . $searchInt . '%')
+                      ->orWhere('tipo.tipo_nombre', 'like', '%' . $searchInt . '%');
+                }
+            })
             ->select('detalle_envio.*') // Prevent column overlap
             ->orderByRaw("
                 CASE 
@@ -128,7 +165,7 @@ class CorrespondenciaController extends Controller
         ));
     }
 
-    public function finalizada()
+    public function finalizada(Request $request)
     {
         // Get the current user
         $user = Auth::user();
@@ -149,15 +186,34 @@ class CorrespondenciaController extends Controller
         $finalizadas    = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 9)->count();
         $archivadas     = (clone $queryBandejaUnicaExt)->where('id_estado_rec', 10)->count();
         $vencidas       = 0;
+        $searchExt = $request->input('search_ext', '');
+        $estadoExt = $request->input('estado_ext', '');
+
+        $estadosPermitidosExt = [9, 10, 11];
+        if ($estadoExt == '9') {
+            $estadosPermitidosExt = [9, 11]; // Resueltas o rechazados
+        } elseif ($estadoExt == '10') {
+            $estadosPermitidosExt = [10]; // Archivados
+        }
+
         $queryBandejaUnicaExtFin = DetalleRecibido::whereIn('id_det_recibido', $latestExtFinSubquery)
             ->where('det_doc_empleado', $user->emple_doc);
 
         $correspondencias = (clone $queryBandejaUnicaExtFin)
-            ->whereIn('detalle_recibido.id_estado_rec', [9, 10, 11])
+            ->whereIn('detalle_recibido.id_estado_rec', $estadosPermitidosExt)
             ->with(['recibido.radicado', 'recibido.tipo.prioridad', 'recibido.ciudad', 'recibido.anexos', 'estado', 'anexosRespuesta', 'recibido.destinatarios'])
             ->leftJoin('recibido', 'detalle_recibido.det_id_recibido', '=', 'recibido.id_recibido')
             ->leftJoin('tipo', 'recibido.id_tipo', '=', 'tipo.id_tipo')
             ->leftJoin('prioridad', 'tipo.id_prioridad', '=', 'prioridad.id_prioridad')
+            ->leftJoin('radicados', 'recibido.num_radicado_int', '=', 'radicados.id_radicado')
+            ->where(function ($q) use ($searchExt) {
+                if ($searchExt) {
+                    $q->where('radicados.num_radicado', 'like', '%' . $searchExt . '%')
+                      ->orWhere('recibido.num_radicado_ext', 'like', '%' . $searchExt . '%')
+                      ->orWhere('recibido.asunto', 'like', '%' . $searchExt . '%')
+                      ->orWhere('tipo.tipo_nombre', 'like', '%' . $searchExt . '%');
+                }
+            })
             ->select('detalle_recibido.*')
             ->orderBy('detalle_recibido.id_det_recibido', 'desc')
             ->paginate(10, ['*'], 'ext_page');
@@ -177,13 +233,31 @@ class CorrespondenciaController extends Controller
         $archivadasInt = (clone $queryBandejaUnicaInt)->where('id_estado_rec', 10)->count();
         $vencidasInt = 0;
 
+        $searchInt = $request->input('search_int', '');
+        $estadoInt = $request->input('estado_int', '');
+
+        $estadosPermitidosInt = [9, 10, 11];
+        if ($estadoInt == '9') {
+            $estadosPermitidosInt = [9, 11]; // Resueltas o rechazados
+        } elseif ($estadoInt == '10') {
+            $estadosPermitidosInt = [10]; // Archivados
+        }
+
         $correspondenciasInternas = clone $queryBandejaUnicaInt;
         $correspondenciasInternas = $correspondenciasInternas
-            ->where('detalle_envio.id_estado_rec', '>', 8)
+            ->whereIn('detalle_envio.id_estado_rec', $estadosPermitidosInt)
             ->with(['envio', 'envio.tipoEnvio.prioridad', 'envio.radicado', 'quienEnvia', 'quienEnvia.area', 'estado', 'anexosRespuesta', 'envio.recipients'])
             ->leftJoin('envio', 'detalle_envio.id_envio', '=', 'envio.id_envio')
             ->leftJoin('tipo', 'envio.id_tipo_envio', '=', 'tipo.id_tipo')
             ->leftJoin('prioridad', 'tipo.id_prioridad', '=', 'prioridad.id_prioridad')
+            ->leftJoin('radicados', 'envio.num_radicado_int', '=', 'radicados.id_radicado')
+            ->where(function ($q) use ($searchInt) {
+                if ($searchInt) {
+                    $q->where('radicados.num_radicado', 'like', '%' . $searchInt . '%')
+                      ->orWhere('envio.asunto', 'like', '%' . $searchInt . '%')
+                      ->orWhere('tipo.tipo_nombre', 'like', '%' . $searchInt . '%');
+                }
+            })
             ->select('detalle_envio.*')
             ->orderBy('detalle_envio.id_detalle', 'desc')
             ->paginate(10, ['*'], 'int_page');
@@ -224,6 +298,12 @@ class CorrespondenciaController extends Controller
         $estado = \App\Models\Estado::where('estado_nomb', $request->estado_nomb)->first();
         if (!$estado) {
             return back()->with('error', 'Estado no válido.');
+        }
+
+        if (stripos($estado->estado_nomb, 'rechazado') !== false) {
+            if (empty(trim($request->observaciones))) {
+                return back()->with('error', 'Para rechazar un documento, es obligatorio redactar una observación explicando el motivo.');
+            }
         }
 
         if ($estado->id_estado < $detalleAntiguo->id_estado_rec) {
@@ -371,6 +451,12 @@ class CorrespondenciaController extends Controller
         $estado = \App\Models\Estado::where('estado_nomb', $request->estado_nomb)->first();
         if (!$estado)
             return back()->with('error', 'Estado no válido');
+
+        if (stripos($estado->estado_nomb, 'rechazado') !== false) {
+            if (empty(trim($request->observaciones))) {
+                return back()->with('error', 'Para rechazar un documento interno, es obligatorio redactar una observación explicando el motivo.');
+            }
+        }
 
         // Prevent going backwards
         if ($estado->id_estado < $detalleAntiguo->id_estado_rec) {

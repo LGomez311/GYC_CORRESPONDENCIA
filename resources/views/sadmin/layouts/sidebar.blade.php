@@ -117,39 +117,42 @@
         </div>
     </nav>
 
-    <div class="p-4 border-t border-[#cfd7e7] dark:border-gray-800 flex items-center justify-between">
-        <div class="flex items-center gap-3 px-2 overflow-hidden flex-1">
-            <div class="size-10 rounded-full bg-cover bg-center border-2 border-primary/20 flex-shrink-0"
-                style='background-image: url("{{ auth()->user()->emple_img ? asset(auth()->user()->emple_img) : asset('images/default-avatar.png') }}");'>
+    <div class="mt-auto">
+        <div class="p-3 border-t border-[#cfd7e7] dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/20 flex items-center justify-between">
+            <div class="flex items-center gap-3 px-2 overflow-hidden flex-1">
+                <div class="size-9 rounded-full bg-cover bg-center border border-gray-200 dark:border-gray-700 shrink-0 shadow-sm"
+                    style='background-image: url("{{ auth()->user()->emple_img ? asset('storage/' . auth()->user()->emple_img) : asset('images/default-avatar.png') }}");'>
+                </div>
+                <div class="overflow-hidden">
+                    <p class="text-sm font-bold truncate text-gray-900 dark:text-white">
+                        {{ auth()->user()->rol->rol_nom ?? 'SuperAdmin' }}
+                    </p>
+                    <p class="text-xs text-[#4c669a] truncate dark:text-gray-400 font-medium">
+                        {{ auth()->user()->emple_nombres }} {{ auth()->user()->emple_apellidos }}
+                    </p>
+                </div>
             </div>
-            <div class="overflow-hidden">
-                <p class="text-sm font-bold truncate dark:text-white">
-                    {{ auth()->user()->rol->rol_nom }}
-                </p>
-                <p class="text-xs text-[#4c669a] truncate dark:text-gray-400">
-                    {{ auth()->user()->emple_nombres }} {{ auth()->user()->emple_apellidos }}
-                </p>
-            </div>
-        </div>
-        <!-- Botón Configurar Perfil -->
-        <button type="button" onclick="openUserProfileModal()" 
-            class="p-1.5 text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" 
-            title="Configurar Perfil">
-            <span class="material-symbols-outlined text-[20px]">manage_accounts</span>
-        </button>
-    </div>
-    <div class="p-4 border-t border-[#cfd7e7] dark:border-gray-800">
-        <!-- Botón Cerrar Sesión -->
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit"
-                class="w-full flex items-center gap-3 px-3 py-2 rounded-lg
-                       text-red-600 dark:text-red-400
-                       hover:bg-red-50 dark:hover:bg-red-900/20
-                       transition-colors text-sm font-medium">
-                <span class="material-symbols-outlined text-base">logout</span>
-                Cerrar sesión
+            <!-- Botón Configurar Perfil -->
+            <button type="button" onclick="openUserProfileModal()" 
+                class="p-1.5 text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" 
+                title="Configurar Perfil">
+                <span class="material-symbols-outlined text-[20px]">manage_accounts</span>
             </button>
-        </form>
+        </div>
+
+        <div class="p-3 pt-1 border-t border-transparent">
+            <!-- Botón Cerrar Sesión -->
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit"
+                    class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg
+                           text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-900/10
+                           hover:bg-red-100 dark:hover:bg-red-900/30
+                           transition-all duration-200 text-sm font-semibold shadow-sm">
+                    <span class="material-symbols-outlined text-[18px]">logout</span>
+                    Cerrar sesión
+                </button>
+            </form>
+        </div>
     </div>
 </aside>

@@ -22,30 +22,26 @@
 @section('content')
     <div class="p-4 md:p-8 max-w-7xl mx-auto w-full">
 
-        {{-- HEADER INTERNO --}}
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
+        {{-- HEADER --}}
+        <div class="flex flex-wrap justify-between items-end gap-3 mb-8">
 
             {{-- Título --}}
-            <div>
-                <h1 class="text-[#0d121b] dark:text-white text-3xl font-black tracking-tight">
+            <div class="flex flex-col gap-1">
+                <h1 class="text-[#0d121b] dark:text-white text-3xl font-black leading-tight tracking-tight">
                     Gestión de Empresas
                 </h1>
-                <p class="text-[#4c669a] dark:text-gray-400">
+                <p class="text-[#4c669a] dark:text-gray-400 text-base font-normal">
                     Administre el directorio de empresas y clientes.
                 </p>
             </div>
 
             {{-- Botones --}}
-            <div class="flex items-center gap-3">
+            <div class="flex gap-3">
 
                 {{-- Botón Crear --}}
                 <button type="button" onclick="openCreateModal()"
-                    class="px-5 py-2.5 bg-primary text-white rounded-lg 
-                   font-bold text-sm flex items-center gap-2 
-                   shadow-lg shadow-primary/20 
-                   hover:bg-primary/90 transition-all duration-200 whitespace-nowrap">
-
-                    <span class="material-symbols-outlined text-[18px]">
+                    class="px-4 py-2 bg-primary text-white rounded-lg font-bold text-sm flex items-center gap-2 shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">
                         add
                     </span>
                     Añadir Empresa
@@ -58,28 +54,28 @@
         <div
             class="bg-white dark:bg-[#161d2b] rounded-xl border border-[#cfd7e7] dark:border-gray-800 overflow-hidden shadow-sm">
 
-            <div class="p-6 border-b border-[#cfd7e7] dark:border-gray-800 flex justify-between items-center">
+            <div class="p-6 border-b border-[#cfd7e7] dark:border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
 
-                <h2 class="text-lg font-bold dark:text-white">Empresas</h2>
+                <h2 class="text-[#0d121b] dark:text-white text-lg font-bold leading-tight">Empresas</h2>
 
                 <div class="flex items-center gap-3">
                     {{-- Botón Historial --}}
                     <button id="btnOpenHistorial"
                         class="px-3 py-2 border border-[#cfd7e7] dark:border-gray-700 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors dark:text-white">
-                        <span class="material-symbols-outlined text-sm">history</span>
+                        <span class="material-symbols-outlined" style="font-size: 18px;">history</span>
                         Historial
                     </button>
 
                     <button onclick="openExportModal()"
                         class="px-3 py-2 border border-[#cfd7e7] dark:border-gray-700 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors dark:text-white">
-                        <span class="material-symbols-outlined text-sm">download</span>
+                        <span class="material-symbols-outlined" style="font-size: 18px;">download</span>
                         Exportar
                     </button>
                 </div>
 
             </div>
 
-            <div id="empresasWrapper">
+            <div>
                 {{-- TABLA --}}
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
@@ -172,12 +168,12 @@
                         </tbody>
                     </table>
 
-                    {{-- PAGINACIÓN --}}
-                    <div class="flex gap-1 mt-2">
-                        {{ $empresas->links() }}
-                    </div>
                 </div>
+            </div>
 
+            {{-- PAGINACIÓN --}}
+            <div class="px-6 py-4 border-t border-[#cfd7e7] dark:border-gray-800">
+                {{ $empresas->links() }}
             </div>
         </div>
     </div>
@@ -1336,7 +1332,7 @@
                                     <td class="px-4 py-3 text-center">
                                         <button onclick="verDetallesCambio({{ $auditoria->id_log }})"
                                             class="text-primary hover:text-blue-700 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 mx-auto transition-colors">
-                                            <span class="material-symbols-outlined text-[16px]">visibility</span>
+                                            <span class="material-symbols-outlined" style="font-size: 16px;">visibility</span>
                                             Ver Cambios
                                         </button>
                                         <!-- Datos Ocultos para JS -->
