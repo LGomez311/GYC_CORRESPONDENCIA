@@ -897,7 +897,16 @@
             });
             document.getElementById('detailType').textContent = c.tipo ? c.tipo.tipo_nombre : 'No especificado';
             document.getElementById('detailFolios').textContent = c.folio || '0';
-            document.getElementById('detailObservations').textContent = c.observaciones || 'Sin observaciones.';
+            
+            // Priorizar mostrar la observación del rechazo si el estado es 11
+            let observacionesMostrar = c.observaciones || 'Sin observaciones.';
+            if (c.id_estado_rec == 11 && c.detalles && c.detalles.length > 0) {
+                const rechazoDet = c.detalles.find(d => d.id_estado_rec == 11);
+                if (rechazoDet && rechazoDet.observaciones) {
+                    observacionesMostrar = rechazoDet.observaciones;
+                }
+            }
+            document.getElementById('detailObservations').textContent = observacionesMostrar;
             document.getElementById('detailInstitution').textContent = c.nom_institucion || 'Particular';
             document.getElementById('detailCity').textContent = c.ciudad ? c.ciudad.ciudad_nomb : 'No disponible';
 

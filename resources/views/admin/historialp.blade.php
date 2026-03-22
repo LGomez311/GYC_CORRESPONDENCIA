@@ -94,12 +94,21 @@
                                     </td>
 
                                     <td class="px-6 py-4 actions-cell" data-label="Comprobante">
-                                        <button
-                                            class="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-[#0d121b] dark:text-white text-xs font-bold rounded flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                                            onclick="abrirModal('{{ asset('storage/' . $pago->comprobante) }}')">
-                                            <span class="material-symbols-outlined text-sm">visibility</span> Ver
-                                            Comprobante
-                                        </button>
+                                        @if($pago->ruta_archivo)
+                                            <button
+                                                class="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-[#0d121b] dark:text-white text-xs font-bold rounded flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                                                onclick="abrirModal('{{ asset('storage/' . $pago->ruta_archivo) }}')">
+                                                <span class="material-symbols-outlined text-sm">visibility</span> Ver
+                                                Comprobante
+                                            </button>
+                                            @if($pago->motivo_rechazo)
+                                                <div class="mt-2 text-xs text-red-600 dark:text-red-400 font-semibold max-w-xs break-words" title="{{ $pago->motivo_rechazo }}">
+                                                    Motivo: {{ $pago->motivo_rechazo }}
+                                                </div>
+                                            @endif
+                                        @else
+                                            <span class="text-xs text-gray-500">No adjunto</span>
+                                        @endif
                                     </td>
 
 

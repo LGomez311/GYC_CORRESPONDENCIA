@@ -114,12 +114,17 @@
                                     {{ $pago->fecha_inicio ? \Carbon\Carbon::parse($pago->fecha_inicio)->format('Y-m-d') : '—' }}
                                 </td>
                                 <td class="px-6 py-4 text-sm">
-                                    @if ($pago->comprobante)
+                                    @if ($pago->ruta_archivo)
                                         <button
                                             class="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-xs font-bold rounded hover:bg-gray-200"
-                                            onclick="abrirModal('{{ asset('storage/' . $pago->comprobante) }}')">
+                                            onclick="abrirModal('{{ asset('storage/' . $pago->ruta_archivo) }}')">
                                             Ver comprobante
                                         </button>
+                                        @if($pago->motivo_rechazo)
+                                            <div class="mt-1 text-xs text-red-600 dark:text-red-400 font-semibold max-w-[150px] truncate" title="{{ $pago->motivo_rechazo }}">
+                                                Motivo: {{ $pago->motivo_rechazo }}
+                                            </div>
+                                        @endif
                                     @else
                                         <span class="text-gray-400 text-xs">No adjunto</span>
                                     @endif
@@ -155,10 +160,12 @@
                                             </form>
 
                                             <form action="{{ route('sadmin.pagos.denegar', $pago->id_pago) }}"
-                                                method="POST" class="form-denegar">
+                                                method="POST" class="form-denegar" id="form-denegar-{{ $pago->id_pago }}">
                                                 @csrf
+                                                <input type="hidden" name="motivo_rechazo" id="motivo-rechazo-{{ $pago->id_pago }}">
                                                 <button type="button"
-                                                    class="btn-denegar px-3 py-1.5 bg-red-600 text-white text-xs font-bold rounded">
+                                                    class="btn-denegar px-3 py-1.5 bg-red-600 text-white text-xs font-bold rounded"
+                                                    data-id="{{ $pago->id_pago }}">
                                                     Denegar
                                                 </button>
                                             </form>
@@ -515,19 +522,31 @@
         // CONFIRMAR DENEGACIÓN
         document.querySelectorAll('.btn-denegar').forEach(button => {
             button.addEventListener('click', function() {
-                const form = this.closest('form');
+                const pagoId = this.getAttribute('data-id');
+                const form = document.getElementById('form-denegar-' + pagoId);
 
                 Swal.fire({
                     title: '¿Denegar pago?',
-                    text: "Esta acción no se puede deshacer.",
+                    text: "Ingresa el motivo del rechazo. Esta acción no se puede deshacer y notificará al administrador.",
+                    input: 'textarea',
+                    inputPlaceholder: 'Motivo del rechazo...',
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#dc2626',
                     cancelButtonColor: '#6b7280',
                     confirmButtonText: 'Sí, denegar',
-                    cancelButtonText: 'Cancelar'
+                    cancelButtonText: 'Cancelar',
+                    inputValidator: (value) => {
+                        if (!value) {
+                            return '¡Debes ingresar un motivo para el rechazo!'
+                        }
+                        if (value.length > 400) {
+                            return 'El motivo no puede exceder los 400 caracteres.'
+                        }
+                    }
                 }).then((result) => {
                     if (result.isConfirmed) {
+                        document.getElementById('motivo-rechazo-' + pagoId).value = result.value;
                         form.submit();
                     }
                 });
