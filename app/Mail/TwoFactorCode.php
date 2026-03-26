@@ -29,7 +29,7 @@ class TwoFactorCode extends Mailable
      */
     public function build()
     {
-        return $this->subject('Código de Verificación - gyc-correspondencia')
+        return $this->subject('Código de Verificación - EASYCOR')
                     ->html($this->getEmailHtml());
     }
 
@@ -113,7 +113,7 @@ class TwoFactorCode extends Mailable
                     color: #9ca3af;
                     text-align: center;
                 '>
-                    © {$year} IncolDev. Todos los derechos reservados.
+                    © {$year} EASYCOR. Todos los derechos reservados.
                 </p>
 
             </div>

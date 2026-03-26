@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Contacto | IncolDEV</title>
+    <title>Contacto | EASYCOR</title>
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 
@@ -15,7 +15,7 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: "#135bec",
+                        primary: "#00b5a3",
                         "background-light": "#f6f6f8",
                         "background-dark": "#101622",
                     },
@@ -44,7 +44,7 @@
             <div class="bg-primary text-white p-2 rounded-lg">
                 <span class="material-symbols-outlined">support_agent</span>
             </div>
-            <h1 class="text-xl font-extrabold">IncolDEV</h1>
+            <h1 class="text-xl font-extrabold">EASYCOR</h1>
         </div>
 
         <a href="{{ url('/') }}" class="text-sm font-bold text-primary hover:underline">
@@ -76,7 +76,7 @@
                 Hablemos
             </h2>
             <p class="text-[#4c669a] mb-8">
-                En IncolDEV creemos en la comunicación directa. Nuestro equipo
+                En EASYCOR creemos en la comunicación directa. Nuestro equipo
                 te acompañará desde el primer contacto.
             </p>
 
@@ -134,7 +134,7 @@
             </p>
 
             @php
-                $mensaje = "Hola 👋, quiero más información sobre IncolDEV.";
+                $mensaje = "Hola 👋, quiero más información sobre EASYCOR.";
                 $whatsappUrl = "https://wa.me/" . config('services.whatsapp.number') . "?text=" . urlencode($mensaje);
             @endphp
 
@@ -158,7 +158,7 @@
 <!-- FOOTER -->
 <footer class="bg-white border-t border-[#e7ebf3] py-10 text-center">
     <p class="text-xs text-[#4c669a]">
-        © 2026 IncolDEV. Todos los derechos reservados.
+        © 2026 EASYCOR. Todos los derechos reservados.
     </p>
 </footer>
 

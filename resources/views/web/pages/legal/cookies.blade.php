@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Política de Cookies | IncolDEV</title>
+    <title>Política de Cookies | EASYCOR</title>
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 
@@ -15,7 +15,7 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: "#135bec",
+                        primary: "#00b5a3",
                         "background-light": "#f6f6f8",
                         "background-dark": "#101622",
                     },
@@ -44,7 +44,7 @@
             <div class="bg-primary text-white p-2 rounded-lg">
                 <span class="material-symbols-outlined">cookie</span>
             </div>
-            <h1 class="text-xl font-extrabold">IncolDEV</h1>
+            <h1 class="text-xl font-extrabold">EASYCOR</h1>
         </div>
 
         <a href="{{ url('/') }}" class="text-sm font-bold text-primary hover:underline">
@@ -60,7 +60,7 @@
             Política de Cookies
         </h1>
         <p class="text-lg text-[#4c669a] max-w-3xl mx-auto">
-            Esta política explica qué son las cookies y cómo las utilizamos en IncolDEV.
+            Esta política explica qué son las cookies y cómo las utilizamos en EASYCOR.
         </p>
     </div>
 </section>
@@ -81,7 +81,7 @@
         <div>
             <h2 class="text-xl font-bold text-[#0d121b] mb-3">2. Cookies que utilizamos</h2>
             <p>
-                IncolDEV puede utilizar cookies técnicas y funcionales necesarias
+                EASYCOR puede utilizar cookies técnicas y funcionales necesarias
                 para el correcto funcionamiento de la plataforma.
             </p>
             <ul class="list-disc ml-6 mt-3 space-y-2">
@@ -94,7 +94,7 @@
         <div>
             <h2 class="text-xl font-bold text-[#0d121b] mb-3">3. Cookies de terceros</h2>
             <p>
-                Actualmente, IncolDEV no utiliza cookies de terceros con fines
+                Actualmente, EASYCOR no utiliza cookies de terceros con fines
                 publicitarios. En caso de integrarse servicios externos, esta
                 política será actualizada.
             </p>
@@ -112,7 +112,7 @@
         <div>
             <h2 class="text-xl font-bold text-[#0d121b] mb-3">5. Cambios en esta política</h2>
             <p>
-                IncolDEV se reserva el derecho de modificar esta Política de Cookies
+                EASYCOR se reserva el derecho de modificar esta Política de Cookies
                 en cualquier momento. Los cambios serán publicados en esta página.
             </p>
         </div>
@@ -131,7 +131,7 @@
 <!-- FOOTER -->
 <footer class="bg-white border-t border-[#e7ebf3] py-10 text-center">
     <p class="text-xs text-[#4c669a]">
-        © 2026 IncolDEV. Todos los derechos reservados.
+        © 2026 EASYCOR. Todos los derechos reservados.
     </p>
 </footer>
 

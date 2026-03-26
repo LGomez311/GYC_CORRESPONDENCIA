@@ -1298,7 +1298,7 @@
                 text: "Esta acción marcará la solicitud rechazada como archivada definitivamente.",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#135bec',
+                confirmButtonColor: '#00b5a3',
                 cancelButtonColor: '#d33',
                 confirmButtonText: 'Sí, finalizar',
                 cancelButtonText: 'Cancelar',
@@ -1349,7 +1349,7 @@
                 title: '¡Éxito!',
                 text: "{{ session('success') }}",
                 icon: 'success',
-                confirmButtonColor: '#135bec',
+                confirmButtonColor: '#00b5a3',
                 customClass: {
                     container: 'font-display',
                     popup: 'rounded-3xl border-none shadow-2xl dark:bg-gray-800 dark:text-white',

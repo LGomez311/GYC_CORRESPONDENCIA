@@ -16,7 +16,7 @@
         <p>Agradecemos su confianza en nosotros.</p>
         
         <br>
-        <p>Atentamente,<br><strong>El equipo de GyC Correspondencia</strong></p>
+        <p>Atentamente,<br><strong>EASYCOR</strong></p>
     </div>
 </body>
 </html>

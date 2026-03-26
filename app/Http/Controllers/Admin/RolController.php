@@ -25,24 +25,9 @@ class RolController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'rol_nom' => [
-                'required',
-                'string',
-                'min:3',
-                'max:100',
-                'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/',
-                'unique:rol,rol_nom'
-            ]
-        ], [
-            'rol_nom.required' => 'El nombre del rol es obligatorio.',
-            'rol_nom.min' => 'Debe tener mínimo 3 caracteres.',
-            'rol_nom.max' => 'No puede superar 100 caracteres.',
-            'rol_nom.regex' => 'Debe iniciar con al menos 3 letras continuas sin espacios.',
-            'rol_nom.unique' => 'Este rol ya existe.'
-        ]);
+        $validated = $this->validateRol($request);
 
-        $validated['rol_nom'] = ucfirst(strtolower(trim($validated['rol_nom'])));
+        $validated['rol_nom'] = $this->formatNombre($validated['rol_nom']);
 
         Rol::create($validated);
 
@@ -51,30 +36,16 @@ class RolController extends Controller
 
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'rol_nom' => [
-                'required',
-                'string',
-                'min:3',
-                'max:100',
-                'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/',
-                'unique:rol,rol_nom,' . $id . ',id_rol'
-            ]
-        ], [
-            'rol_nom.required' => 'El nombre del rol es obligatorio.',
-            'rol_nom.min' => 'Debe tener mínimo 3 caracteres.',
-            'rol_nom.max' => 'No puede superar 100 caracteres.',
-            'rol_nom.regex' => 'Debe iniciar con al menos 3 letras continuas sin espacios.',
-            'rol_nom.unique' => 'Este rol ya existe.'
-        ]);
+        $validated = $this->validateRol($request, $id);
 
-        $r = Rol::findOrFail($id);
-        $r->update(['rol_nom' => $request->rol_nom]);
+        $rol = Rol::findOrFail($id);
+        
+        $rol->update([
+            'rol_nom' => $this->formatNombre($validated['rol_nom'])
+        ]);
 
         return redirect()->route('admin.rol.index')->with('success', 'Rol actualizado correctamente');
     }
-
-
 
     public function exportExcel()
     {
@@ -84,7 +55,8 @@ class RolController extends Controller
     public function exportPdf()
     {
         $firstTwoIds = Rol::orderBy('id_rol')->limit(2)->pluck('id_rol');
-        $roles = Rol::whereNotIn('id_rol', $firstTwoIds)->get();
+        $roles = Rol::whereNotIn('id_rol', $firstTwoIds)->get(['id_rol', 'rol_nom']);
+        
         $pdf = Pdf::loadView('admin.pdf.rol_pdf', compact('roles'));
         return $pdf->download('roles.pdf');
     }
@@ -100,5 +72,36 @@ class RolController extends Controller
             })->exists();
 
         return response()->json(['exists' => $exists]);
+    }
+
+    // ==========================================
+    // MÉTODOS PRIVADOS PARA DRY
+    // ==========================================
+
+    private function validateRol(Request $request, $id = null)
+    {
+        $uniqueRule = $id ? 'unique:rol,rol_nom,' . $id . ',id_rol' : 'unique:rol,rol_nom';
+
+        return $request->validate([
+            'rol_nom' => [
+                'required',
+                'string',
+                'min:3',
+                'max:100',
+                'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/',
+                $uniqueRule
+            ]
+        ], [
+            'rol_nom.required' => 'El nombre del rol es obligatorio.',
+            'rol_nom.min'      => 'Debe tener mínimo 3 caracteres.',
+            'rol_nom.max'      => 'No puede superar 100 caracteres.',
+            'rol_nom.regex'    => 'Debe iniciar con al menos 3 letras continuas sin espacios.',
+            'rol_nom.unique'   => 'Este rol ya existe.'
+        ]);
+    }
+
+    private function formatNombre($nombre)
+    {
+        return ucfirst(strtolower(trim($nombre)));
     }
 }

@@ -25,7 +25,7 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#135bec",
+                        "primary": "#00b5a3",
                         "background-light": "#f6f6f8",
                         "background-dark": "#101622",
                     },
@@ -78,7 +78,7 @@
                         icon: 'success',
                         title: 'Radicación Exitosa',
                         text: '{{ session('success') }}',
-                        confirmButtonColor: '#135bec',
+                        confirmButtonColor: '#00b5a3',
                     });
                 });
             </script>
@@ -97,7 +97,7 @@
                                 @endforeach
                             </ul>
                         `,
-                        confirmButtonColor: '#135bec',
+                        confirmButtonColor: '#00b5a3',
                     });
                 });
             </script>
@@ -876,7 +876,7 @@
                         text: "Verifique que todos los datos, destinos y documentos adjuntos sean correctos antes de radicar el documento definitivamente.",
                         icon: 'question',
                         showCancelButton: true,
-                        confirmButtonColor: '#135bec',
+                        confirmButtonColor: '#00b5a3',
                         cancelButtonColor: '#9ca3af',
                         confirmButtonText: 'Sí, radicar documento',
                         cancelButtonText: 'Revisar nuevamente'

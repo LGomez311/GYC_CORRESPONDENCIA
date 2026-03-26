@@ -155,7 +155,7 @@ class EmpleadoPasswordController extends Controller
                         color: #9ca3af;
                         text-align: center;
                     '>
-                        © " . date('Y') . " IncolDev. Todos los derechos reservados.
+                        © " . date('Y') . " EASYCOR. Todos los derechos reservados.
                     </p>
 
                 </div>
@@ -266,7 +266,7 @@ class EmpleadoPasswordController extends Controller
                     </p>
                     <hr>
                     <p style='font-size:12px; color:#6b7280;'>
-                        © " . date('Y') . " IncolDev
+                        © " . date('Y') . " EASYCOR
                     </p>
                 </div>
             ");

@@ -27,24 +27,9 @@ class EstadoController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'estado_nomb' => [
-                'required',
-                'string',
-                'min:3',
-                'max:100',
-                'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/',
-                'unique:estado,estado_nomb'
-            ]
-        ], [
-            'estado_nomb.required' => 'El nombre del estado es obligatorio.',
-            'estado_nomb.min' => 'Debe tener mínimo 3 caracteres.',
-            'estado_nomb.max' => 'No puede superar 100 caracteres.',
-            'estado_nomb.regex' => 'Debe iniciar con al menos 3 letras continuas sin espacios.',
-            'estado_nomb.unique' => 'Este estado ya existe.'
-        ]);
+        $validated = $this->validateEstado($request);
 
-        $validated['estado_nomb'] = ucfirst(strtolower(trim($validated['estado_nomb'])));
+        $validated['estado_nomb'] = $this->formatNombre($validated['estado_nomb']);
 
         Estado::create($validated);
 
@@ -53,30 +38,16 @@ class EstadoController extends Controller
 
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'estado_nomb' => [
-                'required',
-                'string',
-                'min:3',
-                'max:100',
-                'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/',
-                'unique:estado,estado_nomb,' . $id . ',id_estado'
-            ]
-        ], [
-            'estado_nomb.required' => 'El nombre del estado es obligatorio.',
-            'estado_nomb.min' => 'Debe tener mínimo 3 caracteres.',
-            'estado_nomb.max' => 'No puede superar 100 caracteres.',
-            'estado_nomb.regex' => 'Debe iniciar con al menos 3 letras continuas sin espacios.',
-            'estado_nomb.unique' => 'Este estado ya existe.'
-        ]);
+        $validated = $this->validateEstado($request, $id);
 
-        $e = Estado::findOrFail($id);
-        $e->update(['estado_nomb' => $request->estado_nomb]);
+        $estado = Estado::findOrFail($id);
+        
+        $estado->update([
+            'estado_nomb' => $this->formatNombre($validated['estado_nomb'])
+        ]);
 
         return redirect()->route('admin.estado.index')->with('success', 'Estado actualizado correctamente');
     }
-
-
 
     public function exportExcel()
     {
@@ -87,7 +58,8 @@ class EstadoController extends Controller
     {
         $estados = Estado::whereIn('id_estado', [1, 2])
                         ->orWhere('id_estado', '>', 12)
-                        ->get();
+                        ->get(['id_estado', 'estado_nomb']);
+                        
         $pdf = Pdf::loadView('admin.pdf.estado_pdf', compact('estados'));
         return $pdf->download('estados.pdf');
     }
@@ -103,5 +75,36 @@ class EstadoController extends Controller
             })->exists();
 
         return response()->json(['exists' => $exists]);
+    }
+
+    // ==========================================
+    // MÉTODOS PRIVADOS PARA DRY
+    // ==========================================
+
+    private function validateEstado(Request $request, $id = null)
+    {
+        $uniqueRule = $id ? 'unique:estado,estado_nomb,' . $id . ',id_estado' : 'unique:estado,estado_nomb';
+
+        return $request->validate([
+            'estado_nomb' => [
+                'required',
+                'string',
+                'min:3',
+                'max:100',
+                'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/',
+                $uniqueRule
+            ]
+        ], [
+            'estado_nomb.required' => 'El nombre del estado es obligatorio.',
+            'estado_nomb.min'      => 'Debe tener mínimo 3 caracteres.',
+            'estado_nomb.max'      => 'No puede superar 100 caracteres.',
+            'estado_nomb.regex'    => 'Debe iniciar con al menos 3 letras continuas sin espacios.',
+            'estado_nomb.unique'   => 'Este estado ya existe.'
+        ]);
+    }
+
+    private function formatNombre($nombre)
+    {
+        return ucfirst(strtolower(trim($nombre)));
     }
 }

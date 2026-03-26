@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Seguridad | IncolDEV</title>
+    <title>Seguridad | EASYCOR</title>
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 
@@ -15,7 +15,7 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: "#135bec",
+                        primary: "#00b5a3",
                         "background-light": "#f6f6f8",
                         "background-dark": "#101622",
                     },
@@ -44,7 +44,7 @@
             <div class="bg-primary text-white p-2 rounded-lg">
                 <span class="material-symbols-outlined">shield</span>
             </div>
-            <h1 class="text-xl font-extrabold">IncolDEV</h1>
+            <h1 class="text-xl font-extrabold">EASYCOR</h1>
         </div>
 
         <a href="{{ url('/') }}" class="text-sm font-bold text-primary hover:underline">
@@ -90,7 +90,7 @@
 
         <div class="bg-white p-10 rounded-2xl border border-[#e7ebf3] shadow-sm">
             <h3 class="font-bold text-lg mb-4">
-                Con IncolDEV su información está:
+                Con EASYCOR su información está:
             </h3>
             <ul class="space-y-3 text-sm">
                 <li>✔ Protegida</li>
@@ -214,7 +214,7 @@
         </p>
 
         @php
-            $msg = "Hola 👋, quiero conocer más sobre la seguridad de IncolDEV.
+            $msg = "Hola 👋, quiero conocer más sobre la seguridad de EASYCOR.
 ¿Podrían brindarme asesoría?";
             $url = "https://wa.me/" . config('services.whatsapp.number') . "?text=" . urlencode($msg);
         @endphp
@@ -231,7 +231,7 @@
 <!-- FOOTER -->
 <footer class="bg-white border-t border-[#e7ebf3] py-10 text-center">
     <p class="text-xs text-[#4c669a]">
-        © 2026 IncolDEV. Todos los derechos reservados.
+        © 2026 EASYCOR. Todos los derechos reservados.
     </p>
 </footer>
 

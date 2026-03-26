@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Versión Mobile | IncolDEV</title>
+    <title>Versión Mobile | EASYCOR</title>
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 
@@ -15,7 +15,7 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: "#135bec",
+                        primary: "#00b5a3",
                         "background-light": "#f6f6f8",
                         "background-dark": "#101622",
                     },
@@ -44,7 +44,7 @@
             <div class="bg-primary text-white p-2 rounded-lg">
                 <span class="material-symbols-outlined">phone_android</span>
             </div>
-            <h1 class="text-xl font-extrabold">IncolDEV</h1>
+            <h1 class="text-xl font-extrabold">EASYCOR</h1>
         </div>
 
         <a href="{{ url('/') }}" class="text-sm font-bold text-primary hover:underline">
@@ -57,7 +57,7 @@
 <section class="bg-white py-20 border-b border-[#e7ebf3]">
     <div class="max-w-[1280px] mx-auto px-6 md:px-20 text-center">
         <h1 class="text-4xl md:text-5xl font-black mb-6">
-            Versión móvil de IncolDEV
+            Versión móvil de EASYCOR
         </h1>
         <p class="text-lg text-[#4c669a] max-w-3xl mx-auto">
             Controle y gestione su correspondencia desde cualquier lugar con una
@@ -141,18 +141,18 @@
 <section class="py-20 bg-background-light">
     <div class="max-w-[1280px] mx-auto px-6 md:px-20 text-center mb-12">
         <h2 class="text-3xl md:text-4xl font-black">
-            Así se ve IncolDEV en móvil
+            Así se ve EASYCOR en móvil
         </h2>
     </div>
 
     <div class="max-w-[1280px] mx-auto px-6 md:px-20 grid sm:grid-cols-1 md:grid-cols-2 gap-8">
 
         <div class="bg-white p-8 rounded-2xl border border-[#e7ebf3] shadow-sm">
-            <img src="https://via.placeholder.com/400x800" alt="Mockup IncolDEV Mobile 1" class="w-full rounded-xl">
+            <img src="https://via.placeholder.com/400x800" alt="Mockup EASYCOR Mobile 1" class="w-full rounded-xl">
         </div>
 
         <div class="bg-white p-8 rounded-2xl border border-[#e7ebf3] shadow-sm">
-            <img src="https://via.placeholder.com/400x800" alt="Mockup IncolDEV Mobile 2" class="w-full rounded-xl">
+            <img src="https://via.placeholder.com/400x800" alt="Mockup EASYCOR Mobile 2" class="w-full rounded-xl">
         </div>
 
     </div>
@@ -163,7 +163,7 @@
     <div class="max-w-[900px] mx-auto px-6">
 
         <h2 class="text-3xl md:text-4xl font-black mb-6">
-            Lleve IncolDEV siempre con usted
+            Lleve EASYCOR siempre con usted
         </h2>
 
         <p class="mb-8 text-white/90">
@@ -171,7 +171,7 @@
         </p>
 
         @php
-            $msg = "Hola 👋, quiero saber más sobre la versión móvil de IncolDEV. ¿Podrían brindarme información?";
+            $msg = "Hola 👋, quiero saber más sobre la versión móvil de EASYCOR. ¿Podrían brindarme información?";
             $url = "https://wa.me/" . config('services.whatsapp.number') . "?text=" . urlencode($msg);
         @endphp
 
@@ -187,7 +187,7 @@
 <!-- FOOTER -->
 <footer class="bg-white border-t border-[#e7ebf3] py-10 text-center">
     <p class="text-xs text-[#4c669a]">
-        © 2026 IncolDEV. Todos los derechos reservados.
+        © 2026 EASYCOR. Todos los derechos reservados.
     </p>
 </footer>
 

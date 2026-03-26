@@ -30,40 +30,12 @@ class CiudadController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'ciudad_nom' => [
-                'required',
-                'string',
-                'min:3',
-                'max:100',
-                'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/'
-            ],
-            'ciudad_cod_post' => [
-                'required',
-                'max:10',
-                'unique:ciudad,ciudad_cod_post',
-                function ($attribute, $value, $fail) use ($request) {
-                    $dpto = $request->ciudad_id_dpto;
-                    if ($dpto && strpos($value, $dpto) !== 0) {
-                        $fail('El código de la ciudad debe iniciar con el código del departamento seleccionado (' . $dpto . ').');
-                    }
-                }
-            ],
-            'ciudad_id_dpto' => 'required|exists:departamento,dpto_codigo_postal'
-        ], [
-            'ciudad_nom.required' => 'El nombre de la ciudad es obligatorio.',
-            'ciudad_nom.min' => 'Debe tener mínimo 3 caracteres.',
-            'ciudad_nom.max' => 'No puede superar 100 caracteres.',
-            'ciudad_nom.regex' => 'Debe iniciar con al menos 3 letras continuas sin espacios.',
-            'ciudad_cod_post.required' => 'El código postal es obligatorio.',
-            'ciudad_cod_post.unique' => 'Este código postal ya existe.',
-            'ciudad_id_dpto.required' => 'Debe seleccionar un departamento.'
-        ]);
+        $validated = $this->validateCiudad($request);
 
         Ciudad::create([
-            'ciudad_cod_post' => $request->ciudad_cod_post,
-            'ciudad_nom'      => $request->ciudad_nom,
-            'ciudad_id_dpto'  => $request->ciudad_id_dpto,
+            'ciudad_cod_post' => $validated['ciudad_cod_post'],
+            'ciudad_nom'      => $this->formatNombre($validated['ciudad_nom']),
+            'ciudad_id_dpto'  => $validated['ciudad_id_dpto'],
         ]);
 
         return redirect()->back()->with('success', 'Ciudad creada correctamente');
@@ -73,52 +45,24 @@ class CiudadController extends Controller
     {
         // $id = ciudad_cod_post (porque es tu PK)
         $ciudad = Ciudad::findOrFail($id);
+        
+        $validated = $this->validateCiudad($request, $id);
 
-        $request->validate([
-            'ciudad_nom' => [
-                'required',
-                'string',
-                'min:3',
-                'max:100',
-                'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/'
-            ],
-            'ciudad_cod_post' => [
-                'required',
-                'max:10',
-                'unique:ciudad,ciudad_cod_post,' . $id . ',ciudad_cod_post',
-                function ($attribute, $value, $fail) use ($request) {
-                    $dpto = $request->ciudad_id_dpto;
-                    if ($dpto && strpos($value, $dpto) !== 0) {
-                        $fail('El código de la ciudad debe iniciar con el código del departamento seleccionado (' . $dpto . ').');
-                    }
-                }
-            ],
-            'ciudad_id_dpto' => 'required|exists:departamento,dpto_codigo_postal'
-        ], [
-            'ciudad_nom.required' => 'El nombre de la ciudad es obligatorio.',
-            'ciudad_nom.min' => 'Debe tener mínimo 3 caracteres.',
-            'ciudad_nom.max' => 'No puede superar 100 caracteres.',
-            'ciudad_nom.regex' => 'Debe iniciar con al menos 3 letras continuas sin espacios.',
-            'ciudad_cod_post.required' => 'El código postal es obligatorio.',
-            'ciudad_cod_post.unique' => 'Este código postal ya existe.',
-            'ciudad_id_dpto.required' => 'Debe seleccionar un departamento.'
-        ]);
+        $nombreCiudad = $this->formatNombre($validated['ciudad_nom']);
 
         // ⚠ Si cambian el código postal (PK), hay que actualizar manualmente
-        if ($request->ciudad_cod_post !== $id) {
-
+        if ($validated['ciudad_cod_post'] !== $id) {
             $ciudad->delete();
 
             Ciudad::create([
-                'ciudad_cod_post' => $request->ciudad_cod_post,
-                'ciudad_nom'      => $request->ciudad_nom,
-                'ciudad_id_dpto'  => $request->ciudad_id_dpto,
+                'ciudad_cod_post' => $validated['ciudad_cod_post'],
+                'ciudad_nom'      => $nombreCiudad,
+                'ciudad_id_dpto'  => $validated['ciudad_id_dpto'],
             ]);
         } else {
-
             $ciudad->update([
-                'ciudad_nom'     => $request->ciudad_nom,
-                'ciudad_id_dpto' => $request->ciudad_id_dpto,
+                'ciudad_nom'     => $nombreCiudad,
+                'ciudad_id_dpto' => $validated['ciudad_id_dpto'],
             ]);
         }
 
@@ -126,10 +70,9 @@ class CiudadController extends Controller
             ->with('success', 'Ciudad actualizada correctamente');
     }
 
-
-
     public function exportPDF()
     {
+        // Se mantiene el get() original pero se podría limitar select si futuro requiere
         $ciudades = Ciudad::with('departamento')
             ->orderByRaw('CAST(ciudad_cod_post AS UNSIGNED) ASC')
             ->get();
@@ -158,5 +101,49 @@ class CiudadController extends Controller
         return response()->json([
             'exists' => $query->exists()
         ]);
+    }
+
+    // ==========================================
+    // MÉTODOS PRIVADOS PARA DRY
+    // ==========================================
+
+    private function validateCiudad(Request $request, $id = null)
+    {
+        $uniqueRule = $id ? 'unique:ciudad,ciudad_cod_post,' . $id . ',ciudad_cod_post' : 'unique:ciudad,ciudad_cod_post';
+
+        return $request->validate([
+            'ciudad_nom' => [
+                'required',
+                'string',
+                'min:3',
+                'max:100',
+                'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3}[A-Za-zÁÉÍÓÚáéíóúÑñ ]*$/'
+            ],
+            'ciudad_cod_post' => [
+                'required',
+                'max:10',
+                $uniqueRule,
+                function ($attribute, $value, $fail) use ($request) {
+                    $dpto = $request->ciudad_id_dpto;
+                    if ($dpto && strpos($value, $dpto) !== 0) {
+                        $fail('El código de la ciudad debe iniciar con el código del departamento seleccionado (' . $dpto . ').');
+                    }
+                }
+            ],
+            'ciudad_id_dpto' => 'required|exists:departamento,dpto_codigo_postal'
+        ], [
+            'ciudad_nom.required'      => 'El nombre de la ciudad es obligatorio.',
+            'ciudad_nom.min'           => 'Debe tener mínimo 3 caracteres.',
+            'ciudad_nom.max'           => 'No puede superar 100 caracteres.',
+            'ciudad_nom.regex'         => 'Debe iniciar con al menos 3 letras continuas sin espacios.',
+            'ciudad_cod_post.required' => 'El código postal es obligatorio.',
+            'ciudad_cod_post.unique'   => 'Este código postal ya existe.',
+            'ciudad_id_dpto.required'  => 'Debe seleccionar un departamento.'
+        ]);
+    }
+
+    private function formatNombre($nombre)
+    {
+        return ucfirst(strtolower(trim($nombre)));
     }
 }

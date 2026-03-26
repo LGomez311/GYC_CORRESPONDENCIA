@@ -108,7 +108,7 @@ class ProfileController extends Controller
                         </div>
                         <p style='font-size: 14px; color: #6b7280; line-height: 1.6;'>⚠️ <strong>No compartas este código con nadie.</strong> Nuestro equipo nunca te pedirá este código por correo, teléfono o mensaje.</p>
                         <hr style='margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;'>
-                        <p style='font-size: 12px; color: #9ca3af; text-align: center;'>© " . date('Y') . " IncolDev. Todos los derechos reservados.</p>
+                        <p style='font-size: 12px; color: #9ca3af; text-align: center;'>© " . date('Y') . " EASYCOR. Todos los derechos reservados.</p>
                     </div>
                 </div>
             ");
@@ -158,7 +158,7 @@ class ProfileController extends Controller
                             <p style='color: #4c669a; font-size: 15px; text-align: center;'>Te confirmamos que tu contraseña ha sido actualizada correctamente.</p>
                             <p style='font-size: 14px; color: #6b7280; line-height: 1.6;'>Si no solicitaste este cambio, por favor comunícate con el administrador del sistema inmediatamente.</p>
                             <hr style='margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;'>
-                            <p style='font-size: 12px; color: #9ca3af; text-align: center;'>© " . date('Y') . " IncolDev. Todos los derechos reservados.</p>
+                            <p style='font-size: 12px; color: #9ca3af; text-align: center;'>© " . date('Y') . " EASYCOR. Todos los derechos reservados.</p>
                         </div>
                     </div>
                 ");

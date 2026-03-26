@@ -634,96 +634,71 @@ class CorrespondenciaController extends Controller
                 'folio' => 'nullable|integer'
             ]);
 
-            $user = Auth::user();
+            \Illuminate\Support\Facades\DB::transaction(function () use ($request) {
+                $user = Auth::user();
 
-            // Let's create a fake or generated radicado_int since internal requires it
-            // Depending on your actual process you might use the radicados table. 
-            // We will insert a new Radicado automatically for internal to maintain consistency.
+                $estadoRecibido = \App\Models\Estado::where('estado_nomb', 'Recibido')->first();
+                $estadoEnviado = \App\Models\Estado::where('estado_nomb', 'Enviado')->first();
 
-            $estadoRecibido = \App\Models\Estado::where('estado_nomb', 'Recibido')->first();
-            $estadoEnviado = \App\Models\Estado::where('estado_nomb', 'Enviado')->first();
+                $estadoRecibidoId = $estadoRecibido ? $estadoRecibido->id_estado : 7; // Fallback
+                $estadoEnviadoId = $estadoEnviado ? $estadoEnviado->id_estado : 7; // Fallback if not found
 
-            $estadoRecibidoId = $estadoRecibido ? $estadoRecibido->id_estado : 7; // Fallback
-            $estadoEnviadoId = $estadoEnviado ? $estadoEnviado->id_estado : 7; // Fallback if not found
-            $estadoActivoId = 1; // ID 1 = Activo (basado en EstadoSeeder)
+                $radicado = $this->generarRadicadoSeguro($user->nit_empresa, 'INT');
 
-            // Create Radicado (using sequential numbering INT-YYYY-00001)
-            $currentYear = date('Y');
+                $envio = new \App\Models\Envio();
+                $envio->num_radicado_int = $radicado->id_radicado;
+                $envio->asunto = $request->asunto;
+                $envio->doc_quien_envia = $user->emple_doc;
+                $envio->doc_quien_registra = null; // Internal, not a remitente
+                $envio->fecha = now();
+                $envio->folio = $request->folio ?? 0;
+                $envio->id_tipo_envio = $request->id_tipo_envio;
+                $envio->id_estado_envio = $estadoEnviadoId; // El que envía (remitente) inicia en 'Enviado'
+                $envio->nit_empresa = $user->nit_empresa;
+                $envio->destino = 'Interno';
+                $envio->observaciones = $request->observaciones;
 
-            // Find the latest internal radicado for this year and company
-            $latestRadicado = \App\Models\Radicado::where('nit_empresa', $user->nit_empresa)
-                ->where('num_radicado', 'like', 'INT-' . $currentYear . '-%')
-                ->orderBy('num_radicado', 'desc')
-                ->first();
-
-            if ($latestRadicado) {
-                // Extract the last 5 digits and increment
-                $lastNumber = intval(substr($latestRadicado->num_radicado, -5));
-                $newNumber = $lastNumber + 1;
-            }
-            else {
-                // Start at 1 if no previous radicado exists for this year
-                $newNumber = 1;
-            }
-
-            $radicado = new \App\Models\Radicado();
-            $radicado->num_radicado = 'INT-' . $currentYear . '-' . str_pad($newNumber, 5, '0', STR_PAD_LEFT);
-            $radicado->nit_empresa = $user->nit_empresa;
-            $radicado->save();
-
-            $envio = new \App\Models\Envio();
-            $envio->num_radicado_int = $radicado->id_radicado;
-            $envio->asunto = $request->asunto;
-            $envio->doc_quien_envia = $user->emple_doc;
-            $envio->doc_quien_registra = null; // Internal, not a remitente
-            $envio->fecha = now();
-            $envio->folio = $request->folio ?? 0;
-            $envio->id_tipo_envio = $request->id_tipo_envio;
-            $envio->id_estado_envio = $estadoEnviadoId; // El que envía (remitente) inicia en 'Enviado'
-            $envio->nit_empresa = $user->nit_empresa;
-            $envio->destino = 'Interno';
-            $envio->observaciones = $request->observaciones;
-
-            if ($request->hasFile('archivo')) {
-                $path = $request->file('archivo')->store('correspondencia', 'public');
-                $envio->archivo = $path;
-            }
-            else {
-                $envio->archivo = '';
-            }
-
-            $envio->save();
-
-            // Procesar los Anexos Múltiples
-            if ($request->hasFile('anexos')) {
-                foreach ($request->file('anexos') as $file) {
-                    $pathAnexo = $file->store('correspondencia', 'public');
-                    \App\Models\AnexoEnvio::create([
-                        'id_envio' => $envio->id_envio,
-                        'ruta_archivo' => $pathAnexo,
-                        'nombre_original' => $file->getClientOriginalName(),
-                    ]);
+                if ($request->hasFile('archivo')) {
+                    $path = $request->file('archivo')->store('correspondencia', 'public');
+                    $envio->archivo = $path;
                 }
-            }
+                else {
+                    $envio->archivo = '';
+                }
 
-            // Create DetalleEnvio (Receiver tracking) for each recipient
-            foreach ($request->doc_quien_dirigido as $destinatario_doc) {
-                $detalle = new \App\Models\DetalleEnvio();
-                $detalle->id_quien_envie = $user->emple_doc;
-                $detalle->id_quien_recibe = $destinatario_doc;
-                $detalle->id_envio = $envio->id_envio;
-                $detalle->fecha_traslado = now();
-                $detalle->id_estado_rec = $estadoRecibidoId; // El que recibe (destinatario) inicia en 'Recibido'
-                $detalle->observaciones = $request->observaciones;
-                $detalle->save();
-            }
+                $envio->save();
+
+                // Procesar los Anexos Múltiples
+                if ($request->hasFile('anexos')) {
+                    foreach ($request->file('anexos') as $file) {
+                        $pathAnexo = $file->store('correspondencia', 'public');
+                        \App\Models\AnexoEnvio::create([
+                            'id_envio' => $envio->id_envio,
+                            'ruta_archivo' => $pathAnexo,
+                            'nombre_original' => $file->getClientOriginalName(),
+                        ]);
+                    }
+                }
+
+                // Create DetalleEnvio (Receiver tracking) for each recipient
+                foreach ($request->doc_quien_dirigido as $destinatario_doc) {
+                    $detalle = new \App\Models\DetalleEnvio();
+                    $detalle->id_quien_envie = $user->emple_doc;
+                    $detalle->id_quien_recibe = $destinatario_doc;
+                    $detalle->id_envio = $envio->id_envio;
+                    $detalle->fecha_traslado = now();
+                    $detalle->id_estado_rec = $estadoRecibidoId; // El que recibe (destinatario) inicia en 'Recibido'
+                    $detalle->observaciones = $request->observaciones;
+                    $detalle->save();
+                }
+            });
 
             return back()->with('success', 'Correspondencia interna creada y enviada exitosamente.');
-
 
         }
         catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
+
         }
         catch (\Exception $e) {
             Log::error('Error guardando correspondencia interna: ' . $e->getMessage());
@@ -743,71 +718,48 @@ class CorrespondenciaController extends Controller
                 'folio' => 'nullable|integer'
             ]);
 
-            $user = Auth::user();
-            $estadoRecibidoId = 7; // Recibido/Inicial
-            $estadoEnviadoId = 0; // 0 = En espera
+            \Illuminate\Support\Facades\DB::transaction(function () use ($request) {
+                $user = Auth::user();
+                $estadoEnviadoId = 0; // 0 = En espera
 
-            // Create Radicado (using sequential numbering SAL-YYYY-00001)
-            $currentYear = date('Y');
+                $radicado = $this->generarRadicadoSeguro($user->nit_empresa, 'SAL');
 
-            // Find the latest output radicado for this year and company
-            $latestRadicado = \App\Models\Radicado::where('nit_empresa', $user->nit_empresa)
-                ->where('num_radicado', 'like', 'SAL-' . $currentYear . '-%')
-                ->orderBy('num_radicado', 'desc')
-                ->first();
+                $envio = new \App\Models\Envio();
+                $envio->num_radicado_int = $radicado->id_radicado;
+                $envio->asunto = $request->asunto;
+                $envio->doc_quien_envia = $user->emple_doc;
+                $envio->doc_quien_registra = $request->doc_quien_dirigido; // Directed to Remitente
+                $envio->fecha = now();
+                $envio->folio = $request->folio ?? 0;
+                $envio->id_tipo_envio = $request->id_tipo_envio;
+                $envio->id_estado_envio = $estadoEnviadoId;
+                $envio->nit_empresa = $user->nit_empresa;
+                $envio->destino = 'Ventanilla';
+                $envio->observaciones = $request->observaciones;
 
-            if ($latestRadicado) {
-                // Extract the last 5 digits and increment
-                $lastNumber = intval(substr($latestRadicado->num_radicado, -5));
-                $newNumber = $lastNumber + 1;
-            } else {
-                $newNumber = 1;
-            }
-
-            $radicado = new \App\Models\Radicado();
-            $radicado->num_radicado = 'SAL-' . $currentYear . '-' . str_pad($newNumber, 5, '0', STR_PAD_LEFT);
-            $radicado->nit_empresa = $user->nit_empresa;
-            $radicado->save();
-
-            $envio = new \App\Models\Envio();
-            $envio->num_radicado_int = $radicado->id_radicado;
-            $envio->asunto = $request->asunto;
-            $envio->doc_quien_envia = $user->emple_doc;
-            $envio->doc_quien_registra = $request->doc_quien_dirigido; // Directed to Remitente
-            $envio->fecha = now();
-            $envio->folio = $request->folio ?? 0;
-            $envio->id_tipo_envio = $request->id_tipo_envio;
-            $envio->id_estado_envio = $estadoEnviadoId;
-            $envio->nit_empresa = $user->nit_empresa;
-            $envio->destino = 'Ventanilla';
-            $envio->observaciones = $request->observaciones;
-
-            if ($request->hasFile('archivo')) {
-                $path = $request->file('archivo')->store('correspondencia', 'public');
-                $envio->archivo = $path;
-            } else {
-                $envio->archivo = '';
-            }
-
-            $envio->save();
-
-            // Process Multiple Annexes
-            if ($request->hasFile('anexos')) {
-                foreach ($request->file('anexos') as $file) {
-                    $pathAnexo = $file->store('correspondencia', 'public');
-                    \App\Models\AnexoEnvio::create([
-                        'id_envio' => $envio->id_envio,
-                        'ruta_archivo' => $pathAnexo,
-                        'nombre_original' => $file->getClientOriginalName(),
-                    ]);
+                if ($request->hasFile('archivo')) {
+                    $path = $request->file('archivo')->store('correspondencia', 'public');
+                    $envio->archivo = $path;
+                } else {
+                    $envio->archivo = '';
                 }
-            }
 
-            // NOTA: No se crea registro en detalle_envio para Ventanilla 
-            // ya que el destinatario es un Remitente, no un Empleado.
-            // El registro en la tabla 'envio' es suficiente para la trazabilidad.
+                $envio->save();
 
-            return back()->with('success', 'Correspondencia a Ventanilla creada exitosamente con radicado ' . $radicado->num_radicado);
+                // Process Multiple Annexes
+                if ($request->hasFile('anexos')) {
+                    foreach ($request->file('anexos') as $file) {
+                        $pathAnexo = $file->store('correspondencia', 'public');
+                        \App\Models\AnexoEnvio::create([
+                            'id_envio' => $envio->id_envio,
+                            'ruta_archivo' => $pathAnexo,
+                            'nombre_original' => $file->getClientOriginalName(),
+                        ]);
+                    }
+                }
+            });
+
+            return back()->with('success', 'Correspondencia a Ventanilla creada exitosamente.');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
@@ -1004,5 +956,24 @@ class CorrespondenciaController extends Controller
         }
 
         return back()->with('success', $mensaje);
+    }
+
+    private function generarRadicadoSeguro($nitEmpresa, $prefijo)
+    {
+        $currentYear = date('Y');
+        $latestRadicado = \App\Models\Radicado::where('nit_empresa', $nitEmpresa)
+            ->where('num_radicado', 'like', $prefijo . '-' . $currentYear . '-%')
+            ->orderBy('num_radicado', 'desc')
+            ->lockForUpdate() // BLOQUEO PARA EVITAR DUPLICADOS
+            ->first();
+
+        $newNumber = $latestRadicado ? intval(substr($latestRadicado->num_radicado, -5)) + 1 : 1;
+
+        $radicado = new \App\Models\Radicado();
+        $radicado->num_radicado = $prefijo . '-' . $currentYear . '-' . str_pad($newNumber, 5, '0', STR_PAD_LEFT);
+        $radicado->nit_empresa = $nitEmpresa;
+        $radicado->save();
+
+        return $radicado;
     }
 }

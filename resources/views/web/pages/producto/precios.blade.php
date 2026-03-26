@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Precios | IncolDEV</title>
+    <title>Precios | EASYCOR</title>
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 
@@ -15,7 +15,7 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: "#135bec",
+                        primary: "#00b5a3",
                         "background-light": "#f6f6f8",
                         "background-dark": "#101622",
                     },
@@ -44,7 +44,7 @@
             <div class="bg-primary text-white p-2 rounded-lg">
                 <span class="material-symbols-outlined">payments</span>
             </div>
-            <h1 class="text-xl font-extrabold">IncolDEV</h1>
+            <h1 class="text-xl font-extrabold">EASYCOR</h1>
         </div>
 
         <a href="{{ url('/') }}" class="text-sm font-bold text-primary hover:underline">
@@ -88,7 +88,7 @@
             </ul>
 
             @php
-                $msg = "Hola 👋, estoy interesado en el plan Mensual de IncolDEV por $200.000 COP. ¿Podrían brindarme más información?";
+                $msg = "Hola 👋, estoy interesado en el plan Mensual de EASYCOR por $200.000 COP. ¿Podrían brindarme más información?";
                 $url = "https://wa.me/" . config('services.whatsapp.number') . "?text=" . urlencode($msg);
             @endphp
 
@@ -117,7 +117,7 @@
             </ul>
 
             @php
-                $msg = "Hola 👋, estoy interesado en el plan Trimestral de IncolDEV por $540.000 COP. ¿Podrían brindarme más información?";
+                $msg = "Hola 👋, estoy interesado en el plan Trimestral de EASYCOR por $540.000 COP. ¿Podrían brindarme más información?";
                 $url = "https://wa.me/" . config('services.whatsapp.number') . "?text=" . urlencode($msg);
             @endphp
 
@@ -148,7 +148,7 @@
             </ul>
 
             @php
-                $msg = "Hola 👋, estoy interesado en el plan Semestral de IncolDEV por $1.040.000 COP. ¿Podrían asesorarme?";
+                $msg = "Hola 👋, estoy interesado en el plan Semestral de EASYCOR por $1.040.000 COP. ¿Podrían asesorarme?";
                 $url = "https://wa.me/" . config('services.whatsapp.number') . "?text=" . urlencode($msg);
             @endphp
 
@@ -177,7 +177,7 @@
             </ul>
 
             @php
-                $msg = "Hola 👋, estoy interesado en el plan Anual de IncolDEV por $1.950.000 COP. ¿Podrían brindarme más información?";
+                $msg = "Hola 👋, estoy interesado en el plan Anual de EASYCOR por $1.950.000 COP. ¿Podrían brindarme más información?";
                 $url = "https://wa.me/" . config('services.whatsapp.number') . "?text=" . urlencode($msg);
             @endphp
 
@@ -199,12 +199,12 @@
         </h2>
 
         <p class="mb-8 text-white/90">
-            Podemos adaptar IncolDEV a los requerimientos
+            Podemos adaptar EASYCOR a los requerimientos
             específicos de su institución.
         </p>
 
         @php
-            $msg = "Hola 👋, estoy interesado en un plan personalizado de IncolDEV. ¿Podrían asesorarme?";
+            $msg = "Hola 👋, estoy interesado en un plan personalizado de EASYCOR. ¿Podrían asesorarme?";
             $url = "https://wa.me/" . config('services.whatsapp.number') . "?text=" . urlencode($msg);
         @endphp
 
@@ -219,7 +219,7 @@
 <!-- FOOTER -->
 <footer class="bg-white border-t border-[#e7ebf3] py-10 text-center">
     <p class="text-xs text-[#4c669a]">
-        © 2026 IncolDEV. Todos los derechos reservados.
+        © 2026 EASYCOR. Todos los derechos reservados.
     </p>
 </footer>
 

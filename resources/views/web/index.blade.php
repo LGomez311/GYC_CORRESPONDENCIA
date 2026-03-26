@@ -5,7 +5,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>IncolDev - Gestión de Correspondencia Digital</title>
+    <title>EASYCOR - Gestión de Correspondencia Digital</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800;900&amp;display=swap"
         rel="stylesheet" />
@@ -21,7 +21,7 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#135bec",
+                        "primary": "#00b5a3",
                         "background-light": "#f6f6f8",
                         "background-dark": "#101622",
                     },
@@ -55,10 +55,7 @@
         class="sticky top-0 z-50 w-full border-b border-solid border-[#e7ebf3] bg-white/80 backdrop-blur-md px-6 md:px-20 py-4">
         <div class="max-w-[1280px] mx-auto flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="bg-primary text-white p-1.5 rounded-lg flex items-center justify-center">
-                    <span class="material-symbols-outlined text-2xl">mail</span>
-                </div>
-                <h2 class="text-[#0d121b] text-xl font-extrabold tracking-tight">IncolDEV</h2>
+                <img src="{{ asset('storage/logo/logo.png') }}" alt="EASYCOR Logo" class="h-20 w-auto">
             </div>
             <nav class="hidden md:flex items-center gap-10">
                 <a class="text-[#4c669a] hover:text-primary text-sm font-semibold transition-colors"
@@ -152,7 +149,7 @@
         <section class="py-20 bg-white" id="how-it-works">
             <div class="max-w-[1280px] mx-auto px-6 md:px-20 text-center mb-16">
                 <h3 class="text-primary font-bold text-sm uppercase tracking-[0.2em] mb-4">Proceso Ágil</h3>
-                <h2 class="text-3xl md:text-4xl font-black text-[#0d121b]">¿Cómo empezar con IncolDEV?</h2>
+                <h2 class="text-3xl md:text-4xl font-black text-[#0d121b]">¿Cómo empezar con EASYCOR?</h2>
             </div>
             <div class="max-w-[1280px] mx-auto px-6 md:px-20">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -164,7 +161,7 @@
                         </div>
                         <h4 class="text-lg font-bold mb-2">1. Contacto y Diagnóstico</h4>
                         <p class="text-sm text-[#4c669a] leading-relaxed">El cliente se comunica con nuestro equipo para
-                            validar sus necesidades y confirmar que GYC Correspondencia es la solución adecuada.</p>
+                            validar sus necesidades y confirmar que EASYCOR es la solución adecuada.</p>
                         <div
                             class="hidden md:block absolute top-8 left-1/2 w-full h-[2px] bg-gradient-to-r from-primary/20 to-transparent ml-8">
                         </div>
@@ -249,7 +246,7 @@
                     <h2 class="text-4xl font-black text-[#0d121b] leading-tight">Diseñado para la eficiencia
                         institucional</h2>
                     <p class="text-lg text-[#4c669a] leading-relaxed">
-                        No pierda nunca más un sobre o paquete. GYC Correspondencia centraliza la entrada y salida de
+                        No pierda nunca más un sobre o paquete. EASYCOR centraliza la entrada y salida de
                         mensajería, eliminando el error humano y acelerando los procesos internos.
                     </p>
                     <ul class="flex flex-col gap-4">
@@ -337,7 +334,7 @@
 
                             @php
                                 $mensaje =
-                                    "Hola 👋, estoy interesado en el plan {$plan->nomb_plan} de IncolDEV.
+                                    "Hola 👋, estoy interesado en el plan {$plan->nomb_plan} de EASYCOR.
 💼 Precio: $" .
                                     number_format($plan->valor, 0, ',', '.') .
                                     "
@@ -382,7 +379,7 @@
                 </h2>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center relative z-10">
                     @php
-                        $demoMsg = "Hola 👋, me gustaría solicitar una demostración del sistema IncolDEV.
+                        $demoMsg = "Hola 👋, me gustaría solicitar una demostración del sistema EASYCOR.
 ¿Podrían mostrarme cómo funciona?";
                         $demoUrl =
                             'https://wa.me/' . config('services.whatsapp.number') . '?text=' . urlencode($demoMsg);
@@ -395,7 +392,7 @@
                         </button>
                     </a>
                     @php
-                        $soporteMsg = 'Hola 👋, necesito ayuda con IncolDEV. ¿Podrían apoyarme?';
+                        $soporteMsg = 'Hola 👋, necesito ayuda con EASYCOR. ¿Podrían apoyarme?';
                         $soporteUrl =
                             'https://wa.me/' . config('services.whatsapp.number') . '?text=' . urlencode($soporteMsg);
                     @endphp
@@ -415,10 +412,7 @@
         <div class="max-w-[1280px] mx-auto px-6 md:px-20 grid md:grid-cols-4 gap-12 mb-16">
             <div class="col-span-1 md:col-span-1">
                 <div class="flex items-center gap-3 mb-6">
-                    <div class="bg-primary text-white p-1 rounded-md flex items-center justify-center">
-                        <span class="material-symbols-outlined text-xl">mail</span>
-                    </div>
-                    <h2 class="text-[#0d121b] text-lg font-bold">IncolDEV</h2>
+                    <img src="{{ asset('storage/logo/logo.png') }}" alt="EASYCOR Logo" class="h-14 w-auto">
                 </div>
                 <p class="text-sm text-[#4c669a] leading-relaxed mb-6">
                     La plataforma líder en gestión de mensajería institucional en Latinoamérica. Innovación y seguridad
@@ -426,7 +420,7 @@
                 </p>
                 <div class="flex gap-4">
                     <a class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-[#25D366] hover:bg-[#25D366] hover:text-white transition-all"
-                        href="https://wa.me/573150168048?text=Hola%20👋,%20estoy%20interesado%20en%20contratar%20un%20plan%20de%20IncolDEV.%20¿Podrían%20asesorarme?"
+                        href="https://wa.me/573027875059?text=Hola%20👋,%20estoy%20interesado%20en%20contratar%20un%20plan%20de%20EASYCOR.%20¿Podrían%20asesorarme?"
                         target="_blank">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                             <path
@@ -482,7 +476,7 @@
         </div>
         <div
             class="max-w-[1280px] mx-auto px-6 md:px-20 pt-8 border-t border-[#e7ebf3] flex flex-col md:flex-row justify-between items-center gap-4">
-            <p class="text-xs text-[#4c669a]">© 2026 IncolDEV. Todos los derechos reservados.</p>
+            <p class="text-xs text-[#4c669a]">© 2026 EASYCOR. Todos los derechos reservados.</p>
             <div class="flex items-center gap-2">
                 <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                 <p class="text-xs text-[#4c669a] font-medium">Sistemas Operativos 100%</p>

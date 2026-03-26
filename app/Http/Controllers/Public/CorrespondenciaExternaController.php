@@ -7,9 +7,11 @@ use Illuminate\Http\Request;
 use App\Http\Requests\CorrespondenciaExternaRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use App\Models\Tipo;
 use App\Models\Ciudad;
 use App\Models\Radicado;
+use App\Models\Empresa;
 
 class CorrespondenciaExternaController extends Controller
 {
@@ -20,7 +22,7 @@ class CorrespondenciaExternaController extends Controller
     {
         $tipos = Tipo::all();
         $ciudades = Ciudad::with('departamento')->orderBy('ciudad_nom')->get();
-        $empresas = \App\Models\Empresa::all();
+        $empresas = Empresa::all();
 
         return view('public.correspondencia.enviar', compact('tipos', 'ciudades', 'empresas'));
     }
@@ -30,109 +32,27 @@ class CorrespondenciaExternaController extends Controller
      */
     public function store(CorrespondenciaExternaRequest $request)
     {
-        // 1. Obtener datos validados
         $validated = $request->validated();
-
-        // 2. Procesamiento del archivo principal y cálculo de folios
-        $rutaArchivo = null;
-        // 2. Procesamiento del archivo principal
-        $rutaArchivo = null;
+        
         $folios = $validated['folio'];
+        $rutaArchivo = $this->handleFileUpload($request, 'archivo');
+        $anexoData = $this->handleAnexoUpload($request);
 
-        if ($request->hasFile('archivo')) {
-            $file = $request->file('archivo');
-            $rutaArchivo = $file->store('correspondencia', 'public');
-        }
-        
-        // Procesar 1 solo anexo (si lo hay)
-        $anexoData = null;
-        $anexoFile = null;
-
-        // Aceptar tanto 'anexos' como array o como campo único
-        if ($request->hasFile('anexos')) {
-            $archivosAnexos = $request->file('anexos');
-            // Si viene como array tomamos el primero, si viene como archivo único lo usamos directamente
-            $anexoFile = is_array($archivosAnexos) ? ($archivosAnexos[0] ?? null) : $archivosAnexos;
-        }
-
-        if ($anexoFile && $anexoFile->isValid()) {
-            $rutaAnexo     = $anexoFile->store('correspondencia', 'public');
-            $nombreOriginal = $anexoFile->getClientOriginalName();
-
-            $anexoData = [
-                'ruta_archivo'    => $rutaAnexo,
-                'nombre_original' => $nombreOriginal,
-            ];
-        }
-
-        // Definir la empresa receptora (desde el formulario)
         $nitEmpresa = $validated['empresa_destino'];
-        
-        // Determinar datos del remitente
-        $tipoRemitente = $validated['tipo_remitente'];
-        if ($tipoRemitente === 'Empresa') {
-            $docPersona     = $validated['nit_empresa_remitente'];
-            $nombrePersona  = $validated['nombre_empresa'];
-            $correoPersona  = $validated['correo_empresa'];
-            $telPersona     = $validated['tel_empresa'] ?? null;
-            $radicadoEmpresa = $validated['radicado_empresa']; // Ahora obligatorio
-            $tipoDoc        = 'NIT';
-        } else {
-            $docPersona     = $validated['numero_documento'];
-            $nombrePersona  = $validated['nombre_persona'];
-            $correoPersona  = $validated['correo_persona'];
-            $telPersona     = $validated['tel_persona'] ?? null;
-            $radicadoEmpresa = null;
-            $tipoDoc        = $validated['tipo_documento'];
-        }
+        $datosRemitente = $this->extractDatosRemitente($validated);
 
         DB::beginTransaction();
 
         try {
-            // 3. Generación del Radicado Seguro (INT-AÑO-NUMERO)
-            $currentYear = date('Y');
-            
-            $latestRadicado = Radicado::where('nit_empresa', $nitEmpresa)
-                ->where('num_radicado', 'like', 'INT-' . $currentYear . '-%')
-                ->lockForUpdate()
-                ->orderBy('num_radicado', 'desc')
-                ->first();
+            $nuevoNumRadicado = $this->generateSecureRadicado($nitEmpresa);
 
-            if ($latestRadicado) {
-                $lastNumber = intval(substr($latestRadicado->num_radicado, -5));
-                $newNumber  = $lastNumber + 1;
-            } else {
-                $newNumber = 1;
-            }
-
-            $nuevoNumRadicado = 'INT-' . $currentYear . '-' . str_pad($newNumber, 5, '0', STR_PAD_LEFT);
-
-            $radicado = new Radicado();
-            $radicado->num_radicado = $nuevoNumRadicado;
-            $radicado->nit_empresa  = $nitEmpresa;
-            $radicado->save();
-
-            // 4. Inserción en tabla Recibido
-            $idRecibido = DB::table('recibido')->insertGetId([
-                'num_radicado_int'   => $radicado->id_radicado,
-                'num_radicado_ext'   => $radicadoEmpresa, // radicado externo (obligatorio si es Empresa)
-                'fecha_hora_recib'   => now(),
-                'nom_institucion'    => $tipoRemitente === 'Empresa' ? $nombrePersona : null,
-                'nit_empresa'        => $nitEmpresa,
-                'ciudad_proveniente' => $validated['ciudad_proveniente'],
-                'asunto'             => $validated['asunto'],
-                'id_tipo'            => $validated['id_tipo'],
-                'id_estado_rec'      => 12, // Estado 12 = Enviado (Inicial para registro público)
-                'folio'              => $folios,
-                'observaciones'      => "{$tipoDoc} {$docPersona} - " . ($validated['observaciones'] ?? ''),
-                'archivo'            => $rutaArchivo,
-                'nombre_persona'     => $tipoRemitente === 'Persona' ? $nombrePersona : null,
-                'doc_persona'        => $docPersona,
-                'correo_persona'     => $correoPersona,
-                'tel_persona'        => $telPersona,
+            $radicado = Radicado::create([
+                'num_radicado' => $nuevoNumRadicado,
+                'nit_empresa'  => $nitEmpresa
             ]);
-            
-            // 5. Insertar el anexo en anexo_recibido (si existe)
+
+            $idRecibido = $this->insertRecibidoRecord($validated, $datosRemitente, $radicado->id_radicado, $rutaArchivo, $folios, $nitEmpresa);
+
             if ($anexoData) {
                 DB::table('anexo_recibido')->insert([
                     'id_recibido'     => $idRecibido,
@@ -141,40 +61,12 @@ class CorrespondenciaExternaController extends Controller
                 ]);
             }
 
-            // 6. Traceability logic removed to allow manual assignment from dashboard
-
-
-            
-
             DB::commit();
 
-            // 7. Enviar correo de confirmación al remitente
-            try {
-                \Illuminate\Support\Facades\Mail::send([], [], function ($message) use ($correoPersona, $nuevoNumRadicado) {
-                    $message->to($correoPersona)
-                        ->subject('Confirmación de Registro de Correspondencia')
-                        ->html("
-                        <div style='font-family: Arial, Helvetica, sans-serif; background-color: #f4f6fb; padding: 40px;'>
-                            <div style='max-width: 520px; margin: auto; background-color: #ffffff; border-radius: 12px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.08);'>
-                                <h2 style='color: #0d121b; margin-bottom: 10px; text-align: center;'>Registro de Correspondencia Exitoso</h2>
-                                <p style='color: #4c669a; font-size: 15px; text-align: center;'>Su correspondencia ha sido registrada correctamente en nuestro sistema.</p>
-                                <div style='margin: 30px 0; padding: 20px; background-color: #f0f4ff; border-radius: 10px; text-align: center;'>
-                                    <p style='margin: 0; font-size: 14px; color: #4c669a;'>El número de radicado asignado es:</p>
-                                    <p style='margin: 10px 0 0; font-size: 24px; font-weight: bold; letter-spacing: 2px; color: #135bec;'>$nuevoNumRadicado</p>
-                                </div>
-                                <p style='font-size: 14px; color: #6b7280; line-height: 1.6; text-align: center;'>
-                                    Con este número podrá consultar el estado de su solicitud en <a href='" . route('public.correspondencia.consultar') . "' style='color: #135bec; text-decoration: underline;'>nuestro sistema de consulta</a>.
-                                </p>
-                                <hr style='margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;'>
-                                <p style='font-size: 12px; color: #9ca3af; text-align: center;'>© " . date('Y') . " Sistema de Gestión. Todos los derechos reservados.</p>
-                            </div>
-                        </div>");
-                });
-            } catch (\Exception $mailEx) {
-                Log::error('Error al enviar correo de radicación: ' . $mailEx->getMessage());
-            }
+            $this->sendConfirmationEmail($datosRemitente['correo'], $nuevoNumRadicado);
 
-            return redirect()->route('public.correspondencia.enviar')->with('success', 'Correspondencia enviada exitosamente. Su número de radicado es: ' . $radicado->num_radicado . '. Se ha enviado un correo con esta información.');
+            return redirect()->route('public.correspondencia.enviar')
+                ->with('success', 'Correspondencia enviada exitosamente. Su número de radicado es: ' . $radicado->num_radicado . '. Se ha enviado un correo con esta información.');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -201,38 +93,10 @@ class CorrespondenciaExternaController extends Controller
             'tipo_remitente'   => 'required|in:Persona,Empresa',
         ]);
 
-        if ($request->tipo_remitente === 'Empresa') {
-            $request->validate(['nit_empresa_remitente' => 'required|string']);
-            $documentoBuscado = $request->nit_empresa_remitente;
-        } else {
-            $request->validate(['numero_documento' => 'required|string']);
-            $documentoBuscado = $request->numero_documento;
-        }
+        $documentoBuscado = $this->validateAndGetDocumento($request);
 
         try {
-            // Refactorizado para usar Eloquent y cargar relaciones de respuesta
-            $query = \App\Models\Recibido::with([
-                'radicado', 
-                'tipo', 
-                'estado', 
-                'detalles' => function($q) {
-                    $q->whereNotNull('archivo_res')
-                      ->orWhereHas('anexosRespuesta');
-                },
-                'detalles.anexosRespuesta'
-            ])
-            ->whereHas('radicado', function($q) use ($request) {
-                $q->where('num_radicado', $request->numero_radicado);
-            })
-            ->where('doc_persona', $documentoBuscado);
-
-            if ($request->tipo_remitente === 'Empresa') {
-                $query->whereNotNull('nom_institucion');
-            } else {
-                $query->whereNull('nom_institucion');
-            }
-
-            $resultado = $query->first();
+            $resultado = $this->getRadicadoQuery($request, $documentoBuscado)->first();
 
             if (!$resultado) {
                 return redirect()->back()->withInput()->withErrors(['error' => 'No se encontró correspondencia con los datos proporcionados. Verifique el radicado y el documento.']);
@@ -241,8 +105,164 @@ class CorrespondenciaExternaController extends Controller
             return view('public.correspondencia.consultar', compact('resultado'));
 
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Error consultando correspondencia: ' . $e->getMessage());
+            Log::error('Error consultando correspondencia: ' . $e->getMessage());
             return redirect()->back()->withInput()->withErrors(['error' => 'Ocurrió un error al realizar la consulta: ' . $e->getMessage()]);
         }
+    }
+
+    // ==========================================
+    // MÉTODOS PRIVADOS PARA REFATORIZACIÓN DRY
+    // ==========================================
+
+    private function handleFileUpload(Request $request, $fieldName)
+    {
+        if ($request->hasFile($fieldName)) {
+            return $request->file($fieldName)->store('correspondencia', 'public');
+        }
+        return null;
+    }
+
+    private function handleAnexoUpload(Request $request)
+    {
+        if ($request->hasFile('anexos')) {
+            $archivosAnexos = $request->file('anexos');
+            $anexoFile = is_array($archivosAnexos) ? ($archivosAnexos[0] ?? null) : $archivosAnexos;
+
+            if ($anexoFile && $anexoFile->isValid()) {
+                return [
+                    'ruta_archivo'    => $anexoFile->store('correspondencia', 'public'),
+                    'nombre_original' => $anexoFile->getClientOriginalName(),
+                ];
+            }
+        }
+        return null;
+    }
+
+    private function extractDatosRemitente($validated)
+    {
+        if ($validated['tipo_remitente'] === 'Empresa') {
+            return [
+                'doc'             => $validated['nit_empresa_remitente'],
+                'nombre'          => $validated['nombre_empresa'],
+                'correo'          => $validated['correo_empresa'],
+                'tel'             => $validated['tel_empresa'] ?? null,
+                'radicado_ext'    => $validated['radicado_empresa'],
+                'tipo_doc'        => 'NIT',
+                'nom_institucion' => $validated['nombre_empresa'],
+                'nombre_persona'  => null
+            ];
+        }
+
+        return [
+            'doc'             => $validated['numero_documento'],
+            'nombre'          => $validated['nombre_persona'],
+            'correo'          => $validated['correo_persona'],
+            'tel'             => $validated['tel_persona'] ?? null,
+            'radicado_ext'    => null,
+            'tipo_doc'        => $validated['tipo_documento'],
+            'nom_institucion' => null,
+            'nombre_persona'  => $validated['nombre_persona']
+        ];
+    }
+
+    private function generateSecureRadicado($nitEmpresa)
+    {
+        $currentYear = date('Y');
+        
+        $latestRadicado = Radicado::where('nit_empresa', $nitEmpresa)
+            ->where('num_radicado', 'like', 'INT-' . $currentYear . '-%')
+            ->lockForUpdate()
+            ->orderBy('num_radicado', 'desc')
+            ->first();
+
+        $newNumber = $latestRadicado ? intval(substr($latestRadicado->num_radicado, -5)) + 1 : 1;
+        return 'INT-' . $currentYear . '-' . str_pad($newNumber, 5, '0', STR_PAD_LEFT);
+    }
+
+    private function insertRecibidoRecord($validated, $datosRemitente, $idRadicado, $rutaArchivo, $folios, $nitEmpresa)
+    {
+        return DB::table('recibido')->insertGetId([
+            'num_radicado_int'   => $idRadicado,
+            'num_radicado_ext'   => $datosRemitente['radicado_ext'],
+            'fecha_hora_recib'   => now(),
+            'nom_institucion'    => $datosRemitente['nom_institucion'],
+            'nit_empresa'        => $nitEmpresa,
+            'ciudad_proveniente' => $validated['ciudad_proveniente'],
+            'asunto'             => $validated['asunto'],
+            'id_tipo'            => $validated['id_tipo'],
+            'id_estado_rec'      => 12, // Inicial
+            'folio'              => $folios,
+            'observaciones'      => "{$datosRemitente['tipo_doc']} {$datosRemitente['doc']} - " . ($validated['observaciones'] ?? ''),
+            'archivo'            => $rutaArchivo,
+            'nombre_persona'     => $datosRemitente['nombre_persona'],
+            'doc_persona'        => $datosRemitente['doc'],
+            'correo_persona'     => $datosRemitente['correo'],
+            'tel_persona'        => $datosRemitente['tel'],
+        ]);
+    }
+
+    private function sendConfirmationEmail($correo, $nuevoNumRadicado)
+    {
+        try {
+            Mail::send([], [], function ($message) use ($correo, $nuevoNumRadicado) {
+                $message->to($correo)
+                    ->subject('Confirmación de Registro de Correspondencia')
+                    ->html("
+                    <div style='font-family: Arial, Helvetica, sans-serif; background-color: #f4f6fb; padding: 40px;'>
+                        <div style='max-width: 520px; margin: auto; background-color: #ffffff; border-radius: 12px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.08);'>
+                            <h2 style='color: #0d121b; margin-bottom: 10px; text-align: center;'>Registro de Correspondencia Exitoso</h2>
+                            <p style='color: #4c669a; font-size: 15px; text-align: center;'>Su correspondencia ha sido registrada correctamente en nuestro sistema.</p>
+                            <div style='margin: 30px 0; padding: 20px; background-color: #f0f4ff; border-radius: 10px; text-align: center;'>
+                                <p style='margin: 0; font-size: 14px; color: #4c669a;'>El número de radicado asignado es:</p>
+                                <p style='margin: 10px 0 0; font-size: 24px; font-weight: bold; letter-spacing: 2px; color: #00b5a3;'>$nuevoNumRadicado</p>
+                            </div>
+                            <p style='font-size: 14px; color: #6b7280; line-height: 1.6; text-align: center;'>
+                                Con este número podrá consultar el estado de su solicitud en <a href='" . route('public.correspondencia.consultar') . "' style='color: #00b5a3; text-decoration: underline;'>nuestro sistema de consulta</a>.
+                            </p>
+                            <hr style='margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;'>
+                            <p style='font-size: 12px; color: #9ca3af; text-align: center;'>© " . date('Y') . " Sistema de Gestión. Todos los derechos reservados.</p>
+                        </div>
+                    </div>");
+            });
+        } catch (\Exception $mailEx) {
+            Log::error('Error al enviar correo de radicación: ' . $mailEx->getMessage());
+        }
+    }
+
+    private function validateAndGetDocumento(Request $request)
+    {
+        if ($request->tipo_remitente === 'Empresa') {
+            $request->validate(['nit_empresa_remitente' => 'required|string']);
+            return $request->nit_empresa_remitente;
+        }
+
+        $request->validate(['numero_documento' => 'required|string']);
+        return $request->numero_documento;
+    }
+
+    private function getRadicadoQuery(Request $request, $documentoBuscado)
+    {
+        $query = \App\Models\Recibido::with([
+            'radicado', 
+            'tipo', 
+            'estado', 
+            'detalles' => function($q) {
+                $q->whereNotNull('archivo_res')
+                  ->orWhereHas('anexosRespuesta');
+            },
+            'detalles.anexosRespuesta'
+        ])
+        ->whereHas('radicado', function($q) use ($request) {
+            $q->where('num_radicado', $request->numero_radicado);
+        })
+        ->where('doc_persona', $documentoBuscado);
+
+        if ($request->tipo_remitente === 'Empresa') {
+            $query->whereNotNull('nom_institucion');
+        } else {
+            $query->whereNull('nom_institucion');
+        }
+
+        return $query;
     }
 }

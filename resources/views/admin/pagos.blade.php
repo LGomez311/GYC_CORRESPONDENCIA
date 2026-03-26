@@ -132,7 +132,7 @@
                     <p class="font-semibold text-gray-700 mb-2 text-sm">
                         Escanea para pagar
                     </p>
-                    <img src="{{ asset('storage/qr/qr.jpeg') }}" alt="Código QR de pago"
+                    <img src="{{ asset('storage/qr/qr.png') }}" alt="Código QR de pago"
                         class="w-48 h-48 object-contain border rounded-xl shadow-sm">
                     <p class="text-xs text-gray-500 mt-2 text-center">
                         Disponible para pagos desde cualquier banco

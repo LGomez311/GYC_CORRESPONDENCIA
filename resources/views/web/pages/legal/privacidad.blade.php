@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Política de Privacidad | IncolDEV</title>
+    <title>Política de Privacidad | EASYCOR</title>
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 
@@ -15,7 +15,7 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: "#135bec",
+                        primary: "#00b5a3",
                         "background-light": "#f6f6f8",
                         "background-dark": "#101622",
                     },
@@ -44,7 +44,7 @@
             <div class="bg-primary text-white p-2 rounded-lg">
                 <span class="material-symbols-outlined">policy</span>
             </div>
-            <h1 class="text-xl font-extrabold">IncolDEV</h1>
+            <h1 class="text-xl font-extrabold">EASYCOR</h1>
         </div>
 
         <a href="{{ url('/') }}" class="text-sm font-bold text-primary hover:underline">
@@ -73,7 +73,7 @@
         <div>
             <h2 class="text-xl font-bold text-[#0d121b] mb-3">1. Información general</h2>
             <p>
-                IncolDEV es un proyecto de desarrollo de software creado con fines
+                EASYCOR es un proyecto de desarrollo de software creado con fines
                 académicos y tecnológicos. Nos comprometemos a proteger la información
                 personal de los usuarios que interactúan con nuestra plataforma.
             </p>
@@ -111,7 +111,7 @@
         <div>
             <h2 class="text-xl font-bold text-[#0d121b] mb-3">5. Compartir información</h2>
             <p>
-                IncolDEV no comparte, vende ni alquila información personal a terceros,
+                EASYCOR no comparte, vende ni alquila información personal a terceros,
                 salvo cuando sea requerido por ley o con autorización expresa del usuario.
             </p>
         </div>
@@ -147,7 +147,7 @@
 <!-- FOOTER -->
 <footer class="bg-white border-t border-[#e7ebf3] py-10 text-center">
     <p class="text-xs text-[#4c669a]">
-        © 2026 IncolDEV. Todos los derechos reservados.
+        © 2026 EASYCOR. Todos los derechos reservados.
     </p>
 </footer>
 

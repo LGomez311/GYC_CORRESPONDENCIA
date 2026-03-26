@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Clientes | IncolDEV</title>
+    <title>Clientes | EASYCOR</title>
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 
@@ -15,7 +15,7 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: "#135bec",
+                        primary: "#00b5a3",
                         "background-light": "#f6f6f8",
                         "background-dark": "#101622",
                     },
@@ -44,7 +44,7 @@
             <div class="bg-primary text-white p-2 rounded-lg">
                 <span class="material-symbols-outlined">handshake</span>
             </div>
-            <h1 class="text-xl font-extrabold">IncolDEV</h1>
+            <h1 class="text-xl font-extrabold">EASYCOR</h1>
         </div>
 
         <a href="{{ url('/') }}" class="text-sm font-bold text-primary hover:underline">
@@ -60,7 +60,7 @@
             Nuestros clientes
         </h1>
         <p class="text-lg text-[#4c669a] max-w-3xl mx-auto">
-            IncolDEV está diseñado para organizaciones que buscan eficiencia,
+            EASYCOR está diseñado para organizaciones que buscan eficiencia,
             control y transformación digital.
         </p>
     </div>
@@ -70,7 +70,7 @@
 <section class="py-20 bg-background-light">
     <div class="max-w-[1280px] mx-auto px-6 md:px-20">
         <h2 class="text-3xl font-black text-center mb-16">
-            ¿Quiénes pueden usar IncolDEV?
+            ¿Quiénes pueden usar EASYCOR?
         </h2>
 
         <div class="grid sm:grid-cols-1 md:grid-cols-3 gap-8">
@@ -115,7 +115,7 @@
                 Un sistema pensado para crecer
             </h2>
             <p class="text-[#4c669a] mb-4">
-                Aunque IncolDEV nace como un proyecto académico, está construido
+                Aunque EASYCOR nace como un proyecto académico, está construido
                 siguiendo buenas prácticas de desarrollo y pensado para escalar
                 a nivel empresarial.
             </p>
@@ -126,7 +126,7 @@
         </div>
 
         <div class="bg-background-light p-10 rounded-2xl border border-[#e7ebf3]">
-            <h3 class="font-bold text-lg mb-4">¿Por qué confiar en IncolDEV?</h3>
+            <h3 class="font-bold text-lg mb-4">¿Por qué confiar en EASYCOR?</h3>
             <ul class="space-y-3 text-sm text-[#4c669a]">
                 <li>✔ Desarrollo basado en necesidades reales</li>
                 <li>✔ Seguridad y control de la información</li>
@@ -145,11 +145,11 @@
             ¿Quiere ser parte de nuestros clientes?
         </h2>
         <p class="mb-8 text-white/90">
-            IncolDEV está listo para adaptarse a su organización.
+            EASYCOR está listo para adaptarse a su organización.
         </p>
 
         @php
-            $msg = "Hola 👋, me gustaría saber si IncolDEV es adecuado para mi organización.";
+            $msg = "Hola 👋, me gustaría saber si EASYCOR es adecuado para mi organización.";
             $url = "https://wa.me/" . config('services.whatsapp.number') . "?text=" . urlencode($msg);
         @endphp
 
@@ -164,7 +164,7 @@
 <!-- FOOTER -->
 <footer class="bg-white border-t border-[#e7ebf3] py-10 text-center">
     <p class="text-xs text-[#4c669a]">
-        © 2026 IncolDEV. Todos los derechos reservados.
+        © 2026 EASYCOR. Todos los derechos reservados.
     </p>
 </footer>
 

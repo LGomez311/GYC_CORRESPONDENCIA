@@ -177,7 +177,7 @@
     </div>
 
     <div class="footer">
-        Este documento es generado automáticamente por el sistema de Correspondencia GYC. Página 1.
+        Este documento es generado automáticamente por el sistema EASYCOR. Página 1.
     </div>
 
 </body>

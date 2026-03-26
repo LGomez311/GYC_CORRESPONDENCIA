@@ -39,7 +39,7 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#135bec",
+                        "primary": "#00b5a3",
                         "background-light": "#f6f6f8",
                         "background-dark": "#101622",
                     },
@@ -192,8 +192,8 @@
 
         /* Cuando está enfocado */
         .select2-container--default.select2-container--focus .select2-selection--single {
-            border-color: #135bec !important;
-            box-shadow: 0 0 0 2px rgba(19, 91, 236, 0.2) !important;
+            border-color: #00b5a3 !important;
+            box-shadow: 0 0 0 2px rgba(0, 181, 163, 0.2) !important;
         }
 
         /* TABLAS RESPONSIVAS (Tipo Tarjetas en Móviles) */

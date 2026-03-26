@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Sobre Nosotros | IncolDEV</title>
+    <title>Sobre Nosotros | EASYCOR</title>
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 
@@ -15,7 +15,7 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: "#135bec",
+                        primary: "#00b5a3",
                         "background-light": "#f6f6f8",
                         "background-dark": "#101622",
                     },
@@ -44,7 +44,7 @@
             <div class="bg-primary text-white p-2 rounded-lg">
                 <span class="material-symbols-outlined">groups</span>
             </div>
-            <h1 class="text-xl font-extrabold">IncolDEV</h1>
+            <h1 class="text-xl font-extrabold">EASYCOR</h1>
         </div>
 
         <a href="{{ url('/') }}" class="text-sm font-bold text-primary hover:underline">
@@ -60,7 +60,7 @@
             Sobre nosotros
         </h1>
         <p class="text-lg text-[#4c669a] max-w-3xl mx-auto">
-            Conoce el origen, propósito y visión detrás de IncolDEV.
+            Conoce el origen, propósito y visión detrás de EASYCOR.
         </p>
     </div>
 </section>
@@ -75,7 +75,7 @@
             </h2>
 
             <p class="text-[#4c669a] mb-4 leading-relaxed">
-                IncolDEV nace como un proyecto desarrollado por <strong>tres jóvenes estudiantes del SENA</strong>,
+                EASYCOR nace como un proyecto desarrollado por <strong>tres jóvenes estudiantes del SENA</strong>,
                 pertenecientes al programa de <strong>Análisis y Desarrollo de Software</strong>.
             </p>
 
@@ -139,11 +139,11 @@
         </h2>
 
         <p class="mb-8 text-white/90">
-            IncolDEV es el resultado de aprendizaje, esfuerzo y visión tecnológica.
+            EASYCOR es el resultado de aprendizaje, esfuerzo y visión tecnológica.
         </p>
 
         @php
-            $msg = "Hola 👋, me gustaría conocer más sobre IncolDEV y su equipo de desarrollo.";
+            $msg = "Hola 👋, me gustaría conocer más sobre EASYCOR y su equipo de desarrollo.";
             $url = "https://wa.me/" . config('services.whatsapp.number') . "?text=" . urlencode($msg);
         @endphp
 
@@ -159,7 +159,7 @@
 <!-- FOOTER -->
 <footer class="bg-white border-t border-[#e7ebf3] py-10 text-center">
     <p class="text-xs text-[#4c669a]">
-        © 2026 IncolDEV. Todos los derechos reservados.
+        © 2026 EASYCOR. Todos los derechos reservados.
     </p>
 </footer>
 
