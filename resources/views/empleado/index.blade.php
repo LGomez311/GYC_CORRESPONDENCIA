@@ -461,12 +461,91 @@
                                 Aún no has finalizado correspondencia en esta semana.
                             @else
                                 Has resuelto {{ $eficiencia['total'] }} documento(s) esta semana. El {{ $eficiencia['a_tiempo_pct'] }}% fue atendido a tiempo.
-                            @endif
-                        </p>
                     </div>
                 </div>
 
+                <!-- Actividad Reciente -->
+                <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col h-full">
+                    <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-slate-800/50">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-[18px]">history</span>
+                            </div>
+                            <h2 class="font-bold text-base text-gray-900 dark:text-white">Tu Actividad Reciente</h2>
+                        </div>
+                    </div>
+                    <div class="p-0 overflow-y-auto max-h-[400px]">
+                        @if(isset($actividad_reciente) && count($actividad_reciente) > 0)
+                            <ul class="divide-y divide-gray-100 dark:divide-gray-700/50">
+                                @foreach($actividad_reciente as $actividad)
+                                    <li class="p-4 hover:bg-gray-50 dark:hover:bg-slate-800/80 transition-colors group cursor-pointer relative" onclick="window.location.href='{{ $actividad->url }}'">
+                                        <!-- Tipo de Correspondencia Badge (Absoluto) -->
+                                        <div class="absolute top-4 right-4">
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase
+                                                {{ $actividad->tipo === 'Interna' 
+                                                    ? 'bg-indigo-50 text-indigo-600 border border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-400 dark:border-indigo-800' 
+                                                    : 'bg-blue-50 text-blue-600 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800' }}">
+                                                <span class="material-symbols-outlined text-[12px]">{{ $actividad->tipo === 'Interna' ? 'corporate_fare' : 'public' }}</span>
+                                                {{ $actividad->tipo }}
+                                            </span>
+                                        </div>
 
+                                        <div class="flex items-start gap-3">
+                                            <!-- Icono Principal -->
+                                            <div class="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center
+                                                {{ $actividad->tipo === 'Interna' ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400' }}">
+                                                <span class="material-symbols-outlined text-[20px]">{{ $actividad->icon }}</span>
+                                            </div>
+
+                                            <div class="flex-1 min-w-0 pr-16 border-l pl-3 border-gray-100 dark:border-gray-700">
+                                                <!-- Remitente/Entidad -->
+                                                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-0.5 mt-0 flex items-center gap-1 truncate">
+                                                    <span class="material-symbols-outlined text-[12px]">account_circle</span>
+                                                    {{ $actividad->remitente }}
+                                                </p>
+                                                
+                                                <!-- Asunto -->
+                                                <p class="text-sm font-semibold text-gray-900 dark:text-white truncate mb-1 group-hover:text-primary transition-colors">
+                                                    {{ $actividad->asunto }}
+                                                </p>
+
+                                                <!-- Meta inf (Radicado, Estado, Fecha) -->
+                                                <div class="flex flex-wrap items-center gap-2 mt-2">
+                                                    <span class="inline-flex items-center gap-1 text-[11px] font-medium bg-gray-100 text-gray-600 dark:bg-slate-700 dark:text-gray-300 px-2 py-0.5 rounded-full">
+                                                        <span class="material-symbols-outlined text-[12px]">tag</span>
+                                                        {{ $actividad->radicado }}
+                                                    </span>
+                                                    <span class="inline-flex items-center gap-1 text-[11px] font-medium bg-green-50 text-green-600 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800 px-2 py-0.5 rounded-full">
+                                                        <span class="material-symbols-outlined text-[12px]">info</span>
+                                                        {{ $actividad->estado }}
+                                                    </span>
+                                                    <span class="text-[11px] text-gray-400 flex items-center gap-1 ml-auto">
+                                                        <span class="material-symbols-outlined text-[12px]">schedule</span>
+                                                        {{ \Carbon\Carbon::parse($actividad->fecha)->diffForHumans() }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                @endforeach
+                            </ul>
+                            <div class="p-3 bg-gray-50/50 dark:bg-slate-800/30 text-center border-t border-gray-100 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors">
+                                <a href="{{ route('empleado.correspondencia_recibida') }}" class="text-xs font-semibold text-primary dark:text-blue-400 flex items-center justify-center gap-1">
+                                    Ver toda la correspondencia
+                                    <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                                </a>
+                            </div>
+                        @else
+                            <div class="p-8 text-center flex flex-col items-center justify-center">
+                                <div class="w-16 h-16 rounded-full bg-gray-50 dark:bg-slate-800 flex items-center justify-center mb-3">
+                                    <span class="material-symbols-outlined text-gray-300 dark:text-gray-600 text-3xl">history_toggle_off</span>
+                                </div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">No hay actividad reciente.</p>
+                                <p class="text-xs text-gray-400 mt-1">Los movimientos de correspondencia aparecerán aquí.</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
 
             </div>
         </div>

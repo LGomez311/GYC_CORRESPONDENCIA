@@ -120,7 +120,7 @@
     <div class="p-4 border-t border-[#cfd7e7] dark:border-gray-800 flex items-center justify-between">
         <div class="flex items-center gap-3 px-2 overflow-hidden flex-1">
             <div class="size-10 rounded-full bg-cover bg-center border-2 border-primary/20 flex-shrink-0"
-                style='background-image: url("{{ auth()->user()->emple_img ? asset(auth()->user()->emple_img) : asset('images/default-avatar.png') }}");'>
+                style='background-image: url("{{ auth()->user()->emple_img ? asset('storage/' . auth()->user()->emple_img) : asset('images/default-avatar.png') }}");'>
             </div>
             <div class="overflow-hidden">
                 <p class="text-sm font-bold truncate dark:text-white">

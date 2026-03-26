@@ -1347,6 +1347,17 @@
 
             openModal('salienteModal');
         }
+        // Initialize Select2 if jQuery is loaded
+        $(document).ready(function() {
+            if (typeof jQuery !== 'undefined' && typeof jQuery.fn.select2 !== 'undefined') {
+                $('.select2-tipo-saliente').select2({
+                    placeholder: "Buscar tipo...",
+                    allowClear: true,
+                    width: '100%',
+                    dropdownParent: $('#salienteModal')
+                });
+            }
+        });
     </script>
 @endsection
 <!-- Registrar Saliente Modal -->
@@ -1425,7 +1436,7 @@
                                 class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Tipo
                                 de Envío</label>
                             <select name="id_tipo_envio" id="salienteTipo" required
-                                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none dark:text-white appearance-none">
+                                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none dark:text-white appearance-none select2-tipo-saliente">
                                 <option value="">Seleccionar...</option>
                                 @foreach ($tipos as $t)
                                     <option value="{{ $t->id_tipo }}">{{ $t->tipo_nombre }}</option>

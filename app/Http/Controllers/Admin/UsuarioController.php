@@ -37,12 +37,25 @@ class UsuarioController extends Controller
             ->where('nit_empresa', $nitEmpresa)
             ->get();
 
+        // Heurística para "nuevos" (ya que no existe created_at): usuarios sin correspondencia
+        $empleadosNuevos = Empleado::where('nit_empresa', $nitEmpresa)
+            ->where('emple_rol', '!=', 1)
+            ->whereDoesntHave('enviosEnviados')
+            ->whereDoesntHave('enviosRecibidos')
+            ->count();
+
+        $remitentesNuevos = Remitente::where('nit_empresa', $nitEmpresa)
+            ->whereNotIn('rem_doc', function($query) {
+                $query->select('doc_persona')->from('recibido')->whereNotNull('doc_persona');
+            })
+            ->count();
+
         // Calcular estadísticas para la empresa actual (excluyendo SuperAdmin)
         $stats = [
             'total' => $empleados->count() + $remitentes->count(),
             'activos' => $empleados->where('emple_estado', 1)->count() + $remitentes->where('rem_estado', 1)->count(),
             'inactivos' => $empleados->where('emple_estado', 2)->count() + $remitentes->where('rem_estado', 2)->count(),
-            'nuevos' => 0,
+            'nuevos' => $empleadosNuevos + $remitentesNuevos,
         ];
 
         // Catálogos para los modales
@@ -58,7 +71,7 @@ class UsuarioController extends Controller
     {
         $request->validate([
             'emple_doc' => [
-                'required', 'numeric', 'digits_between:6,10', 'regex:/^[0-9]+$/', 'unique:empleado,emple_doc',
+                'required', 'numeric', 'digits_between:6,10', 'max:2147483647', 'regex:/^[0-9]+$/', 'unique:empleado,emple_doc',
                 function ($attribute, $value, $fail) {
                     if (preg_match('/^(\d)\1+$/', $value)) {
                         $fail('No se permiten números repetidos como 000000 o 111111.');
@@ -108,6 +121,7 @@ class UsuarioController extends Controller
             'emple_doc.required' => '• El documento es obligatorio.',
             'emple_doc.numeric' => '• El documento solo puede contener números.',
             'emple_doc.digits_between' => '• El documento debe tener entre 6 y 10 dígitos.',
+            'emple_doc.max' => '• El documento es demasiado largo (máx: 2147483647).',
             'emple_doc.unique' => '• Este documento ya está registrado en el sistema.',
             'emple_doc.regex' => '• El documento solo puede contener números.',
 
@@ -288,7 +302,7 @@ class UsuarioController extends Controller
     {
         $request->validate([
             'rem_doc' => [
-                'required', 'numeric', 'digits_between:6,15', 'regex:/^[0-9]+$/', 'unique:remitente,rem_doc',
+                'required', 'numeric', 'digits_between:6,10', 'max:2147483647', 'regex:/^[0-9]+$/', 'unique:remitente,rem_doc',
                 function ($attribute, $value, $fail) {
                     if (preg_match('/^(\d)\1+$/', $value)) {
                         $fail('No se permiten números repetidos como 000000 o 111111.');
@@ -327,10 +341,17 @@ class UsuarioController extends Controller
                 'max:64',
                 Password::min(10)->letters()->mixedCase()->numbers()->symbols()->uncompromised()
             ],
+            'rem_img' => [
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:1024'
+            ]
         ], [
             'rem_doc.required' => '• El documento es obligatorio.',
             'rem_doc.numeric' => '• El documento solo puede contener números.',
-            'rem_doc.digits_between' => '• El documento debe tener entre 6 y 15 dígitos.',
+            'rem_doc.digits_between' => '• El documento debe tener entre 6 y 10 dígitos.',
+            'rem_doc.max' => '• El documento es demasiado largo (máx: 2147483647).',
             'rem_doc.unique' => '• Este documento ya está registrado.',
             'rem_nombres.required' => '• El nombre es obligatorio.',
             'rem_apellidos.required' => '• El apellido es obligatorio.',
@@ -341,6 +362,9 @@ class UsuarioController extends Controller
             'rem_ciudad.exists' => '• La ciudad es inválida.',
             'password.required' => '• La contraseña es obligatoria.',
             'password' => '• La contraseña debe incluir mayúscula, minúscula, número y símbolo.',
+            'rem_img.image' => '• El archivo debe ser una imagen válida.',
+            'rem_img.mimes' => '• La imagen debe ser jpg, jpeg, png o webp.',
+            'rem_img.max' => '• La imagen no puede pesar más de 1MB.',
         ], [
             // Nombres amigables
             'rem_doc' => 'documento',
@@ -363,9 +387,28 @@ class UsuarioController extends Controller
         $remitente->rem_estado = $request->rem_estado ?? 1; // Asumiendo que 1 es activo
         $remitente->password = Hash::make($request->password);
 
-        $remitente->save();
+        // Manejo de imagen
+        try {
+            if ($request->hasFile('rem_img')) {
+                $image = $request->file('rem_img');
+                $filename = time() . '.' . $image->getClientOriginalExtension();
+                $path = storage_path('app/public/' . $filename);
 
-        return redirect()->back()->with('success', 'Remitente externo creado correctamente');
+                $manager = new ImageManager(new Driver());
+                $img = $manager->read($image->getRealPath());
+                $img->cover(256, 256)->save($path);
+
+                $remitente->rem_img = $filename;
+            } else {
+                $remitente->rem_img = '';
+            }
+
+            $remitente->save();
+            return redirect()->back()->with('success', 'Remitente externo creado correctamente');
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Ocurrió un error al crear el remitente: ' . $e->getMessage())->withInput();
+        }
     }
 
     public function updateRemitente(Request $request, $rem_doc)
@@ -410,6 +453,12 @@ class UsuarioController extends Controller
                 'regex:/^[0-9]+$/'
             ],
             'rem_estado' => 'required',
+            'rem_img' => [
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:1024'
+            ]
         ], [
             // Mensajes amigables
             'rem_nombres.required' => '• El nombre es obligatorio.',
@@ -431,6 +480,9 @@ class UsuarioController extends Controller
 
             'rem_ciudad.required' => '• La ciudad es obligatoria.',
             'rem_ciudad.exists' => '• La ciudad es inválida.',
+            'rem_img.image' => '• El archivo debe ser una imagen válida.',
+            'rem_img.mimes' => '• La imagen debe ser jpg, jpeg, png o webp.',
+            'rem_img.max' => '• La imagen no puede pesar más de 1MB.',
         ], [
             // Nombres amigables
             'rem_nombres' => 'nombre',
@@ -448,8 +500,28 @@ class UsuarioController extends Controller
         $remitente->rem_ciudad = $request->rem_ciudad;
         $remitente->rem_estado = $request->rem_estado;
         
-        $remitente->save();
+        // Manejo de imagen
+        try {
+            if ($request->hasFile('rem_img')) {
+                if ($remitente->rem_img) {
+                    Storage::disk('public')->delete($remitente->rem_img);
+                }
 
-        return redirect()->back()->with('success', 'Remitente externo actualizado correctamente');
+                $image = $request->file('rem_img');
+                $filename = time() . '.' . $image->getClientOriginalExtension();
+                $path = storage_path('app/public/' . $filename);
+
+                $manager = new ImageManager(new Driver());
+                $img = $manager->read($image->getRealPath());
+                $img->cover(256, 256)->save($path);
+
+                $remitente->rem_img = $filename;
+            }
+
+            $remitente->save();
+            return redirect()->back()->with('success', 'Remitente externo actualizado correctamente');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Ocurrió un error al actualizar: ' . $e->getMessage())->withInput();
+        }
     }
 }

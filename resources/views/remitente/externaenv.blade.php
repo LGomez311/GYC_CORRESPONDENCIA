@@ -448,8 +448,8 @@
                         <div class="sm:col-span-1">
                             <label class="block text-slate-900 dark:text-white text-sm font-medium pb-2">Tipo de Documento
                                 *</label>
-                            <select name="id_tipo_envio" required
-                                class="form-select w-full rounded-lg text-slate-900 dark:text-white border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-11 px-3.5 text-base">
+                            <select name="id_tipo_envio" required id="selectTipoDoc"
+                                class="form-select w-full rounded-lg text-slate-900 dark:text-white border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-11 px-3.5 text-base select2-tipo">
                                 <option value="">Seleccione tipo</option>
                                 @foreach ($tipos as $tipo)
                                     <option value="{{ $tipo->id_tipo }}">{{ $tipo->tipo_nombre }}</option>
@@ -866,5 +866,15 @@
                 });
             }
         });
+            
+            // Initialize Select2 if jQuery is loaded
+            if (typeof jQuery !== 'undefined' && typeof jQuery.fn.select2 !== 'undefined') {
+                $('.select2-tipo').select2({
+                    placeholder: "Buscar tipo...",
+                    allowClear: true,
+                    width: '100%',
+                    dropdownParent: $('#modalCorrespondencia')
+                });
+            }
     </script>
 @endsection

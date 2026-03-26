@@ -2126,7 +2126,7 @@
                                     class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Tipo
                                     de Envío</label>
                                 <select name="id_tipo_envio" id="salienteTipo" required
-                                    class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none dark:text-white appearance-none">
+                                    class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none dark:text-white select2-tipo-saliente">
                                     <option value="">Seleccionar...</option>
                                     @foreach ($tipos as $t)
                                         <option value="{{ $t->id_tipo }}">{{ $t->tipo_nombre }}</option>
@@ -2433,7 +2433,7 @@
                                 <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
                                     Tipo de Documento</p>
                                 <select name="id_tipo"
-                                    class="form-select flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal">
+                                    class="form-select flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal select2-tipo-recibido">
                                     <option value="">Seleccione tipo</option>
                                     @foreach ($tipos as $tipo)
                                         <option value="{{ $tipo->id_tipo }}">{{ $tipo->tipo_nombre }}</option>
@@ -2987,6 +2987,23 @@
 
                     containerDest.appendChild(clone);
                     initBuscadorAsignar(clone);
+                });
+                });
+            }
+
+            // Initialize Select2 if jQuery is loaded
+            if (typeof jQuery !== 'undefined' && typeof jQuery.fn.select2 !== 'undefined') {
+                $('.select2-tipo-saliente').select2({
+                    placeholder: "Buscar tipo...",
+                    allowClear: true,
+                    width: '100%',
+                    dropdownParent: $('#salienteModal')
+                });
+                $('.select2-tipo-recibido').select2({
+                    placeholder: "Buscar tipo...",
+                    allowClear: true,
+                    width: '100%',
+                    dropdownParent: $('#modalCorrespondencia')
                 });
             }
         });

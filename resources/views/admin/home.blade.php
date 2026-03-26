@@ -206,47 +206,86 @@
     </section>
 
     <!-- Actividad Reciente -->
-    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
-        <h3 class="font-bold text-lg dark:text-white mb-4">Actividad Reciente</h3>
+    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">history</span>
+                <h3 class="font-bold text-lg dark:text-white">Actividad Reciente</h3>
+            </div>
+            <a href="{{ route('admin.correspondencia') }}" class="text-xs font-bold text-primary hover:underline">Ver Todo</a>
+        </div>
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm">
-                <thead class="text-xs text-gray-500 uppercase bg-gray-50 dark:bg-slate-800/50 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                <thead class="text-[11px] text-slate-400 uppercase bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
                     <tr>
-                        <th class="px-4 py-3 font-medium">Asunto</th>
-                        <th class="px-4 py-3 font-medium">Radicado Int.</th>
-                        <th class="px-4 py-3 font-medium text-center">Estado</th>
-                        <th class="px-4 py-3 font-medium text-right">Fecha</th>
+                        <th class="px-6 py-3 font-bold">Tipo / Remitente</th>
+                        <th class="px-6 py-3 font-bold">Asunto</th>
+                        <th class="px-6 py-3 font-bold">Radicado</th>
+                        <th class="px-6 py-3 font-bold text-center">Estado</th>
+                        <th class="px-6 py-3 font-bold text-right">Fecha</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
-                    @foreach($recientes as $reciente)
-                        <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50">
-                            <td class="px-4 py-3 font-medium dark:text-gray-300">
-                                <span class="truncate block max-w-xs" title="{{ $reciente->asunto }}">
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                    @forelse($recientes as $reciente)
+                        <tr onclick="window.location='{{ $reciente->url }}'" 
+                            class="group hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-all">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="size-8 rounded-lg flex items-center justify-center {{ $reciente->tipo == 'Interna' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400' }}">
+                                        <span class="material-symbols-outlined text-lg">{{ $reciente->icon }}</span>
+                                    </div>
+                                    <div>
+                                        <span class="block text-[10px] font-black uppercase text-slate-400 leading-none mb-1">{{ $reciente->tipo }}</span>
+                                        <span class="block font-bold text-slate-700 dark:text-slate-200 truncate max-w-[150px]" title="{{ $reciente->remitente }}">
+                                            {{ $reciente->remitente }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="text-slate-600 dark:text-gray-400 font-medium line-clamp-1 group-hover:text-primary transition-colors" title="{{ $reciente->asunto }}">
                                     {{ $reciente->asunto }}
                                 </span>
                             </td>
-                            <td class="px-4 py-3 dark:text-gray-300">
-                                {{ $reciente->radicado ? $reciente->radicado->num_radicado : 'N/A' }}
+                            <td class="px-6 py-4">
+                                <div class="inline-flex items-center gap-1.5 px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded font-mono text-[11px] text-slate-600 dark:text-slate-400 font-bold border border-slate-200 dark:border-slate-700">
+                                    <span class="material-symbols-outlined text-[14px]">tag</span>
+                                    {{ $reciente->radicado }}
+                                </div>
                             </td>
-                            <td class="px-4 py-3 text-center">
-                                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
-                                    {{ $reciente->estadoEnvio->estado_nomb ?? 'En espera' }}
+                            <td class="px-6 py-4 text-center">
+                                @php
+                                    $estadoNomb = strtolower($reciente->estado);
+                                    $badgeClass = 'bg-slate-100 text-slate-600';
+                                    if (str_contains($estadoNomb, 'recibido') || str_contains($estadoNomb, 'espera')) {
+                                        $badgeClass = 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/40 dark:text-blue-300';
+                                    } elseif (str_contains($estadoNomb, 'tramite') || str_contains($estadoNomb, 'trámite')) {
+                                        $badgeClass = 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/40 dark:text-yellow-300';
+                                    } elseif (str_contains($estadoNomb, 'finalizado') || str_contains($estadoNomb, 'resuelto')) {
+                                        $badgeClass = 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/40 dark:text-green-300';
+                                    } elseif (str_contains($estadoNomb, 'rechazado') || str_contains($estadoNomb, 'cancelado')) {
+                                        $badgeClass = 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/40 dark:text-red-300';
+                                    }
+                                @endphp
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase border {{ $badgeClass }}">
+                                    {{ $reciente->estado }}
                                 </span>
                             </td>
-                            <td class="px-4 py-3 text-right dark:text-gray-400">
-                                {{ $reciente->fecha->format('d/m/Y H:i') }}
+                            <td class="px-6 py-4 text-right">
+                                <div class="flex flex-col items-end">
+                                    <span class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ $reciente->fecha->format('d M, Y') }}</span>
+                                    <span class="text-[10px] text-slate-400 uppercase font-medium">{{ $reciente->fecha->diffForHumans() }}</span>
+                                </div>
                             </td>
                         </tr>
-                    @endforeach
-
-                    @if(count($recientes) === 0)
+                    @empty
                         <tr>
-                            <td colspan="4" class="px-4 py-4 text-center text-gray-500">
-                                No hay actividad registrada recientemente.
+                            <td colspan="5" class="px-6 py-12 text-center">
+                                <span class="material-symbols-outlined text-slate-300 text-[48px] mb-2">inbox</span>
+                                <p class="text-slate-500 font-medium">No hay actividad registrada recientemente.</p>
                             </td>
                         </tr>
-                    @endif
+                    @endforelse
                 </tbody>
             </table>
         </div>

@@ -984,7 +984,7 @@
                     <!-- Tipo de Documento -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo de Documento <span class="text-red-500">*</span></label>
-                        <select name="id_tipo_envio" required class="w-full border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 dark:text-white py-2.5 px-3 text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors">
+                        <select name="id_tipo_envio" required class="w-full border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 dark:text-white py-2.5 px-3 text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors select2-tipo-interna">
                             <option value="">Seleccione el tipo...</option>
                             @foreach($tipos ?? [] as $tipo)
                                 <option value="{{ $tipo->id_tipo }}">{{ $tipo->tipo_nombre }}</option>
@@ -1153,7 +1153,7 @@
                     <!-- Tipo de Documento -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo de Documento <span class="text-red-500">*</span></label>
-                        <select name="id_tipo_envio" required class="w-full border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 dark:text-white py-2.5 px-3 text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors">
+                        <select name="id_tipo_envio" required class="w-full border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 dark:text-white py-2.5 px-3 text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors select2-tipo-ventanilla">
                             <option value="">Seleccione el tipo...</option>
                             @foreach($tipos ?? [] as $tipo)
                                 <option value="{{ $tipo->id_tipo }}">{{ $tipo->tipo_nombre }}</option>
@@ -2207,6 +2207,24 @@
         document.getElementById('doc_reasignar_hidden').value = '';
         document.getElementById('reasignarSeleccionado').innerHTML = '';
     }
+
+    // Initialize Select2 if jQuery is loaded
+    $(document).ready(function() {
+        if (typeof jQuery !== 'undefined' && typeof jQuery.fn.select2 !== 'undefined') {
+            $('.select2-tipo-interna').select2({
+                placeholder: "Buscar tipo...",
+                allowClear: true,
+                width: '100%',
+                dropdownParent: $('#modalNuevaInterna')
+            });
+            $('.select2-tipo-ventanilla').select2({
+                placeholder: "Buscar tipo...",
+                allowClear: true,
+                width: '100%',
+                dropdownParent: $('#modalNuevaVentanilla')
+            });
+        }
+    });
 
 </script>
 

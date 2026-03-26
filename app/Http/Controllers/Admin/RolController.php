@@ -11,10 +11,15 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class RolController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->input('search');
         $firstTwoIds = Rol::orderBy('id_rol')->limit(2)->pluck('id_rol');
-        $roles = Rol::whereNotIn('id_rol', $firstTwoIds)->paginate(10);
+        $roles = Rol::whereNotIn('id_rol', $firstTwoIds)
+                    ->when($search, function ($query, $search) {
+                        return $query->where('rol_nom', 'like', '%' . $search . '%');
+                    })
+                    ->paginate(10);
         return view('admin.otros.rol', compact('roles'));
     }
 

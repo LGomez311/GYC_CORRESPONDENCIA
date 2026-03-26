@@ -12,9 +12,14 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class TipoController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $tipos = Tipo::with('prioridad')->paginate(10);
+        $search = $request->input('search');
+        $tipos = Tipo::with('prioridad')
+            ->when($search, function ($query, $search) {
+                return $query->where('tipo_nombre', 'like', '%' . $search . '%');
+            })
+            ->paginate(10);
         $prioridades = Prioridad::all();
         return view('admin.otros.tipo', compact('tipos', 'prioridades'));
     }

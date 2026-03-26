@@ -11,9 +11,13 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class PrioridadController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $prioridades = Prioridad::paginate(10);
+        $search = $request->input('search');
+        $prioridades = Prioridad::when($search, function ($query, $search) {
+                        return $query->where('prioridad_nombre', 'like', '%' . $search . '%');
+                    })
+                    ->paginate(10);
         return view('admin.otros.prioridad', compact('prioridades'));
     }
 

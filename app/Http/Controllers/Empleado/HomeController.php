@@ -194,6 +194,60 @@ class HomeController extends Controller
             ->orderBy('fecha_traslado', 'desc')
             ->get();
 
+        // --- ACTIVIDAD RECIENTE (EMPLEADO) ---
+        $recientesInternos = DetalleEnvio::where('id_quien_envie', $user->emple_doc)
+            ->orWhere('id_quien_recibe', $user->emple_doc)
+            ->with(['envio.estadoEnvio', 'envio.radicado', 'quienEnvia'])
+            ->orderBy('fecha_traslado', 'desc')
+            ->take(5)
+            ->get()
+            ->unique('id_envio')
+            ->map(function ($detalle) {
+                $envio = $detalle->envio;
+                return (object)[
+                    'tipo' => 'Interna',
+                    'icon' => 'mail',
+                    'id' => $detalle->id_detalle,
+                    'asunto' => $envio->asunto ?? 'Sin asunto',
+                    'radicado' => ($envio && $envio->radicado) ? $envio->radicado->num_radicado : 'S/R',
+                    'estado' => $envio->estadoEnvio->estado_nomb ?? 'Desconocido',
+                    'fecha' => $detalle->fecha_traslado,
+                    'remitente' => ($detalle->quienEnvia->emple_nombres ?? 'Desconocido') . ' ' . ($detalle->quienEnvia->emple_apellidos ?? ''),
+                    'url' => route('empleado.historial_interna', $detalle->id_detalle)
+                ];
+            });
+
+        $recientesExternos = DetalleRecibido::where('det_doc_empleado', $user->emple_doc)
+            ->with(['recibido.estado', 'recibido.radicado', 'recibido.registradoPor'])
+            ->orderBy('fecha_re', 'desc')
+            ->take(5)
+            ->get()
+            ->unique('det_id_recibido')
+            ->map(function ($detalle) {
+                $recibido = $detalle->recibido;
+                if (!$recibido) return null;
+                $remitente = $recibido->registradoPor 
+                    ? ($recibido->registradoPor->emple_nombres . ' ' . $recibido->registradoPor->emple_apellidos)
+                    : ($recibido->nom_institucion ?? ($recibido->nombre_persona ?? 'Externo'));
+                    
+                return (object)[
+                    'tipo' => 'Externa',
+                    'icon' => 'send',
+                    'id' => $detalle->id_det_recibido,
+                    'asunto' => $recibido->asunto ?? 'Sin asunto',
+                    'radicado' => ($recibido && $recibido->radicado) ? $recibido->radicado->num_radicado : 'S/R',
+                    'estado' => $recibido->estado->estado_nomb ?? 'Desconocido',
+                    'fecha' => $detalle->fecha_re,
+                    'remitente' => $remitente,
+                    'url' => route('empleado.historial_externa', $detalle->id_det_recibido)
+                ];
+            })->filter();
+
+        $actividad_reciente = $recientesInternos->concat($recientesExternos)
+            ->sortByDesc('fecha')
+            ->take(6)
+            ->values();
+
         return view('empleado.index', compact(
             'recibidosMes',
             'totalTramiteActivo',
@@ -203,7 +257,8 @@ class HomeController extends Controller
             'nuevasExternas',
             'nuevasInternas',
             'respuestasInternas',
-            'eficiencia'
+            'eficiencia',
+            'actividad_reciente'
         ));
     }
 

@@ -11,11 +11,17 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class EstadoController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $estados = Estado::whereIn('id_estado', [1, 2])
-                        ->orWhere('id_estado', '>', 12)
-                        ->paginate(10);
+        $search = $request->input('search');
+        $estados = Estado::where(function ($query) {
+                        $query->whereIn('id_estado', [1, 2])
+                              ->orWhere('id_estado', '>', 12);
+                    })
+                    ->when($search, function ($query, $search) {
+                        return $query->where('estado_nomb', 'like', '%' . $search . '%');
+                    })
+                    ->paginate(10);
         return view('admin.otros.estado', compact('estados'));
     }
 

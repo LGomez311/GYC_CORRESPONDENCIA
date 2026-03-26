@@ -43,14 +43,23 @@
 
         <div class="bg-white dark:bg-[#161d2b] rounded-xl border border-[#cfd7e7] dark:border-gray-800 shadow-sm">
 
-            <div class="p-6 border-b border-[#cfd7e7] dark:border-gray-800 flex flex-col md:flex-row md:items:center justify-between gap-4">
+            <div class="p-6 border-b border-[#cfd7e7] dark:border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <h2 class="text-[#0d121b] dark:text-white text-lg font-bold leading-tight">Estados Registrados</h2>
-                <div class="flex gap-2">
+                <div class="flex flex-col md:flex-row gap-4 items-center w-full md:w-auto">
+
+                    <!-- Search Bar -->
+                    <form action="{{ route('admin.estado.index') }}" method="GET" class="relative w-full md:w-64">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#4c669a] text-lg">search</span>
+                        <input type="text" name="search" placeholder="Buscar..." value="{{ request('search') }}"
+                            class="pl-10 pr-4 py-2 bg-white dark:bg-[#0d121b] border border-[#cfd7e7] dark:border-gray-800 rounded-lg text-sm focus:outline-none focus:border-primary transition-all w-full shadow-sm">
+                    </form>
+
                     <button onclick="openExportModal()"
-                        class="px-3 py-2 border border-[#cfd7e7] dark:border-gray-700 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors dark:text-white">
+                        class="px-3 py-2 border border-[#cfd7e7] dark:border-gray-700 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors dark:text-white w-full md:w-auto justify-center">
                         <span class="material-symbols-outlined text-sm">download</span>
                         Exportar
                     </button>
+
                 </div>
             </div>
 
@@ -83,7 +92,7 @@
             </div>
 
             <div class="p-4 border-t border-[#cfd7e7] dark:border-gray-800">
-                {{ $estados->links() }}
+                {{ $estados->appends(['search' => request('search')])->links() }}
             </div>
 
         </div>
@@ -356,6 +365,8 @@
                 
                 validarEdit();
             }
+
+            // Client-side search removed for server-side search
 
         });
     </script>

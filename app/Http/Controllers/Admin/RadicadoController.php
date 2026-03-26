@@ -11,9 +11,13 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class RadicadoController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $radicados = Radicado::paginate(5);
+        $search = $request->input('search');
+        $radicados = Radicado::when($search, function ($query, $search) {
+                        return $query->where('num_radicado', 'like', '%' . $search . '%');
+                    })
+                    ->paginate(10);
         return view('admin.otros.radicado', compact('radicados'));
     }
 

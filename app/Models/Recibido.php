@@ -39,6 +39,10 @@ class Recibido extends Model
         'tel_persona'
     ];
 
+    protected $casts = [
+        'fecha_hora_recib' => 'datetime',
+    ];
+
     /**
      * Relación con Empleado a quien va dirigido (Legacy/Single)
      */

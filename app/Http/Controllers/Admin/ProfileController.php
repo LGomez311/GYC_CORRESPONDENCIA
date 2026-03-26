@@ -17,25 +17,36 @@ class ProfileController extends Controller
 {
     public function updateProfile(Request $request)
     {
+        /** @var \App\Models\Empleado|\App\Models\Remitente $user */
+        /** @var \App\Models\Empleado|\App\Models\Remitente $user */
         $user = auth()->user();
         $isEmpleado = $user instanceof \App\Models\Empleado;
         
+        $telField = $isEmpleado ? 'emple_tel' : 'rem_tel';
         $emailField = $isEmpleado ? 'emple_correo' : 'rem_correo';
         $docField = $isEmpleado ? 'emple_doc' : 'rem_doc';
+        $imgField = $isEmpleado ? 'emple_img' : 'rem_img';
         $tableName = $isEmpleado ? 'empleado' : 'remitente';
 
         $request->validate([
             $emailField => "required|email|max:150|unique:$tableName,$emailField," . $user->$docField . ",$docField",
-            'emple_img' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            $telField => "required|string|min:7|max:15|regex:/^[0-9]+$/",
+            'profile_img' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ], [
             "$emailField.unique" => 'Este correo ya está en uso por otro usuario.',
-            'emple_img.max' => 'La imagen no debe superar los 2MB.',
+            "$emailField.email" => 'Debe proporcionar un correo electrónico válido.',
+            "$telField.required" => 'El número de teléfono es obligatorio.',
+            "$telField.min" => 'El teléfono debe tener al menos 7 dígitos.',
+            "$telField.max" => 'El teléfono no puede superar los 15 caracteres.',
+            "$telField.regex" => 'El teléfono solo debe contener números.',
+            'profile_img.max' => 'La imagen no debe superar los 2MB.',
         ]);
 
         $user->$emailField = $request->$emailField;
+        $user->$telField = $request->$telField;
 
-        if ($request->hasFile('emple_img')) {
-            $image = $request->file('emple_img');
+        if ($request->hasFile('profile_img')) {
+            $image = $request->file('profile_img');
             $filename = time() . '.' . $image->getClientOriginalExtension();
             $path = storage_path('app/public/' . $filename);
 
@@ -51,11 +62,11 @@ class ProfileController extends Controller
 
             $img->save($path);
 
-            if ($user->emple_img && Storage::disk('public')->exists($user->emple_img)) {
-                Storage::disk('public')->delete($user->emple_img);
+            if ($user->$imgField && Storage::disk('public')->exists($user->$imgField)) {
+                Storage::disk('public')->delete($user->$imgField);
             }
 
-            $user->emple_img = $filename;
+            $user->$imgField = $filename;
         }
 
         $user->save();
@@ -65,11 +76,16 @@ class ProfileController extends Controller
 
     public function sendVerificationCode(Request $request)
     {
+        /** @var \App\Models\Empleado|\App\Models\Remitente $user */
         $user = auth()->user();
+        $isEmpleado = $user instanceof \App\Models\Empleado;
+        $emailField = $isEmpleado ? 'emple_correo' : 'rem_correo';
+        $userEmail = $user->$emailField;
+        
         $code = rand(100000, 999999);
 
         DB::table('password_codes')->updateOrInsert(
-            ['emple_correo' => $user->emple_correo],
+            ['emple_correo' => $userEmail],
             [
                 'code' => $code,
                 'expires_at' => Carbon::now()->addMinutes(10),
@@ -78,8 +94,8 @@ class ProfileController extends Controller
             ]
         );
 
-        Mail::send([], [], function ($message) use ($user, $code) {
-            $message->to($user->emple_correo)
+        Mail::send([], [], function ($message) use ($userEmail, $code) {
+            $message->to($userEmail)
                 ->subject('Código de verificación - Cambio de contraseña')
                 ->html("
                 <div style='font-family: Arial, Helvetica, sans-serif; background-color: #f4f6fb; padding: 40px;'>
@@ -103,6 +119,8 @@ class ProfileController extends Controller
 
     public function updatePassword(Request $request)
     {
+        /** @var \App\Models\Empleado|\App\Models\Remitente $user */
+        /** @var \App\Models\Empleado|\App\Models\Remitente $user */
         $user = auth()->user();
 
         $request->validate([
@@ -125,6 +143,29 @@ class ProfileController extends Controller
 
         $user->password = Hash::make($request->password);
         $user->save();
+
+        $emailField = ($user instanceof \App\Models\Empleado) ? 'emple_correo' : 'rem_correo';
+        $userEmail = $user->$emailField;
+
+        try {
+            Mail::send([], [], function ($message) use ($userEmail) {
+                $message->to($userEmail)
+                    ->subject('Contraseña actualizada exitosamente')
+                    ->html("
+                    <div style='font-family: Arial, Helvetica, sans-serif; background-color: #f4f6fb; padding: 40px;'>
+                        <div style='max-width: 520px; margin: auto; background-color: #ffffff; border-radius: 12px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.08);'>
+                            <h2 style='color: #0d121b; margin-bottom: 10px; text-align: center;'>Cambio de contraseña exitoso</h2>
+                            <p style='color: #4c669a; font-size: 15px; text-align: center;'>Te confirmamos que tu contraseña ha sido actualizada correctamente.</p>
+                            <p style='font-size: 14px; color: #6b7280; line-height: 1.6;'>Si no solicitaste este cambio, por favor comunícate con el administrador del sistema inmediatamente.</p>
+                            <hr style='margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;'>
+                            <p style='font-size: 12px; color: #9ca3af; text-align: center;'>© " . date('Y') . " IncolDev. Todos los derechos reservados.</p>
+                        </div>
+                    </div>
+                ");
+            });
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("No se pudo enviar el correo de cambio de contraseña: " . $e->getMessage());
+        }
 
         return response()->json(['success' => true, 'message' => 'Contraseña actualizada correctamente.']);
     }

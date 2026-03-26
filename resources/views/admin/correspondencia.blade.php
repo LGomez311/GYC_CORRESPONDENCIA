@@ -160,22 +160,31 @@
                                         <div class="font-medium text-gray-900 dark:text-white">{{ $rec->fecha_hora_recib ? \Carbon\Carbon::parse($rec->fecha_hora_recib)->format('d M Y') : 'N/A' }}</div>
                                     </td>
                                     <td class="px-6 py-4">
-                                        @php
-                                            $archivosDatos = [
-                                                'principal' => $rec->archivo ? asset('storage/' . $rec->archivo) : null,
-                                                'anexos' => [],
-                                                'anexo_texto' => $rec->anexo,
-                                                'folios' => $rec->folio
-                                            ];
-                                            if ($rec->anexos) {
-                                                foreach($rec->anexos as $ax) {
-                                                    $archivosDatos['anexos'][] = ['nombre' => $ax->nombre_original, 'ruta' => asset('storage/' . $ax->ruta_archivo)];
-                                                }
-                                            }
-                                        @endphp
-                                        <button type="button" data-archivos="{{ json_encode($archivosDatos) }}" onclick="abrirModalArchivos(this.dataset.archivos)" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-400 rounded-md transition-colors shadow-sm">
-                                            <span class="material-symbols-outlined text-[16px]">folder_open</span> Ver Docs
-                                        </button>
+                                         @php
+                                             $archivosDatos = [
+                                                 'principal' => $rec->archivo ? asset('storage/' . $rec->archivo) : null,
+                                                 'anexos' => [],
+                                                 'anexo_texto' => $rec->anexo,
+                                                 'folios' => $rec->folio
+                                             ];
+                                             if ($rec->anexos) {
+                                                 foreach($rec->anexos as $ax) {
+                                                     $archivosDatos['anexos'][] = ['nombre' => $ax->nombre_original, 'ruta' => asset('storage/' . $ax->ruta_archivo)];
+                                                 }
+                                             }
+                                             if ($rec->detalles) {
+                                                 foreach($rec->detalles as $det) {
+                                                     if ($det->anexosRespuesta) {
+                                                         foreach($det->anexosRespuesta as $axR) {
+                                                             $archivosDatos['anexos'][] = ['nombre' => '(R) ' . $axR->nombre_original, 'ruta' => asset('storage/' . $axR->ruta_archivo)];
+                                                         }
+                                                     }
+                                                 }
+                                             }
+                                         @endphp
+                                         <button type="button" data-archivos="{{ json_encode($archivosDatos) }}" onclick="abrirModalArchivos(this.dataset.archivos)" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-400 rounded-md transition-colors shadow-sm">
+                                             <span class="material-symbols-outlined text-[16px]">folder_open</span> Ver Docs
+                                         </button>
                                     </td>
                                     <td class="px-6 py-4">
                                         @php
@@ -184,7 +193,12 @@
                                             elseif (str_contains($estadoNombL, 'tramite') || str_contains($estadoNombL, 'trámite')) $bgClass = 'bg-yellow-100 text-yellow-800';
                                             elseif (str_contains($estadoNombL, 'finalizado')) $bgClass = 'bg-green-100 text-green-800';
                                         @endphp
-                                        <span class="px-2 py-0.5 rounded-full text-xs {{ $bgClass }}">{{ $rec->estado ? $rec->estado->estado_nomb : 'Sin estado' }}</span>
+                                        <div class="flex flex-col gap-2 items-start">
+                                            <span class="px-2 py-0.5 rounded-full text-xs {{ $bgClass }}">{{ $rec->estado ? $rec->estado->estado_nomb : 'Sin estado' }}</span>
+                                            <a href="{{ route('admin.correspondencia.historial_externa', $rec->id_recibido) }}" class="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:text-blue-800 transition-colors">
+                                                <span class="material-symbols-outlined text-[14px]">history</span> Ver Historial
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                             @empty
@@ -251,15 +265,37 @@
                                         @php
                                             $archivosInt = [
                                                 'principal' => $int->archivo ? asset('storage/' . $int->archivo) : null,
+                                                'anexos' => [],
                                                 'folios' => $int->folio
                                             ];
+                                            // Anexos del documento principal
+                                            if ($int->anexos) {
+                                                foreach($int->anexos as $ax) {
+                                                    $archivosInt['anexos'][] = ['nombre' => $ax->nombre_original, 'ruta' => asset('storage/' . $ax->ruta_archivo)];
+                                                }
+                                            }
+                                            // Anexos de respuestas/trazabilidad
+                                            if ($int->detalles) {
+                                                foreach($int->detalles as $det) {
+                                                    if ($det->anexosRespuesta) {
+                                                        foreach($det->anexosRespuesta as $axR) {
+                                                            $archivosInt['anexos'][] = ['nombre' => '(R) ' . $axR->nombre_original, 'ruta' => asset('storage/' . $axR->ruta_archivo)];
+                                                        }
+                                                    }
+                                                }
+                                            }
                                         @endphp
-                                        <button type="button" data-archivos="{{ json_encode($archivosInt) }}" onclick="abrirModalArchivos(this.dataset.archivos)" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md">
+                                        <button type="button" data-archivos="{{ json_encode($archivosInt) }}" onclick="abrirModalArchivos(this.dataset.archivos)" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors">
                                             <span class="material-symbols-outlined text-[16px]">folder_open</span> Docs
                                         </button>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <span class="px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-800">{{ $int->estadoEnvio ? $int->estadoEnvio->estado_nomb : 'Sin estado' }}</span>
+                                        <div class="flex flex-col gap-2 items-start">
+                                            <span class="px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-800">{{ $int->estadoEnvio ? $int->estadoEnvio->estado_nomb : 'Sin estado' }}</span>
+                                            <a href="{{ route('admin.correspondencia.historial_interna', $int->id_envio) }}" class="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:text-blue-800 transition-colors">
+                                                <span class="material-symbols-outlined text-[14px]">history</span> Ver Historial
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                             @empty

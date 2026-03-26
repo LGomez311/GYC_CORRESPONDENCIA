@@ -12,9 +12,14 @@ use App\Http\Controllers\Controller;
 
 class CiudadController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->input('search');
         $ciudades = Ciudad::with('departamento')
+            ->when($search, function ($query, $search) {
+                return $query->where('ciudad_nom', 'like', '%' . $search . '%')
+                             ->orWhere('ciudad_cod_post', 'like', '%' . $search . '%');
+            })
             ->orderByRaw('CAST(ciudad_cod_post AS UNSIGNED) ASC')
             ->paginate(10);
 

@@ -13,10 +13,15 @@ use Illuminate\Validation\Rule;
 class DepartamentoController extends Controller
 {
     // LISTAR
-    public function index()
+    public function index(Request $request)
     {
-        $departamentos = Departamento::orderByRaw('CAST(dpto_codigo_postal AS UNSIGNED) ASC')
-            ->paginate(10); // cantidad por página
+        $search = $request->input('search');
+        $departamentos = Departamento::when($search, function ($query, $search) {
+                return $query->where('dpto_nombre', 'like', '%' . $search . '%')
+                             ->orWhere('dpto_codigo_postal', 'like', '%' . $search . '%');
+            })
+            ->orderByRaw('CAST(dpto_codigo_postal AS UNSIGNED) ASC')
+            ->paginate(10);
 
         return view('admin.otros.departamento', compact('departamentos'));
     }
