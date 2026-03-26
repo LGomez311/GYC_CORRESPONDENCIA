@@ -14,6 +14,11 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
+    {{-- jQuery y Select2 para buscadores --}}
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
     <script>
         tailwind.config = {
             darkMode: "class",
@@ -258,43 +263,20 @@
 
                     <div class="relative" id="ciudad-proveniente-wrapper">
                         <label class="block text-sm font-medium text-[#0d121b] dark:text-gray-200 mb-1">Ciudad de Origen <span class="text-red-500">*</span></label>
-                        
-                        <!-- Input oculto para el backend -->
-                        <input type="hidden" name="ciudad_proveniente" id="ciudad_proveniente_value" value="{{ old('ciudad_proveniente') }}" required>
-                        
-                        <!-- Botón simulador de Select -->
-                        <button type="button" id="btnToggleCiudades" class="w-full flex items-center justify-between rounded-lg border @error('ciudad_proveniente') border-red-500 @else border-[#cfd7e7] dark:border-slate-700 @enderror bg-white dark:bg-slate-800 text-left p-2.5 focus:ring-2 focus:ring-primary/50 outline-none transition-colors group">
-                            <span id="btnToggleCiudadesLabel" class="block truncate {{ old('ciudad_proveniente') ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-gray-400' }}">
-                                @if(old('ciudad_proveniente'))
-                                    @php
-                                        $oldCiu = $ciudades->firstWhere('ciudad_cod_post', old('ciudad_proveniente'));
-                                    @endphp
-                                    {{ $oldCiu ? $oldCiu->ciudad_nom . ' - ' . ($oldCiu->departamento->depar_nom ?? '') : 'Seleccione Ciudad...' }}
-                                @else
-                                    Seleccione Ciudad...
-                                @endif
-                            </span>
-                            <span class="material-symbols-outlined text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors pointer-events-none">expand_content</span>
-                        </button>
-
-                        <!-- Dropdown de Ciudades -->
-                        <div id="ciudadesDropdown" class="hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl overflow-hidden">
-                            <div class="p-2 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 sticky top-0">
-                                <div class="relative">
-                                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
-                                    <input type="text" id="buscarCiudadInput" class="w-full text-sm rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white pl-9 pr-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 max-h-12" placeholder="Escriba el nombre o código postal...">
-                                </div>
-                            </div>
-                            <ul id="listaCiudades" class="max-h-60 overflow-y-auto text-sm text-slate-700 dark:text-slate-300">
-                                <!-- Llenado por JS -->
-                            </ul>
-                        </div>
+                        <select name="ciudad_proveniente" id="ciudad_proveniente_value" class="w-full rounded-lg border @error('ciudad_proveniente') border-red-500 @else border-[#cfd7e7] dark:border-slate-700 @enderror bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none select2-ciudad-public" required>
+                            <option value="">Seleccione Ciudad...</option>
+                            @foreach($ciudades as $ciudad)
+                                <option value="{{ $ciudad->ciudad_cod_post }}" {{ old('ciudad_proveniente') == $ciudad->ciudad_cod_post ? 'selected' : '' }}>
+                                    {{ $ciudad->ciudad_nom }} - {{ $ciudad->departamento->depar_nom ?? '' }}
+                                </option>
+                            @endforeach
+                        </select>
                         @error('ciudad_proveniente') <p class="text-xs text-red-500 mt-1" id="error_ciudad">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-[#0d121b] dark:text-gray-200 mb-1">Tipo de Correspondencia <span class="text-red-500">*</span></label>
-                        <select name="id_tipo" id="id_tipo" class="w-full rounded-lg border @error('id_tipo') border-red-500 @else border-[#cfd7e7] dark:border-slate-700 @enderror bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none" required>
+                        <select name="id_tipo" id="id_tipo" class="w-full rounded-lg border @error('id_tipo') border-red-500 @else border-[#cfd7e7] dark:border-slate-700 @enderror bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none select2-tipo-public" required>
                             <option value="">Seleccione...</option>
                             @foreach($tipos as $tipo)
                                 <option value="{{ $tipo->id_tipo }}" {{ old('id_tipo') == $tipo->id_tipo ? 'selected' : '' }}>
@@ -910,6 +892,31 @@
                         }
                     });
                 });
+
+                // Initialize Select2 in a Tailwind-friendly way
+                if (typeof jQuery !== 'undefined' && typeof $.fn.select2 !== 'undefined') {
+                    $('.select2-tipo-public').select2({
+                        placeholder: "Buscar tipo de correspondencia...",
+                        allowClear: true,
+                        width: '100%',
+                    });
+                    $('.select2-ciudad-public').select2({
+                        placeholder: "Seleccione Ciudad...",
+                        allowClear: true,
+                        width: '100%',
+                    });
+                    
+                    // Style Select2 to match Tailwind input boxes
+                    $('.select2-container--default .select2-selection--single').css({
+                        'height': '46px',
+                        'padding': '8px',
+                        'border': '1px solid #cfd7e7',
+                        'border-radius': '0.5rem',
+                        'display': 'flex',
+                        'align-items': 'center'
+                    });
+                    $('.select2-selection__arrow').css('top', '9px');
+                }
 
             });
         </script>

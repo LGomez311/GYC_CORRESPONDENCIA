@@ -369,37 +369,38 @@ class CorrespondenciaController extends Controller
             }
         }
 
-        // Actualizar el estado global del documento Recibido en casos donde se deba alterar (ej. Trámite, Resuelto o Rechazado 11)
-        if (in_array($estado->id_estado, [8, 9, 11])) {
-            $recibido = $nuevoRegistro->recibido;
-            if ($recibido && $recibido->id_estado_rec != $estado->id_estado) {
-                // Si es un rechazo (11), archivar a los demás destinatarios también
-                if ($estado->id_estado == 11) {
-                    $otrosDestinatariosRechazo = DetalleRecibido::where('det_id_recibido', $nuevoRegistro->det_id_recibido)
-                        ->where('det_doc_empleado', '!=', $user->emple_doc)
-                        ->whereIn('id_det_recibido', function ($query) use ($nuevoRegistro) {
-                            $query->selectRaw('MAX(id_det_recibido)')
-                                ->from('detalle_recibido')
-                                ->where('det_id_recibido', $nuevoRegistro->det_id_recibido)
-                                ->groupBy('det_doc_empleado');
-                        })
-                        ->where('id_estado_rec', 7)
-                        ->get();
-                    foreach ($otrosDestinatariosRechazo as $otroRechazo) {
-                        DetalleRecibido::create([
-                            'det_id_recibido'  => $otroRechazo->det_id_recibido,
-                            'det_doc_empleado' => $otroRechazo->det_doc_empleado,
-                            'fecha_re'         => now(),
-                            'id_estado_rec'    => 10, // Archivado
-                            'observaciones'    => 'Rechazado por: ' . $user->emple_nombres . ' ' . $user->emple_apellidos,
-                            'visto'            => 1
-                        ]);
-                    }
+        // Evaluación absoluta del estado global para Recibido
+        $recibido = $nuevoRegistro->recibido;
+        if ($recibido) {
+            $latestDetallesRec = DetalleRecibido::where('det_id_recibido', $recibido->id_recibido)
+                ->whereIn('id_det_recibido', function ($query) use ($recibido) {
+                    $query->selectRaw('MAX(id_det_recibido)')
+                        ->from('detalle_recibido')
+                        ->where('det_id_recibido', $recibido->id_recibido)
+                        ->groupBy('det_doc_empleado');
+                })->get();
+            
+            $todosFinalizados = true;
+            $algunTramite = false;
+
+            foreach ($latestDetallesRec as $det) {
+                if (!in_array($det->id_estado_rec, [9, 10, 11])) {
+                    $todosFinalizados = false;
                 }
-                
-                $recibido->id_estado_rec = $estado->id_estado;
-                $recibido->save();
+                if ($det->id_estado_rec == 8) {
+                    $algunTramite = true;
+                }
             }
+
+            if ($todosFinalizados && $latestDetallesRec->count() > 0) {
+                // If any rejection exists, keep it rejected or just finalized. Let's set to finalized (9) unless explicitly all rejected.
+                // Usually reaching here means the document should be considered finalized.
+                $rechazosCount = $latestDetallesRec->where('id_estado_rec', 11)->count();
+                $recibido->id_estado_rec = ($rechazosCount > 0 && $rechazosCount == $latestDetallesRec->count()) ? 11 : 9;
+            } elseif ($algunTramite) {
+                $recibido->id_estado_rec = 8;
+            }
+            $recibido->save();
         }
 
         // Ya no iteramos sobre Anexos previos para evitar duplicados en la trazabilidad
@@ -495,6 +496,38 @@ class CorrespondenciaController extends Controller
         }
 
         $nuevoRegistro->save();
+
+        // Evaluar estado global del Envío Interno
+        $envioObj = \App\Models\Envio::find($detalleAntiguo->id_envio);
+        if ($envioObj) {
+            $latestDetallesEnv = DetalleEnvio::where('id_envio', $envioObj->id_envio)
+                ->whereIn('id_detalle', function ($query) use ($envioObj) {
+                    $query->selectRaw('MAX(id_detalle)')
+                          ->from('detalle_envio')
+                          ->where('id_envio', $envioObj->id_envio)
+                          ->groupBy('id_quien_recibe');
+                })->get();
+            
+            $todosFinalizados = true;
+            $algunTramite = false;
+
+            foreach ($latestDetallesEnv as $det) {
+                if (!in_array($det->id_estado_rec, [9, 10, 11])) {
+                    $todosFinalizados = false;
+                }
+                if ($det->id_estado_rec == 8) {
+                    $algunTramite = true;
+                }
+            }
+
+            if ($todosFinalizados && $latestDetallesEnv->count() > 0) {
+                $rechazosCount = $latestDetallesEnv->where('id_estado_rec', 11)->count();
+                $envioObj->id_estado_envio = ($rechazosCount > 0 && $rechazosCount == $latestDetallesEnv->count()) ? 11 : 9;
+            } elseif ($algunTramite) {
+                $envioObj->id_estado_envio = 8;
+            }
+            $envioObj->save();
+        }
 
         // Ya no duplicamos los Anexos antiguos para evitar repetición en el historial
 

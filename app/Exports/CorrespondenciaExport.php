@@ -53,7 +53,7 @@ class CorrespondenciaExport implements FromCollection, WithHeadings, WithMapping
             $cor->destinatario_nombre,
             $cor->doc_destinatario,
             $cor->folio,
-            $cor->anexo ?? 'Ninguno',
+            $cor->digital_anexos . ' digital, ' . ($cor->anexo ?? 'Ninguno físico'),
             $cor->estado_nomb,
         ];
     }

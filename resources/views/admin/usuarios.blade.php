@@ -302,9 +302,13 @@
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" data-doc="{{ $rem->rem_doc }}">
                             <td class="px-6 py-4" data-label="Nombre Completo">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-gray-800 flex items-center justify-center font-bold text-xs text-[#4c669a]">
-                                        {{ strtoupper(substr($rem->rem_nombres, 0, 1) . substr($rem->rem_apellidos, 0, 1)) }}
-                                    </div>
+                                    @if($rem->rem_img)
+                                        <img src="{{ asset('storage/' . $rem->rem_img) }}" alt="Foto" class="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-gray-700">
+                                    @else
+                                        <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-gray-800 flex items-center justify-center font-bold text-xs text-[#4c669a]">
+                                            {{ strtoupper(substr($rem->rem_nombres, 0, 1) . substr($rem->rem_apellidos, 0, 1)) }}
+                                        </div>
+                                    @endif
                                     <div class="flex flex-col">
                                         <span class="text-sm font-bold text-[#0d121b] dark:text-white">{{ $rem->rem_nombres }} {{ $rem->rem_apellidos }}</span>
                                         <span class="text-xs text-[#4c669a] dark:text-gray-400"> Documento: {{ $rem->rem_doc }}</span>
@@ -343,7 +347,8 @@
                                         data-nit="{{ $rem->nit_empresa ?? 'N/A' }}"
                                         data-ciudad="{{ $rem->ciudad->ciudad_nom ?? 'N/A' }}"
                                         data-direccion="{{ $rem->rem_dir ?? 'N/A' }}"
-                                        data-estado="{{ $rem->rem_estado == 1 ? 'Activo' : 'Inactivo' }}">
+                                        data-estado="{{ $rem->rem_estado == 1 ? 'Activo' : 'Inactivo' }}"
+                                        data-avatar="{{ $rem->rem_img ? asset('storage/' . $rem->rem_img) : '' }}">
                                         <span class="material-symbols-outlined text-xl">visibility</span>
                                     </button>
                                     <button class="p-2 text-[#4c669a] hover:text-primary transition-colors btn-open-edit-remitente"
@@ -446,7 +451,7 @@
                 <!-- DOCUMENTO -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Documento (*)</label>
-                    <input name="emple_doc" id="doc_empleado" type="text" maxlength="10" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" placeholder="Ingrese documento..." value="{{ old('emple_doc') }}" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-[#0d121b] dark:text-white">
+                    <input name="emple_doc" id="doc_empleado" type="text" maxlength="10" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(parseInt(this.value) > 2147483647) { document.getElementById('error-doc-emp').textContent = '• El valor supera el límite permitido (2.147.483.647)'; document.getElementById('error-doc-emp').classList.remove('hidden'); } else { document.getElementById('error-doc-emp').classList.add('hidden'); }" placeholder="Ingrese documento..." value="{{ old('emple_doc') }}" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-[#0d121b] dark:text-white">
                     <p id="error-doc-emp" class="text-sm text-red-600 hidden"></p>
                 </div>
 
@@ -639,14 +644,14 @@
             </div>
         </div>
 
-        <form method="POST" action="{{ route('admin.remitente.store') }}" id="remitenteForm" class="flex-1 overflow-y-auto px-6 pb-6 space-y-6">
+        <form method="POST" action="{{ route('admin.remitente.store') }}" id="remitenteForm" enctype="multipart/form-data" class="flex-1 overflow-y-auto px-6 pb-6 space-y-6">
             @csrf
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- DOCUMENTO -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Documento (*)</label>
-                    <input name="rem_doc" id="doc_remitente" type="text" maxlength="15" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" placeholder="Ingrese documento..." value="{{ old('rem_doc') }}" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-[#0d121b] dark:text-white">
+                    <input name="rem_doc" id="doc_remitente" type="text" maxlength="10" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, ''); if(parseInt(this.value) > 2147483647) { document.getElementById('error-doc-rem').textContent = '• El valor supera el límite permitido (2.147.483.647)'; document.getElementById('error-doc-rem').classList.remove('hidden'); } else { document.getElementById('error-doc-rem').classList.add('hidden'); }" placeholder="Ingrese documento..." value="{{ old('rem_doc') }}" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-[#0d121b] dark:text-white">
                     <p id="error-doc-rem" class="text-sm text-red-600 hidden"></p>
                 </div>
 
@@ -702,6 +707,13 @@
                     </div>
                     <p id="error-pass-rem" class="text-sm text-red-600 hidden"></p>
                 </div>
+
+                <!-- FOTO -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Foto de perfil (Solo formato JPEG, PNG, WEBP)</label>
+                    <input name="rem_img" id="img_remitente" type="file" accept=".jpg,.jpeg,.png,.webp" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-[#0d121b] dark:file:bg-gray-700 dark:file:text-white">
+                    <p id="error-img-rem" class="text-sm text-red-600 hidden"></p>
+                </div>
             </div>
 
             <!-- BOTONES -->
@@ -731,7 +743,7 @@
             </div>
         </div>
 
-        <form method="POST" id="formEditRemitente" class="flex-1 overflow-y-auto px-6 pb-6 space-y-6">
+        <form method="POST" id="formEditRemitente" enctype="multipart/form-data" class="flex-1 overflow-y-auto px-6 pb-6 space-y-6">
             @csrf
             @method('PUT')
             <input type="hidden" name="modal_type_remitente" value="edit">
@@ -740,7 +752,7 @@
                 <!-- DOCUMENTO -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Documento (*)</label>
-                    <input type="text" name="rem_doc" id="edit_doc_remitente" maxlength="15" readonly class="mt-1 w-full rounded-lg border-gray-300 bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 cursor-not-allowed">
+                    <input type="text" name="rem_doc" id="edit_doc_remitente" maxlength="10" readonly class="mt-1 w-full rounded-lg border-gray-300 bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 cursor-not-allowed">
                 </div>
 
                 <!-- CIUDAD -->
@@ -797,6 +809,13 @@
                             @endif
                         @endforeach
                     </select>
+                </div>
+
+                <!-- FOTO -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nueva Foto (Opcional)</label>
+                    <input type="file" name="rem_img" id="edit_img_remitente" accept=".jpg,.jpeg,.png,.webp" class="mt-1 w-full rounded-lg border-gray-300 dark:border-gray-700 dark:bg-[#0d121b] dark:file:bg-gray-700 dark:file:text-white">
+                    <p id="edit-error-img-rem" class="text-sm text-red-600 hidden"></p>
                 </div>
             </div>
 
@@ -1420,7 +1439,7 @@
            REGLAS REMITENTE CREAR
         ===========================*/
         const reglasCrearRemitente = {
-            doc_remitente: { required: true, min: 6, max: 15, regex: /^[0-9]+$/, custom: val => !/^(\d)\1+$/.test(val), error: 'error-doc-rem', mensajes: { required: 'El documento es obligatorio.', min: 'Mínimo 6 dígitos.', max: 'Máximo 15 dígitos.', regex: 'Solo números.', custom: 'No se permiten repetidos.' } },
+            doc_remitente: { required: true, min: 6, max: 10, regex: /^[0-9]+$/, custom: val => { if(!/^\d+$/.test(val)) return false; if(/^(\d)\1+$/.test(val)) return false; return parseInt(val) <= 2147483647; }, error: 'error-doc-rem', mensajes: { required: 'El documento es obligatorio.', min: 'Mínimo 6 dígitos.', max: 'Máximo 10 dígitos.', regex: 'Solo números.', custom: 'Documento no válido o valor muy alto (máx: 2.147.483.647).' } },
             ciudad_remitente: { required: true, error: 'error-ciu-rem', mensajes: { required: 'La ciudad es obligatoria.' } },
             nom_remitente: { required: true, min: 3, max: 50, regex: /^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3,}( [A-Za-zÁÉÍÓÚáéíóúÑñ]{3,})?$/, custom: val => val.trim().split(/\s+/).length <= 2, error: 'error-nom-rem', mensajes: { required: 'El nombre es obligatorio.', min: 'Mínimo 3 letras.', max: 'No puede superar 50 caracteres.', regex: 'Solo letras, sin espacios.', custom: 'Máximo 2 palabras.' } },
             ape_remitente: { required: true, min: 3, max: 50, regex: /^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3,}( [A-Za-zÁÉÍÓÚáéíóúÑñ]{3,})?$/, custom: val => val.trim().split(/\s+/).length <= 2, error: 'error-ape-rem', mensajes: { required: 'Los apellidos son obligatorios.', min: 'Mínimo 3 letras.', max: 'No puede superar 50 caracteres.', regex: 'Solo letras, sin espacios.', custom: 'Máximo 2 palabras.' } },

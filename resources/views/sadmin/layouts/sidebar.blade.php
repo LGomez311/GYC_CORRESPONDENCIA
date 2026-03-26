@@ -117,6 +117,7 @@
         </div>
     </nav>
 
+<<<<<<< HEAD
     <div class="mt-auto">
         <div class="p-3 border-t border-[#cfd7e7] dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/20 flex items-center justify-between">
             <div class="flex items-center gap-3 px-2 overflow-hidden flex-1">
@@ -131,6 +132,12 @@
                         {{ auth()->user()->emple_nombres }} {{ auth()->user()->emple_apellidos }}
                     </p>
                 </div>
+=======
+    <div class="p-4 border-t border-[#cfd7e7] dark:border-gray-800 flex items-center justify-between">
+        <div class="flex items-center gap-3 px-2 overflow-hidden flex-1">
+            <div class="size-10 rounded-full bg-cover bg-center border-2 border-primary/20 flex-shrink-0"
+                style='background-image: url("{{ auth()->user()->emple_img ? asset('storage/' . auth()->user()->emple_img) : asset('images/default-avatar.png') }}");'>
+>>>>>>> Luis
             </div>
             <!-- Botón Configurar Perfil -->
             <button type="button" onclick="openUserProfileModal()" 

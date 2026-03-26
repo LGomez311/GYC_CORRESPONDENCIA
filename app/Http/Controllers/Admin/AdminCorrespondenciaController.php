@@ -18,7 +18,7 @@ class AdminCorrespondenciaController extends Controller
         $nitEmpresa = $user->nit_empresa;
 
         // ---- 1. Correspondencia Externa (Recibida) ----
-        $queryExt = Recibido::with(['destinatarios', 'registradoPor', 'estado', 'ciudad', 'radicado', 'tipo.prioridad', 'anexos'])
+        $queryExt = Recibido::with(['destinatarios', 'registradoPor', 'estado', 'ciudad', 'radicado', 'tipo.prioridad', 'anexos', 'detalles.anexosRespuesta'])
             ->where(function($q) use ($nitEmpresa) {
                 $q->where('recibido.nit_empresa', $nitEmpresa)
                   ->orWhereHas('registradoPor', function($q2) use ($nitEmpresa) {
@@ -38,7 +38,7 @@ class AdminCorrespondenciaController extends Controller
         $correspondencias = $queryExt->orderBy('id_recibido', 'desc')->paginate(15, ['*'], 'ext_page');
 
         // ---- 2. Correspondencia Interna (Envio) ----
-        $queryInt = \App\Models\Envio::with(['detalles.quienRecibe', 'quienEnvia', 'estadoEnvio', 'radicado', 'tipoEnvio.prioridad'])
+        $queryInt = \App\Models\Envio::with(['detalles.quienRecibe', 'quienEnvia', 'estadoEnvio', 'radicado', 'tipoEnvio.prioridad', 'anexos', 'detalles.anexosRespuesta'])
             ->where(function($q) use ($nitEmpresa) {
                 $q->where('envio.nit_empresa', $nitEmpresa)
                   ->orWhereHas('quienEnvia', function($q2) use ($nitEmpresa) {
@@ -98,6 +98,15 @@ class AdminCorrespondenciaController extends Controller
                     $destDoc = null;
                 }
 
+                $digitalAnexos = $item->anexos ? $item->anexos->count() : 0;
+                if ($item->detalles) {
+                    foreach ($item->detalles as $det) {
+                        if ($det->anexosRespuesta) {
+                            $digitalAnexos += $det->anexosRespuesta->count();
+                        }
+                    }
+                }
+
                 return (object) [
                     'origen'              => 'Externa',
                     'num_radicado_ext'    => $item->num_radicado_ext ?? null,
@@ -114,6 +123,7 @@ class AdminCorrespondenciaController extends Controller
                     'doc_destinatario'    => $destDoc,
                     'folio'               => $item->folio,
                     'anexo'               => $item->anexo,
+                    'digital_anexos'      => $digitalAnexos,
                     'estado_nomb'         => $item->estado ? $item->estado->estado_nomb : 'Desconocido',
                     'archivo'             => $item->archivo,
                 ];
@@ -124,7 +134,7 @@ class AdminCorrespondenciaController extends Controller
         // ---- Correspondencia Interna (Envío entre empleados) ----
         // Filtra por nit_empresa directamente en la tabla envio,
         // O cuando el remitente o destinatario pertenezcan a la empresa.
-        $envios = \App\Models\Envio::with(['detalles.quienRecibe', 'quienEnvia', 'estadoEnvio', 'radicado'])
+        $envios = \App\Models\Envio::with(['detalles.quienRecibe', 'quienEnvia', 'estadoEnvio', 'radicado', 'anexos', 'detalles.anexosRespuesta'])
             ->where(function($q) use ($nitEmpresa) {
                 $q->where('envio.nit_empresa', $nitEmpresa)     // Directamente por nit_empresa
                   ->orWhereHas('quienEnvia', function($q2) use ($nitEmpresa) {
@@ -150,6 +160,15 @@ class AdminCorrespondenciaController extends Controller
                     }
                 }
 
+                $digitalAnexos = $item->anexos ? $item->anexos->count() : 0;
+                if ($item->detalles) {
+                    foreach ($item->detalles as $det) {
+                        if ($det->anexosRespuesta) {
+                            $digitalAnexos += $det->anexosRespuesta->count();
+                        }
+                    }
+                }
+
                 return (object) [
                     'origen'              => 'Interna',
                     'num_radicado_ext'    => null,
@@ -168,6 +187,7 @@ class AdminCorrespondenciaController extends Controller
                     'doc_destinatario'    => $destDoc,
                     'folio'               => $item->folio,
                     'anexo'               => null,
+                    'digital_anexos'      => $digitalAnexos,
                     'estado_nomb'         => $item->estadoEnvio ? $item->estadoEnvio->estado_nomb : 'Desconocido',
                     'archivo'             => $item->archivo,
                 ];
@@ -194,5 +214,51 @@ class AdminCorrespondenciaController extends Controller
         $correspondencias = $data['recibidos']->concat($data['envios'])->sortByDesc('fecha')->values();
         $pdf = Pdf::loadView('admin.pdf.correspondencia_pdf', compact('correspondencias'))->setPaper('A4', 'landscape');
         return $pdf->download('correspondencia.pdf');
+    }
+
+    public function historialInterna($id)
+    {
+        $detalle = \App\Models\DetalleEnvio::with(['envio.radicado', 'envio.tipoEnvio', 'envio.anexos', 'quienEnvia.area', 'quienRecibe.area'])
+            ->where('id_envio', $id)->first();
+
+        if (!$detalle) {
+            $env = \App\Models\Envio::with(['radicado', 'tipoEnvio', 'anexos', 'quienEnvia.area'])->findOrFail($id);
+            $detalle = (object)[
+                'envio' => $env,
+                'quienEnvia' => $env->quienEnvia,
+                'id_envio' => $id
+            ];
+        }
+
+        $trazabilidad = \App\Models\DetalleEnvio::with(['quienRecibe', 'estado', 'anexosRespuesta'])
+            ->where('id_envio', $id)
+            ->orderBy('fecha_traslado', 'asc')
+            ->get();
+
+        $destinatarios = $trazabilidad->groupBy('id_quien_recibe');
+        $empleados = []; 
+
+        return view('admin.historial_interna', compact('detalle', 'trazabilidad', 'destinatarios', 'empleados'));
+    }
+
+    public function historialExterna($id)
+    {
+        $recibido = \App\Models\Recibido::with(['radicado', 'tipo.prioridad', 'anexos', 'registradoPor.area'])->findOrFail($id);
+        
+        $trazabilidad = \App\Models\DetalleRecibido::with(['empleado.area', 'estado', 'anexosRespuesta'])
+            ->where('det_id_recibido', $id)
+            ->orderBy('fecha_re', 'asc')
+            ->get();
+
+        $destinatarios = $trazabilidad->groupBy('det_doc_empleado');
+        $empleados = []; 
+
+        $remitenteMock = (object)[
+            'emple_nombres' => $recibido->registradoPor ? $recibido->registradoPor->emple_nombres : ($recibido->nom_institucion ?? ($recibido->nombre_persona ?? 'Externo')),
+            'emple_apellidos' => $recibido->registradoPor ? $recibido->registradoPor->emple_apellidos : '',
+            'area_nom' => $recibido->registradoPor ? ($recibido->registradoPor->area->area_nom ?? 'Sin Área') : 'Externo/Remitente'
+        ];
+
+        return view('admin.historial_externa', compact('recibido', 'trazabilidad', 'destinatarios', 'empleados', 'remitenteMock'));
     }
 }

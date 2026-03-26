@@ -135,7 +135,7 @@
                 <!-- Otros -->
                 <a href="{{ route('admin.otros') }}"
                     class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-                    {{ request()->routeIs('admin.otros*') || request()->routeIs('admin.area*') || request()->routeIs('admin.departamento*') || request()->routeIs('admin.ciudad*') || request()->routeIs('admin.prioridad*') || request()->routeIs('admin.tipo*') || request()->routeIs('admin.estado*') || request()->routeIs('admin.rol*') || request()->routeIs('admin.radicado*')
+                    {{ request()->routeIs('admin.otros*') || request()->routeIs('admin.area*') || request()->routeIs('admin.departamento*') || request()->routeIs('admin.ciudad*') || request()->routeIs('admin.prioridad*') || request()->routeIs('admin.tipo*') || request()->routeIs('admin.rol*') || request()->routeIs('admin.radicado*')
                         ? 'bg-primary/10 text-primary' 
                         : 'text-[#4c669a] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
 

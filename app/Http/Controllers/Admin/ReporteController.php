@@ -58,7 +58,7 @@ class ReporteController extends Controller
         $nit = $user->nit_empresa;
 
         $latestDetalleSubquery = DetalleEnvio::select(DB::raw('MAX(id_detalle) as id_detalle'))
-            ->groupBy('id_envio');
+            ->groupBy('id_envio', 'id_quien_recibe');
 
         $areas = Area::all();
         $reporteAreas = [];
@@ -101,16 +101,20 @@ class ReporteController extends Controller
             $countTramite = $countFinalizado = $countVencidos = 0;
 
             foreach ($detalles as $detalle) {
-                $estadoNomb = strtolower($detalle->estado->estado_nomb ?? '');
-                if (str_contains($estadoNomb, 'tramit') || str_contains($estadoNomb, 'trámit')) $countTramite++;
-                elseif (str_contains($estadoNomb, 'finalizado') || str_contains($estadoNomb, 'resuelto')) $countFinalizado++;
+                $idEstado = $detalle->id_estado_rec;
+                
+                if ($idEstado == 8) {
+                    $countTramite++;
+                } elseif (in_array($idEstado, [9, 10, 11])) {
+                    $countFinalizado++;
+                }
 
                 $envio = $detalle->envio;
                 if ($envio && $envio->tipoEnvio) {
                     $diasTotales = $envio->tipoEnvio->dias_respuesta ?? 0;
                     if ($diasTotales > 0) {
                         $diasTranscurridos = Carbon::parse($envio->fecha)->diffInDaysFiltered(fn(Carbon $d) => $d->isWeekday(), Carbon::now());
-                        if (($diasTotales - $diasTranscurridos) < 0 && !str_contains($estadoNomb, 'finalizado') && !str_contains($estadoNomb, 'resuelto')) {
+                        if (($diasTotales - $diasTranscurridos) < 0 && !in_array($idEstado, [9, 10, 11])) {
                             $countVencidos++;
                         }
                     }

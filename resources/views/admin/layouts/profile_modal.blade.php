@@ -36,36 +36,52 @@
             <div id="tabContentGeneral" class="block">
                 <form id="formProfileGeneral" onsubmit="submitProfileGeneral(event)">
                     @csrf
-                    @if ($profileGuard === 'web')
-                        <!-- Foto -->
-                        <div class="flex flex-col items-center mb-6">
-                            <div class="w-24 h-24 rounded-full bg-slate-100 dark:bg-gray-800 border-2 border-[#cfd7e7] dark:border-gray-700 overflow-hidden mb-3 relative group flex items-center justify-center" id="profileImagePreviewContainer">
-                                @if($profileUser && $profileUser->emple_img)
-                                    <img src="{{ asset('storage/' . $profileUser->emple_img) }}" class="w-full h-full object-cover" id="profileImagePreview">
-                                    <span class="material-symbols-outlined text-4xl text-gray-400 hidden" id="profileImagePlaceholder">person</span>
-                                @else
-                                    <img src="" class="w-full h-full object-cover hidden" id="profileImagePreview">
-                                    <span class="material-symbols-outlined text-4xl text-gray-400" id="profileImagePlaceholder">person</span>
-                                @endif
-                                <label for="profile_img_input" class="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center cursor-pointer transition-all">
-                                    <span class="material-symbols-outlined text-white">photo_camera</span>
-                                </label>
-                            </div>
-                            <input type="file" id="profile_img_input" name="emple_img" accept=".jpg,.jpeg,.png,.webp" class="hidden" onchange="previewProfileImage(event)">
-                            <label for="profile_img_input" class="text-sm font-medium text-primary cursor-pointer hover:underline mb-1">Cambiar foto de perfil</label>
-                            <p class="text-xs text-[#4c669a] dark:text-gray-400">Archivos: JPG, PNG, WEBP (Max 2MB)</p>
+                    <!-- Foto -->
+                    <div class="flex flex-col items-center mb-6">
+                        <div class="w-24 h-24 rounded-full bg-slate-100 dark:bg-gray-800 border-2 border-[#cfd7e7] dark:border-gray-700 overflow-hidden mb-3 relative group flex items-center justify-center" id="profileImagePreviewContainer">
+                            @php
+                                $userImg = ($profileGuard === 'web') ? ($profileUser->emple_img ?? null) : ($profileUser->rem_img ?? null);
+                            @endphp
+                            @if($profileUser && $userImg)
+                                <img src="{{ asset('storage/' . $userImg) }}" class="w-full h-full object-cover" id="profileImagePreview">
+                                <span class="material-symbols-outlined text-4xl text-gray-400 hidden" id="profileImagePlaceholder">person</span>
+                            @else
+                                <img src="" class="w-full h-full object-cover hidden" id="profileImagePreview">
+                                <span class="material-symbols-outlined text-4xl text-gray-400" id="profileImagePlaceholder">person</span>
+                            @endif
+                            <label for="profile_img_input" class="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center cursor-pointer transition-all">
+                                <span class="material-symbols-outlined text-white">photo_camera</span>
+                            </label>
                         </div>
-                    @endif
+                        <input type="file" id="profile_img_input" name="profile_img" accept=".jpg,.jpeg,.png,.webp" class="hidden" onchange="previewProfileImage(event)">
+                        <label for="profile_img_input" class="text-sm font-medium text-primary cursor-pointer hover:underline mb-1">Cambiar foto de perfil</label>
+                        <p class="text-xs text-[#4c669a] dark:text-gray-400">Archivos: JPG, PNG, WEBP (Max 2MB)</p>
+                    </div>
 
                     <!-- Email -->
-                    <div class="mb-5">
+                    <div class="mb-4">
                         <label class="block text-sm font-bold text-[#0d121b] dark:text-white mb-2">Correo Electrónico</label>
                         <div class="relative">
                             <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">mail</span>
-                            <input type="email" name="{{ $profileGuard === 'web' ? 'emple_correo' : 'rem_correo' }}" 
+                            <input type="email" id="prof_email" name="{{ $profileGuard === 'web' ? 'emple_correo' : 'rem_correo' }}" 
                                 value="{{ $profileUser ? ($profileGuard === 'web' ? $profileUser->emple_correo : $profileUser->rem_correo) : '' }}" required
                                 class="w-full pl-10 pr-3 py-2 border border-[#cfd7e7] dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm transition-all dark:text-white">
                         </div>
+                        <p id="error_prof_email" class="text-xs text-red-500 mt-1 hidden"></p>
+                    </div>
+
+                    <!-- Teléfono -->
+                    <div class="mb-5">
+                        <label class="block text-sm font-bold text-[#0d121b] dark:text-white mb-2">Número de Teléfono</label>
+                        <div class="relative">
+                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">call</span>
+                            <input type="text" id="prof_tel" name="{{ $profileGuard === 'web' ? 'emple_tel' : 'rem_tel' }}" 
+                                value="{{ $profileUser ? ($profileGuard === 'web' ? $profileUser->emple_tel : $profileUser->rem_tel) : '' }}" required
+                                maxlength="15" oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                placeholder="Ej: 3152782654"
+                                class="w-full pl-10 pr-3 py-2 border border-[#cfd7e7] dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm transition-all dark:text-white">
+                        </div>
+                        <p id="error_prof_tel" class="text-xs text-red-500 mt-1 hidden"></p>
                     </div>
 
                     <div class="flex justify-end gap-3 pt-4 border-t border-[#cfd7e7] dark:border-gray-800">
@@ -90,6 +106,7 @@
                                 <span id="eye_old_prof_pass" class="material-symbols-outlined text-[18px]">visibility</span>
                             </button>
                         </div>
+                        <p id="error_old_prof_pass" class="text-xs text-red-500 mt-1 hidden"></p>
                     </div>
 
                     <div class="mb-4">
@@ -102,6 +119,7 @@
                                 <span id="eye_new_prof_pass" class="material-symbols-outlined text-[18px]">visibility</span>
                             </button>
                         </div>
+                        <p id="error_new_prof_pass" class="text-xs text-red-500 mt-1 hidden"></p>
                         <p class="text-xs text-[#4c669a] dark:text-gray-400 mt-1">Mínimo 10 caracteres, una mayúscula, una minúscula, un número y un símbolo.</p>
                     </div>
 
@@ -115,6 +133,7 @@
                                 <span id="eye_new_prof_pass_conf" class="material-symbols-outlined text-[18px]">visibility</span>
                             </button>
                         </div>
+                        <p id="error_new_prof_pass_conf" class="text-xs text-red-500 mt-1 hidden"></p>
                     </div>
 
                     <div class="flex justify-between items-center pt-4 border-t border-[#cfd7e7] dark:border-gray-800">
@@ -213,9 +232,91 @@
         }
     }
 
+    // Helper for Visual Validation
+    function applyValidationStyle(input, isValid, errorElement, message = '') {
+        if (!input) return isValid;
+        
+        if (isValid) {
+            input.classList.remove('border-red-500', 'border-[#cfd7e7]', 'dark:border-gray-700');
+            input.classList.add('border-green-500');
+            if (errorElement) {
+                errorElement.classList.add('hidden');
+                errorElement.textContent = '';
+            }
+        } else {
+            input.classList.remove('border-green-500', 'border-[#cfd7e7]', 'dark:border-gray-700');
+            input.classList.add('border-red-500');
+            if (errorElement) {
+                errorElement.classList.remove('hidden');
+                errorElement.textContent = message;
+            }
+        }
+        return isValid;
+    }
+
+    // Real-time Listeners
+    document.addEventListener('DOMContentLoaded', () => {
+        const emailInput = document.getElementById('prof_email');
+        const telInput = document.getElementById('prof_tel');
+        const oldPass = document.getElementById('old_prof_pass');
+        const newPass = document.getElementById('new_prof_pass');
+        const confPass = document.getElementById('new_prof_pass_conf');
+
+        if (emailInput) {
+            emailInput.addEventListener('input', () => {
+                const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value);
+                applyValidationStyle(emailInput, isValid, document.getElementById('error_prof_email'), 'Correo inválido');
+            });
+        }
+
+        if (telInput) {
+            telInput.addEventListener('input', () => {
+                const val = telInput.value.trim();
+                const isValid = val.length >= 7 && val.length <= 15 && /^[0-9]+$/.test(val);
+                applyValidationStyle(telInput, isValid, document.getElementById('error_prof_tel'), '7-15 dígitos numéricos');
+            });
+        }
+
+        if (oldPass) {
+            oldPass.addEventListener('input', () => {
+                applyValidationStyle(oldPass, oldPass.value.length > 0, document.getElementById('error_old_prof_pass'), 'Campo obligatorio');
+            });
+        }
+
+        if (newPass) {
+            newPass.addEventListener('input', () => {
+                const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!"#$%&\/()=@.,;:?~^_*+\-])[^\s]{10,64}$/;
+                applyValidationStyle(newPass, regex.test(newPass.value), document.getElementById('error_new_prof_pass'), 'Formato de seguridad insuficiente');
+                if (confPass && confPass.value) confPass.dispatchEvent(new Event('input'));
+            });
+        }
+
+        if (confPass) {
+            confPass.addEventListener('input', () => {
+                const isMatching = confPass.value === newPass.value && confPass.value.length > 0;
+                applyValidationStyle(confPass, isMatching, document.getElementById('error_new_prof_pass_conf'), 'Las contraseñas no coinciden');
+            });
+        }
+    });
+
     function submitProfileGeneral(e) {
         e.preventDefault();
         const form = e.target;
+        
+        const emailInput = document.getElementById('prof_email');
+        const telInput = document.getElementById('prof_tel');
+        
+        const isEmailOk = emailInput ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value) : true;
+        const isTelOk = telInput ? (telInput.value.trim().length >= 7 && telInput.value.trim().length <= 15 && /^[0-9]+$/.test(telInput.value.trim())) : true;
+
+        applyValidationStyle(emailInput, isEmailOk, document.getElementById('error_prof_email'), 'Correo inválido');
+        applyValidationStyle(telInput, isTelOk, document.getElementById('error_prof_tel'), '7-15 dígitos numéricos');
+
+        if (!isEmailOk || !isTelOk) {
+            Swal.fire('Atención', 'Por favor corrija los campos marcados en rojo.', 'warning');
+            return;
+        }
+
         const formData = new FormData(form);
         const btn = document.getElementById('btnSaveGeneral');
         
@@ -252,6 +353,15 @@
 
     function resetPasswordProcess() {
         document.getElementById('formProfilePassword').reset();
+        ['old_prof_pass', 'new_prof_pass', 'new_prof_pass_conf'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) {
+                el.classList.remove('border-red-500', 'border-green-500');
+                el.classList.add('border-[#cfd7e7]', 'dark:border-gray-700');
+            }
+            const err = document.getElementById('error_'+id);
+            if(err) err.classList.add('hidden');
+        });
     }
 
     function submitProfilePassword(e) {
@@ -259,17 +369,21 @@
         const form = e.target;
         const btn = document.getElementById('btnSavePassword');
         
-        const passNew = document.getElementById('new_prof_pass').value;
-        const passConf = document.getElementById('new_prof_pass_conf').value;
+        const oldPass = document.getElementById('old_prof_pass');
+        const newPass = document.getElementById('new_prof_pass');
+        const confPass = document.getElementById('new_prof_pass_conf');
 
-        if (passNew !== passConf) {
-            Swal.fire('Error', 'Las contraseñas nuevas no coinciden.', 'error');
-            return;
-        }
-
+        const isOldOk = oldPass.value.length > 0;
         const regexEstructura = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!"#$%&\/()=@.,;:?~^_*+\-])[^\s]{10,64}$/;
-        if (!regexEstructura.test(passNew)) {
-            Swal.fire('Error', 'La nueva contraseña debe tener entre 10 y 64 caracteres, incluir al menos una mayúscula, una minúscula, un número y un carácter especial.', 'error');
+        const isNewOk = regexEstructura.test(newPass.value);
+        const isConfOk = confPass.value === newPass.value && confPass.value.length > 0;
+
+        applyValidationStyle(oldPass, isOldOk, document.getElementById('error_old_prof_pass'), 'Campo obligatorio');
+        applyValidationStyle(newPass, isNewOk, document.getElementById('error_new_prof_pass'), 'Formato de seguridad insuficiente');
+        applyValidationStyle(confPass, isConfOk, document.getElementById('error_new_prof_pass_conf'), 'Las contraseñas no coinciden');
+
+        if (!isOldOk || !isNewOk || !isConfOk) {
+            Swal.fire('Atención', 'Por favor corrija los campos marcados en rojo.', 'warning');
             return;
         }
 
@@ -298,6 +412,11 @@
             if(err.errors) {
                 msg = Object.values(err.errors).flat().join('\n');
             }
+            
+            if (msg.toLowerCase().includes('anterior') || msg.toLowerCase().includes('incorrecta')) {
+                applyValidationStyle(oldPass, false, document.getElementById('error_old_prof_pass'), 'La contraseña es incorrecta');
+            }
+            
             Swal.fire('Error', msg, 'error');
         })
         .finally(() => {

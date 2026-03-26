@@ -102,14 +102,54 @@ class HomeController extends Controller
                     // Enviados (donde el usuario es el remitente)
                     $enviados = Envio::where('doc_quien_envia', $user->emple_doc)->count();
 
-                    // --- ACTIVIDAD RECIENTE ---
-                    $recientes = Envio::whereHas('quienEnvia', function ($query) use ($user) {
+                    // --- ACTIVIDAD RECIENTE UNIFICADA ---
+                    $recientesInternos = Envio::whereHas('quienEnvia', function ($query) use ($user) {
                         $query->where('nit_empresa', $user->nit_empresa);
                     })
-                    ->with(['estadoEnvio', 'radicado'])
+                    ->with(['estadoEnvio', 'radicado', 'quienEnvia'])
                     ->orderBy('fecha', 'desc')
-                    ->take(5)
-                    ->get();
+                    ->take(10)
+                    ->get()
+                    ->map(function ($envio) {
+                        return (object)[
+                            'tipo' => 'Interna',
+                            'icon' => 'mail',
+                            'id' => $envio->id_envio,
+                            'asunto' => $envio->asunto,
+                            'radicado' => $envio->radicado ? $envio->radicado->num_radicado : 'S/R',
+                            'estado' => $envio->estadoEnvio->estado_nomb ?? 'En espera',
+                            'fecha' => $envio->fecha,
+                            'remitente' => ($envio->quienEnvia->emple_nombres ?? 'Desconocido') . ' ' . ($envio->quienEnvia->emple_apellidos ?? ''),
+                            'url' => route('admin.correspondencia.historial_interna', $envio->id_envio)
+                        ];
+                    });
+
+                    $recientesExternos = \App\Models\Recibido::where('nit_empresa', $user->nit_empresa)
+                    ->with(['estado', 'radicado', 'registradoPor'])
+                    ->orderBy('fecha_hora_recib', 'desc')
+                    ->take(10)
+                    ->get()
+                    ->map(function ($recibido) {
+                        $remitente = $recibido->registradoPor 
+                            ? ($recibido->registradoPor->emple_nombres . ' ' . $recibido->registradoPor->emple_apellidos)
+                            : ($recibido->nom_institucion ?? ($recibido->nombre_persona ?? 'Externo'));
+                            
+                        return (object)[
+                            'tipo' => 'Externa',
+                            'icon' => 'send',
+                            'id' => $recibido->id_recibido,
+                            'asunto' => $recibido->asunto,
+                            'radicado' => $recibido->radicado ? $recibido->radicado->num_radicado : 'S/R',
+                            'estado' => $recibido->estado->estado_nomb ?? 'Recibido',
+                            'fecha' => $recibido->fecha_hora_recib,
+                            'remitente' => $remitente,
+                            'url' => route('admin.correspondencia.historial_externa', $recibido->id_recibido)
+                        ];
+                    });
+
+                    $recientes = $recientesInternos->concat($recientesExternos)
+                        ->sortByDesc('fecha')
+                        ->take(10);
                 }
             }
         }

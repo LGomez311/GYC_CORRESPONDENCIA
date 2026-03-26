@@ -109,7 +109,7 @@
         <div class="p-3 border-t border-[#cfd7e7] dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/20 flex items-center justify-between">
             <div class="flex items-center gap-3 px-2 overflow-hidden flex-1">
                 <div class="size-9 rounded-full bg-cover bg-center border border-gray-200 dark:border-gray-700 shrink-0 shadow-sm"
-                    style='background-image: url("{{ auth()->user()->emple_img ? asset('storage/' . auth()->user()->emple_img) : asset('images/default-avatar.png') }}");'>
+                    style='background-image: url("{{ auth()->user()->rem_img ? asset('storage/' . auth()->user()->rem_img) : asset('images/default-avatar.png') }}");'>
                 </div>
                 <div class="overflow-hidden">
                     <p class="text-sm font-bold truncate text-gray-900 dark:text-white">

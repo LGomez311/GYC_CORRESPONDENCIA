@@ -23,6 +23,10 @@ class DetalleRecibido extends Model
         'visto',
     ];
 
+    protected $casts = [
+        'fecha_re' => 'datetime',
+    ];
+
     // Relación con el registro de recibido (documento principal)
     public function recibido()
     {

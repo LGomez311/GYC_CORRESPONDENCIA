@@ -186,6 +186,8 @@ Route::prefix('admin')
         Route::get('/correspondencia', [\App\Http\Controllers\Admin\AdminCorrespondenciaController::class, 'index'])->name('admin.correspondencia');
         Route::get('/correspondencia/export/excel', [\App\Http\Controllers\Admin\AdminCorrespondenciaController::class, 'exportExcel'])->name('admin.correspondencia.export.excel');
         Route::get('/correspondencia/export/pdf', [\App\Http\Controllers\Admin\AdminCorrespondenciaController::class, 'exportPdf'])->name('admin.correspondencia.export.pdf');
+        Route::get('/correspondencia/interna/{id}/historial', [\App\Http\Controllers\Admin\AdminCorrespondenciaController::class, 'historialInterna'])->name('admin.correspondencia.historial_interna');
+        Route::get('/correspondencia/externa/{id}/historial', [\App\Http\Controllers\Admin\AdminCorrespondenciaController::class, 'historialExterna'])->name('admin.correspondencia.historial_externa');
 
 
 

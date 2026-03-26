@@ -112,7 +112,7 @@
                     <td>{{ $cor->asunto }}</td>
                     <td style="text-align:center;">{{ \Carbon\Carbon::parse($cor->fecha)->format('d/m/Y H:i') }}</td>
                     <td>{{ $cor->destinatario_nombre }}<br><small>Doc: {{ $cor->doc_destinatario }}</small></td>
-                    <td>F: {{ $cor->folio }}<br>A: {{ $cor->anexo ?? 'Ninguno' }}</td>
+                    <td>F: {{ $cor->folio }}<br>A: {{ $cor->digital_anexos }} dig, {{ $cor->anexo ?? '0 fís' }}</td>
                     <td style="text-align:center;">{{ $cor->estado_nomb }}</td>
                 </tr>
             @endforeach

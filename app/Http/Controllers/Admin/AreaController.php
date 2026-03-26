@@ -12,9 +12,13 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class AreaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $areas = Area::paginate(5);
+        $search = $request->input('search');
+        $areas = Area::when($search, function ($query, $search) {
+                        return $query->where('area_nom', 'like', '%' . $search . '%');
+                    })
+                    ->paginate(5);
         return view('admin.otros.area', compact('areas'));
     }
 
