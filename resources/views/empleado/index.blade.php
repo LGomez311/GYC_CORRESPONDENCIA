@@ -461,6 +461,8 @@
                                 Aún no has finalizado correspondencia en esta semana.
                             @else
                                 Has resuelto {{ $eficiencia['total'] }} documento(s) esta semana. El {{ $eficiencia['a_tiempo_pct'] }}% fue atendido a tiempo.
+                            @endif
+                        </p>
                     </div>
                 </div>
 

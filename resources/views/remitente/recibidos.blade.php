@@ -144,7 +144,7 @@
                                     Acciones</th>
                             </tr>
                         </thead>
-                        <tbody id="correspondenceTableBody" class="divide-y divide-gray-50 dark:divide-gray-800/50">
+                        <tbody id="tablaRecibidosBody" class="divide-y divide-gray-50 dark:divide-gray-800/50">
                             @forelse($correspondencias as $c)
                                 <tr class="group hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-all duration-200">
 
@@ -417,7 +417,7 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+                <div id="paginacionRecibidos" class="px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
                     {{ $correspondencias->appends(request()->query())->links() }}
                 </div>
             </div>
@@ -719,7 +719,7 @@
             document.getElementById('detailFolios').textContent = c.folio || '0';
             document.getElementById('detailObservations').textContent = c.observaciones || 'Sin observaciones.';
             document.getElementById('detailInstitution').textContent = c.nom_institucion || 'Particular';
-            document.getElementById('detailCity').textContent = c.ciudad ? c.ciudad.ciudad_nomb : 'No disponible';
+            document.getElementById('detailCity').textContent = c.ciudad ? c.ciudad.ciudad_nom : 'No disponible';
 
             // Status pill
             const statusSpan = document.getElementById('detailStatus');
@@ -2959,7 +2959,200 @@
 
             document.addEventListener('click', function(e) {
                 if (!e.target.closest('.destinatario-block-asignar') && !e.target.closest(
-                        '.destinatario-block')) {
+                tabPersona.addEventListener('click', () => {
+                    tabPersona.className =
+                        'pb-3 text-sm font-bold text-primary border-b-2 border-primary transition-colors';
+                    tabEmpresa.className =
+                        'pb-3 text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors';
+                    bloquePersona.classList.remove('hidden');
+                    bloqueEmpresa.classList.add('hidden');
+                    tipoRemitente.value = 'persona';
+                    document.querySelectorAll('.input-empresa').forEach(el => el.required = false);
+                    document.querySelectorAll('.input-persona').forEach(el => el.required = true);
+                });
+            }
+
+            // ===== LOGICA CIUDADES =====
+            const btnToggleCiudades = document.getElementById('btnToggleCiudades');
+            const ciudadesDropdown = document.getElementById('ciudadesDropdown');
+            const buscarCiudadInput = document.getElementById('buscarCiudadInput');
+            const listaCiudades = document.getElementById('listaCiudades');
+            const ciudadValue = document.getElementById('ciudad_proveniente_value');
+            const btnToggleCiudadesLabel = document.getElementById('btnToggleCiudadesLabel');
+
+            if (btnToggleCiudades) {
+                btnToggleCiudades.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    ciudadesDropdown.classList.toggle('hidden');
+                    if (!ciudadesDropdown.classList.contains('hidden')) {
+                        buscarCiudadInput.focus();
+                        buscarCiudad('');
+                    }
+                });
+
+                buscarCiudadInput.addEventListener('input', (e) => {
+                    buscarCiudad(e.target.value);
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!btnToggleCiudades.contains(e.target) && !ciudadesDropdown.contains(e.target)) {
+                        ciudadesDropdown.classList.add('hidden');
+                    }
+                });
+
+                async function buscarCiudad(q) {
+                    try {
+                        const response = await fetch(`{{ route('externarec.ciudades.buscar') }}?q=` +
+                            encodeURIComponent(q));
+                        const data = await response.json();
+                        listaCiudades.innerHTML = '';
+                        if (data.length === 0) {
+                            listaCiudades.innerHTML =
+                                '<li class="px-3 py-2 text-slate-400 italic">No se encontraron ciudades</li>';
+                            return;
+                        }
+                        data.forEach(ciudad => {
+                            const li = document.createElement('li');
+                            li.className =
+                                'px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer border-b border-slate-50 dark:border-slate-700/50 last:border-0';
+                            li.innerHTML =
+                                `<span class="font-bold text-slate-700 dark:text-slate-200">${ciudad.ciudad_nom}</span> <span class="text-[10px] text-slate-500">(CP: ${ciudad.ciudad_cod_post})</span>`;
+                            li.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                ciudadValue.value = ciudad.ciudad_cod_post;
+                                btnToggleCiudadesLabel.textContent = `${ciudad.ciudad_nom}`;
+                                btnToggleCiudadesLabel.classList.remove('text-slate-400');
+                                btnToggleCiudadesLabel.classList.add('text-slate-900',
+                                    'dark:text-white');
+                                ciudadesDropdown.classList.add('hidden');
+                            });
+                            listaCiudades.appendChild(li);
+                        });
+                    } catch (error) {
+                        console.error('Error cargando ciudades:', error);
+                    }
+                }
+            }
+
+            function initBuscadorAsignar(block) {
+                const btnToggle = block.querySelector('.dest-btn-toggle');
+                const dropdown = block.querySelector('.dest-dropdown');
+                const searchInput = block.querySelector('.dest-search-input');
+                const list = block.querySelector('.dest-list');
+                const label = block.querySelector('.dest-label');
+                const hidden = block.querySelector('.dest-hidden-input');
+                const btnRemove = block.querySelector('.dest-btn-remove');
+
+                function render(items) {
+                    list.innerHTML = '';
+                    if (items.length === 0) {
+                        list.innerHTML =
+                            '<li class="px-3 py-2 text-slate-400 italic">No se encontraron resultados</li>';
+                        return;
+                    }
+                    items.forEach(item => {
+                        const li = document.createElement('li');
+                        li.className =
+                            'px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer border-b border-slate-50 dark:border-slate-700/50 last:border-0';
+                        li.innerHTML = `
+                                    <div class="flex flex-col gap-0.5">
+                                        <span class="font-bold text-slate-700 dark:text-slate-200">${item.emple_nombres} ${item.emple_apellidos}</span>
+                                        <span class="text-[10px] text-blue-500 font-mono">CC: ${item.emple_doc} ${item.area_nombre ? '— ' + item.area_nombre : ''}</span>
+                                    </div>
+                                `;
+                        li.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            hidden.value = item.emple_doc;
+                            label.textContent = `${item.emple_nombres} ${item.emple_apellidos}`;
+                            label.classList.remove('text-slate-400');
+                            label.classList.add('text-slate-900', 'dark:text-white');
+                            dropdown.classList.add('hidden');
+                        });
+                        list.appendChild(li);
+                    });
+                }
+
+                btnToggle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    modalAsignar.querySelectorAll('.dest-dropdown').forEach(d => {
+                        if (d !== dropdown) d.classList.add('hidden');
+                    });
+                    dropdown.classList.toggle('hidden');
+                    if (!dropdown.classList.contains('hidden')) {
+                        searchInput.focus();
+                        render(ALL_DESTINATARIOS);
+                    }
+                });
+
+                searchInput.addEventListener('input', function() {
+                    const q = this.value.toLowerCase();
+                    const filtrados = ALL_DESTINATARIOS.filter(d =>
+                        d.emple_doc.toLowerCase().includes(q) ||
+                        d.emple_nombres.toLowerCase().includes(q) ||
+                        d.emple_apellidos.toLowerCase().includes(q)
+                    );
+                    render(filtrados);
+                });
+
+                if (btnRemove) {
+                    btnRemove.addEventListener('click', () => block.remove());
+                }
+            }
+
+            document.addEventListener('click', function(e) {
+                const btn = e.target.closest('.btn-abrir-asignar');
+                if (btn) {
+                    const id = btn.dataset.id;
+                    const radicado = btn.dataset.radicado;
+                    const asunto = btn.dataset.asunto;
+
+                    asignarRadicadoLabel.textContent = radicado;
+                    asignarAsuntoLabel.textContent = asunto;
+                    formAsignar.action = `{{ url('/remitente/externarec') }}/${id}/asignar`;
+
+                    const container = document.getElementById('asignar-destinatarios-container');
+                    const blocks = container.querySelectorAll('.destinatario-block-asignar');
+
+                    for (let i = 1; i < blocks.length; i++) blocks[i].remove();
+
+                    const firstBlock = blocks[0];
+                    firstBlock.querySelector('.dest-hidden-input').value = '';
+                    firstBlock.querySelector('.dest-label').textContent =
+                        'Seleccione un documento o nombre...';
+                    firstBlock.querySelector('.dest-label').classList.add('text-slate-400');
+                    firstBlock.querySelector('.dest-search-input').value = '';
+
+                    initBuscadorAsignar(firstBlock);
+
+                    modalAsignar.classList.remove('hidden');
+                    modalAsignar.classList.add('flex');
+                    document.body.style.overflow = 'hidden';
+                }
+
+                if (e.target.closest('.btnCerrarAsignar')) {
+                    modalAsignar.classList.add('hidden');
+                    modalAsignar.classList.remove('flex');
+                    document.body.style.overflow = 'auto';
+                }
+            });
+
+            document.getElementById('btnAgregarDestinatarioAsignar').addEventListener('click', function() {
+                const container = document.getElementById('asignar-destinatarios-container');
+                const template = container.querySelector('.destinatario-block-asignar');
+                const clone = template.cloneNode(true);
+
+                clone.querySelector('.dest-hidden-input').value = '';
+                clone.querySelector('.dest-label').textContent = 'Seleccione un documento o nombre...';
+                clone.querySelector('.dest-label').classList.add('text-slate-400');
+                clone.querySelector('.dest-search-input').value = '';
+                clone.querySelector('.dest-btn-remove').classList.remove('hidden');
+
+                container.appendChild(clone);
+                initBuscadorAsignar(clone);
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.destinatario-block-asignar') && !e.target.closest('.destinatario-block')) {
                     document.querySelectorAll('.dest-dropdown').forEach(d => d.classList.add('hidden'));
                 }
             });
@@ -2980,14 +3173,12 @@
                     clone.querySelector('.dest-hidden-input').value = '';
                     clone.querySelector('.dest-label').textContent = 'Seleccione un documento o nombre...';
                     clone.querySelector('.dest-label').classList.add('text-slate-400');
-                    clone.querySelector('.dest-label').classList.remove('text-slate-900',
-                    'dark:text-white');
+                    clone.querySelector('.dest-label').classList.remove('text-slate-900', 'dark:text-white');
                     clone.querySelector('.dest-search-input').value = '';
                     clone.querySelector('.dest-btn-remove').classList.remove('hidden');
 
                     containerDest.appendChild(clone);
                     initBuscadorAsignar(clone);
-                });
                 });
             }
 
@@ -3008,5 +3199,4 @@
             }
         });
     </script>
-
 @endsection

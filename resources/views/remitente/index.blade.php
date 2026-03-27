@@ -908,7 +908,7 @@
             }
             document.getElementById('detailObservations').textContent = observacionesMostrar;
             document.getElementById('detailInstitution').textContent = c.nom_institucion || 'Particular';
-            document.getElementById('detailCity').textContent = c.ciudad ? c.ciudad.ciudad_nomb : 'No disponible';
+            document.getElementById('detailCity').textContent = c.ciudad ? c.ciudad.ciudad_nom : 'No disponible';
 
             // Status pill
             const statusSpan = document.getElementById('detailStatus');
@@ -1080,6 +1080,62 @@
                 };
                 editDiv.appendChild(editBtn);
                 docsWrapper.appendChild(editDiv);
+            }
+
+            openModal('detailsModal');
+        }
+
+        function viewDetailsEnvio(id) {
+            const envio = window.enviosPendientesData[id];
+            if (!envio) return;
+
+            // Simple details view for envio
+            document.getElementById('detailRadicado').textContent = envio.radicado ? envio.radicado.num_radicado : 'SIN RADICADO';
+            document.getElementById('detailAsunto').textContent = envio.asunto;
+            document.getElementById('detailDate').textContent = new Date(envio.fecha).toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            document.getElementById('detailType').textContent = envio.tipo_envio ? envio.tipo_envio.tipo_nombre : 'No especificado';
+            document.getElementById('detailFolios').textContent = envio.folio || '0';
+            document.getElementById('detailObservations').textContent = envio.observaciones || 'Sin observaciones.';
+            document.getElementById('detailInstitution').textContent = envio.destino || 'Ventanilla';
+            document.getElementById('detailCity').textContent = '—'; // Envio usually doesn't have city directly linked in this schema
+
+            const statusSpan = document.getElementById('detailStatus');
+            statusSpan.textContent = 'En Trámite (Ventanilla)';
+            statusSpan.className = 'px-3 py-1 rounded-full text-[10px] font-bold mb-6 bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400';
+
+            const recipientsContainer = document.getElementById('detailRecipients');
+            recipientsContainer.innerHTML = '';
+            if (envio.recipients && envio.recipients.length > 0) {
+                envio.recipients.forEach(dest => {
+                    const avatar = getAvatarHtml(dest);
+                    const div = document.createElement('div');
+                    div.className = 'inline-flex items-center gap-2 px-2 py-1 rounded-lg text-[10px] font-bold bg-gray-50 text-gray-700 dark:bg-gray-700/50 dark:text-gray-300 border border-gray-100 dark:border-gray-600';
+                    div.innerHTML = `${avatar} <div class="flex flex-col"><span class="leading-none">${dest.emple_nombres} ${dest.emple_apellidos}</span></div>`;
+                    recipientsContainer.appendChild(div);
+                });
+            } else {
+                recipientsContainer.innerHTML = '<p class="text-gray-400 text-xs italic">No hay destinatarios asignados.</p>';
+            }
+
+            const actionArea = document.getElementById('detailActionsContainer');
+            actionArea.innerHTML = '';
+            const docsWrapper = document.createElement('div');
+            docsWrapper.className = 'w-full space-y-6';
+            actionArea.appendChild(docsWrapper);
+
+            if (envio.archivo) {
+                const btn = document.createElement('a');
+                btn.href = `/storage/${envio.archivo}`;
+                btn.target = '_blank';
+                btn.className = 'flex items-center gap-2 px-3 py-2.5 text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400 rounded-xl hover:bg-blue-100 transition-all border border-blue-100 dark:border-blue-800';
+                btn.innerHTML = '<span class="material-symbols-outlined text-[18px]">description</span> Ver Documento';
+                docsWrapper.appendChild(btn);
             }
 
             openModal('detailsModal');
@@ -1374,6 +1430,7 @@
             // Pre-fill fields
             const typeSelect = document.getElementById('salienteTipo');
             if (c.id_tipo) typeSelect.value = c.id_tipo;
+            document.getElementById('salienteFolio').value = c.folio || 1;
 
             const officialSelect = document.getElementById('salienteFuncionario');
             if (responseDetail && responseDetail.det_doc_empleado) {
@@ -1468,7 +1525,7 @@
 
             openModal('salienteModal');
         }
-<<<<<<< HEAD
+
 
         async function openSalienteModalEnvio(id) {
             const envio = window.enviosPendientesData[id];
@@ -1546,7 +1603,7 @@
             
             openModal('rejectModal');
         }
-=======
+
         // Initialize Select2 if jQuery is loaded
         $(document).ready(function() {
             if (typeof jQuery !== 'undefined' && typeof jQuery.fn.select2 !== 'undefined') {
@@ -1558,9 +1615,11 @@
                 });
             }
         });
->>>>>>> Luis
+
     </script>
 @endsection
+
+@section('modals')
 <!-- Registrar Saliente Modal -->
 <div id="salienteModal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
     <div class="flex items-center justify-center min-h-screen p-4">
@@ -1748,3 +1807,4 @@
         </div>
     </div>
 </div>
+@endsection

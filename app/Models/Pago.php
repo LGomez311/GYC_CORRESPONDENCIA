@@ -18,6 +18,8 @@ class Pago extends Model
         'id_plan',
         'id_admin',
         'id_est_pago',
+        'nit_empresa',
+        'monto',
         'moneda',
         'fecha_pago',
         'fecha_inicio',

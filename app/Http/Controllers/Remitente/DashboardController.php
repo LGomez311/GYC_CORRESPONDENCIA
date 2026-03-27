@@ -10,6 +10,11 @@ use Illuminate\Support\Facades\Mail;
 use App\Models\Recibido;
 use App\Models\DetalleRecibido;
 use App\Models\Empleado;
+use App\Models\Area;
+use App\Models\DetalleEnvio;
+use App\Models\Envio;
+use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class DashboardController extends Controller
 {
@@ -170,6 +175,10 @@ class DashboardController extends Controller
                   ->orWhereNull('doc_quien_registra');
             })
             ->orderByRaw('CASE WHEN id_estado_rec = 11 THEN 0 ELSE 1 END')
+            ->orderByRaw('DATE(fecha_hora_recib) DESC')
+            ->orderBy(\App\Models\Tipo::select('id_prioridad')
+                ->whereColumn('tipo.id_tipo', 'recibido.id_tipo')
+                ->limit(1), 'asc')
             ->orderBy('fecha_hora_recib', 'desc');
     }
 
@@ -596,6 +605,140 @@ class DashboardController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Error al procesar el envío: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Reportes de gestión para el Remitente (Scoped by NIT)
+     */
+    public function reportes(Request $request)
+    {
+        $remitente = Auth::guard('remitente')->user();
+        if (!$remitente || !$remitente->nit_empresa) {
+            return view('remitente.reportes', ['reporteAreas' => [], 'mensaje' => 'No estás registrado a una empresa.']);
+        }
+
+        $reporteAreas = $this->calcularReporteAreas($request);
+        return view('remitente.reportes', compact('reporteAreas'));
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $remitente = Auth::guard('remitente')->user();
+        if (!$remitente || !$remitente->nit_empresa) {
+            return redirect()->back()->with('error', 'No estás registrado a una empresa.');
+        }
+
+        $reporteAreas = $this->calcularReporteAreas($request);
+        $barChart = $request->input('barChart');
+        $doughnutChart = $request->input('doughnutChart');
+
+        $pdf = Pdf::loadView('admin.pdf.reportes_pdf', compact('reporteAreas', 'barChart', 'doughnutChart'))->setPaper('A4', 'portrait');
+        return $pdf->download('reporte_gestion_remitente.pdf');
+    }
+
+    private function calcularReporteAreas(Request $request)
+    {
+        $remitente = Auth::guard('remitente')->user();
+        $nit = $remitente->nit_empresa;
+        $periodo = $request->input('periodo');
+
+        // Subquery for the latest internal detail per document/recipient
+        $latestInternalSubquery = DetalleEnvio::select(DB::raw('MAX(id_detalle) as id_detalle'))
+            ->groupBy('id_envio', 'id_quien_recibe');
+
+        $areas = Area::all();
+        $reporteAreas = [];
+
+        foreach ($areas as $area) {
+            $empleadosDocs = Empleado::where('emple_area', $area->id_area)
+                ->where('nit_empresa', $nit)
+                ->pluck('emple_doc');
+
+            if ($empleadosDocs->isEmpty()) continue;
+
+            // --- 1. INTERNAL CORRESPONDENCE (Envio) ---
+            $queryInterna = DetalleEnvio::whereIn('id_quien_recibe', $empleadosDocs)
+                ->whereIn('id_detalle', $latestInternalSubquery)
+                ->with(['envio.tipoEnvio']);
+
+            if ($periodo && $periodo != 'todo') {
+                $queryInterna->whereHas('envio', function ($q) use ($request, $periodo) {
+                    $this->applyDateFilters($q, $request, $periodo, 'fecha');
+                });
+            }
+
+            // --- 2. EXTERNAL CORRESPONDENCE (Recibido) ---
+            $queryExterna = DetalleRecibido::whereIn('det_doc_empleado', $empleadosDocs)
+                ->with(['recibido.tipo']);
+
+            if ($periodo && $periodo != 'todo') {
+                $queryExterna->whereHas('recibido', function ($q) use ($request, $periodo) {
+                    $this->applyDateFilters($q, $request, $periodo, 'fecha_hora_recib');
+                });
+            }
+
+            $detallesInternos = $queryInterna->get();
+            $detallesExternos = $queryExterna->get();
+
+            $totalAsignados = $detallesInternos->count() + $detallesExternos->count();
+            $countTramite = 0;
+            $countFinalizado = 0;
+            $countVencidos = 0;
+
+            $allDetails = $detallesInternos->concat($detallesExternos);
+
+            foreach ($allDetails as $det) {
+                $idEstado = $det->id_estado_rec;
+                
+                if ($idEstado == 8) {
+                    $countTramite++;
+                } elseif (in_array($idEstado, [9, 10, 11])) {
+                    $countFinalizado++;
+                }
+
+                $doc = $det instanceof DetalleEnvio ? $det->envio : $det->recibido;
+                if ($doc) {
+                    $tipo = $det instanceof DetalleEnvio ? ($doc->tipoEnvio) : ($doc->tipo);
+                    $diasTotales = $tipo->dias_respuesta ?? 0;
+                    if ($diasTotales > 0 && !in_array($idEstado, [9, 10, 11])) {
+                        $fechaBase = $det instanceof DetalleEnvio ? $doc->fecha : $doc->fecha_hora_recib;
+                        $diasTranscurridos = Carbon::parse($fechaBase)->diffInDaysFiltered(fn(Carbon $d) => $d->isWeekday(), Carbon::now());
+                        if (($diasTotales - $diasTranscurridos) < 0) {
+                            $countVencidos++;
+                        }
+                    }
+                }
+            }
+
+            $reporteAreas[] = [
+                'area_nom' => $area->area_nom,
+                'asignados' => $totalAsignados,
+                'tramite' => $countTramite,
+                'finalizado' => $countFinalizado,
+                'vencidos' => $countVencidos,
+                'eficiencia' => $totalAsignados > 0 ? round(($countFinalizado / $totalAsignados) * 100) : 0
+            ];
+        }
+
+        return $reporteAreas;
+    }
+
+    private function applyDateFilters($query, Request $request, $periodo, $dateColumn)
+    {
+        if ($periodo == 'dia' && $request->fecha) {
+            $query->whereDate($dateColumn, $request->fecha);
+        } elseif ($periodo == 'mes' && $request->mes) {
+            $query->whereYear($dateColumn, substr($request->mes, 0, 4))
+                  ->whereMonth($dateColumn, substr($request->mes, 5, 2));
+        } elseif ($periodo == 'trimestre' && $request->trimestre && $request->ano) {
+            $query->whereYear($dateColumn, $request->ano);
+            if ($request->trimestre == 1) $query->whereBetween(DB::raw("MONTH($dateColumn)"), [1, 3]);
+            elseif ($request->trimestre == 2) $query->whereBetween(DB::raw("MONTH($dateColumn)"), [4, 6]);
+            elseif ($request->trimestre == 3) $query->whereBetween(DB::raw("MONTH($dateColumn)"), [7, 9]);
+            elseif ($request->trimestre == 4) $query->whereBetween(DB::raw("MONTH($dateColumn)"), [10, 12]);
+        } elseif ($periodo == 'ano' && $request->ano) {
+            $query->whereYear($dateColumn, $request->ano);
         }
     }
 }

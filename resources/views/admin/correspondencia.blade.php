@@ -12,6 +12,53 @@
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 Haz seguimiento a todos los documentos radicados vinculados a tu empresa.
             </p>
+            <div class="p-6 border-b border-[#cfd7e7] dark:border-gray-800">
+                <form action="{{ route('admin.correspondencia') }}" method="GET" class="flex flex-wrap items-end gap-4">
+                    <input type="hidden" name="tab" value="{{ request('tab', 'externa') }}">
+                    
+                    <div class="flex-1 min-w-[200px]">
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Buscar por Asunto, Radicado o Empresa</label>
+                        <div class="relative">
+                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#4c669a] text-lg">search</span>
+                            <input type="text" name="q" value="{{ request('q') }}" placeholder="Escriba algo..." 
+                                class="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-[#0d121b] border border-[#cfd7e7] dark:border-gray-800 rounded-lg text-sm focus:outline-none focus:border-primary transition-all">
+                        </div>
+                    </div>
+
+                    <div class="w-full sm:w-48">
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Ciudad (Externa)</label>
+                        <select name="ciudad" class="w-full px-3 py-2 bg-gray-50 dark:bg-[#0d121b] border border-[#cfd7e7] dark:border-gray-800 rounded-lg text-sm outline-none focus:border-primary">
+                            <option value="">Todas</option>
+                            @foreach($ciudades as $ciu)
+                                <option value="{{ $ciu->ciudad_cod_post }}" {{ request('ciudad') == $ciu->ciudad_cod_post ? 'selected' : '' }}>{{ $ciu->ciudad_nom }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="w-full sm:w-48">
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Tipo Documento</label>
+                        <select name="tipo" class="w-full px-3 py-2 bg-gray-50 dark:bg-[#0d121b] border border-[#cfd7e7] dark:border-gray-800 rounded-lg text-sm outline-none focus:border-primary">
+                            <option value="">Todos</option>
+                            @foreach($tipos as $tp)
+                                <option value="{{ $tp->id_tipo_corres }}" {{ request('tipo') == $tp->id_tipo_corres ? 'selected' : '' }}>{{ $tp->tipo_nombre }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <button type="submit" class="px-5 py-2 bg-primary text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition shadow-lg shadow-primary/20 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[18px]">filter_alt</span>
+                            Filtrar
+                        </button>
+                        @if(request()->anyFilled(['q', 'ciudad', 'tipo']))
+                            <a href="{{ route('admin.correspondencia') }}" class="px-5 py-2 bg-gray-100 text-gray-700 text-sm font-bold rounded-lg hover:bg-gray-200 transition flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[18px]">close</span>
+                                Borrar
+                            </a>
+                        @endif
+                    </div>
+                </form>
+            </div>
         </div>
         <div>
             <button onclick="openExportModalCor()" class="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#161d2b] border border-[#cfd7e7] dark:border-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors dark:text-white shadow-sm">
@@ -111,14 +158,15 @@
                                     $procedencia = $esEmpresa ? $rec->nom_institucion : ($rec->nombre_persona ?? $rec->doc_persona ?? '—');
                                 @endphp
                                 <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors align-top">
-                                    <td class="px-6 py-4">
-                                        <div class="font-medium text-primary dark:text-blue-400">
-                                            {{ $rec->radicado ? $rec->radicado->num_radicado : 'S/R' }}
-                                        </div>
-                                        @if($rec->num_radicado_ext)
-                                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">EXT: {{ $rec->num_radicado_ext }}</div>
-                                        @endif
-                                    </td>
+                                <td class="px-6 py-4" data-label="Radicado">
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 text-xs font-bold border border-[#cfd7e7] dark:border-slate-700">
+                                        <span class="material-symbols-outlined text-[14px]">tag</span>
+                                        {{ $rec->radicado?->num_radicado ?? 'N/A' }}
+                                    </span>
+                                    @if($rec->num_radicado_ext)
+                                        <span class="block text-[10px] text-slate-400 mt-1 uppercase font-medium">Ext: {{ $rec->num_radicado_ext }}</span>
+                                    @endif
+                                </td>
                                     <td class="px-6 py-4">
                                         <div class="font-medium dark:text-white max-w-[180px] break-words whitespace-normal">{{ $procedencia }}</div>
                                         <span class="inline-flex items-center gap-0.5 text-xs {{ $esEmpresa ? 'text-blue-500' : 'text-purple-500' }} mt-0.5">
@@ -159,33 +207,42 @@
                                     <td class="px-6 py-4 hidden lg:table-cell">
                                         <div class="font-medium text-gray-900 dark:text-white">{{ $rec->fecha_hora_recib ? \Carbon\Carbon::parse($rec->fecha_hora_recib)->format('d M Y') : 'N/A' }}</div>
                                     </td>
-                                    <td class="px-6 py-4">
-                                         @php
-                                             $archivosDatos = [
-                                                 'principal' => $rec->archivo ? asset('storage/' . $rec->archivo) : null,
-                                                 'anexos' => [],
-                                                 'anexo_texto' => $rec->anexo,
-                                                 'folios' => $rec->folio
-                                             ];
-                                             if ($rec->anexos) {
-                                                 foreach($rec->anexos as $ax) {
-                                                     $archivosDatos['anexos'][] = ['nombre' => $ax->nombre_original, 'ruta' => asset('storage/' . $ax->ruta_archivo)];
-                                                 }
-                                             }
-                                             if ($rec->detalles) {
-                                                 foreach($rec->detalles as $det) {
-                                                     if ($det->anexosRespuesta) {
-                                                         foreach($det->anexosRespuesta as $axR) {
-                                                             $archivosDatos['anexos'][] = ['nombre' => '(R) ' . $axR->nombre_original, 'ruta' => asset('storage/' . $axR->ruta_archivo)];
-                                                         }
-                                                     }
-                                                 }
-                                             }
-                                         @endphp
-                                         <button type="button" data-archivos="{{ json_encode($archivosDatos) }}" onclick="abrirModalArchivos(this.dataset.archivos)" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-400 rounded-md transition-colors shadow-sm">
-                                             <span class="material-symbols-outlined text-[16px]">folder_open</span> Ver Docs
-                                         </button>
-                                    </td>
+                                     <td class="px-6 py-4">
+                                          @php
+                                              $archivosDatos = [
+                                                  'id' => $rec->id_recibido,
+                                                  'tipo_cor' => 'Externa',
+                                                  'radicado' => $rec->radicado?->num_radicado,
+                                                  'radicado_ext' => $rec->num_radicado_ext,
+                                                  'procedencia' => $procedencia,
+                                                  'asunto' => $rec->asunto,
+                                                  'fecha' => $rec->fecha_hora_recib ? \Carbon\Carbon::parse($rec->fecha_hora_recib)->format('d M Y, h:i A') : 'N/A',
+                                                  'tipo_doc' => $rec->tipo ? $rec->tipo->tipo_nombre : 'Externo',
+                                                  'estado' => $rec->estado ? $rec->estado->estado_nomb : 'Sin estado',
+                                                  'principal' => $rec->archivo ? asset('storage/' . $rec->archivo) : null,
+                                                  'anexos' => [],
+                                                  'anexo_texto' => $rec->anexo,
+                                                  'folios' => $rec->folio
+                                              ];
+                                              if ($rec->anexos) {
+                                                  foreach($rec->anexos as $ax) {
+                                                      $archivosDatos['anexos'][] = ['nombre' => $ax->nombre_original, 'ruta' => asset('storage/' . $ax->ruta_archivo)];
+                                                  }
+                                              }
+                                              if ($rec->detalles) {
+                                                  foreach($rec->detalles as $det) {
+                                                      if ($det->anexosRespuesta) {
+                                                          foreach($det->anexosRespuesta as $axR) {
+                                                              $archivosDatos['anexos'][] = ['nombre' => '(R) ' . $axR->nombre_original, 'ruta' => asset('storage/' . $axR->ruta_archivo)];
+                                                          }
+                                                      }
+                                                  }
+                                              }
+                                          @endphp
+                                          <button type="button" data-detalle="{{ json_encode($archivosDatos) }}" onclick="abrirModalDetalle(this.dataset.detalle)" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-400 rounded-md transition-colors shadow-sm">
+                                              <span class="material-symbols-outlined text-[16px]">visibility</span> Ver Detalle
+                                          </button>
+                                     </td>
                                     <td class="px-6 py-4">
                                         @php
                                             $bgClass = 'bg-gray-100 text-gray-800';
@@ -208,7 +265,7 @@
                     </table>
                 </div>
                 <div class="p-4 border-t border-gray-200 dark:border-gray-700">
-                    {{ $correspondencias->appends(['int_page' => request('int_page'), 'tab' => 'externa'])->links() }}
+                    {{ $correspondencias->appends(request()->except('ext_page'))->links() }}
                 </div>
             </div>
         </div>
@@ -250,45 +307,62 @@
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                             @forelse($correspondenciasInternas as $int)
                                 <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors align-top">
-                                    <td class="px-6 py-4 font-medium text-primary">{{ $int->radicado ? $int->radicado->num_radicado : 'INT-N/A' }}</td>
-                                    <td class="px-6 py-4">{{ $int->quienEnvia ? $int->quienEnvia->emple_nombres . ' ' . $int->quienEnvia->emple_apellidos : 'N/A' }}</td>
-                                    <td class="px-6 py-4">
-                                        @if($int->detalles->count() > 0)
-                                            {{ $int->detalles->first()->quienRecibe ? $int->detalles->first()->quienRecibe->emple_nombres : 'N/A' }}
-                                        @else
-                                            N/A
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4">{{ $int->asunto }}</td>
-                                    <td class="px-6 py-4">{{ \Carbon\Carbon::parse($int->fecha)->format('d M Y') }}</td>
-                                    <td class="px-6 py-4">
-                                        @php
-                                            $archivosInt = [
-                                                'principal' => $int->archivo ? asset('storage/' . $int->archivo) : null,
-                                                'anexos' => [],
-                                                'folios' => $int->folio
-                                            ];
-                                            // Anexos del documento principal
-                                            if ($int->anexos) {
-                                                foreach($int->anexos as $ax) {
-                                                    $archivosInt['anexos'][] = ['nombre' => $ax->nombre_original, 'ruta' => asset('storage/' . $ax->ruta_archivo)];
-                                                }
-                                            }
-                                            // Anexos de respuestas/trazabilidad
-                                            if ($int->detalles) {
-                                                foreach($int->detalles as $det) {
-                                                    if ($det->anexosRespuesta) {
-                                                        foreach($det->anexosRespuesta as $axR) {
-                                                            $archivosInt['anexos'][] = ['nombre' => '(R) ' . $axR->nombre_original, 'ruta' => asset('storage/' . $axR->ruta_archivo)];
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        @endphp
-                                        <button type="button" data-archivos="{{ json_encode($archivosInt) }}" onclick="abrirModalArchivos(this.dataset.archivos)" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors">
-                                            <span class="material-symbols-outlined text-[16px]">folder_open</span> Docs
-                                        </button>
-                                    </td>
+                                    <td class="px-6 py-4" data-label="Radicado">
+                                         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 text-xs font-bold border border-[#cfd7e7] dark:border-slate-700">
+                                             <span class="material-symbols-outlined text-[14px]">tag</span>
+                                             {{ $int->radicado ? $int->radicado->num_radicado : 'INT-N/A' }}
+                                         </span>
+                                     </td>
+                                     <td class="px-6 py-4">{{ $int->quienEnvia ? $int->quienEnvia->emple_nombres . ' ' . $int->quienEnvia->emple_apellidos : 'N/A' }}</td>
+                                     <td class="px-6 py-4">
+                                         @if($int->detalles->count() > 0)
+                                             {{ $int->detalles->first()->quienRecibe ? $int->detalles->first()->quienRecibe->emple_nombres : 'N/A' }}
+                                         @else
+                                             N/A
+                                         @endif
+                                     </td>
+                                     <td class="px-6 py-4">{{ $int->asunto }}</td>
+                                     <td class="px-6 py-4">{{ \Carbon\Carbon::parse($int->fecha)->format('d M Y') }}</td>
+                                     <td class="px-6 py-4">
+                                         @php
+                                             $quienRecibeNom = 'N/A';
+                                             if($int->detalles->count() > 0 && $int->detalles->first()->quienRecibe) {
+                                                 $quienRecibeNom = $int->detalles->first()->quienRecibe->emple_nombres . ' ' . $int->detalles->first()->quienRecibe->emple_apellidos;
+                                             }
+
+                                             $archivosInt = [
+                                                 'id' => $int->id_envio,
+                                                 'tipo_cor' => 'Interna',
+                                                 'radicado' => $int->radicado?->num_radicado,
+                                                 'procedencia' => $int->quienEnvia ? $int->quienEnvia->emple_nombres . ' ' . $int->quienEnvia->emple_apellidos : 'N/A',
+                                                 'destinatario' => $quienRecibeNom,
+                                                 'asunto' => $int->asunto,
+                                                 'fecha' => \Carbon\Carbon::parse($int->fecha)->format('d M Y, h:i A'),
+                                                 'tipo_doc' => $int->tipoEnvio ? $int->tipoEnvio->tipo_nombre : 'Interna',
+                                                 'estado' => $int->estadoEnvio ? $int->estadoEnvio->estado_nomb : 'Sin estado',
+                                                 'principal' => $int->archivo ? asset('storage/' . $int->archivo) : null,
+                                                 'anexos' => [],
+                                                 'folios' => $int->folio
+                                             ];
+                                             if ($int->anexos) {
+                                                 foreach($int->anexos as $ax) {
+                                                     $archivosInt['anexos'][] = ['nombre' => $ax->nombre_original, 'ruta' => asset('storage/' . $ax->ruta_archivo)];
+                                                 }
+                                             }
+                                             if ($int->detalles) {
+                                                 foreach($int->detalles as $det) {
+                                                     if ($det->anexosRespuesta) {
+                                                         foreach($det->anexosRespuesta as $axR) {
+                                                             $archivosInt['anexos'][] = ['nombre' => '(R) ' . $axR->nombre_original, 'ruta' => asset('storage/' . $axR->ruta_archivo)];
+                                                         }
+                                                     }
+                                                 }
+                                             }
+                                         @endphp
+                                         <button type="button" data-detalle="{{ json_encode($archivosInt) }}" onclick="abrirModalDetalle(this.dataset.detalle)" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors">
+                                             <span class="material-symbols-outlined text-[16px]">visibility</span> Ver Detalle
+                                         </button>
+                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex flex-col gap-2 items-start">
                                             <span class="px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-800">{{ $int->estadoEnvio ? $int->estadoEnvio->estado_nomb : 'Sin estado' }}</span>
@@ -313,18 +387,20 @@
 
 </div>
 
-<!-- Modal Ver Archivos (Unificado) -->
-<div id="modalArchivos" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
-    <div class="bg-white dark:bg-slate-900 rounded-[1rem] shadow-xl w-full max-w-2xl flex flex-col max-h-[90vh] overflow-hidden">
+<!-- Modal Ver Detalle (Unificado) -->
+<div id="modalDetalleCor" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-slate-900 rounded-[1rem] shadow-xl w-full max-w-3xl flex flex-col max-h-[95vh] overflow-hidden">
         <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50">
             <h3 class="font-bold text-lg text-gray-800 dark:text-white flex items-center gap-2">
-                <span class="material-symbols-outlined text-blue-600">folder_open</span>
-                Documentos y Anexos
+                <span class="material-symbols-outlined text-primary">description</span>
+                Detalle de Correspondencia
             </h3>
-            <button onclick="toggleModal('modalArchivos')" class="text-gray-400 hover:text-gray-600"><span class="material-symbols-outlined">close</span></button>
+            <button onclick="toggleModal('modalDetalleCor')" class="text-gray-400 hover:text-gray-600"><span class="material-symbols-outlined">close</span></button>
         </div>
-        <div class="p-6 space-y-4 overflow-y-auto flex-1" id="modalArchivosContent"></div>
-        <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end bg-gray-50"><button type="button" onclick="toggleModal('modalArchivos')" class="px-4 py-2 bg-gray-200 rounded-lg text-sm text-gray-800">Cerrar</button></div>
+        <div class="p-6 space-y-6 overflow-y-auto flex-1" id="modalDetalleContent"></div>
+        <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end bg-gray-50 dark:bg-slate-800/80">
+            <button type="button" onclick="toggleModal('modalDetalleCor')" class="px-6 py-2 bg-gray-200 dark:bg-slate-700 rounded-lg text-sm text-gray-800 dark:text-white font-bold">Cerrar</button>
+        </div>
     </div>
 </div>
 
@@ -360,31 +436,108 @@
         sessionStorage.setItem('activeCorrespondenceTab', tab);
     }
 
-    function abrirModalArchivos(datosJson) {
+    function abrirModalDetalle(datosJson) {
         const datos = JSON.parse(datosJson);
-        const container = document.getElementById('modalArchivosContent');
-        let html = '<div class="space-y-4">';
+        const container = document.getElementById('modalDetalleContent');
+        
+        let html = `
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {{-- Sección Info Básica --}}
+                <div class="space-y-4">
+                    <div class="border-b pb-2">
+                        <h4 class="text-xs font-black text-slate-400 uppercase tracking-wider">Información General</h4>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-[10px] text-gray-500 uppercase font-black">Radicado</p>
+                            <p class="text-sm font-bold text-primary">${datos.radicado || 'N/A'}</p>
+                            ${datos.radicado_ext ? `<p class="text-[10px] text-slate-400">Ext: ${datos.radicado_ext}</p>` : ''}
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-gray-500 uppercase font-black">Tipo Trámite</p>
+                            <p class="text-sm font-bold text-gray-700 dark:text-gray-200">${datos.tipo_cor}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-gray-500 uppercase font-black">Fecha Registro</p>
+                            <p class="text-xs text-gray-700 dark:text-gray-300 font-medium">${datos.fecha}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-gray-500 uppercase font-black">Estado Actual</p>
+                            <span class="px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-black uppercase rounded-full border border-blue-100">${datos.estado}</span>
+                        </div>
+                    </div>
 
-        if (datos.principal) {
-            html += `<div class="flex items-center justify-between bg-gray-50 p-3 rounded-lg border">
-                        <span class="text-sm font-medium">Documento Principal</span>
-                        <a href="${datos.principal}" target="_blank" class="px-3 py-1 bg-blue-50 text-blue-700 rounded text-xs">Ver archivo</a>
-                     </div>`;
-        }
+                    <div class="pt-2">
+                        <p class="text-[10px] text-gray-500 uppercase font-black mb-1">Asunto / Descripción</p>
+                        <div class="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-800 text-sm italic text-slate-600 dark:text-slate-400">
+                            "${datos.asunto}"
+                        </div>
+                    </div>
+                </div>
 
-        if (datos.anexo_texto) html += `<p class="text-sm text-gray-600"><strong>Anexo Físico:</strong> ${datos.anexo_texto}</p>`;
-        if (datos.folios > 0) html += `<p class="text-sm text-gray-600"><strong>Folios:</strong> ${datos.folios}</p>`;
+                {{-- Sección Participantes y Archivos --}}
+                <div class="space-y-4">
+                    <div class="border-b pb-2">
+                        <h4 class="text-xs font-black text-slate-400 uppercase tracking-wider">Actores y Documentos</h4>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div class="flex items-start gap-2">
+                            <span class="material-symbols-outlined text-slate-400 text-sm mt-0.5">person</span>
+                            <div>
+                                <p class="text-[10px] text-gray-500 uppercase font-black">Remitente / Procedencia</p>
+                                <p class="text-sm font-bold text-gray-800 dark:text-white">${datos.procedencia}</p>
+                            </div>
+                        </div>
+                        ${datos.destinatario ? `
+                        <div class="flex items-start gap-2">
+                            <span class="material-symbols-outlined text-slate-400 text-sm mt-0.5">forward_to_inbox</span>
+                            <div>
+                                <p class="text-[10px] text-gray-500 uppercase font-black">Destinatario Principal</p>
+                                <p class="text-sm font-bold text-gray-800 dark:text-white">${datos.destinatario}</p>
+                            </div>
+                        </div>` : ''}
+                    </div>
 
-        if (datos.anexos && datos.anexos.length > 0) {
-            html += `<h4 class="text-xs font-bold text-gray-500 uppercase">Anexos digitales</h4><div class="grid grid-cols-1 gap-2">`;
-            datos.anexos.forEach(ax => {
-                html += `<a href="${ax.ruta}" target="_blank" class="flex items-center gap-2 p-2 border rounded hover:bg-gray-50 text-sm"><span class="material-symbols-outlined text-gray-400">attachment</span> ${ax.nombre}</a>`;
-            });
-            html += `</div>`;
-        }
-        html += '</div>';
+                    <div class="pt-4 space-y-3">
+                        <p class="text-[10px] text-gray-500 uppercase font-black mb-2 flex items-center gap-1">
+                            <span class="material-symbols-outlined text-sm">attach_file</span> Archivos Adjuntos
+                        </p>
+                        
+                        {{-- Principal --}}
+                        ${datos.principal ? `
+                        <a href="${datos.principal}" target="_blank" class="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-xl hover:bg-blue-100 transition-colors group">
+                           <div class="flex items-center gap-2">
+                               <span class="material-symbols-outlined text-blue-600">picture_as_pdf</span>
+                               <span class="text-xs font-bold text-blue-900 dark:text-blue-200">Documento Principal</span>
+                               <span class="text-[10px] text-blue-400">(${datos.folios || 0} folios)</span>
+                           </div>
+                           <span class="material-symbols-outlined text-blue-400 group-hover:translate-x-1 transition-transform">open_in_new</span>
+                        </a>` : '<p class="text-xs text-slate-400 italic">No hay documento principal cargado.</p>'}
+
+                        {{-- Anexos --}}
+                        ${datos.anexos && datos.anexos.length > 0 ? `
+                        <div class="grid grid-cols-1 gap-2 mt-2">
+                            ${datos.anexos.map(ax => `
+                                <a href="${ax.ruta}" target="_blank" class="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-800 border rounded-lg hover:border-primary transition-all text-xs text-slate-600 dark:text-slate-300">
+                                    <span class="material-symbols-outlined text-sm">attachment</span>
+                                    <span class="truncate flex-1">${ax.nombre}</span>
+                                    <span class="material-symbols-outlined text-xs">download</span>
+                                </a>
+                            `).join('')}
+                        </div>` : ''}
+
+                        ${datos.anexo_texto ? `
+                        <div class="p-2 border-l-4 border-orange-400 bg-orange-50 dark:bg-orange-900/20 text-[11px] text-orange-800 dark:text-orange-200">
+                            <strong>Nota de Anexo Físico:</strong> ${datos.anexo_texto}
+                        </div>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+
         container.innerHTML = html;
-        toggleModal('modalArchivos');
+        toggleModal('modalDetalleCor');
     }
 
     function openExportModalCor() { document.getElementById('exportModalCor').classList.remove('hidden'); }

@@ -240,6 +240,7 @@ Route::prefix('empleado')->middleware(['auth:web', 'licencia.activa'])->name('em
     Route::post('/correspondencia-ventanilla/nueva', [EmpleadoCorrespondenciaController::class, 'nuevaVentanilla'])->name('nueva_ventanilla');
     Route::post('/correspondencia-interna/gestionar-rechazo', [EmpleadoCorrespondenciaController::class, 'gestionarRechazoInterno'])->name('gestionar_rechazo_interna');
     Route::get('/correspondencia-interna/{id}/historial', [EmpleadoCorrespondenciaController::class, 'historialInterna'])->name('historial_interna');
+    Route::get('/correspondencia-recibida/{id}/historial', [EmpleadoCorrespondenciaController::class, 'historialExterna'])->name('historial_externa');
     Route::get('/envios-internos', [EmpleadoCorrespondenciaController::class, 'enviosInternos'])->name('envios_internos');
     
     Route::get('/reportes', [EmpleadoReporteController::class, 'index'])->name('reportes');
@@ -270,6 +271,8 @@ Route::prefix('remitente')->middleware(['auth:remitente', 'licencia.activa'])->n
     Route::get('/recibidos', [RemitenteDashboardController::class, 'recibidosProceso'])->name('recibidos');
     Route::get('/proceso-salientes', [RemitenteDashboardController::class, 'procesoSalientes'])->name('salientes');
     Route::get('/finalizados', [RemitenteDashboardController::class, 'finalizados'])->name('finalizados');
+    Route::get('/reportes', [RemitenteDashboardController::class, 'reportes'])->name('reportes');
+    Route::post('/reportes/export/pdf', [RemitenteDashboardController::class, 'exportPdf'])->name('reportes.export.pdf');
     Route::get('/history/{id}', [RemitenteDashboardController::class, 'getHistory'])->name('history');
     Route::post('/{id}/finalize', [RemitenteDashboardController::class, 'finalize'])->name('finalize');
     Route::post('/{id}/store-saliente', [RemitenteDashboardController::class, 'storeSalienteFromResponse'])->name('store_saliente');

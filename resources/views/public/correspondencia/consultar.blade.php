@@ -191,6 +191,51 @@
                         </div>
                     </div>
 
+                    {{-- Sección de Documentos Enviados Originalmente --}}
+                    @if($resultado->archivo || ($resultado->anexos && $resultado->anexos->count() > 0))
+                        <div class="mt-4 pt-4 border-t border-blue-100 dark:border-slate-700 relative z-10">
+                            <h4 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-lg">drive_folder_upload</span>
+                                Documentos Enviados
+                            </h4>
+                            <div class="space-y-3">
+                                @if($resultado->archivo)
+                                    <div class="flex items-center justify-between bg-white dark:bg-slate-900/50 p-3 rounded-xl border border-blue-100 dark:border-slate-700">
+                                        <div class="flex items-center gap-3">
+                                            <span class="material-symbols-outlined text-blue-500">description</span>
+                                            <div class="flex flex-col">
+                                                <p class="text-[11px] font-bold text-slate-700 dark:text-slate-300 leading-none">Documento Principal</p>
+                                                <p class="text-[9px] text-slate-500 mt-1">Archivo base de la correspondencia</p>
+                                            </div>
+                                        </div>
+                                        <a href="{{ asset('storage/' . $resultado->archivo) }}" target="_blank" class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 text-white rounded-lg text-[10px] font-bold hover:bg-blue-600 transition-colors shrink-0">
+                                            <span class="material-symbols-outlined text-sm">visibility</span>
+                                            Ver
+                                        </a>
+                                    </div>
+                                @endif
+
+                                @if($resultado->anexos && $resultado->anexos->count() > 0)
+                                    @foreach($resultado->anexos as $anexo)
+                                        <div class="flex items-center justify-between bg-white dark:bg-slate-900/50 p-3 rounded-xl border border-blue-100 dark:border-slate-700">
+                                            <div class="flex items-center gap-3">
+                                                <span class="material-symbols-outlined text-slate-500">attach_file</span>
+                                                <div class="flex flex-col">
+                                                    <p class="text-[11px] font-bold text-slate-700 dark:text-slate-300 leading-none">Anexo Inicial</p>
+                                                    <p class="text-[9px] text-slate-500 mt-1 truncate max-w-[150px]">{{ $anexo->nombre_original }}</p>
+                                                </div>
+                                            </div>
+                                            <a href="{{ asset('storage/' . $anexo->ruta_archivo) }}" target="_blank" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-500 text-white rounded-lg text-[10px] font-bold hover:bg-slate-600 transition-colors shrink-0">
+                                                <span class="material-symbols-outlined text-sm">visibility</span>
+                                                Ver
+                                            </a>
+                                        </div>
+                                    @endforeach
+                                @endif
+                            </div>
+                        </div>
+                    @endif
+
                     {{-- Sección de Documentos de Respuesta --}}
                     @if($resultado->detalles && $resultado->detalles->count() > 0)
                         <div class="mt-4 pt-4 border-t border-blue-100 dark:border-slate-700 relative z-10">

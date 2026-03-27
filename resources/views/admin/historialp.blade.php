@@ -42,6 +42,7 @@
                                 <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Pagado por</th>
                                 <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Fecha de Pago</th>
                                 <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Inicio de licencia</th>
+                                <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Monto</th>
                                 <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Estado</th>
                                 <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase">Comprobante</th>
                             </tr>
@@ -87,6 +88,10 @@
 
                                     <td class="px-6 py-4 text-sm" data-label="Inicio de licencia">
                                         {{ $pago->fecha_inicio ? \Carbon\Carbon::parse($pago->fecha_inicio)->format('Y-m-d') : '—' }}
+                                    </td>
+
+                                    <td class="px-6 py-4 text-sm font-bold text-gray-900 dark:text-gray-100" data-label="Monto">
+                                        {{ $pago->moneda }} {{ number_format($pago->monto, 0, ',', '.') }}
                                     </td>
 
                                     <td class="px-6 py-4 text-sm font-bold" data-label="Estado">
@@ -197,14 +202,14 @@
 
                 <div class="flex flex-col gap-3">
                     <!-- PDF -->
-                    <a href="{{ route('pagos.export.pdf') }}"
+                    <a href="{{ route('admin.pagos.export.pdf') }}"
                         class="flex items-center gap-2 px-4 py-2 text-sm font-semibold border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
                         <span class="material-symbols-outlined text-red-600">picture_as_pdf</span>
                         PDF
                     </a>
 
                     <!-- Excel -->
-                    <a href="{{ route('pagos.export.excel') }}"
+                    <a href="{{ route('admin.pagos.export.excel') }}"
                         class="flex items-center gap-2 px-4 py-2 text-sm font-semibold border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
                         <span class="material-symbols-outlined text-green-600">grid_on</span>
                         Excel

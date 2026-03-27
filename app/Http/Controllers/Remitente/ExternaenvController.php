@@ -33,6 +33,10 @@ class ExternaenvController extends Controller
         ])
         ->where('nit_empresa', $nitEmpresa)
         ->where('id_estado_envio', '!=', 0) // Exclude 'En espera' from external view until registered
+        ->orderByRaw('DATE(fecha) DESC')
+        ->orderBy(\App\Models\Tipo::select('id_prioridad')
+            ->whereColumn('tipo.id_tipo', 'envio.id_tipo_envio')
+            ->limit(1), 'asc')
         ->orderBy('fecha', 'desc');
 
         if ($search) {

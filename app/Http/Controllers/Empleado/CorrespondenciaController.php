@@ -9,6 +9,9 @@ use App\Models\DetalleEnvio;
 use App\Models\DetalleRecibido;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\RespuestaCorrespondenciaExterna;
+
 
 class CorrespondenciaController extends Controller
 {
@@ -401,6 +404,18 @@ class CorrespondenciaController extends Controller
                 $recibido->id_estado_rec = 8;
             }
             $recibido->save();
+
+            // NOTIFICACIÓN POR CORREO AL REMITENTE (SI EXISTE CORREO)
+            // Se envía si el estado es 'Resuelto' (ID 9)
+            if ($nuevoRegistro->id_estado_rec == 9 && !empty($recibido->correo_persona)) {
+                try {
+                    Mail::to($recibido->correo_persona)
+                        ->send(new RespuestaCorrespondenciaExterna($recibido, $nuevoRegistro));
+                    Log::info("Email de notificación de respuesta enviado a: " . $recibido->correo_persona . " para Radicado: " . ($recibido->radicado->num_radicado ?? 'N/A'));
+                } catch (\Exception $e) {
+                    Log::error("Error enviando email de notificación de respuesta: " . $e->getMessage());
+                }
+            }
         }
 
         // Ya no iteramos sobre Anexos previos para evitar duplicados en la trazabilidad
@@ -783,6 +798,22 @@ class CorrespondenciaController extends Controller
         $empleados = \App\Models\Empleado::where('nit_empresa', Auth::user()->nit_empresa)->where('emple_doc', '!=', Auth::user()->emple_doc)->with('area')->get();
 
         return view('empleado.historial_interna', compact('detalle', 'trazabilidad', 'destinatarios', 'empleados'));
+    }
+
+    public function historialExterna($id)
+    {
+        $detalle = \App\Models\DetalleRecibido::with(['recibido.radicado', 'recibido.tipo.prioridad', 'recibido.anexos', 'recibido.ciudad', 'empleado.area', 'estado'])
+            ->findOrFail($id);
+
+        $trazabilidad = \App\Models\DetalleRecibido::with(['empleado.area', 'estado', 'anexosRespuesta'])
+            ->where('det_id_recibido', $detalle->det_id_recibido)
+            ->orderBy('fecha_re', 'asc')
+            ->get();
+
+        $destinatarios = $trazabilidad->groupBy('det_doc_empleado');
+        $empleados = \App\Models\Empleado::where('nit_empresa', Auth::user()->nit_empresa)->where('emple_doc', '!=', Auth::user()->emple_doc)->with('area')->get();
+
+        return view('empleado.historial_externa', compact('detalle', 'trazabilidad', 'destinatarios', 'empleados'));
     }
 
     public function enviosInternos()

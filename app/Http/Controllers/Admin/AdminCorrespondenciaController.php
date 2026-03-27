@@ -15,12 +15,12 @@ use Illuminate\Support\Facades\Auth;
 
 class AdminCorrespondenciaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $nitEmpresa = Auth::user()->nit_empresa;
 
         // ---- 1. Correspondencia Externa (Recibida) ----
-        $queryExt = $this->getBaseRecibidosQuery($nitEmpresa);
+        $queryExt = $this->getBaseRecibidosQuery($nitEmpresa, $request);
 
         $totalRecibidas = (clone $queryExt)->count();
         $enTramite      = (clone $queryExt)->where('id_estado_rec', 8)->count();
@@ -28,10 +28,10 @@ class AdminCorrespondenciaController extends Controller
         $archivadas     = (clone $queryExt)->where('id_estado_rec', 10)->count();
         $vencidas       = 0; 
 
-        $correspondencias = $queryExt->orderBy('id_recibido', 'desc')->paginate(15, ['*'], 'ext_page');
+        $correspondencias = $queryExt->paginate(15, ['*'], 'ext_page');
 
         // ---- 2. Correspondencia Interna (Envio) ----
-        $queryInt = $this->getBaseEnviosQuery($nitEmpresa);
+        $queryInt = $this->getBaseEnviosQuery($nitEmpresa, $request);
 
         $totalInternas = (clone $queryInt)->count();
         $enTramiteInt  = (clone $queryInt)->where('id_estado_envio', 8)->count();
@@ -39,11 +39,16 @@ class AdminCorrespondenciaController extends Controller
         $archivadasInt  = (clone $queryInt)->where('id_estado_envio', 10)->count();
         $vencidasInt   = 0; 
 
-        $correspondenciasInternas = $queryInt->orderBy('id_envio', 'desc')->paginate(15, ['*'], 'int_page');
+        $correspondenciasInternas = $queryInt->paginate(15, ['*'], 'int_page');
+
+        // Data for filters
+        $ciudades = \App\Models\Ciudad::orderBy('ciudad_nom')->get();
+        $tipos = \App\Models\Tipo::orderBy('tipo_nombre')->get();
 
         return view('admin.correspondencia', compact(
             'correspondencias', 'totalRecibidas', 'enTramite', 'finalizadas', 'archivadas', 'vencidas',
-            'correspondenciasInternas', 'totalInternas', 'enTramiteInt', 'finalizadasInt', 'archivadasInt', 'vencidasInt'
+            'correspondenciasInternas', 'totalInternas', 'enTramiteInt', 'finalizadasInt', 'archivadasInt', 'vencidasInt',
+            'ciudades', 'tipos'
         ));
     }
 
@@ -138,9 +143,9 @@ class AdminCorrespondenciaController extends Controller
     // MÉTODOS PRIVADOS PARA DRY (Consultas Base)
     // ==========================================================
 
-    private function getBaseRecibidosQuery($nitEmpresa)
+    private function getBaseRecibidosQuery($nitEmpresa, Request $request = null)
     {
-        return Recibido::with(['destinatarios', 'registradoPor', 'estado', 'ciudad', 'radicado', 'tipo.prioridad', 'anexos', 'detalles.anexosRespuesta'])
+        $query = Recibido::with(['destinatarios', 'registradoPor', 'estado', 'ciudad', 'radicado', 'tipo.prioridad', 'anexos', 'detalles.anexosRespuesta'])
             ->where(function($q) use ($nitEmpresa) {
                 $q->where('recibido.nit_empresa', $nitEmpresa)
                   ->orWhereHas('registradoPor', function($q2) use ($nitEmpresa) {
@@ -150,11 +155,39 @@ class AdminCorrespondenciaController extends Controller
                       $q2->where('nit_empresa', $nitEmpresa);
                   });
             });
+
+        if ($request) {
+            if ($request->q) {
+                $query->where(function($q) use ($request) {
+                    $q->where('asunto', 'LIKE', '%' . $request->q . '%')
+                      ->orWhereHas('radicado', function($qr) use ($request) {
+                          $qr->where('num_radicado', 'LIKE', '%' . $request->q . '%');
+                      })
+                      ->orWhere('nom_institucion', 'LIKE', '%' . $request->q . '%')
+                      ->orWhere('nombre_persona', 'LIKE', '%' . $request->q . '%');
+                });
+            }
+            if ($request->ciudad) {
+                $query->where('ciudad_proveniente', $request->ciudad);
+            }
+            if ($request->tipo) {
+                $query->where('id_tipo', $request->tipo);
+            }
+        }
+
+        // Ordenamiento: 1. Prioridad (ASC), 2. Fecha de Recepción (DESC)
+        $query->orderByRaw('DATE(fecha_hora_recib) DESC')
+              ->orderBy(\App\Models\Tipo::select('id_prioridad')
+                  ->whereColumn('tipo.id_tipo', 'recibido.id_tipo')
+                  ->limit(1), 'asc')
+              ->orderBy('fecha_hora_recib', 'desc');
+
+        return $query;
     }
 
-    private function getBaseEnviosQuery($nitEmpresa)
+    private function getBaseEnviosQuery($nitEmpresa, Request $request = null)
     {
-        return Envio::with(['detalles.quienRecibe', 'quienEnvia', 'estadoEnvio', 'radicado', 'tipoEnvio.prioridad', 'anexos', 'detalles.anexosRespuesta'])
+        $query = Envio::with(['detalles.quienRecibe', 'quienEnvia', 'estadoEnvio', 'radicado', 'tipoEnvio.prioridad', 'anexos', 'detalles.anexosRespuesta'])
             ->where(function($q) use ($nitEmpresa) {
                 $q->where('envio.nit_empresa', $nitEmpresa)
                   ->orWhereHas('quienEnvia', function($q2) use ($nitEmpresa) {
@@ -164,6 +197,29 @@ class AdminCorrespondenciaController extends Controller
                       $q2->where('nit_empresa', $nitEmpresa);
                   });
             });
+
+        if ($request) {
+            if ($request->q) {
+                $query->where(function($q) use ($request) {
+                    $q->where('asunto', 'LIKE', '%' . $request->q . '%')
+                      ->orWhereHas('radicado', function($qr) use ($request) {
+                          $qr->where('num_radicado', 'LIKE', '%' . $request->q . '%');
+                      });
+                });
+            }
+            if ($request->tipo) {
+                $query->where('id_tipo_envio', $request->tipo);
+            }
+        }
+
+        // Ordenamiento: 1. Prioridad (ASC), 2. Fecha de Envío (DESC)
+        $query->orderByRaw('DATE(fecha) DESC')
+              ->orderBy(\App\Models\Tipo::select('id_prioridad')
+                  ->whereColumn('tipo.id_tipo', 'envio.id_tipo_envio')
+                  ->limit(1), 'asc')
+              ->orderBy('fecha', 'desc');
+
+        return $query;
     }
 
     private function getDigitalAnexosCount($item)

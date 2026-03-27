@@ -263,28 +263,77 @@
 
                     <div class="relative" id="ciudad-proveniente-wrapper">
                         <label class="block text-sm font-medium text-[#0d121b] dark:text-gray-200 mb-1">Ciudad de Origen <span class="text-red-500">*</span></label>
-                        <select name="ciudad_proveniente" id="ciudad_proveniente_value" class="w-full rounded-lg border @error('ciudad_proveniente') border-red-500 @else border-[#cfd7e7] dark:border-slate-700 @enderror bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none select2-ciudad-public" required>
-                            <option value="">Seleccione Ciudad...</option>
-                            @foreach($ciudades as $ciudad)
-                                <option value="{{ $ciudad->ciudad_cod_post }}" {{ old('ciudad_proveniente') == $ciudad->ciudad_cod_post ? 'selected' : '' }}>
-                                    {{ $ciudad->ciudad_nom }} - {{ $ciudad->departamento->depar_nom ?? '' }}
-                                </option>
-                            @endforeach
-                        </select>
+                        
+                        <!-- Input oculto para ciudad (se mantiene el ID ciudad_proveniente_value para el JS existente) -->
+                        <input type="hidden" name="ciudad_proveniente" id="ciudad_proveniente_value" value="{{ old('ciudad_proveniente') }}" required>
+                        
+                        <!-- Botón simulador de Select + botón X para limpiar -->
+                        <div class="flex items-center gap-2">
+                            <button type="button" id="btnToggleCiudades" class="flex-1 flex items-center justify-between rounded-lg border @error('ciudad_proveniente') border-red-500 @else border-[#cfd7e7] dark:border-slate-700 @enderror bg-white dark:bg-slate-800 text-left p-2.5 focus:ring-2 focus:ring-primary/50 outline-none transition-colors group">
+                                <span id="btnToggleCiudadesLabel" class="block truncate {{ old('ciudad_proveniente') ? 'text-slate-900 dark:text-white font-medium' : 'text-slate-400 dark:text-gray-400' }}">
+                                    @if(old('ciudad_proveniente'))
+                                        @php
+                                            $oldCity = $ciudades->firstWhere('ciudad_cod_post', old('ciudad_proveniente'));
+                                        @endphp
+                                        {{ $oldCity ? $oldCity->ciudad_nom : 'Seleccione Ciudad...' }}
+                                    @else
+                                        Seleccione Ciudad...
+                                    @endif
+                                </span>
+                                <span class="material-symbols-outlined text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors pointer-events-none">location_city</span>
+                            </button>
+                        </div>
+                        
+                        <!-- Dropdown Ciudades -->
+                        <div id="ciudadesDropdown" class="hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl overflow-hidden">
+                            <div class="p-2 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 sticky top-0">
+                                <div class="relative">
+                                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+                                    <input type="text" id="buscarCiudadInput" class="w-full text-sm rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white pl-9 pr-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 max-h-12" placeholder="Buscar por ciudad o departamento...">
+                                </div>
+                            </div>
+                            <ul id="listaCiudades" class="max-h-60 overflow-y-auto text-sm text-slate-700 dark:text-slate-300">
+                                <!-- Llenado por JavaScript -->
+                            </ul>
+                        </div>
+                        
                         @error('ciudad_proveniente') <p class="text-xs text-red-500 mt-1" id="error_ciudad">{{ $message }}</p> @enderror
                     </div>
 
-                    <div>
+                    <div class="relative" id="tipo-correspondencia-wrapper">
                         <label class="block text-sm font-medium text-[#0d121b] dark:text-gray-200 mb-1">Tipo de Correspondencia <span class="text-red-500">*</span></label>
-                        <select name="id_tipo" id="id_tipo" class="w-full rounded-lg border @error('id_tipo') border-red-500 @else border-[#cfd7e7] dark:border-slate-700 @enderror bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none select2-tipo-public" required>
-                            <option value="">Seleccione...</option>
-                            @foreach($tipos as $tipo)
-                                <option value="{{ $tipo->id_tipo }}" {{ old('id_tipo') == $tipo->id_tipo ? 'selected' : '' }}>
-                                    {{ $tipo->tipo_nombre }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <p id="error-id_tipo" class="text-sm text-red-600 mt-1 hidden"></p>
+                        
+                        <!-- Input oculto para tipo -->
+                        <input type="hidden" name="id_tipo" id="id_tipo_value" value="{{ old('id_tipo') }}" required>
+                        
+                        <!-- Botón simulador de Select -->
+                        <button type="button" id="btnToggleTipos" class="w-full flex items-center justify-between rounded-lg border @error('id_tipo') border-red-500 @else border-[#cfd7e7] dark:border-slate-700 @enderror bg-white dark:bg-slate-800 text-left p-2.5 focus:ring-2 focus:ring-primary/50 outline-none transition-colors group">
+                            <span id="btnToggleTiposLabel" class="block truncate {{ old('id_tipo') ? 'text-slate-900 dark:text-white font-medium' : 'text-slate-400 dark:text-gray-400' }}">
+                                @if(old('id_tipo'))
+                                    @php
+                                        $oldTipo = $tipos->firstWhere('id_tipo', old('id_tipo'));
+                                    @endphp
+                                    {{ $oldTipo ? $oldTipo->tipo_nombre : 'Seleccione Tipo...' }}
+                                @else
+                                    Seleccione Tipo...
+                                @endif
+                            </span>
+                            <span class="material-symbols-outlined text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors pointer-events-none">category</span>
+                        </button>
+                        
+                        <!-- Dropdown Tipos -->
+                        <div id="tiposDropdown" class="hidden absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl overflow-hidden">
+                            <div class="p-2 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 sticky top-0">
+                                <div class="relative">
+                                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+                                    <input type="text" id="buscarTipoInput" class="w-full text-sm rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white pl-9 pr-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 max-h-12" placeholder="Buscar tipo...">
+                                </div>
+                            </div>
+                            <ul id="listaTipos" class="max-h-60 overflow-y-auto text-sm text-slate-700 dark:text-slate-300">
+                                <!-- Llenado por JavaScript -->
+                            </ul>
+                        </div>
+                        
                         @error('id_tipo') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
 
@@ -530,14 +579,11 @@
                 const labelBtnEmpresa = document.getElementById('btnToggleEmpresasLabel');
                 const errorEmpresa = document.getElementById('error_empresa');
 
-                function renderEmpresas(empresasMostrar, isSearching = false) {
+                function renderEmpresas(empresasMostrar) {
                     listaEmpresasEl.innerHTML = '';
-                    if (!isSearching) {
-                        listaEmpresasEl.innerHTML = '<li class="px-3 py-4 text-slate-500 text-center text-sm font-medium">Escriba el NIT o el Nombre completo para buscar...</li>';
-                        return;
-                    }
                     if (empresasMostrar.length === 0) {
                         listaEmpresasEl.innerHTML = '<li class="px-3 py-3 text-slate-400 italic text-sm text-center">No se encontraron empresas.</li>';
+                        dropdownEmpresas.classList.remove('hidden'); // Keep dropdown visible to show "No results"
                         return;
                     }
                     const totalMostrados = Math.min(empresasMostrar.length, 50);
@@ -564,34 +610,100 @@
                             dropdownEmpresas.classList.add('hidden');
                             inputBuscarEmpresa.value = '';
                             validarCampoEspecial('empresa_destino', true);
-                            renderEmpresas([], false);
+                            // Do not re-render all companies after selection
                             // Mostrar botón X
                             const xBtn = document.getElementById('btnClearEmpresa');
                             if (xBtn) xBtn.classList.remove('hidden');
                         });
                         listaEmpresasEl.appendChild(li);
                     }
+                    dropdownEmpresas.classList.remove('hidden'); // Show dropdown if there are results
                 }
+
+                // Do not render all companies initially
+                // renderEmpresas(TODAS_EMPRESAS);
 
                 btnToggleEmpresas.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    dropdownEmpresas.classList.toggle('hidden');
-                    if (!dropdownEmpresas.classList.contains('hidden') && inputBuscarEmpresa.value.trim() === '') {
-                        renderEmpresas([], false);
+                    // If dropdown is already open, close it.
+                    // If it's closed, open it and trigger a search if input has value.
+                    if (dropdownEmpresas.classList.contains('hidden')) {
+                        if (inputBuscarEmpresa.value.trim().length > 0) {
+                            const q = inputBuscarEmpresa.value.trim().toLowerCase();
+                            const filtradas = TODAS_EMPRESAS.filter(c => String(c.nit_empresa).toLowerCase().includes(q) || String(c.nomb_empresa).toLowerCase().includes(q));
+                            renderEmpresas(filtradas);
+                        } else {
+                            // If input is empty, just show the dropdown with no results or a prompt
+                            listaEmpresasEl.innerHTML = '<li class="px-3 py-3 text-slate-400 italic text-sm text-center">Escriba para buscar empresas.</li>';
+                            dropdownEmpresas.classList.remove('hidden');
+                        }
                         inputBuscarEmpresa.focus();
+                    } else {
+                        dropdownEmpresas.classList.add('hidden');
                     }
                 });
 
                 inputBuscarEmpresa.addEventListener('input', function() {
                     const q = this.value.trim().toLowerCase();
-                    if (q.length === 0) { renderEmpresas([], false); return; }
+                    if (q.length === 0) {
+                        listaEmpresasEl.innerHTML = '<li class="px-3 py-3 text-slate-400 italic text-sm text-center">Escriba para buscar empresas.</li>';
+                        dropdownEmpresas.classList.remove('hidden'); // Keep dropdown visible with prompt
+                        return;
+                    }
                     const filtradas = TODAS_EMPRESAS.filter(c => String(c.nit_empresa).toLowerCase().includes(q) || String(c.nomb_empresa).toLowerCase().includes(q));
-                    renderEmpresas(filtradas, true);
+                    renderEmpresas(filtradas);
+                });
+
+                // ----- 3. Buscador Tipos de Correspondencia -----
+                const TODOS_TIPOS = @json($tipos);
+                const btnToggleTipos = document.getElementById('btnToggleTipos');
+                const dropdownTipos = document.getElementById('tiposDropdown');
+                const inputBuscarTipo = document.getElementById('buscarTipoInput');
+                const listaTiposEl = document.getElementById('listaTipos');
+                const hiddenTipo = document.getElementById('id_tipo_value');
+                const labelBtnTipo = document.getElementById('btnToggleTiposLabel');
+
+                function renderTipos(tiposMostrar) {
+                    listaTiposEl.innerHTML = '';
+                    if (tiposMostrar.length === 0) {
+                        listaTiposEl.innerHTML = '<li class="px-3 py-2 text-slate-400 italic">Sin resultados</li>';
+                        return;
+                    }
+                    tiposMostrar.forEach(tipo => {
+                        const li = document.createElement('li');
+                        li.className = 'px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer border-b border-slate-50 dark:border-slate-700/50 last:border-0';
+                        li.innerHTML = `<span class="font-medium">${tipo.tipo_nombre}</span>`;
+                        li.addEventListener('click', function() {
+                            hiddenTipo.value = tipo.id_tipo;
+                            labelBtnTipo.textContent = tipo.tipo_nombre;
+                            labelBtnTipo.classList.remove('text-slate-400');
+                            labelBtnTipo.classList.add('text-slate-900', 'dark:text-white', 'font-medium');
+                            dropdownTipos.classList.add('hidden');
+                            inputBuscarTipo.value = '';
+                            renderTipos(TODOS_TIPOS);
+                        });
+                        listaTiposEl.appendChild(li);
+                    });
+                }
+
+                renderTipos(TODOS_TIPOS);
+
+                btnToggleTipos.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    dropdownTipos.classList.toggle('hidden');
+                    if (!dropdownTipos.classList.contains('hidden')) inputBuscarTipo.focus();
+                });
+
+                inputBuscarTipo.addEventListener('input', function() {
+                    const q = this.value.trim().toLowerCase();
+                    const filtrados = TODOS_TIPOS.filter(t => t.tipo_nombre.toLowerCase().includes(q));
+                    renderTipos(filtrados);
                 });
 
                 document.addEventListener('click', function(e) {
                     if (!document.getElementById('empresa-destino-wrapper').contains(e.target)) dropdownEmpresas.classList.add('hidden');
-                    if (!dropdownCiudades.classList.contains('hidden') && !document.getElementById('ciudad-proveniente-wrapper').contains(e.target)) dropdownCiudades.classList.add('hidden');
+                    if (!document.getElementById('ciudad-proveniente-wrapper').contains(e.target)) dropdownCiudades.classList.add('hidden');
+                    if (!document.getElementById('tipo-correspondencia-wrapper').contains(e.target)) dropdownTipos.classList.add('hidden');
                 });
 
                 // Botón X: limpiar empresa seleccionada
@@ -603,12 +715,12 @@
                         const label = document.getElementById('btnToggleEmpresasLabel');
                         if (label) {
                             label.textContent = 'Buscar y seleccionar empresa...';
-                            label.className = label.className.replace('text-slate-900 dark:text-white', 'text-slate-400 dark:text-gray-400');
+                            label.className = label.className.replace('text-slate-900 dark:text-white font-medium', 'text-slate-400 dark:text-gray-400');
                         }
                         btnClearEmpresa.classList.add('hidden');
-                        // Reset search box
                         const buscar = document.getElementById('buscarEmpresaInput');
                         if (buscar) buscar.value = '';
+                        dropdownEmpresas.classList.add('hidden'); // Hide dropdown when clearing selection
                     });
                 }
 
@@ -731,7 +843,7 @@
                         error: 'error-asunto',
                         mensajes: { required: 'El asunto es obligatorio.', min: 'Mínimo 5 letras.', max: 'Máximo 100 caracteres.' }
                     },
-                    id_tipo: {
+                    id_tipo_value: {
                         required: true,
                         error: 'error-id_tipo',
                         mensajes: { required: 'Seleccione un tipo de correspondencia.' }

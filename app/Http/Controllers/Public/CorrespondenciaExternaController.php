@@ -245,7 +245,8 @@ class CorrespondenciaExternaController extends Controller
         $query = \App\Models\Recibido::with([
             'radicado', 
             'tipo', 
-            'estado', 
+            'estado',
+            'anexos',
             'detalles' => function($q) {
                 $q->whereNotNull('archivo_res')
                   ->orWhereHas('anexosRespuesta');

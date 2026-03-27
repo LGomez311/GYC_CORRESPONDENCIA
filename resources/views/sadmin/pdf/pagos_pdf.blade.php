@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Listado de Planes</title>
+    <title>Listado de Pagos</title>
 
     <style>
         body {
@@ -58,48 +58,32 @@
 
 <body>
 
-    <h2>Listado de Planes del Sistema</h2>
-
-    <div class="fecha">
-        Fecha de impresión: {{ now()->format('d/m/Y H:i') }}
-    </div>
-
+    <h2>Listado de Pagos de Licencias</h2>
     <table>
         <thead>
             <tr>
-                <th>Nombre</th>
-                <th>Descripción</th>
-                <th>Precio</th>
-                <th>Duración</th>
-                <th>Destacado</th>
+                <th>ID Pago</th>
+                <th>Nit Empresa</th>
+                <th>Plan Seleccionado</th>
+                <th>Valor</th>
+                <th>Fecha de Pago</th>
+                <th>Estado</th>
             </tr>
         </thead>
-
         <tbody>
-            @foreach ($planes as $plan)
-                <tr>
-                    <td>{{ $plan->nomb_plan }}</td>
-
-                    <td>
-                        @if (is_array($plan->descripcion))
-                            {{ implode(', ', $plan->descripcion) }}
-                        @else
-                            {{ $plan->descripcion }}
-                        @endif
-                    </td>
-
-                    <td class="text-center">
-                        ${{ number_format($plan->valor, 0) }}
-                    </td>
-
-                    <td class="text-center">
-                        {{ $plan->duracion ? $plan->duracion . ' días' : 'Ilimitado' }}
-                    </td>
-
-                    <td class="text-center destacado">
-                        {{ $plan->es_destacado ? 'Sí ⭐' : 'No' }}
-                    </td>
-                </tr>
+            @foreach($pagos as $pago)
+            <tr>
+                <td class="text-center">{{ $pago->id_pago }}</td>
+                <td>
+                    @if($pago->admin)
+                        {{ $pago->admin->nit_empresa }}
+                    @endif
+                </td>
+                <td>{{ $pago->plan->nomb_plan ?? 'N/A' }}</td>
+                <td class="text-center">${{ number_format($pago->valor, 0) }}</td>
+                <td class="text-center">{{ \Carbon\Carbon::parse($pago->fecha_pago)->format('d/m/Y H:i') }}</td>
+                <td class="text-center">{{ $pago->estado->estado_nomb ?? 'N/A' }}</td>
+            </tr>
             @endforeach
         </tbody>
     </table>

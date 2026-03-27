@@ -289,6 +289,11 @@
                 </tbody>
             </table>
         </div>
+        @if($recientes->hasPages())
+            <div class="px-6 py-4 bg-slate-50/50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
+                {{ $recientes->links() }}
+            </div>
+        @endif
     </div>
 
     @else

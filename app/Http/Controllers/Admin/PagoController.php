@@ -19,12 +19,12 @@ class PagoController extends Controller
 
     public function historial()
     {
-        $admin = Auth::user();
+        $user = Auth::user();
 
         $pagos = Pago::with(['plan', 'estado', 'admin'])
-            ->where('id_admin', $admin->emple_doc)
+            ->where('nit_empresa', $user->nit_empresa)
             ->orderBy('fecha_pago', 'desc')
-            ->paginate(4);
+            ->paginate(10); // increased for better experience
 
         return view('admin.historialp', compact('pagos'));
     }
@@ -38,25 +38,24 @@ class PagoController extends Controller
         ]);
 
         $plan = Plan::findOrFail($request->id_plan);
-        $empresa = Empresa::first(); // empresa única
-        $admin = Auth::user();       // admin autenticado
+        $user = Auth::user();
 
-        // 🔹 Guardar comprobante
+        // Guardar comprobante
         $rutaComprobante = null;
         if ($request->hasFile('comprobante')) {
             $rutaComprobante = $request->file('comprobante')
                 ->store('comprobantes', 'public');
         }
 
-        // 🔹 Crear pago
+        // Crear pago
         Pago::create([
             'id_plan'       => $plan->id_plan,
             'monto'         => $plan->valor,
             'comprobante'   => $rutaComprobante,
             'moneda'        => 'COP',
-            'nit_empresa'   => $empresa->nit_empresa,
-            'id_est_pago'   => 0, // 🔹 EN ESPERA (DEBE EXISTIR EN tabla estado)
-            'id_admin'      => $admin->emple_doc, // 🔹 FK empleado
+            'nit_empresa'   => $user->nit_empresa,
+            'id_est_pago'   => 0, // 0 = Pendiente (Estado inicial)
+            'id_admin'      => $user->emple_doc,
             'fecha_pago'    => Carbon::now('America/Bogota'),
             'fecha_inicio'  => $request->fecha_inicio,
         ]);

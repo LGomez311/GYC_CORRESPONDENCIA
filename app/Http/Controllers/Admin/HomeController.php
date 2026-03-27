@@ -102,13 +102,13 @@ class HomeController extends Controller
                     // Enviados (donde el usuario es el remitente)
                     $enviados = Envio::where('doc_quien_envia', $user->emple_doc)->count();
 
-                    // --- ACTIVIDAD RECIENTE UNIFICADA ---
+                    // --- ACTIVIDAD RECIENTE UNIFICADA CON PAGINACIÓN ---
                     $recientesInternos = Envio::whereHas('quienEnvia', function ($query) use ($user) {
                         $query->where('nit_empresa', $user->nit_empresa);
                     })
                     ->with(['estadoEnvio', 'radicado', 'quienEnvia'])
                     ->orderBy('fecha', 'desc')
-                    ->take(10)
+                    ->take(50) // Suficientes para las primeras páginas
                     ->get()
                     ->map(function ($envio) {
                         return (object)[
@@ -127,7 +127,7 @@ class HomeController extends Controller
                     $recientesExternos = \App\Models\Recibido::where('nit_empresa', $user->nit_empresa)
                     ->with(['estado', 'radicado', 'registradoPor'])
                     ->orderBy('fecha_hora_recib', 'desc')
-                    ->take(10)
+                    ->take(50)
                     ->get()
                     ->map(function ($recibido) {
                         $remitente = $recibido->registradoPor 
@@ -147,9 +147,20 @@ class HomeController extends Controller
                         ];
                     });
 
-                    $recientes = $recientesInternos->concat($recientesExternos)
-                        ->sortByDesc('fecha')
-                        ->take(10);
+                    $allItems = $recientesInternos->concat($recientesExternos)
+                        ->sortByDesc('fecha');
+
+                    $currentPage = request()->get('page', 1);
+                    $perPage = 10;
+                    $currentItems = $allItems->slice(($currentPage - 1) * $perPage, $perPage)->values();
+
+                    $recientes = new \Illuminate\Pagination\LengthAwarePaginator(
+                        $currentItems,
+                        $allItems->count(),
+                        $perPage,
+                        $currentPage,
+                        ['path' => request()->url(), 'query' => request()->query()]
+                    );
                 }
             }
         }

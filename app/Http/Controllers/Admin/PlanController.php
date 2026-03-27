@@ -22,7 +22,7 @@ class PlanController extends Controller
     {
         $planes = Plan::all();
 
-        $pdf = Pdf::loadView('sadmin.exports.planes_pdf', compact('planes'));
+        $pdf = Pdf::loadView('sadmin.pdf.planes_pdf', compact('planes'));
 
         return $pdf->download('planes_sistema.pdf');
     }

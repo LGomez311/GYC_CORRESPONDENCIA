@@ -101,7 +101,12 @@
                 Reportes
             </h1>
 
-        
+            <a href="{{ route('remitente.reportes') }}"
+                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {{ request()->routeIs('remitente.reportes') ? 'text-primary bg-primary/10 font-bold dark:bg-primary/20' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800' }}">
+                <span
+                    class="material-symbols-outlined text-[20px] {{ request()->routeIs('remitente.reportes') ? 'fill' : 'text-gray-500 dark:text-gray-400' }}">analytics</span>
+                <p class="text-sm font-medium leading-normal">Reporte de Gestión</p>
+            </a>
         </div>
     </nav>
 

@@ -265,6 +265,25 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    {{-- Global Live Search Script --}}
+    <script>
+        function liveSearch(inputId, tableId) {
+            const input = document.getElementById(inputId);
+            const table = document.querySelector(tableId);
+            if (!input || !table) return;
+
+            input.addEventListener('keyup', function() {
+                const filter = input.value.toLowerCase();
+                const rows = table.querySelectorAll('tbody tr');
+
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(filter) ? '' : 'none';
+                });
+            });
+        }
+    </script>
     @yield('scripts')
 
 </body>

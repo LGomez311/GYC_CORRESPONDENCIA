@@ -50,7 +50,7 @@
 					<!-- Search Bar -->
 					<form action="{{ route('admin.rol.index') }}" method="GET" class="relative w-full md:w-64">
 						<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#4c669a] text-lg">search</span>
-						<input type="text" name="search" placeholder="Buscar..." value="{{ request('search') }}"
+						<input type="text" id="searchInputRol" name="search" placeholder="Buscar..." value="{{ request('search') }}"
 							class="pl-10 pr-4 py-2 bg-white dark:bg-[#0d121b] border border-[#cfd7e7] dark:border-gray-800 rounded-lg text-sm focus:outline-none focus:border-primary transition-all w-full shadow-sm">
 					</form>
 
@@ -400,7 +400,8 @@
 				
 				validarEdit();
 			}
-			// Client-side search removed for server-side search
+			// Client-side search for live experience
+			liveSearch('searchInputRol', 'table');
 
 		});
 	</script>

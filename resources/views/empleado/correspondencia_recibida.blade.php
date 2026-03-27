@@ -2442,7 +2442,6 @@
         document.getElementById('reasignarSeleccionado').innerHTML = '';
     }
 
-<<<<<<< HEAD
     // --- Dropdown Tipo Documento Ventanilla ---
     function abrirDropdownTipoVent() {
         document.getElementById('dropdownTipoListVent').classList.remove('hidden');
@@ -2515,26 +2514,6 @@
             }
         }
     });
-=======
-    // Initialize Select2 if jQuery is loaded
-    $(document).ready(function() {
-        if (typeof jQuery !== 'undefined' && typeof jQuery.fn.select2 !== 'undefined') {
-            $('.select2-tipo-interna').select2({
-                placeholder: "Buscar tipo...",
-                allowClear: true,
-                width: '100%',
-                dropdownParent: $('#modalNuevaInterna')
-            });
-            $('.select2-tipo-ventanilla').select2({
-                placeholder: "Buscar tipo...",
-                allowClear: true,
-                width: '100%',
-                dropdownParent: $('#modalNuevaVentanilla')
-            });
-        }
-    });
-
->>>>>>> Luis
 </script>
 
 @endsection
