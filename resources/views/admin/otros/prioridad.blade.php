@@ -298,7 +298,7 @@
 
             // Validaciones similares a otras vistas
             function mostrarError(input, mensaje) {
-                input.classList.remove('border-green-500');
+                input.classList.remove('border-blue-500');
                 input.classList.add('border-red-500');
 
                 let error = input.parentNode.querySelector('.error-msg');
@@ -322,7 +322,7 @@
 
                 input.classList.remove('border-red-500');
                 input.classList.add('border-gray-300', 'dark:border-gray-700');
-                input.classList.add('border-green-500');
+                input.classList.add('border-blue-500');
 
                 if (error) error.remove();
             }
@@ -332,7 +332,7 @@
 
                 let serverError = input.parentNode.querySelector('.server-error');
                 if (serverError && !input.dataset.dirty) {
-                    input.classList.remove('border-green-500', 'border-gray-300');
+                    input.classList.remove('border-blue-500', 'border-gray-300');
                     input.classList.add('border-red-500');
                     return false; 
                 }

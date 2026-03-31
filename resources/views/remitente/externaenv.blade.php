@@ -9,7 +9,7 @@
 
         @if (session('success'))
             <div
-                class="mb-4 p-4 bg-green-100 dark:bg-green-900/30 border border-green-400 dark:border-green-800 text-green-700 dark:text-green-300 rounded-lg flex items-center gap-2">
+                class="mb-4 p-4 bg-green-100 dark:bg-green-900/30 border border-green-400 dark:border-green-800 text-blue-700 dark:text-green-300 rounded-lg flex items-center gap-2">
                 <span class="material-symbols-outlined">check_circle</span>
                 {{ session('success') }}
             </div>
@@ -171,9 +171,10 @@
                     <thead
                         class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
                         <tr>
-                            <th class="px-6 py-3 font-bold" scope="col">Asunto</th>
+                            <th class="px-6 py-3 font-bold" scope="col">Asunto / Radicado</th>
                             <th class="px-6 py-3 font-bold" scope="col">Destino</th>
-                            <th class="px-6 py-3 font-bold" scope="col">Fecha de Envío</th>
+                            <th class="px-6 py-3 font-bold" scope="col">Departamento</th>
+                            <th class="px-6 py-3 font-bold" scope="col">Fecha Envoy</th>
                             <th class="px-6 py-3 font-bold" scope="col">Prioridad</th>
                             <th class="px-6 py-3 font-bold" scope="col">Estado</th>
                             <th class="px-6 py-3 font-bold" scope="col">Acciones</th>
@@ -248,6 +249,7 @@
                             <tr class="fila-registro border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer bg-white dark:bg-gray-800 transition-colors"
                                 data-id="{{ $envio->id_envio }}" data-asunto="{{ $envio->asunto }}"
                                 data-radicado="{{ $numRadicado }}" data-destinatario="{{ $nombreDestinatario }}"
+                                data-area="{{ $envio->quienDirigido->area->area_nom ?? 'Remitente / Externo' }}"
                                 data-fecha="{{ $fechaEnvio }}" data-prioridad="{{ $nombrePrioridad }}"
                                 data-prioridad-clases="{{ $priorClases }}" data-estado="{{ $nombreEstado }}"
                                 data-estado-clases="{{ $estadoClases }}" data-icono="{{ $iconoDoc }}"
@@ -266,10 +268,20 @@
                                     <span
                                         class="font-medium text-gray-900 dark:text-white">{{ $nombreDestinatario }}</span>
                                     <span
-                                        class="flex items-center gap-0.5 text-[10px] uppercase tracking-wider font-bold text-blue-500 mt-1.5 pt-1 border-t border-slate-100 dark:border-slate-700/50 w-fit">
+                                        class="flex items-center gap-0.5 text-[10px] uppercase tracking-wider font-bold text-blue-500 mt-1 pb-0.5 w-fit">
                                         <span class="material-symbols-outlined" style="font-size:12px">location_on</span>
                                         Destino
                                     </span>
+                                </td>
+
+                                <td class="px-6 py-4">
+                                    @if ($envio->quienDirigido && $envio->quienDirigido->area)
+                                        <span class="inline-flex items-center px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-100 dark:border-blue-800">
+                                            {{ $envio->quienDirigido->area->area_nom }}
+                                        </span>
+                                    @else
+                                        <span class="text-xs text-slate-400 italic">No asignado</span>
+                                    @endif
                                 </td>
 
                                 <td class="px-6 py-4 text-gray-600 dark:text-gray-300 whitespace-nowrap">
@@ -463,6 +475,11 @@
                         </div>
 
                         <div>
+                            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Departamento (Área)</h4>
+                            <p id="detailArea" class="text-sm text-gray-700 dark:text-gray-300 font-bold"></p>
+                        </div>
+
+                        <div>
                             <div class="flex justify-between items-center mb-4">
                                 <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Trazabilidad Reciente</h4>
                                 <button id="btnVerTrazabilidadCompleta" class="text-[10px] font-black text-primary uppercase tracking-widest hover:underline">Ver Historial</button>
@@ -516,89 +533,119 @@
 
     {{-- Modal Nueva Correspondencia Enviada --}}
     <div id="modalCorrespondencia" tabindex="-1" aria-hidden="true"
-        class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
-        <div class="relative w-full max-w-4xl max-h-full my-auto">
+        class="fixed inset-0 z-50 hidden items-center justify-center overflow-y-auto" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+            onclick="closeModal('modalCorrespondencia')"></div>
+        <div class="relative w-full max-w-2xl p-4 transform transition-all">
             <form action="{{ route('remitente.externaenv.store') }}" method="POST" enctype="multipart/form-data"
-                id="formNuevaCorrespondencia" class="relative">
+                id="formNuevaCorrespondencia">
                 @csrf
-                <div
-                    class="space-y-6 bg-white dark:bg-slate-900 p-8 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xl max-h-[90vh] overflow-y-auto">
-
-                    <div
-                        class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-4 mb-4">
-                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">Registrar Correspondencia Saliente
-                        </h3>
-                        <button id="btnCerrarModalX" type="button"
-                            class="text-gray-400 hover:text-gray-600 transition-colors">
+                <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-700">
+                    <!-- Modal Header -->
+                    <div class="px-8 py-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-900/20">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-white">Registrar Nueva Correspondencia</h3>
+                            <p class="text-xs text-gray-500 mt-0.5">Completa los datos para el envío de correspondencia saliente.
+                            </p>
+                        </div>
+                        <button type="button" onclick="closeModal('modalCorrespondencia')"
+                            class="p-2 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all">
                             <span class="material-symbols-outlined">close</span>
                         </button>
                     </div>
 
-                    <div class="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2">
+                    <!-- Modal Body -->
+                    <div class="p-8 space-y-6">
                         {{-- Asunto --}}
-                        <div class="sm:col-span-2">
-                            <label class="block text-slate-900 dark:text-white text-sm font-medium pb-2">Asunto *</label>
-                            <input type="text" name="asunto" required
-                                class="form-input w-full rounded-lg text-slate-900 dark:text-white border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-11 px-3.5 text-base"
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Asunto *</label>
+                            <input type="text" name="asunto" required maxlength="100"
+                                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-primary focus:border-primary dark:text-white font-medium transition-all"
                                 placeholder="Resumen del documento" />
                         </div>
+
                         {{-- Destinatario (Destino) --}}
-                        <div class="sm:col-span-2">
-                            <label class="block text-slate-900 dark:text-white text-sm font-medium pb-2">Destino *</label>
-                            <textarea name="destino" required rows="3"
-                                class="form-input w-full rounded-lg text-slate-900 dark:text-white border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 p-3.5 text-base"
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Destino *</label>
+                            <textarea name="destino" required rows="3" maxlength="200"
+                                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-primary focus:border-primary dark:text-white text-sm transition-all"
                                 placeholder="Especifique el destino o persona a quien va dirigido"></textarea>
                         </div>
 
-                        {{-- Tipo de Documento --}}
-                        <div class="sm:col-span-1">
-                            <label class="block text-slate-900 dark:text-white text-sm font-medium pb-2">Tipo de Documento
-                                *</label>
-                            <select name="id_tipo_envio" required id="selectTipoDoc"
-                                class="form-select w-full rounded-lg text-slate-900 dark:text-white border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-11 px-3.5 text-base select2-tipo">
-                                <option value="">Seleccione tipo</option>
-                                @foreach ($tipos as $tipo)
-                                    <option value="{{ $tipo->id_tipo }}">{{ $tipo->tipo_nombre }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        {{-- Persona que Envía (Empleado) --}}
-                        <div class="sm:col-span-1 relative">
-                            <label class="block text-slate-900 dark:text-white text-sm font-medium pb-2">Persona que Envía
-                                *</label>
-                            <input type="text" id="searchEnvia" autocomplete="off"
-                                class="form-input w-full rounded-lg text-slate-900 dark:text-white border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-11 px-3.5 text-base"
-                                placeholder="Buscar empleado..." />
-                            <input type="hidden" name="doc_quien_envia" id="doc_quien_envia" required>
-                            <div id="resultsEnvia"
-                                class="absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg hidden overflow-hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {{-- Tipo de Documento --}}
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Tipo de Documento *</label>
+                                <div class="relative" id="tipoDropdownContainer">
+                                    <div id="tipoInputContainer" class="flex items-center gap-2 w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus-within:ring-2 focus-within:ring-primary/50 transition-all cursor-text" onclick="toggleTipoDropdown()">
+                                        <input type="text" id="busquedaTipo" placeholder="Buscar tipo..." 
+                                            class="flex-1 bg-transparent border-none p-0 focus:ring-0 text-sm font-medium dark:text-white dark:placeholder-gray-400"
+                                            autocomplete="off" onkeyup="filtrarTipos()">
+                                        <span class="material-symbols-outlined text-gray-400">expand_more</span>
+                                    </div>
+                                    <div id="dropdownTipoList" class="hidden absolute z-[60] w-full mt-1 border border-gray-100 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 shadow-xl max-h-48 overflow-y-auto">
+                                        @foreach ($tipos as $tipo)
+                                            <div class="tipo-item px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer border-b border-gray-50 dark:border-gray-700/50 last:border-0 text-sm dark:text-gray-200 transition-colors" 
+                                                 data-nombre="{{ strtolower($tipo->tipo_nombre) }}" 
+                                                 onclick="seleccionarTipo('{{ addslashes($tipo->tipo_nombre) }}', '{{ $tipo->id_tipo }}')">
+                                                {{ $tipo->tipo_nombre }}
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <input type="hidden" name="id_tipo_envio" id="id_tipo_hidden" required>
+                                </div>
                             </div>
-                        </div>
 
-                        {{-- Folio --}}
-                        <div class="sm:col-span-1">
-                            <label class="block text-slate-900 dark:text-white text-sm font-medium pb-2">Número de Folios
-                                *</label>
-                            <input type="number" name="folio" required min="1" value="1"
-                                class="form-input w-full rounded-lg text-slate-900 dark:text-white border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-11 px-3.5 text-base"
-                                placeholder="Cantidad de hojas" />
-                        </div>
+                            {{-- Departamento (Area) --}}
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Departamento (Área) *</label>
+                                <select id="selectAreaEnvia" class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-primary focus:border-primary dark:text-white text-sm transition-all appearance-none">
+                                    <option value="">Filtrar por departamento</option>
+                                    @foreach($areas as $area)
+                                        <option value="{{ $area->id_area }}">{{ $area->area_nom }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
 
-                        {{-- Archivo --}}
-                        <div class="sm:col-span-1">
-                            <label class="block text-slate-900 dark:text-white text-sm font-medium pb-2">Adjuntar Documento
-                                (PDF)</label>
-                            <input type="file" name="archivo" accept="application/pdf"
-                                class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                            {{-- Persona que Envía (Empleado) --}}
+                            <div class="relative">
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Persona que Envía *</label>
+                                <div class="relative group">
+                                    <input type="text" id="searchEnvia" autocomplete="off"
+                                        class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-primary focus:border-primary dark:text-white font-medium transition-all pr-10"
+                                        placeholder="Buscar empleado..." />
+                                    <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors">person_search</span>
+                                </div>
+                                <input type="hidden" name="doc_quien_envia" id="doc_quien_envia" required>
+                                <div id="resultsEnvia"
+                                    class="absolute z-[60] w-full mt-1 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow-xl hidden overflow-hidden max-h-60 overflow-y-auto">
+                                </div>
+                            </div>
+
+                            {{-- Folio --}}
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Número de Folios *</label>
+                                <input type="number" name="folio" required min="1" value="1"
+                                    class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-primary focus:border-primary dark:text-white font-medium transition-all"
+                                    placeholder="Cantidad" />
+                            </div>
+
+                            {{-- Archivo --}}
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Adjuntar Documento (PDF)</label>
+                                <input type="file" name="archivo" accept="application/pdf"
+                                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:uppercase file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-all border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700/30 p-1" />
+                            </div>
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-end gap-4 pt-6 border-t border-slate-200 dark:border-slate-800">
-                        <button id="btnCerrarModal" type="button"
-                            class="flex items-center justify-center h-11 px-6 rounded-lg text-sm font-bold bg-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Cancelar</button>
+                    <!-- Modal Footer -->
+                    <div class="px-8 py-6 border-t border-gray-100 dark:border-gray-700 flex justify-end gap-3 bg-gray-50/50 dark:bg-gray-900/20">
+                        <button type="button" onclick="closeModal('modalCorrespondencia')"
+                            class="px-6 py-2.5 text-sm text-gray-600 dark:text-gray-400 font-bold hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all">Cancelar</button>
                         <button type="submit"
-                            class="flex items-center justify-center h-11 px-6 rounded-lg text-sm font-bold bg-primary text-white hover:bg-primary/90 transition-colors shadow-sm">
+                            class="px-8 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/95 transition-all shadow-lg shadow-primary/30 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[18px]">send</span>
                             Registrar Envío
                         </button>
                     </div>
@@ -607,27 +654,130 @@
         </div>
     </div>
 
-    {{-- Script básico para interacción visual (Igual al de la vista Recibida para mantener la coherencia UI) --}}
+    <!-- View Details Modal -->
+    <div id="detailsModal" class="fixed inset-0 z-50 hidden items-center justify-center overflow-y-auto" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeModal('detailsModal')"></div>
+        <div class="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden transform transition-all m-4">
+            <button onclick="closeModal('detailsModal')" class="absolute top-4 right-4 p-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-colors text-gray-500 dark:text-gray-400 z-10">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+
+            <div class="flex flex-col md:flex-row">
+                <!-- Header Area -->
+                <div class="w-full md:w-1/3 bg-gray-50 dark:bg-gray-900/40 p-8 border-b md:border-b-0 md:border-r border-gray-100 dark:border-gray-700">
+                    <div class="flex flex-col items-center text-center">
+                        <div class="p-4 bg-primary/10 rounded-2xl text-primary mb-4">
+                            <span id="detailIconHeader" class="material-symbols-outlined text-4xl">outbox</span>
+                        </div>
+                        <h3 id="detailRadicado" class="text-xl font-bold text-gray-900 dark:text-white mb-1"></h3>
+                        <span id="detailStatus" class="px-3 py-1 rounded-full text-[10px] font-bold mb-6"></span>
+
+                        <div class="w-full space-y-4 text-left">
+                            <div>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Fecha Registro</p>
+                                <p id="detailDate" class="text-sm font-medium text-gray-700 dark:text-gray-300"></p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Tipo Documento</p>
+                                <p id="detailType" class="text-sm font-medium text-gray-700 dark:text-gray-300"></p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Prioridad</p>
+                                <span id="detailPriority" class="text-xs font-bold"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content Area -->
+                <div class="flex-1 p-8 space-y-6">
+                    <div>
+                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Asunto</h4>
+                        <p id="detailAsunto" class="text-lg font-bold text-gray-900 dark:text-white leading-tight"></p>
+                    </div>
+
+                    <div>
+                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Destinatario / Destino</h4>
+                        <p id="detailDestinatario" class="text-sm text-gray-600 dark:text-gray-400 font-medium"></p>
+                    </div>
+
+                    <div>
+                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Trazabilidad Reciente</h4>
+                        <div id="detailTimeline" class="space-y-4">
+                            <!-- Injected by JS -->
+                        </div>
+                        <button id="btnVerTrazabilidadCompleta" class="mt-4 text-[10px] font-bold text-primary uppercase tracking-widest hover:underline">Ver Historial Completo</button>
+                    </div>
+
+                    <div>
+                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Documentos y Anexos</h4>
+                        <div id="detailActionsContainer" class="flex flex-wrap gap-2">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div id="historyModal" class="fixed inset-0 z-50 hidden items-center justify-center overflow-y-auto" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeModal('historyModal')"></div>
+        <div class="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden transform transition-all m-4">
+            <div class="px-8 py-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-900/20">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white uppercase tracking-tight">Historial de Movimientos</h3>
+                    <p class="text-[10px] text-gray-500 font-bold mt-0.5" id="historyRadText"></p>
+                </div>
+                <button onclick="closeModal('historyModal')" class="p-2 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="p-8 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                <div id="history-spinner" class="hidden flex justify-center py-10">
+                    <div class="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+                </div>
+                <div id="history-timeline" class="space-y-0">
+                    <!-- Injected by JS -->
+                </div>
+            </div>
+            <div class="px-8 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/20 flex justify-end">
+                <button onclick="closeModal('historyModal')" class="px-6 py-2 text-xs font-bold text-gray-500 uppercase tracking-widest hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    {{-- Script básico para interacción visual --}}
     <script>
+        // Funciones Globales para Modales
+        function openModal(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.remove('hidden');
+                el.classList.add('flex');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeModal(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.add('hidden');
+                el.classList.remove('flex');
+                document.body.style.overflow = '';
+            }
+        }
+
         document.addEventListener("DOMContentLoaded", function() {
-            // --- MODAL ---
-            const modal = document.getElementById('modalCorrespondencia');
+            // --- MODALES ---
             const btnAbrir = document.getElementById('btnAbrirModal');
             const btnCerrar = document.getElementById('btnCerrarModal');
-            const btnCerrarX = document.getElementById('btnCerrarModalX');
 
-            const toggleModal = (show) => {
-                modal.classList.toggle('hidden', !show);
-                modal.classList.toggle('flex', show);
-                document.body.style.overflow = show ? 'hidden' : '';
-            };
-
-            btnAbrir.addEventListener('click', () => toggleModal(true));
-            btnCerrar.addEventListener('click', () => toggleModal(false));
-            btnCerrarX.addEventListener('click', () => toggleModal(false));
+            if (btnAbrir) btnAbrir.addEventListener('click', () => openModal('modalCorrespondencia'));
+            if (btnCerrar) btnCerrar.addEventListener('click', () => closeModal('modalCorrespondencia'));
 
             if (new URLSearchParams(window.location.search).get('abrir') === 'nuevo') {
-                toggleModal(true);
+                openModal('modalCorrespondencia');
             }
 
             // --- AJAX SEARCH HELPERS ---
@@ -635,31 +785,45 @@
                 const input = document.getElementById(inputId);
                 const results = document.getElementById(resultsId);
                 const hidden = document.getElementById(hiddenId);
+                const areaSelect = document.getElementById('selectAreaEnvia');
+
+                if (!input || !results) return;
 
                 input.addEventListener('input', async function() {
                     const q = this.value.trim();
-                    if (q.length < 2) {
+                    const areaId = areaSelect ? areaSelect.value : '';
+                    
+                    if (q.length < 2 && !areaId) {
                         results.classList.add('hidden');
                         return;
                     }
 
                     try {
-                        const response = await fetch(`${url}?q=${q}`);
+                        const response = await fetch(`${url}?q=${q}&area_id=${areaId}`);
                         const data = await response.json();
 
                         results.innerHTML = '';
                         if (data.length > 0) {
                             data.forEach(item => {
                                 const div = document.createElement('div');
-                                div.className =
-                                    'px-4 py-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer text-sm dark:text-gray-200';
-                                const displayArea = item.area_nom ?
-                                    ` - Area: ${item.area_nom}` : '';
-                                div.textContent =
-                                    `${item.emple_nombres} ${item.emple_apellidos} (${item.emple_doc})${displayArea}`;
-                                div.addEventListener('click', () => {
-                                    input.value =
-                                        `${item.emple_nombres} ${item.emple_apellidos}`;
+                                div.className = 'px-4 py-3 hover:bg-primary/5 hover:text-primary cursor-pointer flex flex-col border-b border-gray-50 dark:border-gray-700/50 last:border-0 transition-colors group';
+                                
+                                const areaInfo = item.area_nom ? `<span class="text-[10px] text-primary font-bold uppercase tracking-wider">${item.area_nom}</span>` : '';
+                                
+                                div.innerHTML = `
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-bold text-gray-900 dark:text-white">${item.emple_nombres} ${item.emple_apellidos}</span>
+                                        <div class="flex items-center gap-2 mt-0.5">
+                                            <span class="text-[10px] text-gray-400 font-medium italic">Doc: ${item.emple_doc}</span>
+                                            ${areaInfo}
+                                        </div>
+                                    </div>
+                                `;
+                                
+                                div.addEventListener('mousedown', (e) => {
+                                    // Use mousedown to trigger before the input's potential blur
+                                    e.preventDefault(); 
+                                    input.value = `${item.emple_nombres} ${item.emple_apellidos}`;
                                     hidden.value = item.emple_doc;
                                     results.classList.add('hidden');
                                 });
@@ -667,8 +831,7 @@
                             });
                             results.classList.remove('hidden');
                         } else {
-                            results.innerHTML =
-                                '<div class="px-4 py-2 text-sm text-gray-500">No se encontraron resultados</div>';
+                            results.innerHTML = '<div class="px-4 py-3 text-sm text-gray-500 italic text-center">No se encontraron empleados</div>';
                             results.classList.remove('hidden');
                         }
                     } catch (error) {
@@ -676,36 +839,55 @@
                     }
                 });
 
-                // Close results when clicking outside
-                document.addEventListener('click', (e) => {
-                    if (!input.contains(e.target) && !results.contains(e.target)) {
-                        results.classList.add('hidden');
-                    }
-                });
+                if(areaSelect) {
+                    areaSelect.addEventListener('change', () => {
+                        if(input.value.length >= 2 || areaSelect.value) {
+                            input.dispatchEvent(new Event('input'));
+                        }
+                    });
+                }
             }
 
             setupSearch('searchEnvia', 'resultsEnvia', 'doc_quien_envia',
                 '{{ route('remitente.buscar_empleados') }}');
 
+            // --- SEARCHABLE SELECT LOGIC ---
+            window.toggleTipoDropdown = function() {
+                const list = document.getElementById('dropdownTipoList');
+                list.classList.toggle('hidden');
+            }
+
+            window.filtrarTipos = function() {
+                const q = document.getElementById('busquedaTipo').value.toLowerCase();
+                const items = document.querySelectorAll('.tipo-item');
+                let match = false;
+                items.forEach(item => {
+                    const text = item.dataset.nombre;
+                    if (text.includes(q)) {
+                        item.classList.remove('hidden');
+                        match = true;
+                    } else {
+                        item.classList.add('hidden');
+                    }
+                });
+                document.getElementById('dropdownTipoList').classList.remove('hidden');
+            }
+
+            window.seleccionarTipo = function(nombre, id) {
+                document.getElementById('busquedaTipo').value = nombre;
+                document.getElementById('id_tipo_hidden').value = id;
+                document.getElementById('dropdownTipoList').classList.add('hidden');
+            }
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                const container = document.getElementById('tipoDropdownContainer');
+                if (container && !container.contains(e.target)) {
+                    document.getElementById('dropdownTipoList')?.classList.add('hidden');
+                }
+            });
+
             // --- DETALLE LOGIC ---
-            window.openModal = function(id) {
-                const el = document.getElementById(id);
-                if (el) {
-                    el.classList.remove('hidden');
-                    el.classList.add('flex');
-                    document.body.style.overflow = 'hidden';
-                }
-            }
-
-            window.closeModal = function(id) {
-                const el = document.getElementById(id);
-                if (el) {
-                    el.classList.add('hidden');
-                    el.classList.remove('flex');
-                    document.body.style.overflow = '';
-                }
-            }
-
             document.querySelectorAll('.fila-registro').forEach(fila => {
                 fila.addEventListener('click', function() {
                     const data = this.dataset;
@@ -728,6 +910,9 @@
                     document.getElementById('detailRadicado').textContent = data.radicado || 'SIN RADICADO';
                     document.getElementById('detailAsunto').textContent = data.asunto || '(Sin asunto)';
                     document.getElementById('detailDestinatario').textContent = data.destinatario || '—';
+                    if (document.getElementById('detailArea')) {
+                        document.getElementById('detailArea').textContent = data.area || '—';
+                    }
                     document.getElementById('detailDate').textContent = data.fecha || '—';
                     document.getElementById('detailType').textContent = data.tipoDoc || 'No especificado';
                     document.getElementById('detailPriority').textContent = data.prioridad || '—';
@@ -920,7 +1105,7 @@
                                             </div>
                                             <div class="flex flex-col pr-2">
                                                 <p class="text-[10px] text-gray-800 dark:text-gray-200 font-bold leading-none">${item.nombres} ${item.apellidos}</p>
-                                                <span class="text-[8px] text-gray-400 font-medium">Responsable</span>
+                                                <span class="text-[8px] text-gray-500 font-bold uppercase mt-0.5">${item.area_e || 'Remitente'}</span>
                                             </div>
                                         </div>
 
@@ -972,64 +1157,68 @@
             const btnVerDocumento = document.getElementById('btnVerDocumento');
             const btnCerrarVisor = document.querySelectorAll('.btnCerrarVisor');
 
-            btnVerDocumento.addEventListener('click', () => {
-                const archivoPrincipal = btnVerDocumento.dataset.archivo;
-                const anexos = JSON.parse(btnVerDocumento.dataset.anexos || '[]');
+            if (btnVerDocumento) {
+                btnVerDocumento.addEventListener('click', () => {
+                    const archivoPrincipal = btnVerDocumento.dataset.archivo;
+                    const anexos = JSON.parse(btnVerDocumento.dataset.anexos || '[]');
 
-                // Poblar Principal
-                document.getElementById('btnVerPrincipal').href = archivoPrincipal;
-                document.getElementById('btnDescargarPrincipal').href = archivoPrincipal;
+                    // Poblar Principal
+                    document.getElementById('btnVerPrincipal').href = archivoPrincipal;
+                    document.getElementById('btnDescargarPrincipal').href = archivoPrincipal;
 
-                // Poblar Anexos
-                const listaAnexos = document.getElementById('listaAnexos');
-                const sinAnexos = document.getElementById('sinAnexos');
-                listaAnexos.innerHTML = '';
+                    // Poblar Anexos
+                    const listaAnexos = document.getElementById('listaAnexos');
+                    const sinAnexos = document.getElementById('sinAnexos');
+                    listaAnexos.innerHTML = '';
 
-                if (anexos.length > 0) {
-                    sinAnexos.classList.add('hidden');
-                    listaAnexos.classList.remove('hidden');
-                    anexos.forEach(anexo => {
-                        const ruta = `{{ asset('storage') }}/${anexo.ruta_archivo}`;
-                        const item = `
-                            <div class="flex items-center justify-between p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl">
-                                <div class="flex items-center gap-2 min-w-0">
-                                    <span class="material-symbols-outlined text-amber-500 text-xl">description</span>
-                                    <p class="text-xs font-medium text-slate-700 dark:text-slate-300 truncate">${anexo.nombre_original || 'Anexo'}</p>
+                    if (anexos.length > 0) {
+                        sinAnexos.classList.add('hidden');
+                        listaAnexos.classList.remove('hidden');
+                        anexos.forEach(anexo => {
+                            const ruta = `{{ asset('storage') }}/${anexo.ruta_archivo}`;
+                            const item = `
+                                <div class="flex items-center justify-between p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl">
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <span class="material-symbols-outlined text-amber-500 text-xl">description</span>
+                                        <p class="text-xs font-medium text-slate-700 dark:text-slate-300 truncate">${anexo.nombre_original || 'Anexo'}</p>
+                                    </div>
+                                    <div class="flex gap-1 shrink-0">
+                                        <a href="${ruta}" target="_blank" class="p-1.5 text-slate-400 hover:text-blue-500 transition-colors">
+                                            <span class="material-symbols-outlined text-lg">visibility</span>
+                                        </a>
+                                        <a href="${ruta}" download class="p-1.5 text-slate-400 hover:text-green-500 transition-colors">
+                                            <span class="material-symbols-outlined text-lg">download</span>
+                                        </a>
+                                    </div>
                                 </div>
-                                <div class="flex gap-1 shrink-0">
-                                    <a href="${ruta}" target="_blank" class="p-1.5 text-slate-400 hover:text-blue-500 transition-colors">
-                                        <span class="material-symbols-outlined text-lg">visibility</span>
-                                    </a>
-                                    <a href="${ruta}" download class="p-1.5 text-slate-400 hover:text-green-500 transition-colors">
-                                        <span class="material-symbols-outlined text-lg">download</span>
-                                    </a>
-                                </div>
-                            </div>
-                        `;
-                        listaAnexos.insertAdjacentHTML('beforeend', item);
-                    });
-                } else {
-                    sinAnexos.classList.remove('hidden');
-                    listaAnexos.classList.add('hidden');
-                }
+                            `;
+                            listaAnexos.insertAdjacentHTML('beforeend', item);
+                        });
+                    } else {
+                        sinAnexos?.classList.remove('hidden');
+                        listaAnexos?.classList.add('hidden');
+                    }
 
-                modalVisor.classList.remove('hidden');
-                modalVisor.classList.add('flex');
-            });
-
-            btnCerrarVisor.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    modalVisor.classList.add('hidden');
-                    modalVisor.classList.remove('flex');
+                    openModal('modalVisorDocumentos');
                 });
-            });
+            }
+
+            if (btnCerrarVisor) {
+                btnCerrarVisor.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        closeModal('modalVisorDocumentos');
+                    });
+                });
+            }
 
             // Cerrar al click afuera
-            modalVisor.addEventListener('click', (e) => {
-                if (e.target === modalVisor) {
-                    modalVisor.classList.add('hidden');
-                }
-            });
+            if (modalVisor) {
+                modalVisor.addEventListener('click', (e) => {
+                    if (e.target === modalVisor) {
+                        closeModal('modalVisorDocumentos');
+                    }
+                });
+            }
 
             // --- SEARCH LOGIC ---
             const searchForm = document.getElementById('formSearchGlobal');

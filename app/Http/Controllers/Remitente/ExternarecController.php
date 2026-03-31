@@ -101,8 +101,10 @@ class ExternarecController extends Controller
 
         $recibidos = $query->paginate(4)->appends(['tipo' => $tipoFiltro, 'search' => $searchQuery]);
 
+        // T8b: Excluir Super Admin (rol=1) de la lista de destinatarios
         $todosDestinatarios = Empleado::with('area')
             ->where('emple_rol', '=', 3)
+            ->where('emple_rol', '!=', 1)
             ->get()
             ->map(function($e) {
                 return [
@@ -191,15 +193,16 @@ class ExternarecController extends Controller
         ];
 
         if ($tipoRemitente === 'persona') {
-            $rules['nombre_persona']   = 'required|string|max:100';
-            $rules['documento_persona'] = 'required|string|max:20';
-            $rules['telefono_persona'] = 'nullable|string|max:25';
+            $rules['nombre_persona']    = 'required|string|max:100';
+            $rules['tipo_documento']    = 'required|string|max:20';
+            $rules['numero_documento']  = 'required|string|max:20';
+            $rules['telefono_persona']  = 'nullable|string|max:25';
         } else {
             $rules['nom_institucion'] = 'required|string|max:150';
             $rules['nit_institucion'] = 'required|string|max:20';
         }
 
-        $rules['correo_persona'] = 'nullable|email|max:255';
+        $rules['correo_persona'] = 'required|email|max:255';
 
         $validated = $request->validate($rules);
 
@@ -229,24 +232,22 @@ class ExternarecController extends Controller
         DB::beginTransaction();
 
         try {
-            // 5. Creación automática del Radicado
+            // T1: Generación de Radicado con prefijo EXT para correspondencia externa recibida
             $currentYear = date('Y');
             $latestRadicado = \App\Models\Radicado::where('nit_empresa', $nitEmpresa)
-                ->where('num_radicado', 'like', 'INT-' . $currentYear . '-%')
+                ->where('num_radicado', 'like', 'EXT-' . $currentYear . '-%')
                 ->orderBy('num_radicado', 'desc')
                 ->first();
 
             if ($latestRadicado) {
-                // Extract the last 5 digits and increment
                 $lastNumber = intval(substr($latestRadicado->num_radicado, -5));
                 $newNumber = $lastNumber + 1;
             } else {
-                // Start at 1 if no previous radicado exists for this year
                 $newNumber = 1;
             }
 
             $radicado = new \App\Models\Radicado();
-            $radicado->num_radicado = 'INT-' . $currentYear . '-' . str_pad($newNumber, 5, '0', STR_PAD_LEFT);
+            $radicado->num_radicado = 'EXT-' . $currentYear . '-' . str_pad($newNumber, 5, '0', STR_PAD_LEFT);
             $radicado->nit_empresa  = $nitEmpresa;
             $radicado->save();
 
@@ -256,7 +257,9 @@ class ExternarecController extends Controller
                 : null;
 
             $nombrePersona   = $tipoRemitente === 'persona' ? ($validated['nombre_persona'] ?? null)   : null;
-            $docPersona      = $tipoRemitente === 'persona' ? ($validated['documento_persona'] ?? null) : ($validated['nit_institucion'] ?? null);
+            $docPersona      = $tipoRemitente === 'persona' 
+                ? ($validated['tipo_documento'] . ' ' . $validated['numero_documento']) 
+                : ($validated['nit_institucion'] ?? null);
             $correoPersona   = $validated['correo_persona'] ?? null;
             $telPersona      = $tipoRemitente === 'persona' ? ($validated['telefono_persona'] ?? null)  : null;
 

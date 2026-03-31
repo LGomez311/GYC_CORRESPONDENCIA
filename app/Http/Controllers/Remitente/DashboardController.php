@@ -49,8 +49,11 @@ class DashboardController extends Controller
         $empleados = \App\Models\Empleado::where('emple_rol', 3)->get();
         $estados = \App\Models\Estado::all();
 
+        // T8b: Excluir Super Admin (rol=1) y propio usuario de la lista de destinatarios
         $todosDestinatarios = \App\Models\Empleado::with('area')
             ->where('emple_rol', '=', 3)
+            ->where('emple_rol', '!=', 1)
+            ->where('emple_doc', '!=', $remDoc)
             ->get()
             ->map(function($e) {
                 return [
@@ -91,8 +94,11 @@ class DashboardController extends Controller
         $estados = \App\Models\Estado::all();
         $ciudades = \App\Models\Ciudad::with('departamento')->orderBy('ciudad_nom')->get();
 
+        // T8b: Excluir Super Admin (rol=1) y propio usuario
         $todosDestinatarios = \App\Models\Empleado::with('area')
             ->where('emple_rol', '=', 3)
+            ->where('emple_rol', '!=', 1)
+            ->where('emple_doc', '!=', $remDoc)
             ->get()
             ->map(function($e) {
                 return [
@@ -174,11 +180,7 @@ class DashboardController extends Controller
                 $q->where('doc_quien_registra', $remDoc)
                   ->orWhereNull('doc_quien_registra');
             })
-            ->orderByRaw('CASE WHEN id_estado_rec = 11 THEN 0 ELSE 1 END')
-            ->orderByRaw('DATE(fecha_hora_recib) DESC')
-            ->orderBy(\App\Models\Tipo::select('id_prioridad')
-                ->whereColumn('tipo.id_tipo', 'recibido.id_tipo')
-                ->limit(1), 'asc')
+            // T2: Ordenar por fecha de recepción descendente (más recientes primero)
             ->orderBy('fecha_hora_recib', 'desc');
     }
 
@@ -247,16 +249,18 @@ class DashboardController extends Controller
         $details = DB::table('detalle_recibido as dr')
             ->leftJoin('estado as e', 'dr.id_estado_rec', '=', 'e.id_estado')
             ->leftJoin('empleado as emp', 'dr.det_doc_empleado', '=', 'emp.emple_doc')
+            ->leftJoin('area as area_e', 'emp.emple_area', '=', 'area_e.id_area')
             ->leftJoin('remitente as rem', 'dr.det_doc_empleado', '=', 'rem.rem_doc')
             ->where('dr.det_id_recibido', $id)
             ->select(
                 DB::raw("'detail' as type"),
                 'dr.fecha_re as fecha',
-                DB::raw("COALESCE(emp.emple_nombres, rem.rem_nombres) as nombres"),
-                DB::raw("COALESCE(emp.emple_apellidos, rem.rem_apellidos) as apellidos"),
+                DB::raw("COALESCE(emp.emple_nombres, rem.rem_nombres, 'No') as nombres"),
+                DB::raw("COALESCE(emp.emple_apellidos, rem.rem_apellidos, 'asignada') as apellidos"),
                 DB::raw("NULL as num_radicado"),
                 DB::raw("COALESCE(e.estado_nomb, CASE WHEN dr.id_estado_rec = 14 THEN 'Saliente' ELSE 'Estado desconocido' END) as estado_nomb"),
                 'dr.observaciones',
+                'area_e.area_nom as area_e',
                 'emp.emple_img as img',
                 'dr.id_estado_rec',
                 'dr.id_det_recibido',
@@ -278,6 +282,12 @@ class DashboardController extends Controller
                 ->where('id_detalle', $d->id_det_recibido)
                 ->select('ruta_archivo', 'nombre_original')
                 ->get();
+
+            // Strip sensitive document info from observations (Case insensitive and more robust)
+            if (!empty($det['observaciones'])) {
+                // Remove prefix like "CC 12345678 - " or "NIT 123-456 - "
+                $det['observaciones'] = preg_replace('/^(CC|TI|CE|NIT|PAS|PEP)\s*[\d\.\-]+\s*-\s*/i', '', $det['observaciones']);
+            }
                 
             $history[] = $det;
         }

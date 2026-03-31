@@ -150,9 +150,10 @@ class CorrespondenciaController extends Controller
             ->orderBy('detalle_envio.id_detalle', 'desc')
             ->paginate(10, ['*'], 'int_page');
 
-        // Fetch all active employees for the reassignment modal
+        // T8b: Excluir Super Admin (rol=1) de la lista de disponibles
         $empleados = \App\Models\Empleado::where('emple_estado', 1)
             ->where('nit_empresa', $user->nit_empresa)
+            ->where('emple_rol', '!=', 1)
             ->get();
 
         // Fetch document types
@@ -161,10 +162,13 @@ class CorrespondenciaController extends Controller
         // Fetch remitentes of the same company (Ventanilla users)
         $remitentes = \App\Models\Remitente::where('nit_empresa', $user->nit_empresa)->get();
 
+        // Fetch areas
+        $areas = \App\Models\Area::orderBy('area_nom')->get();
+
         return view('empleado.correspondencia_recibida', compact(
             'correspondencias', 'totalRecibidas', 'enTramite', 'finalizadas', 'archivadas', 'vencidas',
             'correspondenciasInternas', 'totalInternas', 'enTramiteInt', 'finalizadasInt', 'archivadasInt', 'vencidasInt',
-            'empleados', 'tipos', 'remitentes'
+            'empleados', 'tipos', 'remitentes', 'areas'
         ));
     }
 
@@ -695,8 +699,20 @@ class CorrespondenciaController extends Controller
                     }
                 }
 
+                // T8a: Bloquear auto-envío
+                foreach ($request->doc_quien_dirigido as $dest) {
+                    if ($dest == $user->emple_doc) {
+                        throw new \Exception('No puede enviarse correspondencia a usted mismo.');
+                    }
+                }
+
+                // T8b: Bloquear envio a Super Admin (rol=1)
+                $destinatariosValidos = \App\Models\Empleado::whereIn('emple_doc', $request->doc_quien_dirigido)
+                    ->where('emple_rol', '!=', 1)
+                    ->pluck('emple_doc')->toArray();
+
                 // Create DetalleEnvio (Receiver tracking) for each recipient
-                foreach ($request->doc_quien_dirigido as $destinatario_doc) {
+                foreach ($destinatariosValidos as $destinatario_doc) {
                     $detalle = new \App\Models\DetalleEnvio();
                     $detalle->id_quien_envie = $user->emple_doc;
                     $detalle->id_quien_recibe = $destinatario_doc;

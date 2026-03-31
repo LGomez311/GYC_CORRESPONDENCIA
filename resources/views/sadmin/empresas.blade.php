@@ -643,7 +643,7 @@
 
             if (error) {
                 input.classList.add('border-red-500');
-                input.classList.remove('border-green-500');
+                input.classList.remove('border-blue-500');
 
                 if (errorEl) {
                     errorEl.textContent = error;
@@ -653,7 +653,7 @@
                 return false;
             } else {
                 input.classList.remove('border-red-500');
-                input.classList.add('border-green-500');
+                input.classList.add('border-blue-500');
 
                 if (errorEl) {
                     errorEl.classList.add('hidden');
@@ -953,7 +953,7 @@
                 editFields[id].touched = false;
                 const input = document.getElementById(id);
                 if (input) {
-                    input.classList.remove('border-red-500', 'border-green-500');
+                    input.classList.remove('border-red-500', 'border-blue-500');
                 }
             });
 
@@ -1148,13 +1148,13 @@
 
             if (error) {
                 input.classList.add('border-red-500');
-                input.classList.remove('border-green-500');
+                input.classList.remove('border-blue-500');
                 errorEl.textContent = error;
                 errorEl.classList.remove('hidden');
                 return false;
             } else {
                 input.classList.remove('border-red-500');
-                input.classList.add('border-green-500');
+                input.classList.add('border-blue-500');
                 errorEl.classList.add('hidden');
                 return true;
             }
@@ -1495,7 +1495,7 @@
                         'bg-red-50 text-red-700 p-2 rounded border border-red-100' :
                         'p-2 text-gray-600';
                     const claseNue = esDiferente ?
-                        'bg-green-50 text-green-700 p-2 rounded border border-green-100' :
+                        'bg-blue-50 text-blue-700 p-2 rounded border border-green-100' :
                         'p-2 text-gray-600';
 
                     const label = labelsMap[campo] || campo;

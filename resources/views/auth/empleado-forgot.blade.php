@@ -18,7 +18,7 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: "#00b5a3",
+                        primary: "#1e63e9",
                         "background-light": "#f6f6f8",
                         "background-dark": "#101622",
                     },
@@ -65,7 +65,7 @@
                 </p>
 
                 @if (session('success'))
-                    <div class="bg-green-100 text-green-700 p-3 rounded-lg mb-4 text-sm">
+                    <div class="bg-green-100 text-blue-700 p-3 rounded-lg mb-4 text-sm">
                         {{ session('success') }}
                     </div>
                 @endif

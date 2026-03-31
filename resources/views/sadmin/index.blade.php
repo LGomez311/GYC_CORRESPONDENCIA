@@ -34,7 +34,7 @@
     <!-- Licencias Activas -->
     <div class="bg-white dark:bg-[#161d2b] rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col">
         <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-green-50 dark:bg-green-900/30 rounded-lg flex items-center justify-center text-green-600 dark:text-green-400">
+            <div class="w-12 h-12 bg-blue-50 dark:bg-green-900/30 rounded-lg flex items-center justify-center text-green-600 dark:text-green-400">
                 <span class="material-symbols-outlined text-2xl">check_circle</span>
             </div>
             <div>

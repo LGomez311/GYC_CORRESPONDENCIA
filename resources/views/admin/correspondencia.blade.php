@@ -35,14 +35,38 @@
                         </select>
                     </div>
 
+                    <!-- T5: Tipo Documento -->
                     <div class="w-full sm:w-48">
                         <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Tipo Documento</label>
                         <select name="tipo" class="w-full px-3 py-2 bg-gray-50 dark:bg-[#0d121b] border border-[#cfd7e7] dark:border-gray-800 rounded-lg text-sm outline-none focus:border-primary">
                             <option value="">Todos</option>
                             @foreach($tipos as $tp)
-                                <option value="{{ $tp->id_tipo_corres }}" {{ request('tipo') == $tp->id_tipo_corres ? 'selected' : '' }}>{{ $tp->tipo_nombre }}</option>
+                                <option value="{{ $tp->id_tipo }}" {{ request('tipo') == $tp->id_tipo ? 'selected' : '' }}>{{ $tp->tipo_nombre }}</option>
                             @endforeach
                         </select>
+                    </div>
+
+                    <!-- T6: Estado -->
+                    <div class="w-full sm:w-40">
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Estado</label>
+                        <select name="estado_fil" class="w-full px-3 py-2 bg-gray-50 dark:bg-[#0d121b] border border-[#cfd7e7] dark:border-gray-800 rounded-lg text-sm outline-none focus:border-primary">
+                            <option value="">Todos</option>
+                            <option value="7" {{ request('estado_fil') == '7' ? 'selected' : '' }}>Recibido</option>
+                            <option value="8" {{ request('estado_fil') == '8' ? 'selected' : '' }}>En Trámite</option>
+                            <option value="9" {{ request('estado_fil') == '9' ? 'selected' : '' }}>Resuelto</option>
+                            <option value="10" {{ request('estado_fil') == '10' ? 'selected' : '' }}>Archivado</option>
+                            <option value="11" {{ request('estado_fil') == '11' ? 'selected' : '' }}>Rechazado</option>
+                        </select>
+                    </div>
+
+                    <!-- T6: Rango de Fechas -->
+                    <div class="w-full sm:w-44">
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Desde</label>
+                        <input type="date" name="fecha_desde" value="{{ request('fecha_desde') }}" class="w-full px-3 py-2 bg-gray-50 dark:bg-[#0d121b] border border-[#cfd7e7] dark:border-gray-800 rounded-lg text-sm outline-none focus:border-primary">
+                    </div>
+                    <div class="w-full sm:w-44">
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Hasta</label>
+                        <input type="date" name="fecha_hasta" value="{{ request('fecha_hasta') }}" max="{{ date('Y-m-d') }}" class="w-full px-3 py-2 bg-gray-50 dark:bg-[#0d121b] border border-[#cfd7e7] dark:border-gray-800 rounded-lg text-sm outline-none focus:border-primary">
                     </div>
 
                     <div class="flex gap-2">
@@ -50,7 +74,7 @@
                             <span class="material-symbols-outlined text-[18px]">filter_alt</span>
                             Filtrar
                         </button>
-                        @if(request()->anyFilled(['q', 'ciudad', 'tipo']))
+                        @if(request()->anyFilled(['q', 'ciudad', 'tipo', 'estado_fil', 'fecha_desde', 'fecha_hasta']))
                             <a href="{{ route('admin.correspondencia') }}" class="px-5 py-2 bg-gray-100 text-gray-700 text-sm font-bold rounded-lg hover:bg-gray-200 transition flex items-center gap-2">
                                 <span class="material-symbols-outlined text-[18px]">close</span>
                                 Borrar
@@ -72,10 +96,22 @@
     <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
         <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="correspondenciaTabs" role="tablist">
             <li class="mr-2" role="presentation">
-                <button class="inline-block p-4 border-b-2 rounded-t-lg border-primary text-primary dark:border-blue-500 dark:text-blue-500 transition-colors" id="externa-tab" type="button" role="tab" onclick="switchTab('externa')">Bandeja Externa</button>
+                <button class="inline-block p-4 border-b-2 rounded-t-lg border-primary text-primary dark:border-blue-500 dark:text-blue-500 transition-colors" id="externa-tab" type="button" role="tab" onclick="switchTab('externa')">
+                    Bandeja Externa
+                    <span class="ml-1 px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-700 rounded-full font-black">{{ $totalRecibidas ?? 0 }}</span>
+                </button>
             </li>
             <li class="mr-2" role="presentation">
-                <button class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 dark:text-gray-400 text-gray-500 transition-colors" id="interna-tab" type="button" role="tab" onclick="switchTab('interna')">Bandeja Interna</button>
+                <button class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 dark:text-gray-400 text-gray-500 transition-colors" id="interna-tab" type="button" role="tab" onclick="switchTab('interna')">
+                    Bandeja Interna
+                    <span class="ml-1 px-1.5 py-0.5 text-[10px] bg-indigo-100 text-indigo-700 rounded-full font-black">{{ $totalInternas ?? 0 }}</span>
+                </button>
+            </li>
+            <li class="mr-2" role="presentation">
+                <button class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 dark:text-gray-400 text-gray-500 transition-colors" id="saliente-tab" type="button" role="tab" onclick="switchTab('saliente')">
+                    Correspondencia Saliente
+                    <span class="ml-1 px-1.5 py-0.5 text-[10px] bg-orange-100 text-orange-700 rounded-full font-black">{{ $totalSalientes ?? 0 }}</span>
+                </button>
             </li>
         </ul>
     </div>
@@ -402,6 +438,98 @@
             <button type="button" onclick="toggleModal('modalDetalleCor')" class="px-6 py-2 bg-gray-200 dark:bg-slate-700 rounded-lg text-sm text-gray-800 dark:text-white font-bold">Cerrar</button>
         </div>
     </div>
+
+    <!-- ================= SALIENTE TAB ================= -->
+    <div id="saliente" class="hidden" role="tabpanel">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600">
+                    <span class="material-symbols-outlined">outbox</span>
+                </div>
+                <div><p class="text-sm text-gray-500 dark:text-gray-400">Total Salientes</p><p class="text-2xl font-bold dark:text-white">{{ $totalSalientes }}</p></div>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="text-xs text-gray-500 uppercase bg-gray-50 dark:bg-slate-900/50">
+                        <tr>
+                            <th class="px-6 py-3 font-medium">Radicado</th>
+                            <th class="px-6 py-3 font-medium">Enviado Por</th>
+                            <th class="px-6 py-3 font-medium">Destinatario</th>
+                            <th class="px-6 py-3 font-medium">Asunto</th>
+                            <th class="px-6 py-3 font-medium">Fecha</th>
+                            <th class="px-6 py-3 font-medium">Documentos</th>
+                            <th class="px-6 py-3 font-medium">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        @forelse($correspondenciasSalientes as $sal)
+                            @php
+                                $estadoSalNomb = $sal->estadoEnvio ? $sal->estadoEnvio->estado_nomb : 'Sin estado';
+                                $quienRecibeNom = 'N/A';
+                                if($sal->detalles->count() > 0 && $sal->detalles->first()->quienRecibe) {
+                                    $quienRecibeNom = $sal->detalles->first()->quienRecibe->emple_nombres . ' ' . $sal->detalles->first()->quienRecibe->emple_apellidos;
+                                }
+                            @endphp
+                            <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors align-top" data-envio-id="{{ $sal->id_envio }}">
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-orange-50 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 text-xs font-bold border border-orange-200 dark:border-orange-800">
+                                        <span class="material-symbols-outlined text-[14px]">outbox</span>
+                                        {{ $sal->radicado ? $sal->radicado->num_radicado : 'SAL-N/A' }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">{{ $sal->quienEnvia ? $sal->quienEnvia->emple_nombres . ' ' . $sal->quienEnvia->emple_apellidos : 'N/A' }}</td>
+                                <td class="px-6 py-4">{{ $quienRecibeNom }}</td>
+                                <td class="px-6 py-4 max-w-[180px] whitespace-normal break-words">{{ $sal->asunto }}</td>
+                                <td class="px-6 py-4">{{ $sal->fecha ? \Carbon\Carbon::parse($sal->fecha)->format('d M Y') : 'N/A' }}</td>
+                                <td class="px-6 py-4">
+                                    @php
+                                        $archivosSal = [
+                                            'id' => $sal->id_envio,
+                                            'tipo_cor' => 'Saliente',
+                                            'radicado' => $sal->radicado?->num_radicado,
+                                            'procedencia' => $sal->quienEnvia ? $sal->quienEnvia->emple_nombres . ' ' . $sal->quienEnvia->emple_apellidos : 'N/A',
+                                            'destinatario' => $quienRecibeNom,
+                                            'asunto' => $sal->asunto,
+                                            'fecha' => $sal->fecha ? \Carbon\Carbon::parse($sal->fecha)->format('d M Y, h:i A') : 'N/A',
+                                            'tipo_doc' => $sal->tipoEnvio ? $sal->tipoEnvio->tipo_nombre : 'Saliente',
+                                            'estado' => $estadoSalNomb,
+                                            'principal' => $sal->archivo ? asset('storage/' . $sal->archivo) : null,
+                                            'anexos' => [],
+                                            'folios' => $sal->folio
+                                        ];
+                                        if ($sal->anexos) {
+                                            foreach($sal->anexos as $ax) {
+                                                $archivosSal['anexos'][] = ['nombre' => $ax->nombre_original, 'ruta' => asset('storage/' . $ax->ruta_archivo)];
+                                            }
+                                        }
+                                    @endphp
+                                    <button type="button" data-detalle="{{ json_encode($archivosSal) }}" onclick="abrirModalDetalle(this.dataset.detalle)" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-orange-700 bg-orange-50 border border-orange-200 rounded-md hover:bg-orange-100 transition-colors">
+                                        <span class="material-symbols-outlined text-[16px]">visibility</span> Ver Detalle
+                                    </button>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex flex-col gap-2 items-start">
+                                        <span class="estado-badge px-2 py-0.5 rounded-full text-xs bg-orange-100 text-orange-800">{{ $estadoSalNomb }}</span>
+                                        <a href="{{ route('admin.correspondencia.historial_interna', $sal->id_envio) }}" class="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:text-blue-800 transition-colors">
+                                            <span class="material-symbols-outlined text-[14px]">history</span> Ver Historial
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="7" class="px-6 py-8 text-center text-gray-500">No hay correspondencias salientes registradas.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+                {{ $correspondenciasSalientes->appends(request()->except('sal_page'))->links() }}
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Modal Exportar -->
@@ -420,20 +548,45 @@
     function toggleModal(id) { document.getElementById(id).classList.toggle('hidden'); }
 
     function switchTab(tab) {
-        const extBtn = document.getElementById('externa-tab'), intBtn = document.getElementById('interna-tab');
-        const extContent = document.getElementById('externa'), intContent = document.getElementById('interna');
+        const tabs = ['externa', 'interna', 'saliente'];
         const active = ['border-primary', 'text-primary'], inactive = ['border-transparent', 'text-gray-500'];
 
-        if (tab === 'externa') {
-            extContent.classList.remove('hidden'); intContent.classList.add('hidden');
-            extBtn.classList.add(...active); extBtn.classList.remove(...inactive);
-            intBtn.classList.add(...inactive); intBtn.classList.remove(...active);
-        } else {
-            intContent.classList.remove('hidden'); extContent.classList.add('hidden');
-            intBtn.classList.add(...active); intBtn.classList.remove(...inactive);
-            extBtn.classList.add(...inactive); extBtn.classList.remove(...active);
-        }
+        tabs.forEach(t => {
+            const btn = document.getElementById(t + '-tab');
+            const content = document.getElementById(t);
+            if (t === tab) {
+                content.classList.remove('hidden');
+                btn.classList.add(...active); btn.classList.remove(...inactive);
+            } else {
+                content.classList.add('hidden');
+                btn.classList.remove(...active); btn.classList.add(...inactive);
+            }
+        });
         sessionStorage.setItem('activeCorrespondenceTab', tab);
+    }
+
+    // T4: Polling de estados en tiempo real cada 30 segundos
+    function iniciarPollingEstados() {
+        setInterval(function() {
+            document.querySelectorAll('[data-recibido-id]').forEach(function(row) {
+                const id = row.dataset.recibidoId;
+                fetch(`/admin/correspondencia/recibido/${id}/estado`)
+                    .then(r => r.json())
+                    .then(data => {
+                        const badge = row.querySelector('.estado-badge');
+                        if (badge) badge.textContent = data.estado;
+                    }).catch(() => {});
+            });
+            document.querySelectorAll('[data-envio-id]').forEach(function(row) {
+                const id = row.dataset.envioId;
+                fetch(`/admin/correspondencia/envio/${id}/estado`)
+                    .then(r => r.json())
+                    .then(data => {
+                        const badge = row.querySelector('.estado-badge');
+                        if (badge) badge.textContent = data.estado;
+                    }).catch(() => {});
+            });
+        }, 30000); // cada 30 segundos
     }
 
     function abrirModalDetalle(datosJson) {
@@ -547,6 +700,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const tab = urlParams.get('tab') || sessionStorage.getItem('activeCorrespondenceTab') || 'externa';
         if (tab) switchTab(tab);
+        iniciarPollingEstados(); // T4: iniciar polling de estados
     });
 </script>
 

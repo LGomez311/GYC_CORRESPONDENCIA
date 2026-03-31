@@ -337,7 +337,7 @@
                                                     => 'bg-red-50 text-red-600 border-red-200 dark:bg-red-900/20 dark:border-red-800',
                                                 9,
                                                 10
-                                                    => 'bg-green-50 text-green-600 border-green-200 dark:bg-green-900/20 dark:border-green-800',
+                                                    => 'bg-blue-50 text-green-600 border-green-200 dark:bg-green-900/20 dark:border-green-800',
                                                 8
                                                     => 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800',
                                                 14
@@ -373,7 +373,7 @@
                                                     <span class="material-symbols-outlined text-[20px]">edit_note</span>
                                                 </button>
                                                 <button onclick="confirmFinalize({{ $c->id_recibido }})"
-                                                    class="p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
+                                                    class="p-1.5 text-green-600 hover:bg-blue-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
                                                     title="Finalizar">
                                                     <span class="material-symbols-outlined text-[20px]">check_circle</span>
                                                 </button>
@@ -728,7 +728,7 @@
             if (c.id_estado_rec == 11) {
                 statusSpan.classList.add('bg-red-100', 'text-red-700', 'dark:bg-red-900/50', 'dark:text-red-400');
             } else if (c.id_estado_rec == 9 || c.id_estado_rec == 10) {
-                statusSpan.classList.add('bg-green-100', 'text-green-700', 'dark:bg-green-900/50', 'dark:text-green-400');
+                statusSpan.classList.add('bg-green-100', 'text-blue-700', 'dark:bg-green-900/50', 'dark:text-green-400');
             } else {
                 statusSpan.classList.add('bg-blue-100', 'text-blue-700', 'dark:bg-blue-900/50', 'dark:text-blue-400');
             }
@@ -958,7 +958,7 @@
                                 case 9: // Resuelto
                                 case 10: // Archivado
                                     icon = 'check_circle';
-                                    colorClass = 'bg-green-500';
+                                    colorClass = 'bg-blue-500';
                                     circleClass = 'bg-green-100 text-green-600';
                                     break;
                                 case 11: // Rechazado
@@ -1109,7 +1109,7 @@
                 text: "Esta acción marcará la solicitud rechazada como archivada definitivamente.",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#00b5a3',
+                confirmButtonColor: '#1e63e9',
                 cancelButtonColor: '#d33',
                 confirmButtonText: 'Sí, finalizar',
                 cancelButtonText: 'Cancelar',
@@ -1130,7 +1130,7 @@
                 title: '¡Éxito!',
                 text: "{{ session('success') }}",
                 icon: 'success',
-                confirmButtonColor: '#00b5a3',
+                confirmButtonColor: '#1e63e9',
                 customClass: {
                     container: 'font-display',
                     popup: 'rounded-3xl border-none shadow-2xl dark:bg-gray-800 dark:text-white',
@@ -1560,7 +1560,7 @@
 
                     li.addEventListener('click', function() {
                         hiddenCiudad.value = ciudad.ciudad_cod_post;
-                        labelBtnCiudad.textContent = ciudad.ciudad_nom;
+                        labelBtnCiudad.textContent = `${ciudad.ciudad_nom} (${deptoText})`;
                         labelBtnCiudad.classList.remove('text-slate-400');
                         labelBtnCiudad.classList.add('text-slate-900', 'dark:text-white');
                         dropdownCiudades.classList.add('hidden');
@@ -2205,6 +2205,9 @@
                         class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-4 mb-4">
                         <h3 class="text-xl font-bold text-slate-900 dark:text-white">Registrar Nueva
                             Correspondencia</h3>
+                        <button type="button" onclick="closeModal('modalCorrespondencia')" class="text-slate-400 hover:text-slate-600 transition-colors">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
                     </div>
 
                     {{-- Bloque de errores de validación --}}
@@ -2226,131 +2229,110 @@
                     @endif
 
                     {{-- ===== TABS DE SELECCIÓN ===== --}}
-                    <div class="flex space-x-6 border-b border-slate-200 dark:border-slate-800">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4">
                         <button type="button" id="tabEmpresa"
-                            class="pb-3 text-sm font-bold text-primary border-b-2 border-primary transition-colors">
-                            Entidad / Empresa
+                            class="group relative overflow-hidden flex items-center justify-center gap-4 p-5 rounded-2xl border-2 border-primary bg-blue-50/50 transition-all duration-300">
+                            <div class="p-3 bg-primary rounded-xl text-white group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-primary/20">
+                                <span class="material-symbols-outlined text-2xl">corporate_fare</span>
+                            </div>
+                            <div class="text-left">
+                                <p class="text-[10px] font-black text-primary/60 uppercase tracking-widest leading-none mb-1">Soy una</p>
+                                <h4 class="text-lg font-black text-slate-800 leading-none">Entidad / Empresa</h4>
+                            </div>
                         </button>
                         <button type="button" id="tabPersona"
-                            class="pb-3 text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors">
-                            Persona Natural
+                            class="group relative overflow-hidden flex items-center justify-center gap-4 p-5 rounded-2xl border-2 border-slate-100 bg-slate-50/50 hover:border-primary/30 hover:bg-white transition-all duration-300">
+                            <div class="p-3 bg-slate-100 group-hover:bg-primary/10 rounded-xl text-slate-400 group-hover:text-primary group-hover:scale-110 transition-all duration-300">
+                                <span class="material-symbols-outlined text-2xl">person</span>
+                            </div>
+                            <div class="text-left">
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Soy una</p>
+                                <h4 class="text-lg font-black text-slate-500 group-hover:text-slate-800 leading-none">Persona Natural</h4>
+                            </div>
                         </button>
                     </div>
 
                     {{-- ===== BLOQUE 1: EMPRESA (Visible por defecto) ===== --}}
-                    <div id="bloqueEmpresa" class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2">
+                    <div id="bloqueEmpresa" class="grid grid-cols-1 gap-6 sm:grid-cols-2 bg-slate-50 dark:bg-slate-800/20 p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
                         <div class="sm:col-span-2">
-                            <label class="flex flex-col">
-                                <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
-                                    Nombre Institución *</p>
-                                <input type="text" name="nom_institucion" required maxlength="150"
-                                    class="input-empresa form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal"
-                                    placeholder="Nombre de la entidad o empresa" />
-                            </label>
+                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Nombre Institución <span class="text-red-500">*</span></label>
+                            <input type="text" name="nom_institucion" id="nom_institucion" 
+                                class="input-empresa w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none transition-all" 
+                                placeholder="Escribe el nombre de la empresa" required />
+                            <p id="error-nom_institucion" class="text-xs text-red-500 mt-1 hidden"></p>
                         </div>
                         <div class="sm:col-span-1">
-                            <label class="flex flex-col">
-                                <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
-                                    NIT *</p>
-                                <input type="text" name="nit_institucion" required maxlength="20"
-                                    class="input-empresa form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal"
-                                    placeholder="Número de Identificación Tributaria" />
-                            </label>
+                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">NIT <span class="text-red-500">*</span></label>
+                            <input type="text" name="nit_institucion" id="nit_institucion" 
+                                class="input-empresa w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none transition-all" 
+                                placeholder="Ej: 900.123.456-1" required />
+                            <p id="error-nit_institucion" class="text-xs text-red-500 mt-1 hidden"></p>
                         </div>
                         <div class="sm:col-span-1">
-                            <label class="flex flex-col">
-                                <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
-                                    Núm. Radicado Externo</p>
-                                <input type="text" name="num_radicado_ext" maxlength="20"
-                                    value="{{ old('num_radicado_ext') }}"
-                                    class="form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal"
-                                    placeholder="Opcional" />
-                            </label>
-                        </div>
-                        <div class="sm:col-span-1">
-                            <label class="flex flex-col">
-                                <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
-                                    Correo Electrónico</p>
-                                <input type="email" name="correo_persona" maxlength="100"
-                                    class="form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal"
-                                    placeholder="correo@ejemplo.com" />
-                            </label>
+                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Núm. Radicado Externo</label>
+                            <input type="text" name="num_radicado_ext" placeholder="Opcional"
+                                class="w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none transition-all" />
                         </div>
                     </div>
 
                     {{-- ===== BLOQUE 2: PERSONA NATURAL (Oculto por defecto) ===== --}}
-                    <div id="bloquePersona" class="hidden grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2">
+                    <div id="bloquePersona" class="hidden grid grid-cols-1 gap-6 sm:grid-cols-2 bg-slate-50 dark:bg-slate-800/20 p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
                         <div class="sm:col-span-1">
-                            <label class="flex flex-col">
-                                <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
-                                    Nombre Completo *</p>
-                                <input type="text" name="nombre_persona" maxlength="150"
-                                    class="input-persona form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal"
-                                    placeholder="Nombres y apellidos" />
-                            </label>
+                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Tipo de Documento <span class="text-red-500">*</span></label>
+                            <select name="tipo_documento" id="tipo_documento" class="input-persona w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none transition-all">
+                                <option value="">Seleccione...</option>
+                                <option value="CC">Cédula de Ciudadanía</option>
+                                <option value="CE">Cédula de Extranjería</option>
+                                <option value="NIT">NIT</option>
+                                <option value="PASAPORTE">Pasaporte</option>
+                            </select>
+                            <p id="error-tipo_documento" class="text-xs text-red-500 mt-1 hidden"></p>
                         </div>
                         <div class="sm:col-span-1">
-                            <label class="flex flex-col">
-                                <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
-                                    Documento de Identidad *</p>
-                                <input type="text" name="documento_persona" maxlength="20"
-                                    class="input-persona form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal"
-                                    placeholder="Cédula, NIT, etc." />
-                            </label>
+                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Número Documento <span class="text-red-500">*</span></label>
+                            <input type="text" name="numero_documento" id="numero_documento" class="input-persona w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none transition-all" placeholder="Ej: 10203040" />
+                            <p id="error-numero_documento" class="text-xs text-red-500 mt-1 hidden"></p>
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Nombre Completo <span class="text-red-500">*</span></label>
+                            <input type="text" name="nombre_persona" id="nombre_persona" class="input-persona w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none transition-all" placeholder="Escribe tus nombres y apellidos" />
+                            <p id="error-nombre_persona" class="text-xs text-red-500 mt-1 hidden"></p>
                         </div>
                         <div class="sm:col-span-1">
-                            <label class="flex flex-col">
-                                <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
-                                    Correo Electrónico</p>
-                                <input type="email" name="correo_persona" maxlength="100"
-                                    class="form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal"
-                                    placeholder="correo@ejemplo.com" />
-                            </label>
-                        </div>
-                        <div class="sm:col-span-1">
-                            <label class="flex flex-col">
-                                <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
-                                    Teléfono</p>
-                                <input type="text" name="telefono_persona" maxlength="20"
-                                    class="form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal"
-                                    placeholder="Opcional" />
-                            </label>
+                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Teléfono</label>
+                            <input type="text" name="telefono_persona" id="telefono_persona" class="w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none transition-all" placeholder="Opcional" />
                         </div>
                     </div>
 
                     {{-- ===== CAMPOS COMPARTIDOS (Siempre visibles) ===== --}}
-                    <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2">
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <div class="sm:col-span-1">
+                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Correo Electrónico <span class="text-red-500">*</span></label>
+                            <input type="email" name="correo_persona" id="correo_persona_shared" 
+                                class="w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none transition-all" 
+                                placeholder="correo@ejemplo.com" required />
+                            <p id="error-correo_persona" class="text-xs text-red-500 mt-1 hidden"></p>
+                        </div>
                         <div class="sm:col-span-1 relative" id="ciudad-proveniente-wrapper">
                             <input type="hidden" name="ciudad_proveniente" id="ciudad_proveniente_value">
-                            <label class="flex flex-col">
-                                <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
-                                    Ciudad Proveniente *</p>
-                                <button type="button" id="btnToggleCiudades"
-                                    class="form-input flex items-center justify-between w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal text-left">
-                                    <span id="btnToggleCiudadesLabel" class="text-slate-400">Seleccione una
-                                        ciudad...</span>
-                                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 9l-7 7-7-7"></path>
-                                    </svg>
-                                </button>
-                            </label>
+                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Ciudad Proveniente <span class="text-red-500">*</span></label>
+                            <button type="button" id="btnToggleCiudades"
+                                class="flex items-center justify-between w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none text-left h-[46px]">
+                                <span id="btnToggleCiudadesLabel" class="text-slate-400">Seleccione ciudad...</span>
+                                <span class="material-symbols-outlined text-slate-400 text-lg">expand_more</span>
+                            </button>
+                            <p id="error-ciudad_proveniente" class="text-xs text-red-500 mt-1 hidden"></p>
 
                             <div id="ciudadesDropdown"
                                 class="hidden absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg shadow-lg overflow-hidden">
                                 <div class="p-2 border-b border-slate-200 dark:border-slate-700">
                                     <div class="relative">
-                                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                            </svg>
-                                        </div>
+                                        <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                                            <span class="material-symbols-outlined text-slate-400 text-sm">search</span>
+                                        </span>
                                         <input type="text" id="buscarCiudadInput"
                                             class="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-900 text-slate-900 dark:text-white py-2 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                            placeholder="Buscar por código o nombre..." />
+                                            placeholder="Buscar ciudad..." />
                                     </div>
                                 </div>
                                 <ul id="listaCiudades"
@@ -2363,7 +2345,7 @@
 
                     {{-- ===== SECCIÓN DESTINATARIOS ===== --}}
                     <div class="space-y-3">
-                        <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal">
+                        <p class="text-slate-900 dark:text-white text-sm font-bold leading-normal">
                             Destinatario(s) <span class="text-red-500">*</span>
                         </p>
                         <div id="destinatarios-container" class="space-y-2">
@@ -2371,28 +2353,17 @@
                                 <input type="hidden" name="destinatarios[]" class="dest-hidden-input">
                                 <div class="relative flex-1" style="min-width:0">
                                     <button type="button"
-                                        class="dest-btn-toggle form-input flex items-center justify-between w-full rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal text-left">
-                                        <span class="dest-label text-slate-400">Seleccione un documento o
-                                            nombre...</span>
-                                        <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none"
-                                            stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 9l-7 7-7-7"></path>
-                                        </svg>
+                                        class="dest-btn-toggle w-full flex items-center justify-between rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none text-left h-[46px]">
+                                        <span class="dest-label text-slate-400">Seleccione un destinatario...</span>
+                                        <span class="material-symbols-outlined text-slate-400 text-lg flex-shrink-0">expand_more</span>
                                     </button>
                                     <div
                                         class="dest-dropdown hidden absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg shadow-lg overflow-hidden">
                                         <div class="p-2 border-b border-slate-200 dark:border-slate-700">
                                             <div class="relative">
-                                                <div
-                                                    class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                                    <svg class="w-4 h-4 text-slate-400" fill="none"
-                                                        stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                                    </svg>
-                                                </div>
+                                                <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                                                    <span class="material-symbols-outlined text-slate-400 text-sm">search</span>
+                                                </span>
                                                 <input type="text"
                                                     class="dest-search-input w-full rounded-md border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-900 text-slate-900 dark:text-white py-2 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                                                     placeholder="Buscar por cédula o nombre..." />
@@ -2405,41 +2376,54 @@
                                     </div>
                                 </div>
                                 <button type="button"
-                                    class="dest-btn-remove hidden mt-1 flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-lg border border-red-200 dark:border-red-800 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+                                    class="dest-btn-remove hidden mt-0.5 flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-lg border border-red-100 text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors"
                                     title="Quitar destinatario">
-                                    <span class="material-symbols-outlined text-sm">close</span>
+                                    <span class="material-symbols-outlined text-[20px]">close</span>
                                 </button>
                             </div>
                         </div>
                         <button type="button" id="btnAgregarDestinatario"
-                            class="flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors mt-1">
+                            class="flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary/80 transition-colors mt-1 px-1">
                             <span class="material-symbols-outlined text-base">person_add</span>
-                            + Agregar destinatario
+                            + AGREGAR OTRO DESTINATARIO
                         </button>
                     </div>
 
-                    <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-3">
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                         <div class="sm:col-span-1">
-                            <label class="flex flex-col">
-                                <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
-                                    Asunto</p>
-                                <input type="text" name="asunto" maxlength="100"
-                                    class="form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal"
-                                    placeholder="Resumen del documento" />
-                            </label>
+                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Asunto <span class="text-red-500">*</span></label>
+                            <input type="text" name="asunto" id="asunto" 
+                                class="w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none transition-all" 
+                                placeholder="Resumen del documento" required />
+                            <p id="error-asunto" class="text-xs text-red-500 mt-1 hidden"></p>
                         </div>
-                        <div class="sm:col-span-1">
-                            <label class="flex flex-col">
-                                <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
-                                    Tipo de Documento</p>
-                                <select name="id_tipo"
-                                    class="form-select flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 h-12 px-3.5 text-base font-normal select2-tipo-recibido">
-                                    <option value="">Seleccione tipo</option>
-                                    @foreach ($tipos as $tipo)
-                                        <option value="{{ $tipo->id_tipo }}">{{ $tipo->tipo_nombre }}</option>
-                                    @endforeach
-                                </select>
-                            </label>
+                        <div class="sm:col-span-1 relative" id="tipo-documento-wrapper">
+                            <input type="hidden" name="id_tipo" id="id_tipo_value">
+                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Tipo de Documento <span class="text-red-500">*</span></label>
+                            <button type="button" id="btnToggleTipos"
+                                class="flex items-center justify-between w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none text-left h-[46px]">
+                                <span id="btnToggleTiposLabel" class="text-slate-400">Seleccione el tipo...</span>
+                                <span class="material-symbols-outlined text-slate-400 text-lg">expand_more</span>
+                            </button>
+                            <p id="error-id_tipo" class="text-xs text-red-500 mt-1 hidden"></p>
+
+                            <div id="tiposDropdown"
+                                class="hidden absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg shadow-lg overflow-hidden">
+                                <div class="p-2 border-b border-slate-200 dark:border-slate-700">
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                                            <span class="material-symbols-outlined text-slate-400 text-sm">search</span>
+                                        </span>
+                                        <input type="text" id="buscarTipoInput"
+                                            class="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-900 text-slate-900 dark:text-white py-2 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                            placeholder="Buscar tipo de documento..." />
+                                    </div>
+                                </div>
+                                <ul id="listaTipos"
+                                    class="max-h-48 overflow-y-auto py-1 text-sm text-slate-700 dark:text-slate-200">
+                                    <li class="px-3 py-2 text-slate-400 italic">Escriba para buscar...</li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
 
@@ -2744,6 +2728,7 @@
             const asignarRadicadoLabel = document.getElementById('asignar-radicado');
             const asignarAsuntoLabel = document.getElementById('asignar-asunto');
             const ALL_DESTINATARIOS = @json($todosDestinatarios);
+            const ALL_TIPOS = @json($tipos);
 
             // ===== LOGICA TABS MODAL CORRESPONDENCIA =====
             const tabEmpresa = document.getElementById('tabEmpresa');
@@ -2752,31 +2737,48 @@
             const bloquePersona = document.getElementById('bloquePersona');
             const tipoRemitente = document.getElementById('tipoRemitente');
 
-            if (tabEmpresa && tabPersona) {
-                tabEmpresa.addEventListener('click', () => {
-                    tabEmpresa.className =
-                        'pb-3 text-sm font-bold text-primary border-b-2 border-primary transition-colors';
-                    tabPersona.className =
-                        'pb-3 text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors';
+            function switchTab(type) {
+                if (type === 'empresa') {
+                    tabEmpresa.classList.replace('border-slate-100', 'border-primary');
+                    tabEmpresa.classList.replace('bg-slate-50/50', 'bg-blue-50/50');
+                    tabEmpresa.querySelector('div').classList.replace('bg-slate-100', 'bg-primary');
+                    tabEmpresa.querySelector('span').classList.replace('text-slate-400', 'text-white');
+                    tabEmpresa.querySelector('h4').classList.replace('text-slate-500', 'text-slate-800');
+
+                    tabPersona.classList.replace('border-primary', 'border-slate-100');
+                    tabPersona.classList.replace('bg-blue-50/50', 'bg-slate-50/50');
+                    tabPersona.querySelector('div').classList.replace('bg-primary', 'bg-slate-100');
+                    tabPersona.querySelector('span').classList.replace('text-white', 'text-slate-400');
+                    tabPersona.querySelector('h4').classList.replace('text-slate-800', 'text-slate-500');
+
                     bloqueEmpresa.classList.remove('hidden');
                     bloquePersona.classList.add('hidden');
                     tipoRemitente.value = 'empresa';
                     document.querySelectorAll('.input-empresa').forEach(el => el.required = true);
                     document.querySelectorAll('.input-persona').forEach(el => el.required = false);
-                });
+                } else {
+                    tabPersona.classList.replace('border-slate-100', 'border-primary');
+                    tabPersona.classList.replace('bg-slate-50/50', 'bg-blue-50/50');
+                    tabPersona.querySelector('div').classList.replace('bg-slate-100', 'bg-primary');
+                    tabPersona.querySelector('span').classList.replace('text-slate-400', 'text-white');
+                    tabPersona.querySelector('h4').classList.replace('text-slate-500', 'text-slate-800');
 
-                tabPersona.addEventListener('click', () => {
-                    tabPersona.className =
-                        'pb-3 text-sm font-bold text-primary border-b-2 border-primary transition-colors';
-                    tabEmpresa.className =
-                        'pb-3 text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors';
+                    tabEmpresa.classList.replace('border-primary', 'border-slate-100');
+                    tabEmpresa.classList.replace('bg-blue-50/50', 'bg-slate-50/50');
+                    tabEmpresa.querySelector('div').classList.replace('bg-primary', 'bg-slate-100');
+                    tabEmpresa.querySelector('span').classList.replace('text-white', 'text-slate-400');
+                    tabEmpresa.querySelector('h4').classList.replace('text-slate-800', 'text-slate-500');
+
                     bloquePersona.classList.remove('hidden');
                     bloqueEmpresa.classList.add('hidden');
                     tipoRemitente.value = 'persona';
                     document.querySelectorAll('.input-empresa').forEach(el => el.required = false);
                     document.querySelectorAll('.input-persona').forEach(el => el.required = true);
-                });
+                }
             }
+
+            if (tabEmpresa) tabEmpresa.addEventListener('click', () => switchTab('empresa'));
+            if (tabPersona) tabPersona.addEventListener('click', () => switchTab('persona'));
 
             // ===== LOGICA CIUDADES =====
             const btnToggleCiudades = document.getElementById('btnToggleCiudades');
@@ -2792,7 +2794,7 @@
                     ciudadesDropdown.classList.toggle('hidden');
                     if (!ciudadesDropdown.classList.contains('hidden')) {
                         buscarCiudadInput.focus();
-                        buscarCiudad('');
+                        buscarCiudad(buscarCiudadInput.value);
                     }
                 });
 
@@ -2800,36 +2802,25 @@
                     buscarCiudad(e.target.value);
                 });
 
-                document.addEventListener('click', (e) => {
-                    if (!btnToggleCiudades.contains(e.target) && !ciudadesDropdown.contains(e.target)) {
-                        ciudadesDropdown.classList.add('hidden');
-                    }
-                });
-
                 async function buscarCiudad(q) {
                     try {
-                        const response = await fetch(`{{ route('externarec.ciudades.buscar') }}?q=` +
-                            encodeURIComponent(q));
+                        const response = await fetch(`{{ route('externarec.ciudades.buscar') }}?q=` + encodeURIComponent(q));
                         const data = await response.json();
                         listaCiudades.innerHTML = '';
                         if (data.length === 0) {
-                            listaCiudades.innerHTML =
-                                '<li class="px-3 py-2 text-slate-400 italic">No se encontraron ciudades</li>';
+                            listaCiudades.innerHTML = '<li class="px-3 py-2 text-slate-400 italic">No se encontraron ciudades</li>';
                             return;
                         }
                         data.forEach(ciudad => {
                             const li = document.createElement('li');
-                            li.className =
-                                'px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer border-b border-slate-50 dark:border-slate-700/50 last:border-0';
-                            li.innerHTML =
-                                `<span class="font-bold text-slate-700 dark:text-slate-200">${ciudad.ciudad_nom}</span> <span class="text-[10px] text-slate-500">(CP: ${ciudad.ciudad_cod_post})</span>`;
+                            li.className = 'px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer border-b border-slate-50 dark:border-slate-700/50 last:border-0';
+                            li.innerHTML = `<span class="font-bold text-slate-700 dark:text-slate-200">${ciudad.ciudad_nom}</span> <span class="text-[10px] text-slate-500">(CP: ${ciudad.ciudad_cod_post})</span>`;
                             li.addEventListener('click', (e) => {
                                 e.stopPropagation();
                                 ciudadValue.value = ciudad.ciudad_cod_post;
                                 btnToggleCiudadesLabel.textContent = `${ciudad.ciudad_nom}`;
                                 btnToggleCiudadesLabel.classList.remove('text-slate-400');
-                                btnToggleCiudadesLabel.classList.add('text-slate-900',
-                                    'dark:text-white');
+                                btnToggleCiudadesLabel.classList.add('text-slate-900', 'dark:text-white');
                                 ciudadesDropdown.classList.add('hidden');
                             });
                             listaCiudades.appendChild(li);
@@ -2840,7 +2831,57 @@
                 }
             }
 
-            function initBuscadorAsignar(block) {
+            // ===== LOGICA TIPOS DE DOCUMENTO (ASUNTO) =====
+            const btnToggleTipos = document.getElementById('btnToggleTipos');
+            const tiposDropdown = document.getElementById('tiposDropdown');
+            const buscarTipoInput = document.getElementById('buscarTipoInput');
+            const listaTipos = document.getElementById('listaTipos');
+            const tipoValue = document.getElementById('id_tipo_value');
+            const btnToggleTiposLabel = document.getElementById('btnToggleTiposLabel');
+
+            if (btnToggleTipos) {
+                btnToggleTipos.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    tiposDropdown.classList.toggle('hidden');
+                    if (!tiposDropdown.classList.contains('hidden')) {
+                        buscarTipoInput.focus();
+                        const q = buscarTipoInput.value.toLowerCase();
+                        const filtrados = ALL_TIPOS.filter(t => t.tipo_nombre.toLowerCase().includes(q));
+                        renderTipos(filtrados);
+                    }
+                });
+
+                buscarTipoInput.addEventListener('input', (e) => {
+                    const q = e.target.value.toLowerCase();
+                    const filtrados = ALL_TIPOS.filter(t => t.tipo_nombre.toLowerCase().includes(q));
+                    renderTipos(filtrados);
+                });
+
+                function renderTipos(items) {
+                    listaTipos.innerHTML = '';
+                    if (items.length === 0) {
+                        listaTipos.innerHTML = '<li class="px-3 py-2 text-slate-400 italic">No se encontraron tipos</li>';
+                        return;
+                    }
+                    items.forEach(tipo => {
+                        const li = document.createElement('li');
+                        li.className = 'px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer border-b border-slate-50 dark:border-slate-700/50 last:border-0';
+                        li.innerHTML = `<span class="font-bold text-slate-700 dark:text-slate-200">${tipo.tipo_nombre}</span>`;
+                        li.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            tipoValue.value = tipo.id_tipo;
+                            btnToggleTiposLabel.textContent = tipo.tipo_nombre;
+                            btnToggleTiposLabel.classList.remove('text-slate-400');
+                            btnToggleTiposLabel.classList.add('text-slate-900', 'dark:text-white');
+                            tiposDropdown.classList.add('hidden');
+                        });
+                        listaTipos.appendChild(li);
+                    });
+                }
+            }
+
+            // ===== LOGICA BUSCADOR ASIGNAR / DESTINATARIOS =====
+            function initBuscadorDestinatario(block) {
                 const btnToggle = block.querySelector('.dest-btn-toggle');
                 const dropdown = block.querySelector('.dest-dropdown');
                 const searchInput = block.querySelector('.dest-search-input');
@@ -2852,20 +2893,17 @@
                 function render(items) {
                     list.innerHTML = '';
                     if (items.length === 0) {
-                        list.innerHTML =
-                            '<li class="px-3 py-2 text-slate-400 italic">No se encontraron resultados</li>';
+                        list.innerHTML = '<li class="px-3 py-2 text-slate-400 italic">Sin resultados</li>';
                         return;
                     }
                     items.forEach(item => {
                         const li = document.createElement('li');
-                        li.className =
-                            'px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer border-b border-slate-50 dark:border-slate-700/50 last:border-0';
+                        li.className = 'px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer border-b border-slate-50 dark:border-slate-700/50 last:border-0';
                         li.innerHTML = `
-                                    <div class="flex flex-col gap-0.5">
-                                        <span class="font-bold text-slate-700 dark:text-slate-200">${item.emple_nombres} ${item.emple_apellidos}</span>
-                                        <span class="text-[10px] text-blue-500 font-mono">CC: ${item.emple_doc} ${item.area_nombre ? '— ' + item.area_nombre : ''}</span>
-                                    </div>
-                                `;
+                            <div class="flex flex-col gap-0.5 pointer-events-none">
+                                <span class="font-bold text-slate-700 dark:text-slate-200">${item.emple_nombres} ${item.emple_apellidos}</span>
+                                <span class="text-[10px] text-blue-500 font-mono">CC: ${item.emple_doc} ${item.area_nombre ? '— ' + item.area_nombre : ''}</span>
+                            </div>`;
                         li.addEventListener('click', (e) => {
                             e.stopPropagation();
                             hidden.value = item.emple_doc;
@@ -2880,13 +2918,17 @@
 
                 btnToggle.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    modalAsignar.querySelectorAll('.dest-dropdown').forEach(d => {
-                        if (d !== dropdown) d.classList.add('hidden');
-                    });
+                    document.querySelectorAll('.dest-dropdown').forEach(d => { if (d !== dropdown) d.classList.add('hidden'); });
                     dropdown.classList.toggle('hidden');
                     if (!dropdown.classList.contains('hidden')) {
                         searchInput.focus();
-                        render(ALL_DESTINATARIOS);
+                        const q = searchInput.value.toLowerCase();
+                        const filtrados = ALL_DESTINATARIOS.filter(d =>
+                            d.emple_doc.toLowerCase().includes(q) ||
+                            d.emple_nombres.toLowerCase().includes(q) ||
+                            d.emple_apellidos.toLowerCase().includes(q)
+                        );
+                        render(filtrados);
                     }
                 });
 
@@ -2900,302 +2942,175 @@
                     render(filtrados);
                 });
 
-                if (btnRemove) {
-                    btnRemove.addEventListener('click', () => block.remove());
-                }
+                if (btnRemove) btnRemove.addEventListener('click', () => block.remove());
             }
 
-            document.addEventListener('click', function(e) {
-                const btn = e.target.closest('.btn-abrir-asignar');
-                if (btn) {
-                    const id = btn.dataset.id;
-                    const radicado = btn.dataset.radicado;
-                    const asunto = btn.dataset.asunto;
+            // Initialize first block
+            const firstDest = document.querySelector('.destinatario-block');
+            if (firstDest) initBuscadorDestinatario(firstDest);
 
-                    asignarRadicadoLabel.textContent = radicado;
-                    asignarAsuntoLabel.textContent = asunto;
-                    formAsignar.action = `{{ url('/remitente/externarec') }}/${id}/asignar`;
-
-                    const container = document.getElementById('asignar-destinatarios-container');
-                    const blocks = container.querySelectorAll('.destinatario-block-asignar');
-
-                    for (let i = 1; i < blocks.length; i++) blocks[i].remove();
-
-                    const firstBlock = blocks[0];
-                    firstBlock.querySelector('.dest-hidden-input').value = '';
-                    firstBlock.querySelector('.dest-label').textContent =
-                        'Seleccione un documento o nombre...';
-                    firstBlock.querySelector('.dest-label').classList.add('text-slate-400');
-                    firstBlock.querySelector('.dest-search-input').value = '';
-
-                    initBuscadorAsignar(firstBlock);
-
-                    modalAsignar.classList.remove('hidden');
-                    modalAsignar.classList.add('flex');
-                    document.body.style.overflow = 'hidden';
-                }
-
-                if (e.target.closest('.btnCerrarAsignar')) {
-                    modalAsignar.classList.add('hidden');
-                    modalAsignar.classList.remove('flex');
-                    document.body.style.overflow = 'auto';
-                }
-            });
-
-            document.getElementById('btnAgregarDestinatarioAsignar').addEventListener('click', function() {
-                const container = document.getElementById('asignar-destinatarios-container');
-                const template = container.querySelector('.destinatario-block-asignar');
+            document.getElementById('btnAgregarDestinatario').addEventListener('click', () => {
+                const container = document.getElementById('destinatarios-container');
+                const template = container.querySelector('.destinatario-block');
                 const clone = template.cloneNode(true);
 
+                // Reset values in clone
                 clone.querySelector('.dest-hidden-input').value = '';
-                clone.querySelector('.dest-label').textContent = 'Seleccione un documento o nombre...';
+                clone.querySelector('.dest-label').textContent = 'Seleccione un destinatario...';
                 clone.querySelector('.dest-label').classList.add('text-slate-400');
+                clone.querySelector('.dest-label').classList.remove('text-slate-900', 'dark:text-white');
                 clone.querySelector('.dest-search-input').value = '';
+                clone.querySelector('.dest-dropdown').classList.add('hidden'); // Ensure closed
                 clone.querySelector('.dest-btn-remove').classList.remove('hidden');
 
                 container.appendChild(clone);
-                initBuscadorAsignar(clone);
+                initBuscadorDestinatario(clone);
             });
 
-            document.addEventListener('click', function(e) {
-                if (!e.target.closest('.destinatario-block-asignar') && !e.target.closest(
-                tabPersona.addEventListener('click', () => {
-                    tabPersona.className =
-                        'pb-3 text-sm font-bold text-primary border-b-2 border-primary transition-colors';
-                    tabEmpresa.className =
-                        'pb-3 text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors';
-                    bloquePersona.classList.remove('hidden');
-                    bloqueEmpresa.classList.add('hidden');
-                    tipoRemitente.value = 'persona';
-                    document.querySelectorAll('.input-empresa').forEach(el => el.required = false);
-                    document.querySelectorAll('.input-persona').forEach(el => el.required = true);
-                });
-            }
-
-            // ===== LOGICA CIUDADES =====
-            const btnToggleCiudades = document.getElementById('btnToggleCiudades');
-            const ciudadesDropdown = document.getElementById('ciudadesDropdown');
-            const buscarCiudadInput = document.getElementById('buscarCiudadInput');
-            const listaCiudades = document.getElementById('listaCiudades');
-            const ciudadValue = document.getElementById('ciudad_proveniente_value');
-            const btnToggleCiudadesLabel = document.getElementById('btnToggleCiudadesLabel');
-
-            if (btnToggleCiudades) {
-                btnToggleCiudades.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    ciudadesDropdown.classList.toggle('hidden');
-                    if (!ciudadesDropdown.classList.contains('hidden')) {
-                        buscarCiudadInput.focus();
-                        buscarCiudad('');
-                    }
-                });
-
-                buscarCiudadInput.addEventListener('input', (e) => {
-                    buscarCiudad(e.target.value);
-                });
-
-                document.addEventListener('click', (e) => {
-                    if (!btnToggleCiudades.contains(e.target) && !ciudadesDropdown.contains(e.target)) {
-                        ciudadesDropdown.classList.add('hidden');
-                    }
-                });
-
-                async function buscarCiudad(q) {
-                    try {
-                        const response = await fetch(`{{ route('externarec.ciudades.buscar') }}?q=` +
-                            encodeURIComponent(q));
-                        const data = await response.json();
-                        listaCiudades.innerHTML = '';
-                        if (data.length === 0) {
-                            listaCiudades.innerHTML =
-                                '<li class="px-3 py-2 text-slate-400 italic">No se encontraron ciudades</li>';
-                            return;
-                        }
-                        data.forEach(ciudad => {
-                            const li = document.createElement('li');
-                            li.className =
-                                'px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer border-b border-slate-50 dark:border-slate-700/50 last:border-0';
-                            li.innerHTML =
-                                `<span class="font-bold text-slate-700 dark:text-slate-200">${ciudad.ciudad_nom}</span> <span class="text-[10px] text-slate-500">(CP: ${ciudad.ciudad_cod_post})</span>`;
-                            li.addEventListener('click', (e) => {
-                                e.stopPropagation();
-                                ciudadValue.value = ciudad.ciudad_cod_post;
-                                btnToggleCiudadesLabel.textContent = `${ciudad.ciudad_nom}`;
-                                btnToggleCiudadesLabel.classList.remove('text-slate-400');
-                                btnToggleCiudadesLabel.classList.add('text-slate-900',
-                                    'dark:text-white');
-                                ciudadesDropdown.classList.add('hidden');
-                            });
-                            listaCiudades.appendChild(li);
-                        });
-                    } catch (error) {
-                        console.error('Error cargando ciudades:', error);
-                    }
+            // Global click to close dropdowns correctly
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('#ciudad-proveniente-wrapper')) {
+                    if (ciudadesDropdown) ciudadesDropdown.classList.add('hidden');
                 }
-            }
-
-            function initBuscadorAsignar(block) {
-                const btnToggle = block.querySelector('.dest-btn-toggle');
-                const dropdown = block.querySelector('.dest-dropdown');
-                const searchInput = block.querySelector('.dest-search-input');
-                const list = block.querySelector('.dest-list');
-                const label = block.querySelector('.dest-label');
-                const hidden = block.querySelector('.dest-hidden-input');
-                const btnRemove = block.querySelector('.dest-btn-remove');
-
-                function render(items) {
-                    list.innerHTML = '';
-                    if (items.length === 0) {
-                        list.innerHTML =
-                            '<li class="px-3 py-2 text-slate-400 italic">No se encontraron resultados</li>';
-                        return;
-                    }
-                    items.forEach(item => {
-                        const li = document.createElement('li');
-                        li.className =
-                            'px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer border-b border-slate-50 dark:border-slate-700/50 last:border-0';
-                        li.innerHTML = `
-                                    <div class="flex flex-col gap-0.5">
-                                        <span class="font-bold text-slate-700 dark:text-slate-200">${item.emple_nombres} ${item.emple_apellidos}</span>
-                                        <span class="text-[10px] text-blue-500 font-mono">CC: ${item.emple_doc} ${item.area_nombre ? '— ' + item.area_nombre : ''}</span>
-                                    </div>
-                                `;
-                        li.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            hidden.value = item.emple_doc;
-                            label.textContent = `${item.emple_nombres} ${item.emple_apellidos}`;
-                            label.classList.remove('text-slate-400');
-                            label.classList.add('text-slate-900', 'dark:text-white');
-                            dropdown.classList.add('hidden');
-                        });
-                        list.appendChild(li);
-                    });
+                if (!e.target.closest('#tipo-documento-wrapper')) {
+                    if (tiposDropdown) tiposDropdown.classList.add('hidden');
                 }
-
-                btnToggle.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    modalAsignar.querySelectorAll('.dest-dropdown').forEach(d => {
-                        if (d !== dropdown) d.classList.add('hidden');
-                    });
-                    dropdown.classList.toggle('hidden');
-                    if (!dropdown.classList.contains('hidden')) {
-                        searchInput.focus();
-                        render(ALL_DESTINATARIOS);
-                    }
-                });
-
-                searchInput.addEventListener('input', function() {
-                    const q = this.value.toLowerCase();
-                    const filtrados = ALL_DESTINATARIOS.filter(d =>
-                        d.emple_doc.toLowerCase().includes(q) ||
-                        d.emple_nombres.toLowerCase().includes(q) ||
-                        d.emple_apellidos.toLowerCase().includes(q)
-                    );
-                    render(filtrados);
-                });
-
-                if (btnRemove) {
-                    btnRemove.addEventListener('click', () => block.remove());
+                if (!e.target.closest('.destinatario-block')) {
+                    document.querySelectorAll('.dest-dropdown').forEach(d => d.classList.add('hidden'));
                 }
-            }
-
-            document.addEventListener('click', function(e) {
-                const btn = e.target.closest('.btn-abrir-asignar');
-                if (btn) {
-                    const id = btn.dataset.id;
-                    const radicado = btn.dataset.radicado;
-                    const asunto = btn.dataset.asunto;
-
-                    asignarRadicadoLabel.textContent = radicado;
-                    asignarAsuntoLabel.textContent = asunto;
-                    formAsignar.action = `{{ url('/remitente/externarec') }}/${id}/asignar`;
-
-                    const container = document.getElementById('asignar-destinatarios-container');
-                    const blocks = container.querySelectorAll('.destinatario-block-asignar');
-
-                    for (let i = 1; i < blocks.length; i++) blocks[i].remove();
-
-                    const firstBlock = blocks[0];
-                    firstBlock.querySelector('.dest-hidden-input').value = '';
-                    firstBlock.querySelector('.dest-label').textContent =
-                        'Seleccione un documento o nombre...';
-                    firstBlock.querySelector('.dest-label').classList.add('text-slate-400');
-                    firstBlock.querySelector('.dest-search-input').value = '';
-
-                    initBuscadorAsignar(firstBlock);
-
-                    modalAsignar.classList.remove('hidden');
-                    modalAsignar.classList.add('flex');
-                    document.body.style.overflow = 'hidden';
-                }
-
-                if (e.target.closest('.btnCerrarAsignar')) {
-                    modalAsignar.classList.add('hidden');
-                    modalAsignar.classList.remove('flex');
-                    document.body.style.overflow = 'auto';
-                }
-            });
-
-            document.getElementById('btnAgregarDestinatarioAsignar').addEventListener('click', function() {
-                const container = document.getElementById('asignar-destinatarios-container');
-                const template = container.querySelector('.destinatario-block-asignar');
-                const clone = template.cloneNode(true);
-
-                clone.querySelector('.dest-hidden-input').value = '';
-                clone.querySelector('.dest-label').textContent = 'Seleccione un documento o nombre...';
-                clone.querySelector('.dest-label').classList.add('text-slate-400');
-                clone.querySelector('.dest-search-input').value = '';
-                clone.querySelector('.dest-btn-remove').classList.remove('hidden');
-
-                container.appendChild(clone);
-                initBuscadorAsignar(clone);
-            });
-
-            document.addEventListener('click', function(e) {
-                if (!e.target.closest('.destinatario-block-asignar') && !e.target.closest('.destinatario-block')) {
+                if (!e.target.closest('.destinatario-block-asignar')) {
                     document.querySelectorAll('.dest-dropdown').forEach(d => d.classList.add('hidden'));
                 }
             });
 
-            // ===== LOGICA DESTINATARIOS MODAL CORRESPONDENCIA =====
-            const containerDest = document.getElementById('destinatarios-container');
-            const btnAgregarDest = document.getElementById('btnAgregarDestinatario');
+            // ===== LOGICA ASIGNAR (MODAL INDEPENDIENTE) =====
+            document.addEventListener('click', function(e) {
+                const btn = e.target.closest('.btn-abrir-asignar');
+                if (btn) {
+                    const id = btn.dataset.id;
+                    const radicado = btn.dataset.radicado;
+                    const asunto = btn.dataset.asunto;
 
-            if (containerDest && btnAgregarDest) {
-                // Initialize the first block
-                const firstBlock = containerDest.querySelector('.destinatario-block');
-                if (firstBlock) initBuscadorAsignar(firstBlock);
+                    asignarRadicadoLabel.textContent = radicado;
+                    asignarAsuntoLabel.textContent = asunto;
+                    formAsignar.action = `{{ url('/remitente/externarec') }}/${id}/asignar`;
 
-                btnAgregarDest.addEventListener('click', () => {
-                    const template = containerDest.querySelector('.destinatario-block');
-                    const clone = template.cloneNode(true);
+                    const container = document.getElementById('asignar-destinatarios-container');
+                    const blocks = container.querySelectorAll('.destinatario-block-asignar');
+                    for (let i = 1; i < blocks.length; i++) blocks[i].remove();
 
-                    clone.querySelector('.dest-hidden-input').value = '';
-                    clone.querySelector('.dest-label').textContent = 'Seleccione un documento o nombre...';
-                    clone.querySelector('.dest-label').classList.add('text-slate-400');
-                    clone.querySelector('.dest-label').classList.remove('text-slate-900', 'dark:text-white');
-                    clone.querySelector('.dest-search-input').value = '';
-                    clone.querySelector('.dest-btn-remove').classList.remove('hidden');
+                    const firstBlock = blocks[0];
+                    firstBlock.querySelector('.dest-hidden-input').value = '';
+                    firstBlock.querySelector('.dest-label').textContent = 'Seleccione un documento o nombre...';
+                    firstBlock.querySelector('.dest-label').classList.add('text-slate-400');
+                    firstBlock.querySelector('.dest-search-input').value = '';
+                    initBuscadorDestinatario(firstBlock);
 
-                    containerDest.appendChild(clone);
-                    initBuscadorAsignar(clone);
+                    modalAsignar.classList.remove('hidden');
+                    modalAsignar.classList.add('flex');
+                    document.body.style.overflow = 'hidden';
+                }
+
+                if (e.target.closest('.btnCerrarAsignar')) {
+                    modalAsignar.classList.add('hidden');
+                    modalAsignar.classList.remove('flex');
+                    document.body.style.overflow = 'auto';
+                }
+            });
+
+            document.getElementById('btnAgregarDestinatarioAsignar').addEventListener('click', function() {
+                const container = document.getElementById('asignar-destinatarios-container');
+                const template = container.querySelector('.destinatario-block-asignar');
+                const clone = template.cloneNode(true);
+                clone.querySelector('.dest-hidden-input').value = '';
+                clone.querySelector('.dest-label').textContent = 'Seleccione un documento o nombre...';
+                clone.querySelector('.dest-label').classList.add('text-slate-400');
+                clone.querySelector('.dest-label').classList.remove('text-slate-900', 'dark:text-white');
+                clone.querySelector('.dest-search-input').value = '';
+                clone.querySelector('.dest-btn-remove').classList.remove('hidden');
+                container.appendChild(clone);
+                initBuscadorDestinatario(clone);
+            });
+
+            // ===== VALIDACIÓN ANTES DE ENVIAR =====
+            const formPrincipal = document.getElementById('formCorrespondencia');
+            if (formPrincipal) {
+                formPrincipal.addEventListener('submit', function(e) {
+                    let hasErrors = false;
+                    const errors = document.querySelectorAll('[id^="error-"]');
+                    errors.forEach(err => err.classList.add('hidden'));
+
+                    const type = tipoRemitente.value;
+                    if (type === 'empresa') {
+                        const inputNom = document.getElementById('nom_institucion');
+                        const inputNit = document.getElementById('nit_institucion');
+                        if (!inputNom.value.trim()) {
+                            showError('nom_institucion', 'El nombre de la empresa es obligatorio.');
+                            hasErrors = true;
+                        }
+                        if (!inputNit.value.trim()) {
+                            showError('nit_institucion', 'El NIT es obligatorio.');
+                            hasErrors = true;
+                        }
+                    } else {
+                        const inputTipoDoc = document.getElementById('tipo_documento');
+                        const inputNumDoc = document.getElementById('numero_documento');
+                        const inputNomPers = document.getElementById('nombre_persona');
+                        if (!inputTipoDoc.value) {
+                            showError('tipo_documento', 'Seleccione el tipo de documento.');
+                            hasErrors = true;
+                        }
+                        if (!inputNumDoc.value.trim()) {
+                            showError('numero_documento', 'El número de documento es obligatorio.');
+                            hasErrors = true;
+                        }
+                        if (!inputNomPers.value.trim()) {
+                            showError('nombre_persona', 'El nombre completo es obligatorio.');
+                            hasErrors = true;
+                        }
+                    }
+
+                    const inputCorreo = document.getElementById('correo_persona_shared');
+                    if (!inputCorreo.value.trim()) {
+                        showError('correo_persona', 'El correo electrónico es obligatorio.');
+                        hasErrors = true;
+                    }
+
+                    if (!ciudadValue.value) {
+                        showError('ciudad_proveniente', 'Debe seleccionar una ciudad.');
+                        hasErrors = true;
+                    }
+                    if (!document.getElementById('asunto').value.trim()) {
+                        showError('asunto', 'El asunto es obligatorio.');
+                        hasErrors = true;
+                    }
+                    if (!tipoValue.value) {
+                        showError('id_tipo', 'Seleccione el tipo de documento.');
+                        hasErrors = true;
+                    }
+
+                    // Validar al menos un destinatario
+                    const selectedDests = Array.from(document.querySelectorAll('input[name="destinatarios[]"]'))
+                        .filter(input => input.value.trim() !== "");
+                    if (selectedDests.length === 0) {
+                        alert("Debe seleccionar al menos un destinatario.");
+                        hasErrors = true;
+                    }
+
+                    if (hasErrors) {
+                        e.preventDefault();
+                        const firstError = document.querySelector('[id^="error-"]:not(.hidden)');
+                        if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
                 });
             }
 
-            // Initialize Select2 if jQuery is loaded
-            if (typeof jQuery !== 'undefined' && typeof jQuery.fn.select2 !== 'undefined') {
-                $('.select2-tipo-saliente').select2({
-                    placeholder: "Buscar tipo...",
-                    allowClear: true,
-                    width: '100%',
-                    dropdownParent: $('#salienteModal')
-                });
-                $('.select2-tipo-recibido').select2({
-                    placeholder: "Buscar tipo...",
-                    allowClear: true,
-                    width: '100%',
-                    dropdownParent: $('#modalCorrespondencia')
-                });
+            function showError(id, msg) {
+                const p = document.getElementById('error-' + id);
+                if (p) {
+                    p.textContent = msg;
+                    p.classList.remove('hidden');
+                }
             }
         });
     </script>

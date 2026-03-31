@@ -112,7 +112,7 @@
                 </div>
             </a>
             <a href="{{ route('admin.correspondencia') }}" class="group bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4 hover:border-primary transition-all">
-                <div class="size-10 bg-green-500/10 rounded-lg flex items-center justify-center text-green-500 group-hover:bg-green-500 group-hover:text-white transition-colors">
+                <div class="size-10 bg-blue-500/10 rounded-lg flex items-center justify-center text-green-500 group-hover:bg-blue-500 group-hover:text-white transition-colors">
                     <span class="material-symbols-outlined">mail</span>
                 </div>
                 <div>
@@ -262,7 +262,7 @@
                                     } elseif (str_contains($estadoNomb, 'tramite') || str_contains($estadoNomb, 'trámite')) {
                                         $badgeClass = 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/40 dark:text-yellow-300';
                                     } elseif (str_contains($estadoNomb, 'finalizado') || str_contains($estadoNomb, 'resuelto')) {
-                                        $badgeClass = 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/40 dark:text-green-300';
+                                        $badgeClass = 'bg-green-100 text-blue-700 border-green-200 dark:bg-green-900/40 dark:text-green-300';
                                     } elseif (str_contains($estadoNomb, 'rechazado') || str_contains($estadoNomb, 'cancelado')) {
                                         $badgeClass = 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/40 dark:text-red-300';
                                     }

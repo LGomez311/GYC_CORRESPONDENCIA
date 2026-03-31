@@ -1017,7 +1017,7 @@
                 // Reset validations
                 Object.keys(reglasEditarEmpleado).forEach(id => {
                     const el = document.getElementById(id);
-                    if(el) el.classList.remove('border-red-500', 'border-green-500');
+                    if(el) el.classList.remove('border-red-500', 'border-blue-500');
                     const err = document.getElementById(reglasEditarEmpleado[id].error);
                     if(err) err.classList.add('hidden');
                 });
@@ -1072,7 +1072,7 @@
                 // Reset validations
                 Object.keys(reglasEditarRemitente).forEach(id => {
                     const el = document.getElementById(id);
-                    if(el) el.classList.remove('border-red-500', 'border-green-500');
+                    if(el) el.classList.remove('border-red-500', 'border-blue-500');
                     const err = document.getElementById(reglasEditarRemitente[id].error);
                     if(err) err.classList.add('hidden');
                 });
@@ -1166,7 +1166,7 @@
 
             const valor = input.value.trim();
 
-            input.classList.remove('border-red-500', 'border-green-500');
+            input.classList.remove('border-red-500', 'border-blue-500');
             if(error) error.classList.add('hidden');
 
             if (regla.isPassword) {
@@ -1191,7 +1191,7 @@
                     if(error) { error.textContent = regla.mensajes.min; error.classList.remove('hidden'); }
                     return;
                 }
-                input.classList.add('border-green-500');
+                input.classList.add('border-blue-500');
                 return;
             }
 
@@ -1221,7 +1221,7 @@
                 return;
             }
             if (valor !== '' || regla.required) {
-                input.classList.add('border-green-500');
+                input.classList.add('border-blue-500');
             }
         }
 
@@ -1266,7 +1266,7 @@
             const error = document.getElementById(regla.error);
             const valor = input.value.trim();
 
-            input.classList.remove('border-red-500', 'border-green-500');
+            input.classList.remove('border-red-500', 'border-blue-500');
             if(error) error.classList.add('hidden');
 
             if (regla.required && valor === '') {
@@ -1295,7 +1295,7 @@
                 return false;
             }
 
-            if(valor !== '') input.classList.add('border-green-500');
+            if(valor !== '') input.classList.add('border-blue-500');
             return true;
         }
 

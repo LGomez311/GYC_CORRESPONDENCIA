@@ -986,7 +986,7 @@
                 const valor = input.value.trim();
 
                 // Reset visual
-                input.classList.remove('border-red-500', 'border-green-500');
+                input.classList.remove('border-red-500', 'border-blue-500');
                 error.classList.add('hidden');
 
                 //  VALIDACIÓN ESPECIAL PASSWORD
@@ -1023,7 +1023,7 @@
                         return;
                     }
 
-                    input.classList.add('border-green-500');
+                    input.classList.add('border-blue-500');
                     return;
                 }
 
@@ -1068,7 +1068,7 @@
                 }
 
                 // 🟢 Todo correcto
-                input.classList.add('border-green-500');
+                input.classList.add('border-blue-500');
             }
 
             function validarCampo(id) {
@@ -1292,7 +1292,7 @@
                 const error = document.getElementById(regla.error);
                 const valor = input.value.trim();
 
-                input.classList.remove('border-red-500', 'border-green-500');
+                input.classList.remove('border-red-500', 'border-blue-500');
                 error.classList.add('hidden');
 
                 if (regla.required && valor === '') {
@@ -1330,7 +1330,7 @@
                     return false;
                 }
 
-                input.classList.add('border-green-500');
+                input.classList.add('border-blue-500');
                 return true;
             }
 
@@ -1436,7 +1436,7 @@
                             'bg-red-50 text-red-700 p-2 rounded border border-red-100' :
                             'p-2 text-gray-600';
                         const claseNue = esDiferente ?
-                            'bg-green-50 text-green-700 p-2 rounded border border-green-100' :
+                            'bg-blue-50 text-blue-700 p-2 rounded border border-green-100' :
                             'p-2 text-gray-600';
 
                         const label = campo.charAt(0).toUpperCase() + campo.slice(1);

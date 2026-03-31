@@ -15,7 +15,7 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#00b5a3",
+                        "primary": "#1e63e9",
                         "background-light": "#f6f6f8",
                         "background-dark": "#101622",
                     },
@@ -73,7 +73,7 @@
                                 @endforeach
                             </ul>
                         `,
-                        confirmButtonColor: '#00b5a3',
+                        confirmButtonColor: '#1e63e9',
                     });
                 });
             </script>
@@ -103,7 +103,7 @@
                     <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
                         <span class="material-symbols-outlined text-xl">tag</span>
                     </span>
-                    <input type="text" name="numero_radicado" value="{{ old('numero_radicado', request('radicado')) }}" class="w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 pl-10 p-3 focus:ring-2 focus:ring-primary/50 outline-none uppercase" required placeholder="Ej: EXT-2026-00001">
+                    <input type="text" name="numero_radicado" id="numero_radicado" value="{{ old('numero_radicado', request('radicado')) }}" class="w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 pl-10 p-3 focus:ring-2 focus:ring-primary/50 outline-none uppercase" required placeholder="INT-0000-00000" maxlength="15">
                 </div>
             </div>
 
@@ -151,9 +151,32 @@
                 }
             }
             
-            // Inicializar al cargar la página
+            // Radicado Auto-formatter
             document.addEventListener('DOMContentLoaded', function() {
                 toggleBusquedaTipo();
+                
+                const radInput = document.querySelector('input[name="numero_radicado"]');
+                radInput.addEventListener('blur', function() {
+                    let val = this.value.trim().toUpperCase();
+                    if (!val) return;
+                    
+                    // If it's just numbers, format it as INT-YYYY-XXXXX
+                    if (/^\d+$/.test(val)) {
+                        const year = new Date().getFullYear();
+                        const padded = val.padStart(5, '0');
+                        this.value = `INT-${year}-${padded}`;
+                    } else if (/^INT-\d{4}-\d+$/.test(val)) {
+                        // Already has prefix and year, just pad the number
+                        const parts = val.split('-');
+                        parts[2] = parts[2].padStart(5, '0');
+                        this.value = parts.join('-');
+                    }
+                });
+                
+                radInput.addEventListener('input', function() {
+                   // Optional: force uppercase
+                   this.value = this.value.toUpperCase();
+                });
             });
         </script>
 

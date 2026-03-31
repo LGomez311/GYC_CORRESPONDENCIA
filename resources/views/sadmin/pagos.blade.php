@@ -417,7 +417,7 @@
                         'bg-red-50 text-red-700 p-2 rounded border border-red-100' :
                         'p-2 text-gray-600';
                     const claseNue = esDiferente ?
-                        'bg-green-50 text-green-700 p-2 rounded border border-green-100' :
+                        'bg-blue-50 text-blue-700 p-2 rounded border border-green-100' :
                         'p-2 text-gray-600';
 
                     const label = labelsMap[campo] || campo;

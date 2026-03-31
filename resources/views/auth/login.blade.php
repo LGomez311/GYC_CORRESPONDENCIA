@@ -19,7 +19,7 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#00b5a3",
+                        "primary": "#1e63e9",
                         "background-light": "#f6f6f8",
                         "background-dark": "#101622",
                     },
@@ -75,7 +75,7 @@
 
                 @if (session('success'))
                     <div id="success-alert"
-                        class="bg-green-50 border-l-4 border-green-500 text-green-700 px-4 py-2 rounded mb-4 shadow-sm text-sm">
+                        class="bg-blue-50 border-l-4 border-blue-500 text-blue-700 px-4 py-2 rounded mb-4 shadow-sm text-sm">
                         {{ session('success') }}
                     </div>
 

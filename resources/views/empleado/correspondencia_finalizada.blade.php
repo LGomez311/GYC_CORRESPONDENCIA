@@ -1754,7 +1754,7 @@
         const hasRespuestaFolios = datos.folios_respuesta > 0;
 
         if (hasRespuestaPrincipal || hasRespuestaAnexos || hasRespuestaFolios) {
-            html += `<div class="mt-4 bg-green-50/30 dark:bg-green-900/10 p-4 rounded-xl border border-green-100 dark:border-green-800/30">`;
+            html += `<div class="mt-4 bg-blue-50/30 dark:bg-green-900/10 p-4 rounded-xl border border-green-100 dark:border-green-800/30">`;
             html += `<h4 class="font-bold text-green-800 dark:text-green-500 mb-3 flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">output</span> Respuesta del Destinatario</h4>`;
             html += `<div class="flex flex-col gap-3">`;
 
@@ -1765,13 +1765,13 @@
                                 <span class="material-symbols-outlined text-green-600">picture_as_pdf</span>
                                 <span class="text-sm font-medium dark:text-white">Oficio de Respuesta</span>
                             </div>
-                            <a href="${datos.respuesta_principal}" target="_blank" class="px-3 py-1 bg-green-50 text-green-700 hover:bg-green-100 rounded-md text-xs font-medium dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50 transition-colors">Ver Archivo</a>
+                            <a href="${datos.respuesta_principal}" target="_blank" class="px-3 py-1 bg-blue-50 text-blue-700 hover:bg-green-100 rounded-md text-xs font-medium dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50 transition-colors">Ver Archivo</a>
                          </div>`;
             }
 
             // Folios Respuesta
             if (datos.folios_respuesta > 0) {
-                html += `<div class="text-sm text-green-700 dark:text-green-400 px-2 mt-1"><strong>Folios de respuesta:</strong> ${datos.folios_respuesta}</div>`;
+                html += `<div class="text-sm text-blue-700 dark:text-green-400 px-2 mt-1"><strong>Folios de respuesta:</strong> ${datos.folios_respuesta}</div>`;
             }
 
             // Anexos Respuesta
@@ -1803,7 +1803,7 @@
         if (prioUpper.includes('URGENTE')) priorityColorClass = 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800';
         else if (prioUpper.includes('ALTA')) priorityColorClass = 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800';
         else if (prioUpper.includes('MEDIA')) priorityColorClass = 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800';
-        else if (prioUpper.includes('BAJA')) priorityColorClass = 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800';
+        else if (prioUpper.includes('BAJA')) priorityColorClass = 'bg-blue-50 text-blue-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800';
 
         let htmlContent = `
             <div class="flex flex-col gap-4 text-left">

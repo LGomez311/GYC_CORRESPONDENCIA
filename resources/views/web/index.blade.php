@@ -21,7 +21,7 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#00b5a3",
+                        "primary": "#1e63e9",
                         "background-light": "#f6f6f8",
                         "background-dark": "#101622",
                     },
@@ -139,7 +139,7 @@
                         class="relative bg-white border border-[#e7ebf3] rounded-3xl shadow-2xl overflow-hidden aspect-[4/3] flex items-center justify-center">
                         <div class="w-full h-full bg-cover bg-center"
                             data-alt="Modern software dashboard preview interface"
-                            style="background-image: url('{{ asset('storage/public/s.png') }}');">
+                            style="background-image: url('{{ asset('storage/web/hero_documents.png') }}');">
                         </div>
                     </div>
                 </div>
@@ -478,7 +478,7 @@
             class="max-w-[1280px] mx-auto px-6 md:px-20 pt-8 border-t border-[#e7ebf3] flex flex-col md:flex-row justify-between items-center gap-4">
             <p class="text-xs text-[#4c669a]">© 2026 EASYCOR. Todos los derechos reservados.</p>
             <div class="flex items-center gap-2">
-                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                <span class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
                 <p class="text-xs text-[#4c669a] font-medium">Sistemas Operativos 100%</p>
             </div>
         </div>

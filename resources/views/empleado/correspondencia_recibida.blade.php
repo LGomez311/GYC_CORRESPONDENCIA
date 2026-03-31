@@ -116,6 +116,7 @@
                         <th class="px-6 py-3 font-medium">Radicados</th>
                         <th class="px-6 py-3 font-medium">Procedencia</th>
                         <th class="px-6 py-3 font-medium">Detalles Documento</th>
+                        <th class="px-6 py-3 font-medium">Depto. Destino</th>
                         <th class="px-6 py-3 font-medium hidden lg:table-cell">Detalles Técnicos</th>
                         <th class="px-6 py-3 font-medium hidden lg:table-cell">Ingreso / Registro</th>
                         <th class="px-6 py-3 font-medium">Archivos / Anexos</th>
@@ -179,6 +180,22 @@
                                         </button>
                                     </div>
                                 @endif
+                            </td>
+
+                            <!-- Depto. Destino -->
+                            <td class="px-6 py-4">
+                                <div class="flex flex-col gap-1">
+                                    @php $destinatarios = $rec?->destinatarios ?? collect(); @endphp
+                                    @foreach($destinatarios as $dest)
+                                        <div class="flex flex-col mb-1 last:mb-0">
+                                            <span class="text-xs font-bold text-gray-900 dark:text-gray-100 truncate max-w-[150px]" title="{{ $dest->emple_nombres }} {{ $dest->emple_apellidos }}">{{ $dest->emple_nombres }} {{ $dest->emple_apellidos }}</span>
+                                            <span class="text-[10px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-widest">{{ $dest->area->area_nom ?? 'Sin Área' }}</span>
+                                        </div>
+                                    @endforeach
+                                    @if($destinatarios->isEmpty())
+                                        <span class="text-xs text-gray-400 italic">No asignado</span>
+                                    @endif
+                                </div>
                             </td>
 
                             <!-- 4. Detalles Técnicos (Inline) -->
@@ -1068,7 +1085,20 @@
             <div class="p-6 space-y-5 overflow-y-auto flex-1">
                 <!-- Destinatario (Rich Dropdown Selector) -->
                 <div class="relative" id="destiniesDropdownContainer">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Para (Destinatario/s) <span class="text-red-500">*</span></label>
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-1">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Para (Destinatario/s) <span class="text-red-500">*</span></label>
+                        
+                        <!-- Filtro por Area -->
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-tight">Filtrar por:</span>
+                            <select id="filtroAreaInterna" class="text-[10px] font-bold py-1 px-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-gray-400 focus:ring-1 focus:ring-primary/30 outline-none transition-all" onchange="filtrarDestinatarios()">
+                                <option value="">Todos los Deptos</option>
+                                @foreach($areas ?? [] as $area)
+                                    <option value="{{ strtolower($area->area_nom) }}">{{ $area->area_nom }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
                     
                     <!-- Faux Input Box containing Pills and the actual Search Input -->
                     <div id="fauxInputContainer" class="flex flex-wrap items-center gap-1.5 w-full min-h-[42px] px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 focus-within:ring-2 focus-within:ring-primary/50 cursor-text transition-all" onclick="abrirDropdownDestinatarios()">
@@ -1140,7 +1170,7 @@
                     <!-- Tipo de Documento -->
                     <div class="relative" id="tipoDropdownContainerInt">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo de Documento <span class="text-red-500">*</span></label>
-<<<<<<< HEAD
+
                         <div id="tipoInputContainerInt" class="flex flex-wrap items-center gap-1.5 w-full min-h-[42px] px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 focus-within:ring-2 focus-within:ring-primary/50 cursor-text transition-all" onclick="abrirDropdownTipoInt()">
                             <input type="text" id="busquedaTipoInt" placeholder="Buscar o seleccionar tipo..." 
                                 class="flex-1 w-full bg-transparent border-none p-0 focus:ring-0 text-sm dark:text-white dark:placeholder-gray-400 m-0"
@@ -1167,15 +1197,6 @@
                                 </div>
                             </div>
                         </div>
-                        <input type="hidden" name="id_tipo_envio" id="id_tipo_envio_int_hidden" required>
-=======
-                        <select name="id_tipo_envio" required class="w-full border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 dark:text-white py-2.5 px-3 text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors select2-tipo-interna">
-                            <option value="">Seleccione el tipo...</option>
-                            @foreach($tipos ?? [] as $tipo)
-                                <option value="{{ $tipo->id_tipo }}">{{ $tipo->tipo_nombre }}</option>
-                            @endforeach
-                        </select>
->>>>>>> Luis
                     </div>
                 </div>
 
@@ -1345,7 +1366,7 @@
                     <!-- Tipo de Documento -->
                     <div class="relative" id="tipoDropdownContainerVent">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo de Documento <span class="text-red-500">*</span></label>
-<<<<<<< HEAD
+
                         <div id="tipoInputContainerVent" class="flex flex-wrap items-center gap-1.5 w-full min-h-[42px] px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 focus-within:ring-2 focus-within:ring-primary/50 cursor-text transition-all" onclick="abrirDropdownTipoVent()">
                             <input type="text" id="busquedaTipoVent" placeholder="Buscar o seleccionar tipo..." 
                                 class="flex-1 w-full bg-transparent border-none p-0 focus:ring-0 text-sm dark:text-white dark:placeholder-gray-400 m-0"
@@ -1373,14 +1394,6 @@
                             </div>
                         </div>
                         <input type="hidden" name="id_tipo_envio" id="id_tipo_envio_vent_hidden" required>
-=======
-                        <select name="id_tipo_envio" required class="w-full border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 dark:text-white py-2.5 px-3 text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors select2-tipo-ventanilla">
-                            <option value="">Seleccione el tipo...</option>
-                            @foreach($tipos ?? [] as $tipo)
-                                <option value="{{ $tipo->id_tipo }}">{{ $tipo->tipo_nombre }}</option>
-                            @endforeach
-                        </select>
->>>>>>> Luis
                     </div>
                 </div>
 
@@ -1889,18 +1902,21 @@
 
     function filtrarDestinatarios() {
         const input = document.getElementById('busquedaDestinatarios').value.toLowerCase().trim();
+        const areaFiltro = document.getElementById('filtroAreaInterna') ? document.getElementById('filtroAreaInterna').value.toLowerCase() : '';
         const items = document.querySelectorAll('.destinatario-item');
         const noMsg = document.getElementById('noDestinatariosMsg');
         const selectAllContainer = document.getElementById('selectAllContainer');
         let visibleCount = 0;
 
         items.forEach(item => {
-            const nombre = item.getAttribute('data-nombre');
-            const area = item.getAttribute('data-area');
-            const doc = item.getAttribute('data-doc');
+            const nombre = item.getAttribute('data-nombre') || '';
+            const area = item.getAttribute('data-area') || '';
+            const doc = item.getAttribute('data-doc') || '';
             
-            // Si no hay texto, mostramos todos
-            if (input.length === 0 || nombre.includes(input) || area.includes(input) || doc.includes(input)) {
+            const matchesText = !input || nombre.includes(input) || area.includes(input) || doc.includes(input);
+            const matchesArea = !areaFiltro || area.includes(areaFiltro);
+
+            if (matchesText && matchesArea) {
                 item.classList.remove('hidden');
                 item.classList.add('flex');
                 visibleCount++;
@@ -1916,7 +1932,6 @@
         } else {
             noMsg.classList.add('hidden');
             if (selectAllContainer) {
-                // If visibleCount is small logic or just always show when items are visible
                 selectAllContainer.classList.remove('hidden');
             }
         }
@@ -2176,7 +2191,7 @@
         if (prioUpper.includes('URGENTE')) priorityColorClass = 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800';
         else if (prioUpper.includes('ALTA')) priorityColorClass = 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800';
         else if (prioUpper.includes('MEDIA')) priorityColorClass = 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800';
-        else if (prioUpper.includes('BAJA')) priorityColorClass = 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800';
+        else if (prioUpper.includes('BAJA')) priorityColorClass = 'bg-blue-50 text-blue-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800';
 
         let htmlContent = `
             <div class="flex flex-col gap-4 text-left">

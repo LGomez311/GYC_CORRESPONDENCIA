@@ -78,7 +78,7 @@
                         <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Finalizados (Mes)</p>
                         <h3 class="text-3xl font-bold text-gray-900 dark:text-white">{{ $totalFinalizadosMes }}</h3>
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-2 flex items-center">
-                            <span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
+                            <span class="w-2 h-2 rounded-full bg-blue-500 mr-2"></span>
                             Resueltos este mes
                         </p>
                     </div>
@@ -318,7 +318,7 @@
                             <!-- Respuesta/Archivado Interno para el Remitente -->
                             @php
                                 $esArchivado = $respuesta->id_estado_rec == 10;
-                                $borderColor = $esArchivado ? 'border-slate-400' : 'border-green-500';
+                                $borderColor = $esArchivado ? 'border-slate-400' : 'border-blue-500';
                                 $bgColor = $esArchivado
                                     ? 'bg-slate-100 dark:bg-slate-900/40'
                                     : 'bg-green-100 dark:bg-green-900/40';
@@ -430,7 +430,7 @@
                                     class="font-bold text-green-600 dark:text-green-400">{{ $eficiencia['a_tiempo_pct'] }}%</span>
                             </div>
                             <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                                <div class="bg-green-500 h-2 rounded-full"
+                                <div class="bg-blue-500 h-2 rounded-full"
                                     style="width: {{ $eficiencia['a_tiempo_pct'] }}%"></div>
                             </div>
                         </div>
@@ -517,7 +517,7 @@
                                                         <span class="material-symbols-outlined text-[12px]">tag</span>
                                                         {{ $actividad->radicado }}
                                                     </span>
-                                                    <span class="inline-flex items-center gap-1 text-[11px] font-medium bg-green-50 text-green-600 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800 px-2 py-0.5 rounded-full">
+                                                    <span class="inline-flex items-center gap-1 text-[11px] font-medium bg-blue-50 text-green-600 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800 px-2 py-0.5 rounded-full">
                                                         <span class="material-symbols-outlined text-[12px]">info</span>
                                                         {{ $actividad->estado }}
                                                     </span>

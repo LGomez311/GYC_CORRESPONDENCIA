@@ -10,6 +10,7 @@ use App\Models\Ciudad;
 use App\Models\Empleado;
 use App\Models\Radicado;
 use App\Models\Remitente;
+use App\Models\Area;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -71,8 +72,9 @@ class ExternaenvController extends Controller
         $tipos = Tipo::all();
         $estados = Estado::all();
         $ciudades = Ciudad::orderBy('ciudad_nom')->get();
+        $areas = Area::orderBy('area_nom')->get();
 
-        return view('remitente.externaenv', compact('envios', 'tipos', 'estados', 'ciudades', 'search', 'estadoId', 'stats'));
+        return view('remitente.externaenv', compact('envios', 'tipos', 'estados', 'ciudades', 'areas', 'search', 'estadoId', 'stats'));
     }
 
     public function store(Request $request)
@@ -84,10 +86,21 @@ class ExternaenvController extends Controller
         $validated = $request->validate([
             'destino'            => 'required|string|max:200',
             'asunto'             => 'required|string|max:100',
-            'id_tipo_envio'      => 'required|integer',
-            'doc_quien_envia'    => 'required|string|max:20',
-            'folio'              => 'required|integer|min:1',
+            'id_tipo_envio'      => 'required|integer|exists:tipo,id_tipo',
+            'doc_quien_envia'    => 'required|string|max:20|exists:empleado,emple_doc',
+            'folio'              => 'required|integer|min:1|max:999',
             'archivo'            => 'nullable|file|mimes:pdf|max:5120',
+        ], [
+            'destino.required'         => 'El destino es obligatorio.',
+            'asunto.required'          => 'El asunto es obligatorio.',
+            'id_tipo_envio.required'   => 'Debe seleccionar un tipo de documento.',
+            'id_tipo_envio.exists'     => 'El tipo de documento seleccionado no es válido.',
+            'doc_quien_envia.required' => 'Debe seleccionar la persona que envía.',
+            'doc_quien_envia.exists'   => 'El empleado seleccionado no es válido.',
+            'folio.required'           => 'El número de folios es obligatorio.',
+            'folio.min'                => 'El número de folios debe ser al menos 1.',
+            'archivo.mimes'            => 'El archivo debe ser en formato PDF.',
+            'archivo.max'              => 'El archivo no debe superar los 5MB.',
         ]);
 
         $rutaArchivo = null;
@@ -95,12 +108,17 @@ class ExternaenvController extends Controller
             $rutaArchivo = $request->file('archivo')->store('correspondencia/enviados', 'public');
         }
 
+        // T8a: Validar que no se envíe a sí mismo
+        if ($validated['doc_quien_envia'] == $docQuienRegistra) {
+            return redirect()->back()->withInput()->withErrors(['doc_quien_envia' => 'No puede enviarse correspondencia a usted mismo.']);
+        }
+
         DB::beginTransaction();
         try {
-            // Generación de Radicado (Lógica de ExternarecController)
+            // Generación de Radicado — prefijo EXT para correspondencia externa
             $currentYear = date('Y');
             $latestRadicado = Radicado::where('nit_empresa', $nitEmpresa)
-                ->where('num_radicado', 'like', 'INT-' . $currentYear . '-%')
+                ->where('num_radicado', 'like', 'EXT-' . $currentYear . '-%')
                 ->orderBy('num_radicado', 'desc')
                 ->lockForUpdate()
                 ->first();
@@ -108,7 +126,7 @@ class ExternaenvController extends Controller
             $newNumber = $latestRadicado ? intval(substr($latestRadicado->num_radicado, -5)) + 1 : 1;
             
             $radicado = Radicado::create([
-                'num_radicado' => 'INT-' . $currentYear . '-' . str_pad($newNumber, 5, '0', STR_PAD_LEFT),
+                'num_radicado' => 'EXT-' . $currentYear . '-' . str_pad($newNumber, 5, '0', STR_PAD_LEFT),
                 'nit_empresa'  => $nitEmpresa,
             ]);
 
@@ -138,16 +156,28 @@ class ExternaenvController extends Controller
     public function buscarEmpleados(Request $request)
     {
         $q = trim($request->get('q', ''));
+        $areaId = $request->get('area_id');
+        $remitente = Auth::guard('remitente')->user();
+        $remDoc = $remitente ? $remitente->rem_doc : null;
         
-        $empleados = Empleado::leftJoin('area', 'empleado.emple_area', '=', 'area.id_area')
-            ->where('empleado.emple_rol', 3) // Solo rol 3
-            ->where(function($query) use ($q) {
-                $query->where('empleado.emple_nombres', 'like', "%{$q}%")
-                    ->orWhere('empleado.emple_apellidos', 'like', "%{$q}%")
-                    ->orWhere('empleado.emple_doc', 'like', "%{$q}%")
-                    ->orWhere('area.area_nom', 'like', "%{$q}%");
-            })
-            ->limit(10)
+        $query = Empleado::leftJoin('area', 'empleado.emple_area', '=', 'area.id_area')
+            ->where('empleado.emple_rol', 3) // Solo rol empleado
+            ->where('empleado.emple_rol', '!=', 1); // T8b: Excluir Super Admin
+
+        if ($areaId) {
+            $query->where('empleado.emple_area', $areaId);
+        }
+
+        if ($q) {
+            $query->where(function($sub) use ($q) {
+                $sub->where('empleado.emple_nombres', 'like', "%{$q}%")
+                   ->orWhere('empleado.emple_apellidos', 'like', "%{$q}%")
+                   ->orWhere('empleado.emple_doc', 'like', "%{$q}%")
+                   ->orWhere('area.area_nom', 'like', "%{$q}%");
+            });
+        }
+
+        $empleados = $query->limit(10)
             ->get([
                 'empleado.emple_doc', 
                 'empleado.emple_nombres', 
@@ -189,17 +219,21 @@ class ExternaenvController extends Controller
         $details = DB::table('detalle_envio as de')
             ->leftJoin('estado as est', 'de.id_estado_rec', '=', 'est.id_estado')
             ->leftJoin('empleado as emp_e', 'de.id_quien_envie', '=', 'emp_e.emple_doc')
+            ->leftJoin('area as area_e', 'emp_e.emple_area', '=', 'area_e.id_area')
             ->leftJoin('empleado as emp_r', 'de.id_quien_recibe', '=', 'emp_r.emple_doc')
+            ->leftJoin('area as area_r', 'emp_r.emple_area', '=', 'area_r.id_area')
             ->where('de.id_envio', $id)
             ->select(
                 DB::raw("'detail' as type"),
                 'de.fecha_traslado as fecha',
-                'emp_e.emple_nombres as nombres_e',
-                'emp_e.emple_apellidos as apellidos_e',
-                'emp_r.emple_nombres as nombres_r',
-                'emp_r.emple_apellidos as apellidos_r',
+                DB::raw("COALESCE(emp_e.emple_nombres, 'No') as nombres_e"),
+                DB::raw("COALESCE(emp_e.emple_apellidos, 'asignada') as apellidos_e"),
+                DB::raw("COALESCE(emp_r.emple_nombres, 'No') as nombres_r"),
+                DB::raw("COALESCE(emp_r.emple_apellidos, 'asignado') as apellidos_r"),
                 'est.estado_nomb',
                 'de.observaciones',
+                'area_e.area_nom as area_e',
+                'area_r.area_nom as area_r',
                 'emp_e.emple_img as img',
                 'de.id_estado_rec',
                 'de.id_detalle',
@@ -216,10 +250,13 @@ class ExternaenvController extends Controller
             $det['nombres'] = $d->nombres_e;
             $det['apellidos'] = $d->apellidos_e;
             
-            if ($d->nombres_r) {
+            if ($d->nombres_r && $d->nombres_r !== 'No') {
                 $receptor = " -> Destino: {$d->nombres_r} {$d->apellidos_r}";
                 $det['observaciones'] = ($det['observaciones'] ?? '') . $receptor;
             }
+
+            // Strip sensitive document info from observations
+            $det['observaciones'] = preg_replace('/^(CC|TI|CE|NIT|PAS|PEP)\s+\d+\s+-\s+/', '', $det['observaciones'] ?? '');
 
             $det['anexos'] = DB::table('anexo_respuesta')
                 ->where('id_det_interna', $d->id_detalle)

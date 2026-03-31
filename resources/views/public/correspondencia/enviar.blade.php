@@ -25,7 +25,7 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#00b5a3",
+                        "primary": "#1e63e9",
                         "background-light": "#f6f6f8",
                         "background-dark": "#101622",
                     },
@@ -78,7 +78,7 @@
                         icon: 'success',
                         title: 'Radicación Exitosa',
                         text: '{{ session('success') }}',
-                        confirmButtonColor: '#00b5a3',
+                        confirmButtonColor: '#1e63e9',
                     });
                 });
             </script>
@@ -97,7 +97,7 @@
                                 @endforeach
                             </ul>
                         `,
-                        confirmButtonColor: '#00b5a3',
+                        confirmButtonColor: '#1e63e9',
                     });
                 });
             </script>
@@ -517,21 +517,25 @@
                         const ciudad = ciudadesMostrar[i];
                         const li = document.createElement('li');
                         li.className = 'px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer flex flex-col gap-0.5 border-b border-slate-50 dark:border-slate-700/50 last:border-0';
-                        const deptoText = ciudad.departamento && ciudad.departamento.depar_nom ? ciudad.departamento.depar_nom : 'N/A';
+                        const deptoText = ciudad.departamento && ciudad.departamento.dpto_nombre ? ciudad.departamento.dpto_nombre : 'N/A';
 
                         li.innerHTML = `
-                            <div class="flex items-center gap-2">
-                                <span class="material-symbols-outlined text-sm text-slate-400">location_city</span>
-                                <span>
-                                    <span class="font-mono text-xs text-slate-500">${ciudad.ciudad_cod_post}</span> — ${ciudad.ciudad_nom}
+                            <div class="flex items-center justify-between w-full pr-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-sm text-slate-400">location_city</span>
+                                    <span>
+                                        <span class="font-mono text-xs text-slate-500">${ciudad.ciudad_cod_post}</span> — ${ciudad.ciudad_nom}
+                                    </span>
+                                </div>
+                                <span class="text-[10px] font-bold text-primary/70 uppercase tracking-tighter bg-primary/5 px-1.5 py-0.5 rounded border border-primary/10">
+                                    ${deptoText}
                                 </span>
                             </div>
-                            <div class="text-[10px] text-slate-400 font-medium pl-6">Dpto: ${deptoText}</div>
                         `;
 
                         li.addEventListener('click', function() {
                             hiddenCiudad.value = ciudad.ciudad_cod_post;
-                            labelBtnCiudad.textContent = ciudad.ciudad_nom;
+                            labelBtnCiudad.textContent = `${ciudad.ciudad_nom} (${deptoText})`;
                             labelBtnCiudad.classList.remove('text-slate-400');
                             labelBtnCiudad.classList.add('text-slate-900', 'dark:text-white', 'font-medium');
                             dropdownCiudades.classList.add('hidden');
@@ -883,7 +887,7 @@
 
                     if (!camposTocados[id] && valor === '') return true; // Evitar error inicial
 
-                    input.classList.remove('border-red-500', 'border-green-500', 'border-[#cfd7e7]', 'dark:border-slate-700');
+                    input.classList.remove('border-red-500', 'border-blue-500', 'border-[#cfd7e7]', 'dark:border-slate-700');
                     if (error) error.classList.add('hidden');
 
                     let errorTexto = '';
@@ -910,7 +914,7 @@
                             return false;
                         }
                     } else if (valor !== '') {
-                        input.classList.add('border-green-500');
+                        input.classList.add('border-blue-500');
                     } else {
                         input.classList.add('border-[#cfd7e7]', 'dark:border-slate-700');
                     }
@@ -925,8 +929,8 @@
 
                     if (!btn) return;
 
-                    btn.classList.remove('border-red-500', 'border-green-500', 'border-[#cfd7e7]', 'dark:border-slate-700');
-                    if (valido) btn.classList.add('border-green-500');
+                    btn.classList.remove('border-red-500', 'border-blue-500', 'border-[#cfd7e7]', 'dark:border-slate-700');
+                    if (valido) btn.classList.add('border-blue-500');
                     else btn.classList.add('border-red-500');
                 }
 
@@ -988,7 +992,7 @@
                         text: "Verifique que todos los datos, destinos y documentos adjuntos sean correctos antes de radicar el documento definitivamente.",
                         icon: 'question',
                         showCancelButton: true,
-                        confirmButtonColor: '#00b5a3',
+                        confirmButtonColor: '#1e63e9',
                         cancelButtonColor: '#9ca3af',
                         confirmButtonText: 'Sí, radicar documento',
                         cancelButtonText: 'Revisar nuevamente'

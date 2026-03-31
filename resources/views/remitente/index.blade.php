@@ -401,7 +401,7 @@
                                                     => 'bg-red-50 text-red-600 border-red-200 dark:bg-red-900/20 dark:border-red-800',
                                                 9,
                                                 10
-                                                    => 'bg-green-50 text-green-600 border-green-200 dark:bg-green-900/20 dark:border-green-800',
+                                                    => 'bg-blue-50 text-green-600 border-green-200 dark:bg-green-900/20 dark:border-green-800',
                                                 8
                                                     => 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800',
                                                 14
@@ -437,7 +437,7 @@
                                                     <span class="material-symbols-outlined text-[20px]">edit_note</span>
                                                 </button>
                                                 <button onclick="confirmFinalize({{ $c->id_recibido }})"
-                                                    class="p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
+                                                    class="p-1.5 text-green-600 hover:bg-blue-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
                                                     title="Finalizar">
                                                     <span class="material-symbols-outlined text-[20px]">check_circle</span>
                                                 </button>
@@ -917,7 +917,7 @@
             if (c.id_estado_rec == 11) {
                 statusSpan.classList.add('bg-red-100', 'text-red-700', 'dark:bg-red-900/50', 'dark:text-red-400');
             } else if (c.id_estado_rec == 9 || c.id_estado_rec == 10) {
-                statusSpan.classList.add('bg-green-100', 'text-green-700', 'dark:bg-green-900/50', 'dark:text-green-400');
+                statusSpan.classList.add('bg-green-100', 'text-blue-700', 'dark:bg-green-900/50', 'dark:text-green-400');
             } else {
                 statusSpan.classList.add('bg-blue-100', 'text-blue-700', 'dark:bg-blue-900/50', 'dark:text-blue-400');
             }
@@ -1203,7 +1203,7 @@
                                 case 9: // Resuelto
                                 case 10: // Archivado
                                     icon = 'check_circle';
-                                    colorClass = 'bg-green-500';
+                                    colorClass = 'bg-blue-500';
                                     circleClass = 'bg-green-100 text-green-600';
                                     break;
                                 case 11: // Rechazado
@@ -1354,7 +1354,7 @@
                 text: "Esta acción marcará la solicitud rechazada como archivada definitivamente.",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#00b5a3',
+                confirmButtonColor: '#1e63e9',
                 cancelButtonColor: '#d33',
                 confirmButtonText: 'Sí, finalizar',
                 cancelButtonText: 'Cancelar',
@@ -1405,7 +1405,7 @@
                 title: '¡Éxito!',
                 text: "{{ session('success') }}",
                 icon: 'success',
-                confirmButtonColor: '#00b5a3',
+                confirmButtonColor: '#1e63e9',
                 customClass: {
                     container: 'font-display',
                     popup: 'rounded-3xl border-none shadow-2xl dark:bg-gray-800 dark:text-white',

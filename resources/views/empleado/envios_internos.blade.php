@@ -154,7 +154,7 @@ function abrirModalDestinatarios(destinatarios) {
         const estN = (d.estado || '').toLowerCase();
         if(estN.includes('recibido')) dotClass = 'bg-blue-500';
         else if(estN.includes('tramite')) dotClass = 'bg-yellow-500';
-        else if(estN.includes('finalizado') || estN.includes('resuelto')) dotClass = 'bg-green-500';
+        else if(estN.includes('finalizado') || estN.includes('resuelto')) dotClass = 'bg-blue-500';
 
         li.innerHTML = `
             <div class="flex items-start gap-4 w-full">

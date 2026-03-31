@@ -26,20 +26,32 @@ class AdminCorrespondenciaController extends Controller
         $enTramite      = (clone $queryExt)->where('id_estado_rec', 8)->count();
         $finalizadas    = (clone $queryExt)->where('id_estado_rec', 9)->count();
         $archivadas     = (clone $queryExt)->where('id_estado_rec', 10)->count();
-        $vencidas       = 0; 
+        $vencidas       = 0;
 
         $correspondencias = $queryExt->paginate(15, ['*'], 'ext_page');
 
-        // ---- 2. Correspondencia Interna (Envio) ----
-        $queryInt = $this->getBaseEnviosQuery($nitEmpresa, $request);
+        // ---- 2. Correspondencia Interna (solo prefijo INT-) ----
+        $queryInt = $this->getBaseEnviosQuery($nitEmpresa, $request)
+            ->whereHas('radicado', fn($q) => $q->where('num_radicado', 'like', 'INT-%'));
 
         $totalInternas = (clone $queryInt)->count();
         $enTramiteInt  = (clone $queryInt)->where('id_estado_envio', 8)->count();
         $finalizadasInt = (clone $queryInt)->where('id_estado_envio', 9)->count();
         $archivadasInt  = (clone $queryInt)->where('id_estado_envio', 10)->count();
-        $vencidasInt   = 0; 
+        $vencidasInt   = 0;
 
         $correspondenciasInternas = $queryInt->paginate(15, ['*'], 'int_page');
+
+        // ---- 3. T3: Correspondencia Saliente (prefijo EXT- o SAL- de envio, o estado 14) ----
+        $querySal = $this->getBaseEnviosQuery($nitEmpresa, $request)
+            ->where(function($q) {
+                $q->whereHas('radicado', fn($qr) => $qr->where('num_radicado', 'like', 'EXT-%')
+                    ->orWhere('num_radicado', 'like', 'SAL-%'))
+                  ->orWhere('id_estado_envio', 14);
+            });
+
+        $totalSalientes = (clone $querySal)->count();
+        $correspondenciasSalientes = $querySal->paginate(15, ['*'], 'sal_page');
 
         // Data for filters
         $ciudades = \App\Models\Ciudad::orderBy('ciudad_nom')->get();
@@ -48,6 +60,7 @@ class AdminCorrespondenciaController extends Controller
         return view('admin.correspondencia', compact(
             'correspondencias', 'totalRecibidas', 'enTramite', 'finalizadas', 'archivadas', 'vencidas',
             'correspondenciasInternas', 'totalInternas', 'enTramiteInt', 'finalizadasInt', 'archivadasInt', 'vencidasInt',
+            'correspondenciasSalientes', 'totalSalientes',
             'ciudades', 'tipos'
         ));
     }
@@ -170,17 +183,25 @@ class AdminCorrespondenciaController extends Controller
             if ($request->ciudad) {
                 $query->where('ciudad_proveniente', $request->ciudad);
             }
+            // T5: Filtro por tipo de documento
             if ($request->tipo) {
                 $query->where('id_tipo', $request->tipo);
             }
+            // T6: Filtro por estado
+            if ($request->estado_fil) {
+                $query->where('id_estado_rec', $request->estado_fil);
+            }
+            // T6: Filtro por rango de fechas
+            if ($request->fecha_desde) {
+                $query->whereDate('fecha_hora_recib', '>=', $request->fecha_desde);
+            }
+            if ($request->fecha_hasta) {
+                $query->whereDate('fecha_hora_recib', '<=', $request->fecha_hasta);
+            }
         }
 
-        // Ordenamiento: 1. Prioridad (ASC), 2. Fecha de Recepción (DESC)
-        $query->orderByRaw('DATE(fecha_hora_recib) DESC')
-              ->orderBy(\App\Models\Tipo::select('id_prioridad')
-                  ->whereColumn('tipo.id_tipo', 'recibido.id_tipo')
-                  ->limit(1), 'asc')
-              ->orderBy('fecha_hora_recib', 'desc');
+        // Ordenamiento: Fecha de Recepción (DESC)
+        $query->orderBy('fecha_hora_recib', 'desc');
 
         return $query;
     }
@@ -207,19 +228,48 @@ class AdminCorrespondenciaController extends Controller
                       });
                 });
             }
+            // T5: Filtro por tipo de documento
             if ($request->tipo) {
                 $query->where('id_tipo_envio', $request->tipo);
             }
+            // T6: Filtro por estado
+            if ($request->estado_fil) {
+                $query->where('id_estado_envio', $request->estado_fil);
+            }
+            // T6: Filtro por rango de fechas
+            if ($request->fecha_desde) {
+                $query->whereDate('fecha', '>=', $request->fecha_desde);
+            }
+            if ($request->fecha_hasta) {
+                $query->whereDate('fecha', '<=', $request->fecha_hasta);
+            }
         }
 
-        // Ordenamiento: 1. Prioridad (ASC), 2. Fecha de Envío (DESC)
-        $query->orderByRaw('DATE(fecha) DESC')
-              ->orderBy(\App\Models\Tipo::select('id_prioridad')
-                  ->whereColumn('tipo.id_tipo', 'envio.id_tipo_envio')
-                  ->limit(1), 'asc')
-              ->orderBy('fecha', 'desc');
+        // Ordenamiento: Fecha de Envío (DESC)
+        $query->orderBy('fecha', 'desc');
 
         return $query;
+    }
+
+    // T4: Endpoint para obtener estado actual de una correspondencia (JSON)
+    public function getEstadoRecibido($id)
+    {
+        $rec = Recibido::with('estado')->find($id);
+        if (!$rec) return response()->json(['estado' => 'N/A', 'estado_id' => null], 404);
+        return response()->json([
+            'estado' => $rec->estado ? $rec->estado->estado_nomb : 'Sin estado',
+            'estado_id' => $rec->id_estado_rec
+        ]);
+    }
+
+    public function getEstadoEnvio($id)
+    {
+        $env = Envio::with('estadoEnvio')->find($id);
+        if (!$env) return response()->json(['estado' => 'N/A', 'estado_id' => null], 404);
+        return response()->json([
+            'estado' => $env->estadoEnvio ? $env->estadoEnvio->estado_nomb : 'Sin estado',
+            'estado_id' => $env->id_estado_envio
+        ]);
     }
 
     private function getDigitalAnexosCount($item)

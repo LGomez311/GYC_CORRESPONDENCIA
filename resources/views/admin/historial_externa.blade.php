@@ -150,7 +150,7 @@
                                         str_contains($estadoNomb, 'finalizado') ||
                                         str_contains($estadoNomb, 'resuelto')
                                     ) {
-                                        $badgeClass = 'bg-green-100 text-green-700';
+                                        $badgeClass = 'bg-green-100 text-blue-700';
                                     } elseif (str_contains($estadoNomb, 'rechazado')) {
                                         $badgeClass = 'bg-red-100 text-red-700';
                                     }
@@ -209,7 +209,7 @@
                                         str_contains($estadoTrace, 'finalizado') ||
                                         str_contains($estadoTrace, 'resuelto')
                                     ) {
-                                        $pointColor = 'bg-green-500';
+                                        $pointColor = 'bg-blue-500';
                                         $icon = 'verified';
                                     } elseif (str_contains($estadoTrace, 'archivado')) {
                                         $pointColor = 'bg-slate-500';
@@ -281,7 +281,7 @@
                                                 @if ($trace->archivo_respuesta)
                                                     <a href="{{ asset('storage/' . $trace->archivo_respuesta) }}"
                                                         target="_blank"
-                                                        class="{{ $trace->det_doc_empleado == $recibido->doc_quien_registra ? 'hover:border-blue-500' : 'hover:border-green-500' }} flex items-center gap-3 p-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg transition-colors group/file">
+                                                        class="{{ $trace->det_doc_empleado == $recibido->doc_quien_registra ? 'hover:border-blue-500' : 'hover:border-blue-500' }} flex items-center gap-3 p-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg transition-colors group/file">
                                                         <div
                                                             class="w-10 h-10 rounded bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600">
                                                             <span
@@ -750,9 +750,9 @@
 
             if (totalPages > 0) {
                 foliosInput.value = totalPages;
-                foliosInput.classList.add('ring-2', 'ring-green-400', 'bg-green-50', 'dark:bg-green-900/20');
+                foliosInput.classList.add('ring-2', 'ring-green-400', 'bg-blue-50', 'dark:bg-green-900/20');
                 setTimeout(() => {
-                    foliosInput.classList.remove('ring-2', 'ring-green-400', 'bg-green-50',
+                    foliosInput.classList.remove('ring-2', 'ring-green-400', 'bg-blue-50',
                         'dark:bg-green-900/20');
                 }, 1000);
             } else {

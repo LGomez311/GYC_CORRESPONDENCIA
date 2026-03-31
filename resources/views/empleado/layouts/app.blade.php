@@ -39,7 +39,7 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#00b5a3",
+                        "primary": "#1e63e9",
                         "background-light": "#f6f6f8",
                         "background-dark": "#101622",
                     },
@@ -139,7 +139,7 @@
                 icon: 'error',
                 title: 'Error al procesar la solicitud',
                 html: `<ul style="text-align:left;margin:0;padding-left:1.2em">{!! implode('', array_map(fn($e) => '<li>' . e($e) . '</li>', $errors->all())) !!}</ul>`,
-                confirmButtonColor: '#00b5a3'
+                confirmButtonColor: '#1e63e9'
             });
         </script>
     @endif

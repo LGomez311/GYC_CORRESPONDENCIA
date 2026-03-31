@@ -238,13 +238,13 @@
         
         if (isValid) {
             input.classList.remove('border-red-500', 'border-[#cfd7e7]', 'dark:border-gray-700');
-            input.classList.add('border-green-500');
+            input.classList.add('border-blue-500');
             if (errorElement) {
                 errorElement.classList.add('hidden');
                 errorElement.textContent = '';
             }
         } else {
-            input.classList.remove('border-green-500', 'border-[#cfd7e7]', 'dark:border-gray-700');
+            input.classList.remove('border-blue-500', 'border-[#cfd7e7]', 'dark:border-gray-700');
             input.classList.add('border-red-500');
             if (errorElement) {
                 errorElement.classList.remove('hidden');
@@ -356,7 +356,7 @@
         ['old_prof_pass', 'new_prof_pass', 'new_prof_pass_conf'].forEach(id => {
             const el = document.getElementById(id);
             if(el) {
-                el.classList.remove('border-red-500', 'border-green-500');
+                el.classList.remove('border-red-500', 'border-blue-500');
                 el.classList.add('border-[#cfd7e7]', 'dark:border-gray-700');
             }
             const err = document.getElementById('error_'+id);
