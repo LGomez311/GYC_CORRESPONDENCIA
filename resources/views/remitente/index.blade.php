@@ -1,6 +1,6 @@
 @extends('remitente.layouts.app')
 
-@section('title', 'Panel de Remitente')
+@section('title', 'Panel de Ventanilla')
 
 @section('content')
     <div class="flex flex-col h-screen w-full bg-gray-50 dark:bg-gray-900 overflow-hidden">
@@ -501,6 +501,132 @@
                 </div>
                 <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
                     {{ $correspondencias->appends(request()->query())->links() }}
+                </div>
+            </div>
+
+            <!-- ========== TABLA: CORRESPONDENCIA INTERNA (Enviados INT-) ========== -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden mt-8">
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            <span class="material-symbols-outlined text-indigo-500">swap_horiz</span>
+                            Correspondencia Interna
+                            <span class="ml-1 px-2 py-0.5 text-[10px] bg-indigo-100 text-indigo-700 rounded-full font-black">{{ $enviosInternos->total() }}</span>
+                        </h2>
+                        <p class="text-xs text-gray-500 mt-0.5">Documentos circulados internamente entre áreas.</p>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="text-xs text-gray-500 uppercase bg-gray-50 dark:bg-gray-900/30 dark:text-gray-400">
+                            <tr>
+                                <th class="px-4 py-3 font-bold">Radicado</th>
+                                <th class="px-4 py-3 font-bold">Asunto</th>
+                                <th class="px-4 py-3 font-bold">Destino</th>
+                                <th class="px-4 py-3 font-bold">Departamento / Área</th>
+                                <th class="px-4 py-3 font-bold">Fecha</th>
+                                <th class="px-4 py-3 font-bold">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                            @forelse($enviosInternos as $ei)
+                                @php
+                                    $primer = $ei->detalles->first();
+                                    $destNombre = $primer?->quienRecibe ? $primer->quienRecibe->emple_nombres . ' ' . $primer->quienRecibe->emple_apellidos : 'N/A';
+                                    $destArea = $primer?->quienRecibe?->area?->area_nom ?? 'Sin área';
+                                    $estadoNombInt = $ei->estadoEnvio?->estado_nomb ?? 'Sin estado';
+                                @endphp
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors">
+                                    <td class="px-4 py-3">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-300 text-xs font-bold border border-indigo-200 dark:border-indigo-800">
+                                            <span class="material-symbols-outlined text-[14px]">swap_horiz</span>
+                                            {{ $ei->radicado?->num_radicado ?? 'INT-N/A' }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3 max-w-[200px] break-words text-sm text-gray-700 dark:text-gray-300">{{ $ei->asunto }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{{ $destNombre }}</td>
+                                    <td class="px-4 py-3">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 text-xs font-semibold rounded-full">
+                                            <span class="material-symbols-outlined text-[12px]">corporate_fare</span>
+                                            {{ $destArea }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3 text-xs text-gray-500">{{ \Carbon\Carbon::parse($ei->fecha)->format('d M Y, h:i A') }}</td>
+                                    <td class="px-4 py-3">
+                                        <span class="px-2 py-0.5 rounded-full text-xs bg-indigo-100 text-indigo-800 font-semibold">{{ $estadoNombInt }}</span>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="6" class="px-4 py-8 text-center text-gray-400 text-sm">No hay correspondencia interna registrada.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                <div class="p-4 border-t border-gray-100 dark:border-gray-700">
+                    {{ $enviosInternos->appends(request()->except('int_page'))->links() }}
+                </div>
+            </div>
+
+            <!-- ========== TABLA: CORRESPONDENCIA SALIENTE (EXT-/SAL-) ========== -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden mt-8 mb-8">
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            <span class="material-symbols-outlined text-orange-500">outbox</span>
+                            Correspondencia Saliente
+                            <span class="ml-1 px-2 py-0.5 text-[10px] bg-orange-100 text-orange-700 rounded-full font-black">{{ $enviosSalientes->total() }}</span>
+                        </h2>
+                        <p class="text-xs text-gray-500 mt-0.5">Documentos enviados al exterior (radicado EXT/SAL).</p>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="text-xs text-gray-500 uppercase bg-gray-50 dark:bg-gray-900/30 dark:text-gray-400">
+                            <tr>
+                                <th class="px-4 py-3 font-bold">Radicado</th>
+                                <th class="px-4 py-3 font-bold">Asunto</th>
+                                <th class="px-4 py-3 font-bold">Destino</th>
+                                <th class="px-4 py-3 font-bold">Departamento / Área</th>
+                                <th class="px-4 py-3 font-bold">Fecha</th>
+                                <th class="px-4 py-3 font-bold">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                            @forelse($enviosSalientes as $es)
+                                @php
+                                    $primerSal = $es->detalles->first();
+                                    $destSalNombre = $primerSal?->quienRecibe ? $primerSal->quienRecibe->emple_nombres . ' ' . $primerSal->quienRecibe->emple_apellidos : 'N/A';
+                                    $destSalArea = $primerSal?->quienRecibe?->area?->area_nom ?? 'Sin área';
+                                    $estadoNombSal = $es->estadoEnvio?->estado_nomb ?? 'Sin estado';
+                                @endphp
+                                <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors">
+                                    <td class="px-4 py-3">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-orange-50 dark:bg-orange-900/20 text-orange-800 dark:text-orange-300 text-xs font-bold border border-orange-200 dark:border-orange-800">
+                                            <span class="material-symbols-outlined text-[14px]">outbox</span>
+                                            {{ $es->radicado?->num_radicado ?? 'SAL-N/A' }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3 max-w-[200px] break-words text-sm text-gray-700 dark:text-gray-300">{{ $es->asunto }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{{ $destSalNombre }}</td>
+                                    <td class="px-4 py-3">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-orange-50 dark:bg-orange-900/20 text-orange-700 text-xs font-semibold rounded-full">
+                                            <span class="material-symbols-outlined text-[12px]">corporate_fare</span>
+                                            {{ $destSalArea }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3 text-xs text-gray-500">{{ \Carbon\Carbon::parse($es->fecha)->format('d M Y, h:i A') }}</td>
+                                    <td class="px-4 py-3">
+                                        <span class="px-2 py-0.5 rounded-full text-xs bg-orange-100 text-orange-800 font-semibold">{{ $estadoNombSal }}</span>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="6" class="px-4 py-8 text-center text-gray-400 text-sm">No hay correspondencia saliente registrada.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                <div class="p-4 border-t border-gray-100 dark:border-gray-700">
+                    {{ $enviosSalientes->appends(request()->except('sal_page'))->links() }}
                 </div>
             </div>
         </main>

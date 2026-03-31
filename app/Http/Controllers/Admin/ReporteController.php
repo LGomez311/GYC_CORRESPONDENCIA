@@ -46,7 +46,19 @@ class ReporteController extends Controller
         $barChart = $request->input('barChart');
         $doughnutChart = $request->input('doughnutChart');
 
-        $pdf = Pdf::loadView('admin.pdf.reportes_pdf', compact('reporteAreas', 'barChart', 'doughnutChart'))->setPaper('A4', 'portrait');
+        // Pasar los filtros activos al PDF para mostrarlo en el documento
+        $filtrosActivos = [
+            'periodo'    => $request->periodo ?? 'todo',
+            'tipo_doc'   => $request->tipo_doc,
+            'estado_rep' => $request->estado_rep,
+            'area_id'    => $request->area_id,
+            'fecha'      => $request->fecha,
+            'mes'        => $request->mes,
+            'trimestre'  => $request->trimestre,
+            'ano'        => $request->ano,
+        ];
+
+        $pdf = Pdf::loadView('admin.pdf.reportes_pdf', compact('reporteAreas', 'barChart', 'doughnutChart', 'filtrosActivos'))->setPaper('A4', 'portrait');
         return $pdf->download('reporte_avanzado.pdf');
     }
 
@@ -58,12 +70,20 @@ class ReporteController extends Controller
         $user = Auth::user();
         $nit = $user->nit_empresa;
         $periodo = $request->input('periodo');
+        $tipoDoc = $request->input('tipo_doc');    // T6: Filtro por tipo de documento
+        $estadoRep = $request->input('estado_rep'); // T6: Filtro por estado
+        $areaFiltro = $request->input('area_id');   // Nuevo: Filtro por área específica
 
         // Subquery for the latest internal detail per document/recipient
         $latestInternalSubquery = DetalleEnvio::select(DB::raw('MAX(id_detalle) as id_detalle'))
             ->groupBy('id_envio', 'id_quien_recibe');
 
-        $areas = Area::all();
+        // Si se filtra por área específica, solo cargar esa área; sino todas
+        $areasQuery = Area::query();
+        if ($areaFiltro) {
+            $areasQuery->where('id_area', $areaFiltro);
+        }
+        $areas = $areasQuery->get();
         $reporteAreas = [];
 
         foreach ($areas as $area) {
@@ -84,6 +104,16 @@ class ReporteController extends Controller
                 });
             }
 
+            // T6: Filtrar por tipo de documento en internos
+            if ($tipoDoc) {
+                $queryInterna->whereHas('envio', fn($q) => $q->where('id_tipo_envio', $tipoDoc));
+            }
+
+            // T6: Filtrar por estado en internos
+            if ($estadoRep) {
+                $queryInterna->where('id_estado_rec', $estadoRep);
+            }
+
             // --- 2. EXTERNAL CORRESPONDENCE (Recibido) ---
             $queryExterna = DetalleRecibido::whereIn('det_doc_empleado', $empleadosDocs)
                 ->with(['recibido.tipo']);
@@ -92,6 +122,16 @@ class ReporteController extends Controller
                 $queryExterna->whereHas('recibido', function ($q) use ($request, $periodo) {
                     $this->applyDateFilters($q, $request, $periodo, 'fecha_hora_recib');
                 });
+            }
+
+            // T6: Filtrar por tipo de documento en externos
+            if ($tipoDoc) {
+                $queryExterna->whereHas('recibido', fn($q) => $q->where('id_tipo', $tipoDoc));
+            }
+
+            // T6: Filtrar por estado en externos
+            if ($estadoRep) {
+                $queryExterna->where('id_estado_rec', $estadoRep);
             }
 
             $detallesInternos = $queryInterna->get();
@@ -130,11 +170,11 @@ class ReporteController extends Controller
             }
 
             $reporteAreas[] = [
-                'area_nom' => $area->area_nom,
+                'area_nom'  => $area->area_nom,
                 'asignados' => $totalAsignados,
-                'tramite' => $countTramite,
+                'tramite'   => $countTramite,
                 'finalizado' => $countFinalizado,
-                'vencidos' => $countVencidos,
+                'vencidos'  => $countVencidos,
                 'eficiencia' => $totalAsignados > 0 ? round(($countFinalizado / $totalAsignados) * 100) : 0
             ];
         }

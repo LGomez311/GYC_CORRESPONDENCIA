@@ -30,6 +30,9 @@
                         <input type="hidden" name="mes" value="{{ request('mes') }}">
                         <input type="hidden" name="trimestre" value="{{ request('trimestre') }}">
                         <input type="hidden" name="ano" value="{{ request('ano') }}">
+                        <input type="hidden" name="tipo_doc" value="{{ request('tipo_doc') }}">
+                        <input type="hidden" name="estado_rep" value="{{ request('estado_rep') }}">
+                        <input type="hidden" name="area_id" value="{{ request('area_id') }}">
                         <input type="hidden" name="barChart" id="barChartData">
                         <input type="hidden" name="doughnutChart" id="doughnutChartData">
                         
@@ -111,6 +114,19 @@
                             <option value="9" {{ request('estado_rep') == '9' ? 'selected' : '' }}>Resuelto</option>
                             <option value="10" {{ request('estado_rep') == '10' ? 'selected' : '' }}>Archivado</option>
                             <option value="11" {{ request('estado_rep') == '11' ? 'selected' : '' }}>Rechazado</option>
+                        </select>
+                        <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                            <span class="material-symbols-outlined text-sm">expand_more</span>
+                        </div>
+                    </div>
+
+                    {{-- Filtro por Área --}}
+                    <div class="relative">
+                        <select name="area_id" class="bg-slate-50 dark:bg-slate-800 border-none text-slate-900 dark:text-white text-sm rounded-2xl px-4 py-3 font-bold focus:ring-2 focus:ring-primary appearance-none pr-8">
+                            <option value="">Todas las áreas</option>
+                            @foreach(\App\Models\Area::orderBy('area_nom')->get() as $area)
+                                <option value="{{ $area->id_area }}" {{ request('area_id') == $area->id_area ? 'selected' : '' }}>{{ $area->area_nom }}</option>
+                            @endforeach
                         </select>
                         <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
                             <span class="material-symbols-outlined text-sm">expand_more</span>

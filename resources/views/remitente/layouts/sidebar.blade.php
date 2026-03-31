@@ -118,7 +118,7 @@
                 </div>
                 <div class="overflow-hidden">
                     <p class="text-sm font-bold truncate text-gray-900 dark:text-white">
-                        Remitente
+                        Ventanilla
                     </p>
                     <p class="text-xs text-[#4c669a] truncate dark:text-gray-400 font-medium">
                         {{ auth()->user()->rem_nombres }} {{ auth()->user()->rem_apellidos }}

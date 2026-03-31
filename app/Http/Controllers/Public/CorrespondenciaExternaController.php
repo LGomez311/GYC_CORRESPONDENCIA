@@ -170,13 +170,13 @@ class CorrespondenciaExternaController extends Controller
         $currentYear = date('Y');
         
         $latestRadicado = Radicado::where('nit_empresa', $nitEmpresa)
-            ->where('num_radicado', 'like', 'INT-' . $currentYear . '-%')
+            ->where('num_radicado', 'like', 'EXT-' . $currentYear . '-%')
             ->lockForUpdate()
             ->orderBy('num_radicado', 'desc')
             ->first();
 
         $newNumber = $latestRadicado ? intval(substr($latestRadicado->num_radicado, -5)) + 1 : 1;
-        return 'INT-' . $currentYear . '-' . str_pad($newNumber, 5, '0', STR_PAD_LEFT);
+        return 'EXT-' . $currentYear . '-' . str_pad($newNumber, 5, '0', STR_PAD_LEFT);
     }
 
     private function insertRecibidoRecord($validated, $datosRemitente, $idRadicado, $rutaArchivo, $folios, $nitEmpresa)

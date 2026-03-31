@@ -67,7 +67,28 @@ class DashboardController extends Controller
             ->sortBy('emple_nombres')
             ->values();
 
-        return view('remitente.index', compact('stats', 'correspondencias', 'enviosPendientes', 'tipos', 'empleados', 'estados', 'estadoId', 'todosDestinatarios'));
+        // ---- Envíos del remitente separados por tipo ----
+        // Internos (radicado INT-)
+        $enviosInternos = \App\Models\Envio::with(['radicado', 'tipoEnvio', 'quienEnvia', 'estadoEnvio', 'anexos',
+            'detalles.quienRecibe.area'])
+            ->where('doc_quien_registra', $remDoc)
+            ->whereHas('radicado', fn($q) => $q->where('num_radicado', 'like', 'INT-%'))
+            ->orderBy('fecha', 'desc')
+            ->paginate(10, ['*'], 'int_page');
+
+        // Salientes (radicado EXT- o SAL-, o sin radicado con estado 14)
+        $enviosSalientes = \App\Models\Envio::with(['radicado', 'tipoEnvio', 'quienEnvia', 'estadoEnvio', 'anexos',
+            'detalles.quienRecibe.area'])
+            ->where('doc_quien_registra', $remDoc)
+            ->where(function($q) {
+                $q->whereHas('radicado', fn($qr) => $qr->where('num_radicado', 'like', 'EXT-%')
+                        ->orWhere('num_radicado', 'like', 'SAL-%'))
+                  ->orWhere('id_estado_envio', 14);
+            })
+            ->orderBy('fecha', 'desc')
+            ->paginate(10, ['*'], 'sal_page');
+
+        return view('remitente.index', compact('stats', 'correspondencias', 'enviosPendientes', 'tipos', 'empleados', 'estados', 'estadoId', 'todosDestinatarios', 'enviosInternos', 'enviosSalientes'));
     }
 
     public function recibidosProceso(Request $request)

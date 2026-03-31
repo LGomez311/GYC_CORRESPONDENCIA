@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Remitente</title>
+    <title>Ventanilla</title>
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 
@@ -86,7 +86,7 @@
                 </button>
 
                 <h2 class="font-bold dark:text-white">
-                    Panel Remitente
+                    Panel Ventanilla
                 </h2>
             </div>
 
