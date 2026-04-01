@@ -34,7 +34,7 @@ class PagoController extends Controller
         $request->validate([
             'id_plan'     => 'required|exists:plan,id_plan',
             'fecha_inicio'  => 'nullable|date|after_or_equal:today',
-            'comprobante' => 'nullable|image|max:2048',
+            'comprobante' => 'required|image|max:2048', // Now required and must be image
         ]);
 
         $plan = Plan::findOrFail($request->id_plan);

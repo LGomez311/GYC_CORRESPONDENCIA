@@ -23,6 +23,8 @@ class ReporteController extends Controller
         $mes = $request->query('mes', date('Y-m'));
         $rango = $request->query('rango', 'mes');
         $data = $this->getReportData($mes, $rango);
+        $data['tipos'] = \App\Models\Tipo::orderBy('tipo_nombre')->get();
+        $data['estados'] = \App\Models\Estado::all();
         return view('empleado.reportes', $data);
     }
 
@@ -211,5 +213,72 @@ class ReporteController extends Controller
             'rangoSelect' => $rango,
             'rangoFechas' => ucfirst($start->translatedFormat('1 F Y')) . " - " . ucfirst($end->translatedFormat('t F Y'))
         ];
+    }
+
+    public function exportCorrespondenciaPdf(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user->nit_empresa) {
+            return redirect()->back()->with('error', 'No autorizado.');
+        }
+
+        $empleDoc = $user->emple_doc;
+        $nitEmpresa = $user->nit_empresa;
+
+        // Ensure we load the necessary relationships for the PDF view
+        $query = \App\Models\Recibido::with(['estado','tipo','radicado','destinatarios','ciudad'])
+            ->where('nit_empresa', $nitEmpresa)
+            ->whereHas('detalles', function($q) use ($empleDoc) {
+                // Filter correspondence to only what the employee has received/processed
+                $q->where('det_doc_empleado', $empleDoc);
+            });
+
+        $filtrosActivos = [];
+
+        // Filter: desde
+        if ($request->filled('desde')) {
+            $query->whereDate('fecha_hora_recib', '>=', $request->desde);
+            $filtrosActivos['Desde'] = \Carbon\Carbon::parse($request->desde)->format('d/m/Y');
+        }
+
+        // Filter: hasta
+        if ($request->filled('hasta')) {
+            $query->whereDate('fecha_hora_recib', '<=', $request->hasta);
+            $filtrosActivos['Hasta'] = \Carbon\Carbon::parse($request->hasta)->format('d/m/Y');
+        }
+
+        // Filter: tipo de documento
+        if ($request->filled('tipo_id')) {
+            $query->where('id_tipo', $request->tipo_id);
+            $tipo = \App\Models\Tipo::find($request->tipo_id);
+            $filtrosActivos['Tipo Doc.'] = $tipo->tipo_nombre ?? 'ID '.$request->tipo_id;
+        }
+
+        // Filter: estado
+        if ($request->filled('estado_id')) {
+            $query->where('id_estado_rec', $request->estado_id);
+            $estado = \App\Models\Estado::find($request->estado_id);
+            $filtrosActivos['Estado'] = $estado->estado_nomb ?? 'ID '.$request->estado_id;
+        }
+
+        $correspondencias = $query->orderBy('fecha_hora_recib', 'desc')->get();
+        
+        // Calculate statistics for the report header
+        $totalRegistros = $correspondencias->count();
+        $totalFinalizados = $correspondencias->filter(fn($c) => in_array($c->id_estado_rec, [9, 10, 14]))->count();
+        $totalRechazados = $correspondencias->filter(fn($c) => $c->id_estado_rec == 11)->count();
+        $totalEnProceso = $totalRegistros - $totalFinalizados - $totalRechazados;
+
+        $pdf = Pdf::loadView('remitente.pdf.correspondencia_reporte_pdf', compact(
+            'correspondencias', 
+            'filtrosActivos',
+            'totalRegistros',
+            'totalEnProceso',
+            'totalFinalizados',
+            'totalRechazados'
+        ))
+            ->setPaper('A4', 'landscape');
+
+        return $pdf->download('mis_correspondencias.pdf');
     }
 }

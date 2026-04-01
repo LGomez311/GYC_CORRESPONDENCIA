@@ -26,9 +26,15 @@ class ReporteController extends Controller
             return view('admin.reportes', ['reporteAreas' => [], 'mensaje' => 'No estás registrado a una empresa.']);
         }
 
-        $reporteAreas = $this->calcularReporteAreas($request);
+        $datos = $this->calcularReporteAreas($request);
+        $reporteAreas = $datos['areas'];
+        $resumenTipos = $datos['tipos'];
+        
+        $areas = \App\Models\Area::orderBy('area_nom')->get();
+        $tipos = \App\Models\Tipo::orderBy('tipo_nombre')->get();
+        $estados = \App\Models\Estado::all();
 
-        return view('admin.reportes', compact('reporteAreas'));
+        return view('admin.reportes', compact('reporteAreas', 'resumenTipos', 'areas', 'tipos', 'estados'));
     }
 
     /**
@@ -41,24 +47,53 @@ class ReporteController extends Controller
             return redirect()->back()->with('error', 'No estás registrado a una empresa.');
         }
 
-        $reporteAreas = $this->calcularReporteAreas($request);
+        $datos = $this->calcularReporteAreas($request);
+        $reporteAreas = $datos['areas'];
+        $resumenTipos = $datos['tipos'];
 
         $barChart = $request->input('barChart');
         $doughnutChart = $request->input('doughnutChart');
 
-        // Pasar los filtros activos al PDF para mostrarlo en el documento
         $filtrosActivos = [
             'periodo'    => $request->periodo ?? 'todo',
-            'tipo_doc'   => $request->tipo_doc,
-            'estado_rep' => $request->estado_rep,
-            'area_id'    => $request->area_id,
             'fecha'      => $request->fecha,
             'mes'        => $request->mes,
             'trimestre'  => $request->trimestre,
             'ano'        => $request->ano,
+            'tipo_doc'   => $request->tipo_doc ? \App\Models\Tipo::find($request->tipo_doc)?->tipo_nombre : null,
+            'estado_rep' => $request->estado_rep ? \App\Models\Estado::find($request->estado_rep)?->estado_nomb : null,
+            'area'       => $request->area_id ? \App\Models\Area::find($request->area_id)?->area_nom : null,
         ];
 
-        $pdf = Pdf::loadView('admin.pdf.reportes_pdf', compact('reporteAreas', 'barChart', 'doughnutChart', 'filtrosActivos'))->setPaper('A4', 'portrait');
+        // Generar etiqueta de filtros legible (Estilo Remitente)
+        $periodo = $request->input('periodo', 'todo');
+        $labelPeriodo = match($periodo) {
+            'dia'       => 'Día: ' . ($request->fecha ? \Carbon\Carbon::parse($request->fecha)->translatedFormat('d F Y') : '—'),
+            'mes'       => 'Mes: ' . ($request->mes ? \Carbon\Carbon::parse($request->mes.'-01')->translatedFormat('F Y') : '—'),
+            'trimestre' => 'Trimestre ' . ($request->trimestre ?? '—') . ' (' . ($request->ano ?? date('Y')) . ')',
+            'ano'       => 'Año: ' . ($request->ano ?? date('Y')),
+            default     => 'Histórico Completo',
+        };
+
+        // Filtros adicionales legibles
+        $labelAvanzado = "";
+        if ($filtrosActivos['tipo_doc']) $labelAvanzado .= " | Tipo: " . $filtrosActivos['tipo_doc'];
+        if ($filtrosActivos['estado_rep']) $labelAvanzado .= " | Estado: " . $filtrosActivos['estado_rep'];
+        if ($filtrosActivos['area']) $labelAvanzado .= " | Área: " . $filtrosActivos['area'];
+
+        $filtroLabel = $labelPeriodo . $labelAvanzado;
+
+        // Calcular totales globales para el encabezado del PDF
+        $totalAsignados  = collect($reporteAreas)->sum('asignados');
+        $totalTramite    = collect($reporteAreas)->sum('tramite');
+        $totalFinalizado = collect($reporteAreas)->sum('finalizado');
+        $totalVencidos   = collect($reporteAreas)->sum('vencidos');
+        $eficienciaGlobal = $totalAsignados > 0 ? round(($totalFinalizado / $totalAsignados) * 100) : 0;
+
+        $pdf = Pdf::loadView('admin.pdf.reportes_pdf', compact(
+            'reporteAreas', 'resumenTipos', 'barChart', 'doughnutChart', 'filtrosActivos', 'filtroLabel',
+            'totalAsignados', 'totalTramite', 'totalFinalizado', 'totalVencidos', 'eficienciaGlobal'
+        ))->setPaper('A4', 'portrait');
         return $pdf->download('reporte_avanzado.pdf');
     }
 
@@ -85,6 +120,12 @@ class ReporteController extends Controller
         }
         $areas = $areasQuery->get();
         $reporteAreas = [];
+        
+        $resumenTipos = [
+            'Interna' => 0,
+            'Externa' => 0,
+            'Saliente' => 0
+        ];
 
         foreach ($areas as $area) {
             $empleadosDocs = Empleado::where('emple_area', $area->id_area)
@@ -96,7 +137,7 @@ class ReporteController extends Controller
             // --- 1. INTERNAL CORRESPONDENCE (Envio) ---
             $queryInterna = DetalleEnvio::whereIn('id_quien_recibe', $empleadosDocs)
                 ->whereIn('id_detalle', $latestInternalSubquery)
-                ->with(['envio.tipoEnvio']);
+                ->with(['envio.tipoEnvio', 'envio.radicado']);
 
             if ($periodo && $periodo != 'todo') {
                 $queryInterna->whereHas('envio', function ($q) use ($request, $periodo) {
@@ -136,6 +177,16 @@ class ReporteController extends Controller
 
             $detallesInternos = $queryInterna->get();
             $detallesExternos = $queryExterna->get();
+
+            // Categorization by type
+            foreach ($detallesInternos as $det) {
+                $prefijo = substr($det->envio?->radicado?->num_radicado ?? '', 0, 3);
+                if ($prefijo === 'SAL') $resumenTipos['Saliente']++;
+                else $resumenTipos['Interna']++;
+            }
+            foreach ($detallesExternos as $det) {
+                $resumenTipos['Externa']++;
+            }
 
             $totalAsignados = $detallesInternos->count() + $detallesExternos->count();
             $countTramite = 0;
@@ -179,7 +230,10 @@ class ReporteController extends Controller
             ];
         }
 
-        return $reporteAreas;
+        return [
+            'areas' => $reporteAreas,
+            'tipos' => $resumenTipos
+        ];
     }
 
     /**
@@ -201,5 +255,90 @@ class ReporteController extends Controller
         } elseif ($periodo == 'ano' && $request->ano) {
             $query->whereYear($dateColumn, $request->ano);
         }
+    }
+
+
+    public function exportCorrespondenciaPdf(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user->nit_empresa) {
+            return redirect()->back()->with('error', 'No autorizado.');
+        }
+        $nitEmpresa = $user->nit_empresa;
+
+        // An Admin should see all correspondence of the company. 
+        // If an area_id is provided, filter by that area's employees.
+        $query = \App\Models\Recibido::with(['estado','tipo','radicado','destinatarios','ciudad'])
+            ->where('nit_empresa', $nitEmpresa);
+
+        $filtrosActivos = [];
+
+        if ($request->filled('area_id')) {
+            $empleadosArea = \App\Models\Empleado::where('emple_area', $request->area_id)
+                ->where('nit_empresa', $nitEmpresa)
+                ->pluck('emple_doc');
+                
+            $query->whereHas('detalles', function($q) use ($empleadosArea) {
+                $q->whereIn('det_doc_empleado', $empleadosArea);
+            });
+            
+            $area = \App\Models\Area::find($request->area_id);
+            $filtrosActivos['Área'] = $area->area_nom ?? 'ID '.$request->area_id;
+        }
+
+        // Filter: desde
+        if ($request->filled('desde')) {
+            $query->whereDate('fecha_hora_recib', '>=', $request->desde);
+            $filtrosActivos['Desde'] = \Carbon\Carbon::parse($request->desde)->format('d/m/Y');
+        }
+
+        // Filter: hasta
+        if ($request->filled('hasta')) {
+            $query->whereDate('fecha_hora_recib', '<=', $request->hasta);
+            $filtrosActivos['Hasta'] = \Carbon\Carbon::parse($request->hasta)->format('d/m/Y');
+        }
+
+        // Filter: area (by destinatario employee's area)
+        if ($request->filled('area_id')) {
+            $query->whereHas('destinatarios', function($q) use ($request) {
+                $q->where('emple_area', $request->area_id);
+            });
+            $area = Area::find($request->area_id);
+            $filtrosActivos['Área'] = $area->area_nom ?? 'ID '.$request->area_id;
+        }
+
+        // Filter: tipo de documento
+        if ($request->filled('tipo_id')) {
+            $query->where('id_tipo', $request->tipo_id);
+            $tipo = \App\Models\Tipo::find($request->tipo_id);
+            $filtrosActivos['Tipo Doc.'] = $tipo->tipo_nombre ?? 'ID '.$request->tipo_id;
+        }
+
+        // Filter: estado
+        if ($request->filled('estado_id')) {
+            $query->where('id_estado_rec', $request->estado_id);
+            $estado = \App\Models\Estado::find($request->estado_id);
+            $filtrosActivos['Estado'] = $estado->estado_nomb ?? 'ID '.$request->estado_id;
+        }
+
+        $correspondencias = $query->orderBy('fecha_hora_recib', 'desc')->get();
+
+        // Calculate statistics for the report header
+        $totalRegistros = $correspondencias->count();
+        $totalFinalizados = $correspondencias->filter(fn($c) => in_array($c->id_estado_rec, [9, 10, 14]))->count();
+        $totalRechazados = $correspondencias->filter(fn($c) => $c->id_estado_rec == 11)->count();
+        $totalEnProceso = $totalRegistros - $totalFinalizados - $totalRechazados;
+
+        $pdf = Pdf::loadView('remitente.pdf.correspondencia_reporte_pdf', compact(
+            'correspondencias', 
+            'filtrosActivos',
+            'totalRegistros',
+            'totalEnProceso',
+            'totalFinalizados',
+            'totalRechazados'
+        ))
+            ->setPaper('A4', 'landscape');
+
+        return $pdf->download('listado_correspondencia.pdf');
     }
 }

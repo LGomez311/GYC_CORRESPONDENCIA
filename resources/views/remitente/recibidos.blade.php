@@ -22,68 +22,7 @@
                 </div>
             </div>
 
-            <!-- Stats Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10 w-full relative z-0">
-                <!-- Stat Card: Total -->
-                <div
-                    class="bg-white dark:bg-gray-800 p-5 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
-                    <div class="flex flex-col gap-3">
-                        <div
-                            class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors duration-300">
-                            <span class="material-symbols-outlined text-[20px]">description</span>
-                        </div>
-                        <div>
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Registros</p>
-                            <h3 class="text-2xl font-black text-gray-900 dark:text-white mt-1">{{ $stats['total'] }}</h3>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Stat Card: Rejected -->
-                <div
-                    class="bg-white dark:bg-gray-800 p-5 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
-                    <div class="flex flex-col gap-3">
-                        <div
-                            class="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center text-red-600 dark:text-red-400 group-hover:bg-red-600 group-hover:text-white transition-colors duration-300">
-                            <span class="material-symbols-outlined text-[20px]">cancel</span>
-                        </div>
-                        <div>
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Rechazados</p>
-                            <h3 class="text-2xl font-black text-gray-900 dark:text-white mt-1">{{ $stats['rejected'] }}</h3>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Stat Card: Pending -->
-                <div
-                    class="bg-white dark:bg-gray-800 p-5 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
-                    <div class="flex flex-col gap-3">
-                        <div
-                            class="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-xl flex items-center justify-center text-orange-600 dark:text-orange-400 group-hover:bg-orange-600 group-hover:text-white transition-colors duration-300">
-                            <span class="material-symbols-outlined text-[20px]">pending_actions</span>
-                        </div>
-                        <div>
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">En Trámite</p>
-                            <h3 class="text-2xl font-black text-gray-900 dark:text-white mt-1">{{ $stats['pending'] }}</h3>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Stat Card: Resolved -->
-                <div
-                    class="bg-white dark:bg-gray-800 p-5 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
-                    <div class="flex flex-col gap-3">
-                        <div
-                            class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center text-green-600 dark:text-green-400 group-hover:bg-green-600 group-hover:text-white transition-colors duration-300">
-                            <span class="material-symbols-outlined text-[20px]">check_circle</span>
-                        </div>
-                        <div>
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Finalizados</p>
-                            <h3 class="text-2xl font-black text-gray-900 dark:text-white mt-1">{{ $stats['resolved'] }}</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
             <!-- Correspondence Table Section -->
             <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm mb-12 block w-full">
                 <!-- Header with Filters -->
@@ -95,19 +34,7 @@
                         </div>
                         <form method="GET" action="{{ route('remitente.recibidos') }}"
                             class="flex flex-col sm:flex-row w-full lg:w-auto gap-4">
-                            <div class="relative w-full sm:w-56">
-                                <select name="estado_id" onchange="this.form.submit()"
-                                    class="block w-full h-11 px-4 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-primary focus:border-primary dark:text-white appearance-none">
-                                    <option value="">Todos los estados</option>
-                                @foreach ($estados as $est)
-                                    @if (in_array($est->id_estado, [7, 8, 9, 10, 11, 12, 13, 14, 15]))
-                                        <option value="{{ $est->id_estado }}"
-                                            {{ request('estado_id') == $est->id_estado ? 'selected' : '' }}>
-                                            {{ $est->estado_nomb }}</option>
-                                    @endif
-                                @endforeach
-                            </select>
-                        </div>
+
 
                         {{-- Filtro Fecha --}}
                         <div class="relative w-full sm:w-56 flex items-center gap-2">
@@ -296,22 +223,7 @@
                                                     title="Finalizar">
                                                     <span class="material-symbols-outlined text-[20px]">check_circle</span>
                                                 </button>
-                                            @elseif(in_array($c->id_estado_rec, [7, 12]))
-                                                <!-- Asignar Button -->
-                                                <button type="button" 
-                                                    class="btn-abrir-asignar p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors border border-blue-100 dark:border-blue-800"
-                                                    data-id="{{ $c->id_recibido }}"
-                                                    data-radicado="{{ $c->radicado ? $c->radicado->num_radicado : ($c->num_radicado_ext ?: 'EN PROCESO') }}"
-                                                    data-asunto="{{ $c->asunto }}"
-                                                    title="Asignar a Funcionario(s)">
-                                                    <span class="material-symbols-outlined text-[20px] font-variation-icon">person_add</span>
-                                                </button>
-                                                <!-- Rechazar Button -->
-                                                <button type="button" onclick="openRejectModal('{{ $c->id_recibido }}', '{{ $c->radicado ? $c->radicado->num_radicado : ($c->num_radicado_ext ?: 'EN PROCESO') }}')"
-                                                    class="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors border border-red-100 dark:border-red-800"
-                                                    title="Rechazar Documento">
-                                                    <span class="material-symbols-outlined text-[20px] font-variation-icon">cancel</span>
-                                                </button>
+                                                {{-- Botones de Asignar y Rechazar eliminados por solicitud del usuario --}}
                                             @else
                                             
                                                 {{-- No Registrar Saliente here anymore --}}
@@ -438,12 +350,10 @@
     <!-- History Modal -->
     <div id="historyModal" class="fixed inset-0 z-50 hidden items-center justify-center overflow-y-auto" aria-labelledby="modal-title"
         role="dialog" aria-modal="true">
-        <div class="flex items-center justify-center min-h-screen w-full p-4 relative sm:block sm:p-0">
+        <div class="flex items-center justify-center min-h-screen w-full p-4 relative">
             <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
                 onclick="closeModal('historyModal')"></div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div
-                class="inline-block align-middle bg-white dark:bg-gray-800 rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full my-auto">
+            <div class="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden transform transition-all my-auto">
                 <div
                     class="px-8 py-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-900/20">
                     <div class="flex-1">

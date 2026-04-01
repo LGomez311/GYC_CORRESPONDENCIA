@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use App\Models\Recibido;
 use App\Models\DetalleRecibido;
@@ -15,6 +16,7 @@ use App\Models\DetalleEnvio;
 use App\Models\Envio;
 use App\Models\Radicado;
 use App\Models\AnexoEnvio;
+use App\Mail\CorrespondenciaSalienteNotification;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -58,8 +60,9 @@ class DashboardController extends Controller
                 });
             })
             ->where(function($q) {
+                // Incluir todos los de estado 0/8/12/13/14 o los últimos 7 días
                 $q->whereDate('fecha', '>=', now()->subDays(7))
-                  ->orWhereIn('id_estado_envio', [8, 12, 13, 14]);
+                  ->orWhereIn('id_estado_envio', [0, 8, 12, 13, 14]);
             });
 
         // NORMALIZACIÓN PARA TABLA ÚNICA
@@ -296,9 +299,6 @@ class DashboardController extends Controller
             
         if ($estadoId) {
             $query->where('id_estado_rec', $estadoId);
-        } else {
-            // Por defecto, mostrar los que NO están finalizados ni archivados
-            $query->whereNotIn('id_estado_rec', [9, 10, 14]);
         }
 
         if ($fecha) {
@@ -739,6 +739,7 @@ class DashboardController extends Controller
             'doc_quien_envia' => 'nullable|string|max:20',
             'id_tipo_envio'   => 'required|integer',
             'folio'           => 'required|integer|min:1',
+            'correo'          => 'nullable|email|max:150',
         ]);
 
         $docQuienEnvioAuto = $docQuienRegistra;
@@ -781,6 +782,7 @@ class DashboardController extends Controller
                 'archivo'            => $archivoPrincipal,
                 'nit_empresa'        => $nitEmpresa,
                 'doc_quien_registra' => $docQuienRegistra,
+                'correo_persona'     => $request->correo,
             ]);
 
             // 4. Transfer Annexes if they exist
@@ -820,57 +822,18 @@ class DashboardController extends Controller
                 ]);
             }
 
-            // 7. Send Email Notification to the original sender
-            if (!empty($recibido->correo_persona)) {
+            // 7. Commit and Notify
+            DB::commit();
+
+            if ($envio->correo_persona) {
                 try {
-                    $correoDestino = $recibido->correo_persona;
-                    $numRadicadoComp = $numRadicado; // Reference already fetched original radicado
-                    $asuntoEmail = 'Respuesta a su correspondencia - Radicado: ' . $numRadicadoComp;
-                    $urlConsulta = route('public.correspondencia.consultar');
-
-                    \Illuminate\Support\Facades\Log::info("Enviando correo de notificación a: $correoDestino para el radicado: $numRadicadoComp");
-
-                    \Illuminate\Support\Facades\Mail::send([], [], function ($message) use ($correoDestino, $numRadicadoComp, $asuntoEmail, $urlConsulta, $recibido) {
-                        $message->to($correoDestino)
-                            ->subject($asuntoEmail)
-                            ->html("
-                            <div style='font-family: Arial, sans-serif; background-color: #f8fafc; padding: 40px;'>
-                                <div style='max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 16px; padding: 40px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #e2e8f0;'>
-                                    <div style='text-align: center; margin-bottom: 32px;'>
-                                        <div style='display: inline-block; padding: 12px; background-color: #ecfdf5; border-radius: 12px;'>
-                                            <span style='font-size: 32px;'>📩</span>
-                                        </div>
-                                    </div>
-                                    <h2 style='color: #1e293b; font-size: 24px; font-weight: 700; text-align: center; margin-bottom: 8px;'>Su correspondencia tiene una respuesta</h2>
-                                    <p style='color: #64748b; font-size: 16px; text-align: center; margin-bottom: 32px;'>Le informamos que se ha registrado una respuesta oficial a su solicitud en nuestro sistema de gestión documental.</p>
-                                    
-                                    <div style='background-color: #f1f5f9; border-radius: 12px; padding: 24px; margin-bottom: 32px;'>
-                                        <div style='text-align: center;'>
-                                            <span style='color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;'>Número de Radicado</span>
-                                            <p style='color: #059669; font-size: 24px; font-weight: 700; margin: 8px 0 0;'>$numRadicadoComp</p>
-                                        </div>
-                                    </div>
-
-                                    <div style='text-align: center; margin-bottom: 32px;'>
-                                        <a href='$urlConsulta' style='display: inline-block; background-color: #10b981; color: #ffffff; font-size: 15px; font-weight: 700; text-decoration: none; padding: 14px 32px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);'>Consultar mi respuesta</a>
-                                    </div>
-                                    
-                                    <p style='color: #94a3b8; font-size: 12px; line-height: 1.6; text-align: center; margin: 0;'>
-                                        Si tiene problemas con el botón, copie y pegue el siguiente enlace en su navegador: <br>
-                                        <a href='$urlConsulta' style='color: #10b981; text-decoration: underline;'>$urlConsulta</a>
-                                    </p>
-                                    
-                                    <hr style='margin: 32px 0; border: none; border-top: 1px solid #e2e8f0;'>
-                                    <p style='font-size: 11px; color: #cbd5e1; text-align: center; margin: 0;'>Este es un mensaje automático generado por el Sistema de Gestión Documental. Por favor no responda a este correo.</p>
-                                </div>
-                            </div>");
-                    });
-                } catch (\Exception $mailEx) {
-                    \Illuminate\Support\Facades\Log::error('Error enviando correo de respuesta saliente: ' . $mailEx->getMessage());
+                    \Illuminate\Support\Facades\Log::info("Enviando correo de notificación a: {$envio->correo_persona} para el radicado: {$numRadicado}");
+                    \Illuminate\Support\Facades\Mail::to($envio->correo_persona)->send(new \App\Mail\CorrespondenciaSalienteNotification($envio));
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error("Error sending dispatch notification: " . $e->getMessage());
                 }
             }
 
-            DB::commit();
             return redirect()->back()->with('success', 'Respuesta registrada exitosamente bajo el radicado: ' . $numRadicado);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -905,6 +868,7 @@ class DashboardController extends Controller
             
             $obs = $request->observaciones ?? '';
             if ($request->filled('correo')) {
+                $envio->correo_persona = $request->correo;
                 $obs = trim($obs . ' [Correo Notificación: ' . $request->correo . ']');
             }
             $envio->observaciones = substr($obs, 0, 250);
@@ -923,76 +887,33 @@ class DashboardController extends Controller
                 ->first();
             $idResponsable = $responsableTecnico ? $responsableTecnico->emple_doc : 999000;
 
+            // Verificar si el documento del remitente existe en empleados para evitar fallo de FK
+            $docSenderTrace = $remitente->rem_doc;
+            if (!DB::table('empleado')->where('emple_doc', $docSenderTrace)->exists()) {
+                $docSenderTrace = $idResponsable;
+            }
+
             // Log trazabilidad (Cierre por Ventanilla)
-            DB::table('detalles_envio')->insert([
+            DB::table('detalle_envio')->insert([
                 'id_envio'        => $envio->id_envio,
-                'doc_quien_recibe' => $idResponsable,
-                'fecha_envio'     => now(),
-                'id_estado_envio' => 9,
-                'detalles'        => "Correspondencia enviada y radicado finalizado por (Remitente) {$remitente->rem_nombres} {$remitente->rem_apellidos}."
+                'id_quien_envie'  => $docSenderTrace,
+                'id_quien_recibe' => $idResponsable,
+                'fecha_traslado'  => now(),
+                'id_estado_rec'   => 9,
+                'observaciones'   => "Correspondencia despachada y radicado finalizado por (Remitente) {$remitente->rem_nombres} {$remitente->rem_apellidos}."
             ]);
 
             DB::commit();
             
             // Send Notification Email if requested
-            if ($request->filled('correo')) {
+            if ($envio->correo_persona) {
                 try {
-                    $radNum = $envio->radicado ? $envio->radicado->num_radicado : 'N/A';
-                    // URL to the public consultation page with pre-filled radicado
-                    $url = route('consultar', ['radicado' => $radNum]);
-                    
-                    $html = '
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <meta charset="utf-8">
-                        <title>Notificación de Correspondencia Saliente</title>
-                    </head>
-                    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-                        
-                        <div style="background-color: #f8f9fa; border-radius: 8px; padding: 20px; border: 1px solid #e9ecef;">
-                            <h2 style="color: #1a56db; margin-top: 0;">Tiene una nueva correspondencia</h2>
-                            
-                            <p>Estimado/a señor/a,</p>
-                            
-                            <p>Le informamos que se ha generado una nueva correspondencia a su nombre en nuestro sistema.</p>
-                            
-                            <div style="background-color: #fff; border-left: 4px solid #1a56db; padding: 15px; margin: 20px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                                <p style="margin: 0; font-size: 16px;">
-                                    <strong>Número de Radicado:</strong> <span style="color: #1a56db; font-weight: bold; font-size: 18px;">'.$radNum.'</span>
-                                </p>
-                            </div>
-                            
-                            <p>Para consultar el documento y sus detalles, por favor ingrese al siguiente enlace y utilice el número de radicado proporcionado:</p>
-                            
-                            <div style="text-align: center; margin: 30px 0;">
-                                <a href="'.$url.'" style="background-color: #1a56db; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
-                                    Consultar Correspondencia
-                                </a>
-                            </div>
-                            
-                            <p style="font-size: 13px; color: #6c757d; margin-top: 30px; border-top: 1px solid #e9ecef; padding-top: 20px;">
-                                <small>
-                                    Este es un mensaje automático, por favor no responda a este correo. Si no puede hacer clic en el botón, copie y pegue la siguiente URL en su navegador:<br>
-                                    <a href="'.$url.'" style="color: #1a56db; word-break: break-all;">'.$url.'</a>
-                                </small>
-                            </p>
-                        </div>
-                    </body>
-                    </html>';
-
-                    Mail::html($html, function ($message) use ($request, $radNum) {
-                        $message->to($request->correo)
-                                ->subject('Notificación de Correspondencia Saliente - Radicado ' . $radNum);
-                    });
-                } catch (\Exception $mailEx) {
-                    \Illuminate\Support\Facades\Log::error('Error enviando correo de notificacion saliente: ' . $mailEx->getMessage());
-                    // we still proceed to return success even if mail fails, just log it.
+                    \Illuminate\Support\Facades\Mail::to($envio->correo_persona)->send(new \App\Mail\CorrespondenciaSalienteNotification($envio));
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error("Error sending dispatch notification (from envio): " . $e->getMessage());
                 }
             }
             
-            // If we need to return the URL for printing
-            // Since it's a form submit, we can just redirect back and maybe flash a message or a print URL
             return redirect()->back()->with('success', 'Envío procesado exitosamente. Radicado: ' . ($envio->radicado ? $envio->radicado->num_radicado : 'N/A'));
         } catch (\Exception $e) {
             DB::rollBack();
@@ -1013,7 +934,93 @@ class DashboardController extends Controller
         $datos = $this->calcularReporteAreas($request);
         $reporteAreas = $datos['areas'];
         $resumenTipos = $datos['tipos'];
-        return view('remitente.reportes', compact('reporteAreas', 'resumenTipos'));
+
+        $nitEmpresa = $remitente->nit_empresa;
+        // Obtener áreas que tienen empleados en la empresa del remitente
+        $areas = Area::whereExists(function($q) use ($nitEmpresa) {
+            $q->select(\Illuminate\Support\Facades\DB::raw(1))
+              ->from('empleado')
+              ->whereColumn('empleado.emple_area', 'area.id_area')
+              ->where('empleado.nit_empresa', $nitEmpresa);
+        })->get();
+        $tipos = \App\Models\Tipo::all();
+
+        return view('remitente.reportes', compact('reporteAreas', 'resumenTipos', 'areas', 'tipos'));
+    }
+
+    /**
+     * Exportar correspondencia filtrada a PDF (Módulo Remitente)
+     */
+    public function exportCorrespondenciaPdf(Request $request)
+    {
+        $remitente = Auth::guard('remitente')->user();
+        if (!$remitente) {
+            return redirect()->back()->with('error', 'No autorizado.');
+        }
+
+        $remDoc  = $remitente->rem_doc;
+        $nitEmpresa = $remitente->nit_empresa;
+
+        // --- Build filtered query (same scope as getBaseQuery) ---
+        $query = \App\Models\Recibido::with(['estado','tipo','radicado','destinatarios','ciudad'])
+            ->where('nit_empresa', $nitEmpresa)
+            ->where(function($q) use ($remDoc) {
+                $q->where('doc_quien_registra', $remDoc)
+                  ->orWhereNull('doc_quien_registra');
+            });
+
+        $filtrosActivos = [];
+
+        // Filter: desde
+        if ($request->filled('desde')) {
+            $query->whereDate('fecha_hora_recib', '>=', $request->desde);
+            $filtrosActivos['Desde'] = \Carbon\Carbon::parse($request->desde)->format('d/m/Y');
+        }
+
+        // Filter: hasta
+        if ($request->filled('hasta')) {
+            $query->whereDate('fecha_hora_recib', '<=', $request->hasta);
+            $filtrosActivos['Hasta'] = \Carbon\Carbon::parse($request->hasta)->format('d/m/Y');
+        }
+
+        // Filter: area (by destinatario employee's area)
+        if ($request->filled('area_id')) {
+            $query->whereHas('destinatarios', function($q) use ($request) {
+                $q->where('emple_area', $request->area_id);
+            });
+            $area = Area::find($request->area_id);
+            $filtrosActivos['Área'] = $area->area_nom ?? 'ID '.$request->area_id;
+        }
+
+        // Filter: tipo de documento
+        if ($request->filled('tipo_id')) {
+            $query->where('id_tipo', $request->tipo_id);
+            $tipo = \App\Models\Tipo::find($request->tipo_id);
+            $filtrosActivos['Tipo Doc.'] = $tipo->tipo_nombre ?? 'ID '.$request->tipo_id;
+        }
+
+        // Filter: estado
+        if ($request->filled('estado_id')) {
+            $query->where('id_estado_rec', $request->estado_id);
+            $estado = \App\Models\Estado::find($request->estado_id);
+            $filtrosActivos['Estado'] = $estado->estado_nomb ?? 'ID '.$request->estado_id;
+        }
+
+        $correspondencias = $query->orderBy('fecha_hora_recib', 'desc')->get();
+
+        // Stats
+        $totalRegistros  = $correspondencias->count();
+        $totalEnProceso  = $correspondencias->whereNotIn('id_estado_rec', [9,10,11,14])->count();
+        $totalFinalizados = $correspondencias->whereIn('id_estado_rec', [9,10,14])->count();
+        $totalRechazados = $correspondencias->where('id_estado_rec', 11)->count();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('remitente.pdf.correspondencia_reporte_pdf', compact(
+            'correspondencias','filtrosActivos',
+            'totalRegistros','totalEnProceso','totalFinalizados','totalRechazados'
+        ))->setPaper('A4', 'landscape');
+
+        $filename = 'Reporte_Correspondencia_' . now()->format('Ymd_His') . '.pdf';
+        return $pdf->download($filename);
     }
 
     public function exportPdf(Request $request)
@@ -1024,12 +1031,35 @@ class DashboardController extends Controller
         }
 
         $datos = $this->calcularReporteAreas($request);
-        $reporteAreas = $datos['areas'];
-        $resumenTipos = $datos['tipos'];
-        $barChart = $request->input('barChart');
+        $reporteAreas  = $datos['areas'];
+        $resumenTipos  = $datos['tipos'];
+        $barChart      = $request->input('barChart');
         $doughnutChart = $request->input('doughnutChart');
 
-        $pdf = Pdf::loadView('admin.pdf.reportes_pdf', compact('reporteAreas', 'resumenTipos', 'barChart', 'doughnutChart'))->setPaper('A4', 'portrait');
+        // Compute totals for the PDF
+        $totalAsignados  = collect($reporteAreas)->sum('asignados');
+        $totalTramite    = collect($reporteAreas)->sum('tramite');
+        $totalFinalizado = collect($reporteAreas)->sum('finalizado');
+        $totalVencidos   = collect($reporteAreas)->sum('vencidos');
+        $eficienciaGlobal = $totalAsignados > 0 ? round(($totalFinalizado / $totalAsignados) * 100) : 0;
+
+        // Build filter label for the PDF header
+        $periodo = $request->input('periodo', 'todo');
+        $filtroLabel = match($periodo) {
+            'dia'       => 'Día: ' . ($request->fecha ? \Carbon\Carbon::parse($request->fecha)->format('d/m/Y') : '—'),
+            'mes'       => 'Mes: ' . ($request->mes ?? '—'),
+            'trimestre' => 'Trimestre ' . ($request->trimestre ?? '—') . ' (' . ($request->ano ?? date('Y')) . ')',
+            'ano'       => 'Año: ' . ($request->ano ?? date('Y')),
+            default     => 'Histórico Completo',
+        };
+
+        $pdf = Pdf::loadView('remitente.pdf.reporte_gestion_pdf', compact(
+            'reporteAreas', 'resumenTipos',
+            'barChart', 'doughnutChart',
+            'totalAsignados', 'totalTramite', 'totalFinalizado', 'totalVencidos',
+            'eficienciaGlobal', 'filtroLabel'
+        ))->setPaper('A4', 'portrait');
+
         return $pdf->download('reporte_gestion_remitente.pdf');
     }
 
@@ -1061,7 +1091,8 @@ class DashboardController extends Controller
             // --- 1. INTERNAL CORRESPONDENCE (Envio) ---
             $queryInterna = DetalleEnvio::whereIn('id_quien_recibe', $empleadosDocs)
                 ->whereIn('id_detalle', $latestInternalSubquery)
-                ->with(['envio.tipoEnvio']);
+                ->with(['envio.tipoEnvio', 'envio.radicado'])
+                ->whereHas('envio', fn($q) => $q->where('nit_empresa', $nit));
 
             if ($periodo && $periodo != 'todo') {
                 $queryInterna->whereHas('envio', function ($q) use ($request, $periodo) {
@@ -1071,7 +1102,8 @@ class DashboardController extends Controller
 
             // --- 2. EXTERNAL CORRESPONDENCE (Recibido) ---
             $queryExterna = DetalleRecibido::whereIn('det_doc_empleado', $empleadosDocs)
-                ->with(['recibido.tipo']);
+                ->with(['recibido.tipo'])
+                ->whereHas('recibido', fn($q) => $q->where('nit_empresa', $nit));
 
             if ($periodo && $periodo != 'todo') {
                 $queryExterna->whereHas('recibido', function ($q) use ($request, $periodo) {
@@ -1082,9 +1114,9 @@ class DashboardController extends Controller
             $detallesInternos = $queryInterna->get();
             $detallesExternos = $queryExterna->get();
 
-            // Categorization by type
+            // Categorization by type — safe null access
             foreach ($detallesInternos as $det) {
-                $prefijo = substr($det->envio->radicado->num_radicado ?? '', 0, 3);
+                $prefijo = substr($det->envio?->radicado?->num_radicado ?? '', 0, 3);
                 if ($prefijo === 'SAL') $resumenTipos['Saliente']++;
                 else $resumenTipos['Interna']++;
             }
@@ -1111,23 +1143,29 @@ class DashboardController extends Controller
                 $doc = $det instanceof DetalleEnvio ? $det->envio : $det->recibido;
                 if ($doc) {
                     $tipo = $det instanceof DetalleEnvio ? ($doc->tipoEnvio) : ($doc->tipo);
-                    $diasTotales = $tipo->dias_respuesta ?? 0;
+                    $diasTotales = $tipo?->dias_respuesta ?? 0;
                     if ($diasTotales > 0 && !in_array($idEstado, [9, 10, 11])) {
                         $fechaBase = $det instanceof DetalleEnvio ? $doc->fecha : $doc->fecha_hora_recib;
-                        $diasTranscurridos = Carbon::parse($fechaBase)->diffInDaysFiltered(fn(Carbon $d) => $d->isWeekday(), Carbon::now());
-                        if (($diasTotales - $diasTranscurridos) < 0) {
-                            $countVencidos++;
+                        if ($fechaBase) {
+                            try {
+                                $diasTranscurridos = Carbon::parse($fechaBase)->diffInDaysFiltered(fn(Carbon $d) => $d->isWeekday(), Carbon::now());
+                                if (($diasTotales - $diasTranscurridos) < 0) {
+                                    $countVencidos++;
+                                }
+                            } catch (\Exception $e) {
+                                // skip invalid dates
+                            }
                         }
                     }
                 }
             }
 
             $reporteAreas[] = [
-                'area_nom' => $area->area_nom,
-                'asignados' => $totalAsignados,
-                'tramite' => $countTramite,
+                'area_nom'   => $area->area_nom,
+                'asignados'  => $totalAsignados,
+                'tramite'    => $countTramite,
                 'finalizado' => $countFinalizado,
-                'vencidos' => $countVencidos,
+                'vencidos'   => $countVencidos,
                 'eficiencia' => $totalAsignados > 0 ? round(($countFinalizado / $totalAsignados) * 100) : 0
             ];
         }

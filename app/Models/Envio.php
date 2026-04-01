@@ -21,6 +21,9 @@ class Envio extends Model
         'id_tipo_envio',
         'id_estado_envio',
         'archivo',
+        'nom_institucion',
+        'nombre_persona',
+        'correo_persona',
         'nit_empresa',
         'observaciones',
     ];

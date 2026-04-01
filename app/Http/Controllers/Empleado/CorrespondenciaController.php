@@ -10,7 +10,9 @@ use App\Models\DetalleRecibido;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\DB;
 use App\Mail\RespuestaCorrespondenciaExterna;
+use App\Mail\CorrespondenciaSalienteNotification;
 
 
 class CorrespondenciaController extends Controller
@@ -161,6 +163,26 @@ class CorrespondenciaController extends Controller
 
         // Fetch remitentes of the same company (Ventanilla users)
         $remitentes = \App\Models\Remitente::where('nit_empresa', $user->nit_empresa)->get();
+        
+        // Fetch sent internal communications (Outbox)
+        $enviosInternos = \App\Models\Envio::with(['radicado', 'tipoEnvio', 'quienDirigido'])
+            ->where('doc_quien_envia', $user->emple_doc)
+            ->where('nit_empresa', $user->nit_empresa)
+            ->orderBy('id_envio', 'desc')
+            ->take(20)
+            ->get();
+            
+        // Fetch current recipients for each sent item
+        foreach ($enviosInternos as $e) {
+            $e->destinatarios_actuales = \App\Models\DetalleEnvio::with(['quienRecibe.area', 'estado'])
+                ->where('id_envio', $e->id_envio)
+                ->whereIn('id_detalle', function($query) use ($e) {
+                    $query->select(\Illuminate\Support\Facades\DB::raw('MAX(id_detalle)'))
+                        ->from('detalle_envio')
+                        ->where('id_envio', $e->id_envio)
+                        ->groupBy('id_quien_recibe');
+                })->get();
+        }
 
         // Fetch areas
         $areas = \App\Models\Area::orderBy('area_nom')->get();
@@ -168,7 +190,7 @@ class CorrespondenciaController extends Controller
         return view('empleado.correspondencia_recibida', compact(
             'correspondencias', 'totalRecibidas', 'enTramite', 'finalizadas', 'archivadas', 'vencidas',
             'correspondenciasInternas', 'totalInternas', 'enTramiteInt', 'finalizadasInt', 'archivadasInt', 'vencidasInt',
-            'empleados', 'tipos', 'remitentes', 'areas'
+            'empleados', 'tipos', 'remitentes', 'areas', 'enviosInternos'
         ));
     }
 
@@ -631,11 +653,6 @@ class CorrespondenciaController extends Controller
         // 10 = Archivado as a fallback to hide it, or we could leave it if the view query filters by latest.
         // For now, let's keep it simple. If we need to hide it, we can set it to "Archivado"
         $estadoArchivado = \App\Models\Estado::where('estado_nomb', 'Archivado')->first();
-        if ($estadoArchivado) {
-            $recibidoAntiguo->id_estado_rec = $estadoArchivado->id_estado;
-            $recibidoAntiguo->save();
-        }
-
         return back()->with('success', 'Correspondencia reasignada correctamente al nuevo empleado.');
     }
 
@@ -1023,4 +1040,172 @@ class CorrespondenciaController extends Controller
 
         return $radicado;
     }
+
+
+    public function getHistory($id)
+    {
+        try {
+            
+            
+            // Priority 1: Check if the ID is already a Radicado ID (recommended for unified processes)
+            $isRadicado = DB::table('radicados')->where('id_radicado', $id)->exists();
+            if ($isRadicado) {
+                $radId = $id;
+            } else {
+                // Priority 2: Traditional ID lookup (Recibido or Envio)
+                $radId = DB::table('recibido')->where('id_recibido', $id)->value('num_radicado_int');
+                if (!$radId) {
+                    $radId = DB::table('envio')->where('id_envio', $id)->value('num_radicado_int');
+                }
+            }
+
+            if (!$radId) return response()->json([]);
+
+            // 1. Initial Registrations (Incoming/Outgoing)
+            $recibidos = DB::table('recibido as r')
+                ->join('radicados as rad', 'r.num_radicado_int', '=', 'rad.id_radicado')
+                ->leftJoin('remitente as rem', 'r.doc_quien_registra', '=', 'rem.rem_doc')
+                ->where('r.num_radicado_int', $radId)
+                ->select(
+                    DB::raw("'registry' as type"),
+                    'r.fecha_hora_recib as fecha',
+                    DB::raw("COALESCE(rem.rem_nombres, 'Sistema') as nombres"),
+                    DB::raw("COALESCE(rem.rem_apellidos, '') as apellidos"),
+                    'rad.num_radicado',
+                    DB::raw("'Ingreso a Ventanilla' as estado_nomb"),
+                    'r.observaciones',
+                    DB::raw("NULL as img")
+                )->get();
+
+            $envios = DB::table('envio as env')
+                ->join('radicados as rad', 'env.num_radicado_int', '=', 'rad.id_radicado')
+                ->leftJoin('remitente as rem', 'env.doc_quien_registra', '=', 'rem.rem_doc')
+                ->where('env.num_radicado_int', $radId)
+                ->select(
+                    DB::raw("'registry' as type"),
+                    'env.fecha as fecha',
+                    DB::raw("COALESCE(rem.rem_nombres, 'Sistema') as nombres"),
+                    DB::raw("COALESCE(rem.rem_apellidos, '') as apellidos"),
+                    'rad.num_radicado',
+                    DB::raw("'Registro de Salida/Respuesta' as estado_nomb"),
+                    'env.asunto as observaciones',
+                    DB::raw("NULL as img")
+                )->get();
+
+            // 2. Lifecycle transitions (Details)
+            $detailsRec = DB::table('detalle_recibido as dr')
+                ->join('recibido as r', 'dr.det_id_recibido', '=', 'r.id_recibido')
+                ->leftJoin('estado as e', 'dr.id_estado_rec', '=', 'e.id_estado')
+                ->leftJoin('empleado as emp', 'dr.det_doc_empleado', '=', 'emp.emple_doc')
+                ->leftJoin('area as area_e', 'emp.emple_area', '=', 'area_e.id_area')
+                ->leftJoin('remitente as rem_d', 'dr.det_doc_empleado', '=', 'rem_d.rem_doc')
+                ->where('r.num_radicado_int', $radId)
+                ->select(
+                    DB::raw("'detail' as type"),
+                    'dr.fecha_re as fecha',
+                    DB::raw("COALESCE(emp.emple_nombres, rem_d.rem_nombres, 'Destinatario') as nombres"),
+                    DB::raw("COALESCE(emp.emple_apellidos, rem_d.rem_apellidos, '') as apellidos"),
+                    DB::raw("NULL as num_radicado"),
+                    DB::raw("COALESCE(e.estado_nomb, 'Gestión') as estado_nomb"),
+                    'dr.observaciones',
+                    'area_e.area_nom as area_e',
+                    'emp.emple_img as img',
+                    'dr.id_estado_rec',
+                    'dr.id_det_recibido',
+                    'dr.archivo_res'
+                )->get();
+
+            $detailsEnv = DB::table('detalle_envio as de')
+                ->join('envio as env', 'de.id_envio', '=', 'env.id_envio')
+                ->leftJoin('estado as e', 'de.id_estado_rec', '=', 'e.id_estado')
+                ->leftJoin('empleado as emp', 'de.id_quien_recibe', '=', 'emp.emple_doc')
+                ->leftJoin('area as area_e', 'emp.emple_area', '=', 'area_e.id_area')
+                ->where('env.num_radicado_int', $radId)
+                ->select(
+                    DB::raw("'detail' as type"),
+                    'de.fecha_traslado as fecha',
+                    DB::raw("COALESCE(emp.emple_nombres, 'Funcionario') as nombres"),
+                    DB::raw("COALESCE(emp.emple_apellidos, '') as apellidos"),
+                    DB::raw("NULL as num_radicado"),
+                    DB::raw("COALESCE(e.estado_nomb, 'Saliente') as estado_nomb"),
+                    'de.observaciones',
+                    'area_e.area_nom as area_e',
+                    'emp.emple_img as img',
+                    'de.id_estado_rec',
+                    DB::raw("de.id_detalle as id_det_recibido"),
+                    DB::raw("NULL as archivo_res")
+                )->get();
+
+            // 3. Merge and cleanup
+            $historyCollection = $recibidos
+                ->concat($envios)
+                ->concat($detailsRec)
+                ->concat($detailsEnv)
+                ->sortBy('fecha');
+
+            $finalHistory = [];
+            foreach ($historyCollection as $h) {
+                $item = (array) $h;
+                
+                if (!empty($item['id_det_recibido'])) {
+                    $item['anexos'] = DB::table('anexo_respuesta')
+                        ->where('id_detalle', $item['id_det_recibido'])
+                        ->select('ruta_archivo', 'nombre_original')
+                        ->get();
+                } else {
+                    $item['anexos'] = [];
+                }
+
+                if (!empty($item['observaciones'])) {
+                    $item['observaciones'] = preg_replace('/^(CC|TI|CE|NIT|PAS|PEP)\s*[\d\.\-]+\s*-\s*/i', '', $item['observaciones']);
+                }
+                    
+                $finalHistory[] = $item;
+            }
+
+            return response()->json($finalHistory);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Retorna el historial de trazabilidad de un Envio (interno/saliente)
+     * en el mismo formato que getHistory() para reutilizar el historyModal.
+     */
+    public function getHistoryEnvio($id)
+    {
+        return $this->getHistory($id);
+    }
+
+
+
+
+    public function historialPersonal()
+    {
+        $doc = \Illuminate\Support\Facades\Auth::user()->emple_doc;
+        
+        $recibidos = \App\Models\Recibido::with(['estado','tipo','radicado','destinatarios'])
+            ->whereHas('detalles', function($q) use ($doc) {
+                $q->where('det_doc_empleado', $doc);
+            })->get()->map(function($r) {
+                $r->tipo_corresp = 'Externa';
+                $r->fecha_relevante = $r->fecha_hora_recib;
+                return $r;
+            });
+
+        $envios = \App\Models\Envio::with(['estado','tipoEnvio','radicado','recibidoPor'])
+            ->whereHas('detalles', function($q) use ($doc) {
+                $q->where('id_quien_recibe', $doc)->orWhere('id_quien_envia', $doc);
+            })->get()->map(function($e) {
+                $e->tipo_corresp = 'Interna/Saliente';
+                $e->fecha_relevante = $e->fecha;
+                return $e;
+            });
+
+        $correspondencia = $recibidos->concat($envios)->sortByDesc('fecha_relevante');
+
+        return view('empleado.historial_personal', compact('correspondencia'));
+    }
+
 }

@@ -152,53 +152,6 @@
                             </tr>
                         </thead>
                         <tbody id="correspondenceTableBody" class="divide-y divide-gray-50 dark:divide-gray-800/50">
-                            @if (isset($enviosPendientes) && $enviosPendientes->count() > 0)
-                                @foreach ($enviosPendientes as $envio)
-                                    <tr class="bg-orange-50/10 dark:bg-orange-900/5 hover:bg-orange-50/20 transition-all align-top">
-                                        <td class="px-6 py-4 whitespace-nowrap" data-label="Radicados">
-                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-orange-100 text-orange-900 dark:bg-orange-900/30 dark:text-orange-100 text-xs font-bold border border-orange-200 dark:border-orange-800">
-                                                <span class="material-symbols-outlined text-[14px]">tag</span>
-                                                {{ $envio->radicado ? $envio->radicado->num_radicado : 'SIN RADICADO' }}
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4" data-label="Procedencia">
-                                            <div class="font-medium text-gray-700 dark:text-gray-300">
-                                                {{ $envio->quienEnvia ? $envio->quienEnvia->emple_nombres . ' ' . $envio->quienEnvia->emple_apellidos : 'Empleado' }}
-                                            </div>
-                                            <span class="inline-flex items-center gap-0.5 text-[10px] text-indigo-500 font-bold uppercase mt-1">
-                                                <span class="material-symbols-outlined text-[12px]">person</span> Interno
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 text-sm" data-label="Asunto">
-                                            <div class="font-medium text-gray-900 dark:text-gray-100 mb-1 max-w-[200px] whitespace-normal break-words">{{ $envio->asunto }}</div>
-                                            <div class="flex flex-wrap gap-1 mt-1">
-                                                <div class="flex items-center gap-0.5 text-[10px] text-gray-500 font-bold uppercase">
-                                                    <span class="material-symbols-outlined text-[14px]">layers</span> F: {{ $envio->folio ?? 0 }}
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4" data-label="Destinatario">
-                                            <span class="text-xs text-gray-400 italic">Enviado por asignar</span>
-                                        </td>
-                                        <td class="px-6 py-4" data-label="Registro">
-                                            <div class="font-medium text-gray-900 dark:text-white">{{ \Carbon\Carbon::parse($envio->fecha)->format('d M Y') }}</div>
-                                            <div class="text-[10px] text-gray-500">{{ \Carbon\Carbon::parse($envio->fecha)->format('h:i A') }}</div>
-                                        </td>
-                                        <td class="px-6 py-4 text-center" data-label="Estado">
-                                            <span class="px-2 py-1 rounded-lg text-[10px] font-black uppercase border bg-orange-50 text-orange-600 border-orange-200">
-                                                EN ESPERA
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 text-center" data-label="Acciones">
-                                            <div class="flex items-center justify-center">
-                                                <div class="p-1 px-2 bg-gray-50 rounded-lg text-gray-400 border border-gray-100" title="Pendiente de asignación">
-                                                    <span class="material-symbols-outlined text-[18px]">lock</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            @endif
 
                             @forelse($correspondenciaNueva as $c)
                                     <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors align-top group">
@@ -322,6 +275,14 @@
                                                             <span class="material-symbols-outlined text-xs">done_all</span> Respondido
                                                         </span>
                                                     @endif
+                                                @endif
+                                            @elseif ($c->tipo === 'Saliente')
+                                                @if ($c->id_estado == 0)
+                                                    <button onclick="openSalienteModal({{ $c->id_original }})"
+                                                        class="p-1 px-2 text-blue-600 bg-blue-50 border border-blue-100 hover:bg-blue-100 rounded-lg transition-colors"
+                                                        title="Despachar Correspondencia">
+                                                        <span class="material-symbols-outlined text-[18px]">send</span>
+                                                    </button>
                                                 @endif
                                             @endif
                                         </div>
@@ -1445,6 +1406,10 @@
                                 @endforeach
                             </select>
                         </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Correo Electrónico (Notificación)</label>
+                            <input type="email" name="correo" id="salienteCorreo" class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none dark:text-white" placeholder="usuario@ejemplo.com">
+                        </div>
                         <div id="salienteFilePreview" class="space-y-2"></div>
                     </div>
                     <div class="p-6 bg-gray-50/50 dark:bg-gray-900/30 border-t border-gray-100 dark:border-gray-700 flex gap-3 shrink-0">
@@ -1624,10 +1589,27 @@
             }
             if (!c) return;
 
-            document.getElementById('salienteForm').action = `{{ url('/ventanilla') }}/${c.id_original}/store-saliente`;
+            let actionUrl = `{{ url('/ventanilla') }}/${c.id_original}/store-saliente`;
+            if (c.tipo_label === 'SAL') {
+                actionUrl = `{{ url('/ventanilla') }}/envio/${c.id_original}/store-saliente`;
+            }
+
+            document.getElementById('salienteForm').action = actionUrl;
             document.getElementById('salienteDestino').value = c.contacto || '';
-            document.getElementById('salienteAsunto').value = 'R: ' + c.asunto;
+            document.getElementById('salienteAsunto').value = (c.tipo_label === 'SAL' ? '' : 'R: ') + c.asunto;
             document.getElementById('salienteFolio').value = c.folios || 1;
+            document.getElementById('salienteCorreo').value = c.correo || '';
+            
+            const submitBtn = document.querySelector('#salienteForm button[type="submit"]');
+            if (submitBtn) {
+                if (c.tipo_label === 'SAL') {
+                    submitBtn.innerHTML = `<span class="material-symbols-outlined text-[18px]">send</span> Despachar Correspondencia`;
+                    submitBtn.className = submitBtn.className.replace('bg-emerald-600', 'bg-blue-600').replace('hover:bg-emerald-700', 'hover:bg-blue-700');
+                } else {
+                    submitBtn.innerHTML = `<span class="material-symbols-outlined text-[18px]">done_all</span> Registrar Envío Saliente`;
+                    submitBtn.className = submitBtn.className.replace('bg-blue-600', 'bg-emerald-600').replace('hover:bg-blue-700', 'hover:bg-emerald-700');
+                }
+            }
             
             // Auto-fill Type and Official
             const typeSelect = document.getElementById('salienteTipo');

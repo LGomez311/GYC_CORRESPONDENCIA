@@ -180,4 +180,143 @@ class HomeController extends Controller
             'recientes'
         ));
     }
+
+
+    public function getHistory($id)
+    {
+        try {
+            
+            
+            // Priority 1: Check if the ID is already a Radicado ID (recommended for unified processes)
+            $isRadicado = DB::table('radicados')->where('id_radicado', $id)->exists();
+            if ($isRadicado) {
+                $radId = $id;
+            } else {
+                // Priority 2: Traditional ID lookup (Recibido or Envio)
+                $radId = DB::table('recibido')->where('id_recibido', $id)->value('num_radicado_int');
+                if (!$radId) {
+                    $radId = DB::table('envio')->where('id_envio', $id)->value('num_radicado_int');
+                }
+            }
+
+            if (!$radId) return response()->json([]);
+
+            // 1. Initial Registrations (Incoming/Outgoing)
+            $recibidos = DB::table('recibido as r')
+                ->join('radicados as rad', 'r.num_radicado_int', '=', 'rad.id_radicado')
+                ->leftJoin('remitente as rem', 'r.doc_quien_registra', '=', 'rem.rem_doc')
+                ->where('r.num_radicado_int', $radId)
+                ->select(
+                    DB::raw("'registry' as type"),
+                    'r.fecha_hora_recib as fecha',
+                    DB::raw("COALESCE(rem.rem_nombres, 'Sistema') as nombres"),
+                    DB::raw("COALESCE(rem.rem_apellidos, '') as apellidos"),
+                    'rad.num_radicado',
+                    DB::raw("'Ingreso a Ventanilla' as estado_nomb"),
+                    'r.observaciones',
+                    DB::raw("NULL as img")
+                )->get();
+
+            $envios = DB::table('envio as env')
+                ->join('radicados as rad', 'env.num_radicado_int', '=', 'rad.id_radicado')
+                ->leftJoin('remitente as rem', 'env.doc_quien_registra', '=', 'rem.rem_doc')
+                ->where('env.num_radicado_int', $radId)
+                ->select(
+                    DB::raw("'registry' as type"),
+                    'env.fecha as fecha',
+                    DB::raw("COALESCE(rem.rem_nombres, 'Sistema') as nombres"),
+                    DB::raw("COALESCE(rem.rem_apellidos, '') as apellidos"),
+                    'rad.num_radicado',
+                    DB::raw("'Registro de Salida/Respuesta' as estado_nomb"),
+                    'env.asunto as observaciones',
+                    DB::raw("NULL as img")
+                )->get();
+
+            // 2. Lifecycle transitions (Details)
+            $detailsRec = DB::table('detalle_recibido as dr')
+                ->join('recibido as r', 'dr.det_id_recibido', '=', 'r.id_recibido')
+                ->leftJoin('estado as e', 'dr.id_estado_rec', '=', 'e.id_estado')
+                ->leftJoin('empleado as emp', 'dr.det_doc_empleado', '=', 'emp.emple_doc')
+                ->leftJoin('area as area_e', 'emp.emple_area', '=', 'area_e.id_area')
+                ->leftJoin('remitente as rem_d', 'dr.det_doc_empleado', '=', 'rem_d.rem_doc')
+                ->where('r.num_radicado_int', $radId)
+                ->select(
+                    DB::raw("'detail' as type"),
+                    'dr.fecha_re as fecha',
+                    DB::raw("COALESCE(emp.emple_nombres, rem_d.rem_nombres, 'Destinatario') as nombres"),
+                    DB::raw("COALESCE(emp.emple_apellidos, rem_d.rem_apellidos, '') as apellidos"),
+                    DB::raw("NULL as num_radicado"),
+                    DB::raw("COALESCE(e.estado_nomb, 'Gestión') as estado_nomb"),
+                    'dr.observaciones',
+                    'area_e.area_nom as area_e',
+                    'emp.emple_img as img',
+                    'dr.id_estado_rec',
+                    'dr.id_det_recibido',
+                    'dr.archivo_res'
+                )->get();
+
+            $detailsEnv = DB::table('detalle_envio as de')
+                ->join('envio as env', 'de.id_envio', '=', 'env.id_envio')
+                ->leftJoin('estado as e', 'de.id_estado_rec', '=', 'e.id_estado')
+                ->leftJoin('empleado as emp', 'de.id_quien_recibe', '=', 'emp.emple_doc')
+                ->leftJoin('area as area_e', 'emp.emple_area', '=', 'area_e.id_area')
+                ->where('env.num_radicado_int', $radId)
+                ->select(
+                    DB::raw("'detail' as type"),
+                    'de.fecha_traslado as fecha',
+                    DB::raw("COALESCE(emp.emple_nombres, 'Funcionario') as nombres"),
+                    DB::raw("COALESCE(emp.emple_apellidos, '') as apellidos"),
+                    DB::raw("NULL as num_radicado"),
+                    DB::raw("COALESCE(e.estado_nomb, 'Saliente') as estado_nomb"),
+                    'de.observaciones',
+                    'area_e.area_nom as area_e',
+                    'emp.emple_img as img',
+                    'de.id_estado_rec',
+                    DB::raw("de.id_detalle as id_det_recibido"),
+                    DB::raw("NULL as archivo_res")
+                )->get();
+
+            // 3. Merge and cleanup
+            $historyCollection = $recibidos
+                ->concat($envios)
+                ->concat($detailsRec)
+                ->concat($detailsEnv)
+                ->sortBy('fecha');
+
+            $finalHistory = [];
+            foreach ($historyCollection as $h) {
+                $item = (array) $h;
+                
+                if (!empty($item['id_det_recibido'])) {
+                    $item['anexos'] = DB::table('anexo_respuesta')
+                        ->where('id_detalle', $item['id_det_recibido'])
+                        ->select('ruta_archivo', 'nombre_original')
+                        ->get();
+                } else {
+                    $item['anexos'] = [];
+                }
+
+                if (!empty($item['observaciones'])) {
+                    $item['observaciones'] = preg_replace('/^(CC|TI|CE|NIT|PAS|PEP)\s*[\d\.\-]+\s*-\s*/i', '', $item['observaciones']);
+                }
+                    
+                $finalHistory[] = $item;
+            }
+
+            return response()->json($finalHistory);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Retorna el historial de trazabilidad de un Envio (interno/saliente)
+     * en el mismo formato que getHistory() para reutilizar el historyModal.
+     */
+    public function getHistoryEnvio($id)
+    {
+        return $this->getHistory($id);
+    }
+
+
 }

@@ -46,7 +46,7 @@
 
             <!-- Botón -->
             <div class="mt-6 flex gap-3">
-                <button onclick="openModal()"
+                <button onclick="openModal('paymentModal')"
                     class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition">
                     Proceder al pago
                 </button>
@@ -62,18 +62,18 @@
                 Al continuar, confirmas la compra del plan seleccionado.
             </p>
 
+            @if ($errors->any())
+                <div class="mt-4 bg-red-50 border-l-4 border-red-400 p-3 rounded-md">
+                    <ul class="list-disc list-inside text-xs text-red-700 font-bold uppercase space-y-1">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
         </div>
     </div>
-
-    <script>
-        function openModal() {
-            document.getElementById('paymentModal').classList.remove('hidden');
-        }
-
-        function closeModal() {
-            document.getElementById('paymentModal').classList.add('hidden');
-        }
-    </script>
 @endsection
 
 
@@ -141,7 +141,7 @@
             </div>
 
             <!-- Formulario -->
-            <form action="{{ route('pagos.store', $plan->id_plan) }}" method="POST" enctype="multipart/form-data"
+            <form action="{{ route('pagos.store') }}" method="POST" enctype="multipart/form-data"
                 onsubmit="confirmarPago(event)">
 
                 @csrf
@@ -165,16 +165,15 @@
                 </div>
 
 
-                <!-- Comprobante -->
-                <div class="mb-4">
-                    <label class="block font-semibold text-gray-700 mb-1 text-sm">
-                        Comprobante de pago
-                    </label>
-                    <input type="file" name="comprobante" class="w-full border rounded-lg p-2 text-sm">
-                    <p class="text-xs text-gray-500 mt-1">
-                        Puedes adjuntar una imagen del comprobante.
-                    </p>
-                </div>
+                    <div class="mb-4">
+                        <label class="block font-semibold text-gray-700 mb-1 text-sm">
+                            Comprobante de pago <span class="text-red-500">*</span>
+                        </label>
+                        <input type="file" name="comprobante" accept="image/*" required class="w-full border-2 border-dashed border-gray-200 rounded-xl p-3 text-sm focus:border-green-500 focus:bg-green-50/20 transition-all outline-none">
+                        <p class="text-[10px] text-gray-500 mt-1 uppercase font-bold">
+                            ⚠️ Solo se admiten formatos de imagen (JPG, PNG, WEBP). Máximo 2MB.
+                        </p>
+                    </div>
 
                 <!-- Aviso -->
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
@@ -185,7 +184,7 @@
 
                 <!-- Botones -->
                 <div class="flex justify-end gap-3">
-                    <button type="button" onclick="closeModal()"
+                    <button type="button" onclick="closeModal('paymentModal')"
                         class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100 text-sm">
                         Cancelar
                     </button>
@@ -222,12 +221,3 @@
         }
     </script>
 @endsection
-@if ($errors->any())
-    <div class="bg-red-100 text-red-700 p-3 rounded mb-4">
-        <ul class="list-disc list-inside">
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif

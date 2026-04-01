@@ -145,8 +145,11 @@ Route::prefix('admin')->middleware(['auth:web', 'licencia.activa', 'role:2'])->n
 
     Route::get('/', [AdminUsuarioController::class, 'index'])->name('index');
     Route::get('/home', [AdminHomeController::class, 'index'])->name('home');
+    Route::get('/history/{id}', [AdminHomeController::class, 'getHistory'])->name('history');
+    Route::get('/envio/{id}/history', [AdminHomeController::class, 'getHistoryEnvio'])->name('envio.history');
     Route::get('/reportes', [AdminReporteController::class, 'index'])->name('reportes');
     Route::post('/reportes/export/pdf', [AdminReporteController::class, 'exportPdf'])->name('reportes.export.pdf');
+    Route::get('/reportes/export/correspondencia/pdf', [AdminReporteController::class, 'exportCorrespondenciaPdf'])->name('reportes.export.correspondencia.pdf');
     Route::get('/otros', function () { return view('admin.otros'); })->name('otros');
 
     // Planes & Pagos
@@ -174,6 +177,7 @@ Route::prefix('admin')->middleware(['auth:web', 'licencia.activa', 'role:2'])->n
 
     // Usuarios (Empleados y Remitentes)
     Route::get('/usuarios', [AdminUsuarioController::class, 'index'])->name('usuarios');
+    Route::get('/usuarios/{doc}/historial', [AdminUsuarioController::class, 'historial'])->name('usuarios.historial');
     Route::post('/usuarios/empleado', [AdminUsuarioController::class, 'storeEmpleado'])->name('empleado.store');
     Route::put('/usuarios/empleado/{emple_doc}', [AdminUsuarioController::class, 'updateEmpleado'])->name('empleado.update');
     Route::post('/usuarios/remitente', [AdminUsuarioController::class, 'storeRemitente'])->name('remitente.store');
@@ -245,9 +249,13 @@ Route::prefix('empleado')->middleware(['auth:web', 'licencia.activa'])->name('em
     Route::get('/correspondencia-interna/{id}/historial', [EmpleadoCorrespondenciaController::class, 'historialInterna'])->name('historial_interna');
     Route::get('/correspondencia-recibida/{id}/historial', [EmpleadoCorrespondenciaController::class, 'historialExterna'])->name('historial_externa');
     Route::get('/envios-internos', [EmpleadoCorrespondenciaController::class, 'enviosInternos'])->name('envios_internos');
+    Route::get('/historial-personal', [EmpleadoCorrespondenciaController::class, 'historialPersonal'])->name('historial_personal');
+    Route::get('/history/{id}', [EmpleadoCorrespondenciaController::class, 'getHistory'])->name('history');
+    Route::get('/envio/{id}/history', [EmpleadoCorrespondenciaController::class, 'getHistoryEnvio'])->name('envio.history');
     
     Route::get('/reportes', [EmpleadoReporteController::class, 'index'])->name('reportes');
     Route::get('/reportes/export/pdf', [EmpleadoReporteController::class, 'exportPdf'])->name('reportes.export.pdf');
+    Route::get('/reportes/export/correspondencia/pdf', [EmpleadoReporteController::class, 'exportCorrespondenciaPdf'])->name('reportes.export.correspondencia.pdf');
 });
 
 
@@ -277,6 +285,7 @@ Route::prefix('remitente')->middleware(['auth:remitente', 'licencia.activa'])->n
     Route::get('/finalizados', [RemitenteDashboardController::class, 'finalizados'])->name('finalizados');
     Route::get('/reportes', [RemitenteDashboardController::class, 'reportes'])->name('reportes');
     Route::post('/reportes/export/pdf', [RemitenteDashboardController::class, 'exportPdf'])->name('reportes.export.pdf');
+    Route::get('/reportes/export/correspondencia/pdf', [RemitenteDashboardController::class, 'exportCorrespondenciaPdf'])->name('reportes.export.correspondencia.pdf');
     Route::get('/history/{id}', [RemitenteDashboardController::class, 'getHistory'])->name('history');
     Route::get('/envio/{id}/history', [RemitenteDashboardController::class, 'getHistoryEnvio'])->name('envio.history');
     Route::post('/{id}/finalize', [RemitenteDashboardController::class, 'finalize'])->name('finalize');

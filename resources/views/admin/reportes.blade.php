@@ -139,13 +139,44 @@
                 </form>
             </div>
 
-            @php
-                $totalAsignados = collect($reporteAreas)->sum('asignados');
-                $totalTramite = collect($reporteAreas)->sum('tramite');
-                $totalFinalizado = collect($reporteAreas)->sum('finalizado');
-                $totalVencidos = collect($reporteAreas)->sum('vencidos');
-                $eficienciaGlobal = $totalAsignados > 0 ? round(($totalFinalizado / $totalAsignados) * 100) : 0;
-            @endphp
+        @php
+            $totalAsignados = collect($reporteAreas)->sum('asignados');
+            $totalTramite = collect($reporteAreas)->sum('tramite');
+            $totalFinalizado = collect($reporteAreas)->sum('finalizado');
+            $totalVencidos = collect($reporteAreas)->sum('vencidos');
+            $eficienciaGlobal = $totalAsignados > 0 ? round(($totalFinalizado / $totalAsignados) * 100) : 0;
+        @endphp
+
+        <!-- Seccion: Distribucion por Tipo -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-sm hover:shadow-md transition-all group">
+                <div>
+                    <h4 class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Correspondencia Interna</h4>
+                    <p class="text-2xl font-black text-slate-900 dark:text-white mt-1">{{ $resumenTipos['Interna'] ?? 0 }}</p>
+                </div>
+                <div class="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-600 transition-transform group-hover:scale-110">
+                    <span class="material-symbols-outlined text-2xl">corporate_fare</span>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-sm hover:shadow-md transition-all group">
+                <div>
+                    <h4 class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Externa (Entrante)</h4>
+                    <p class="text-2xl font-black text-slate-900 dark:text-white mt-1">{{ $resumenTipos['Externa'] ?? 0 }}</p>
+                </div>
+                <div class="w-12 h-12 bg-orange-500/10 rounded-2xl flex items-center justify-center text-orange-600 transition-transform group-hover:scale-110">
+                    <span class="material-symbols-outlined text-2xl">mail</span>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-sm hover:shadow-md transition-all group">
+                <div>
+                    <h4 class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Saliente (Respuestas)</h4>
+                    <p class="text-2xl font-black text-slate-900 dark:text-white mt-1">{{ $resumenTipos['Saliente'] ?? 0 }}</p>
+                </div>
+                <div class="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-600 transition-transform group-hover:scale-110">
+                    <span class="material-symbols-outlined text-2xl">send</span>
+                </div>
+            </div>
+        </div>
 
             <!-- KPI Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -315,6 +346,165 @@
                     </table>
                 </div>
             </div>
+        <!-- ====================================================== -->
+        <!-- NUEVA SECCIÓN: EXPORTAR CORRESPONDENCIA A PDF            -->
+        <!-- ====================================================== -->
+        <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden relative">
+            <!-- Decoración de fondo -->
+            <div class="absolute top-0 right-0 w-48 h-48 bg-primary/5 rounded-full -translate-y-16 translate-x-16 pointer-events-none"></div>
+            <div class="absolute bottom-0 left-0 w-32 h-32 bg-emerald-500/5 rounded-full translate-y-10 -translate-x-10 pointer-events-none"></div>
+
+            <!-- Header de la sección -->
+            <div class="relative p-6 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-primary to-blue-700 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary/30">
+                        <span class="material-symbols-outlined text-2xl">picture_as_pdf</span>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-lg text-slate-900 dark:text-white tracking-tight">Exportar Correspondencia a PDF</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Aplica los filtros y exporta exactamente lo que ves en pantalla.</p>
+                    </div>
+                </div>
+                <div class="hidden sm:flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-2xl">
+                    <span class="material-symbols-outlined text-blue-500 text-sm">info</span>
+                    <span class="text-[10px] font-bold text-blue-700 dark:text-blue-300">El PDF refleja exactamente los filtros aplicados</span>
+                </div>
+            </div>
+
+            <!-- Formulario de filtros -->
+            <form id="correspondenciaExportForm"
+                  method="GET"
+                  action="{{ route('admin.reportes.export.correspondencia.pdf') }}"
+                  class="relative p-6 space-y-6">
+
+                <!-- Fila 1: Fechas -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Desde -->
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 px-1">
+                            <span class="material-symbols-outlined text-[12px] align-middle">calendar_today</span>
+                            Fecha Desde
+                        </label>
+                        <input type="date" name="desde" id="filtro_desde"
+                               value="{{ request('desde') }}"
+                               max="{{ date('Y-m-d') }}"
+                               class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-semibold p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all dark:text-white outline-none">
+                    </div>
+
+                    <!-- Hasta -->
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 px-1">
+                            <span class="material-symbols-outlined text-[12px] align-middle">event</span>
+                            Fecha Hasta
+                        </label>
+                        <input type="date" name="hasta" id="filtro_hasta"
+                               value="{{ request('hasta', date('Y-m-d')) }}"
+                               max="{{ date('Y-m-d') }}"
+                               class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-semibold p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all dark:text-white outline-none">
+                    </div>
+
+                    <!-- Área -->
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 px-1">
+                            <span class="material-symbols-outlined text-[12px] align-middle">corporate_fare</span>
+                            Área / Dependencia
+                        </label>
+                        <div class="relative">
+                            <select name="area_id" id="filtro_area"
+                                    class="w-full appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-semibold p-3 pr-10 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all dark:text-white outline-none">
+                                <option value="">Todas las áreas</option>
+                                @if(isset($areas) && $areas->count())
+                                    @foreach($areas as $area)
+                                        <option value="{{ $area->id_area }}" {{ request('area_id') == $area->id_area ? 'selected' : '' }}>
+                                            {{ $area->area_nom }}
+                                        </option>
+                                    @endforeach
+                                @endif
+                            </select>
+                            <span class="material-symbols-outlined absolute right-3 top-3.5 pointer-events-none text-slate-400 text-sm">expand_more</span>
+                        </div>
+                    </div>
+
+                    <!-- Tipo Documento -->
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 px-1">
+                            <span class="material-symbols-outlined text-[12px] align-middle">description</span>
+                            Tipo de Documento
+                        </label>
+                        <div class="relative">
+                            <select name="tipo_id" id="filtro_tipo"
+                                    class="w-full appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-semibold p-3 pr-10 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all dark:text-white outline-none">
+                                <option value="">Todos los tipos</option>
+                                @if(isset($tipos) && $tipos->count())
+                                    @foreach($tipos as $tipo)
+                                        <option value="{{ $tipo->id_tipo }}" {{ request('tipo_id') == $tipo->id_tipo ? 'selected' : '' }}>
+                                            {{ $tipo->tipo_nombre }}
+                                        </option>
+                                    @endforeach
+                                @endif
+                            </select>
+                            <span class="material-symbols-outlined absolute right-3 top-3.5 pointer-events-none text-slate-400 text-sm">expand_more</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fila 2: Estado + Previsualización de filtros + Botones -->
+                <div class="flex flex-wrap items-end gap-4">
+                    <!-- Estado -->
+                    <div class="w-full sm:w-56">
+                        <label class="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 px-1">
+                            <span class="material-symbols-outlined text-[12px] align-middle">flag</span>
+                            Estado
+                        </label>
+                        <div class="relative">
+                            <select name="estado_id" id="filtro_estado"
+                                    class="w-full appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-semibold p-3 pr-10 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all dark:text-white outline-none">
+                                <option value="">Todos los estados</option>
+                                @foreach(\App\Models\Estado::whereIn('id_estado',[7,8,9,10,11,12,13,14,15])->get() as $est)
+                                    <option value="{{ $est->id_estado }}" {{ request('estado_id') == $est->id_estado ? 'selected' : '' }}>
+                                        {{ $est->estado_nomb }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <span class="material-symbols-outlined absolute right-3 top-3.5 pointer-events-none text-slate-400 text-sm">expand_more</span>
+                        </div>
+                    </div>
+
+                    <!-- Preview de filtros activos -->
+                    <div id="filtrosPreview" class="flex-1 hidden">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Filtros a aplicar</p>
+                        <div id="filtrosTagsContainer" class="flex flex-wrap gap-2 min-h-[38px] bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl px-3 py-2">
+                        </div>
+                    </div>
+
+                    <!-- Acciones -->
+                    <div class="flex gap-3 ml-auto">
+                        <!-- Limpiar -->
+                        <button type="button" id="btnLimpiarFiltros"
+                                class="flex items-center gap-2 px-5 py-3 text-sm font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-2xl transition-all active:scale-95">
+                            <span class="material-symbols-outlined text-[18px]">filter_alt_off</span>
+                            Limpiar
+                        </button>
+                        <!-- Vista previa -->
+                        <button type="button" id="btnPreviewFiltros"
+                                class="flex items-center gap-2 px-5 py-3 text-sm font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 border border-blue-200 dark:border-blue-800 rounded-2xl transition-all active:scale-95">
+                            <span class="material-symbols-outlined text-[18px]">visibility</span>
+                            Ver Filtros
+                        </button>
+                        <!-- Exportar PDF -->
+                        <button type="submit"
+                                class="group flex items-center gap-2 px-6 py-3 text-sm font-bold text-white bg-gradient-to-r from-primary to-blue-700 hover:from-blue-700 hover:to-primary rounded-2xl transition-all shadow-lg shadow-primary/30 hover:shadow-primary/50 active:scale-95">
+                            <span class="material-symbols-outlined text-[20px] group-hover:rotate-12 transition-transform">picture_as_pdf</span>
+                            Exportar PDF
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <!-- FIN SECCIÓN EXPORTAR CORRESPONDENCIA -->
+
+
+
         @endif
 
     </div>
@@ -431,5 +621,83 @@
             }
         });
     });
+
+
+    // ======= CORRESPONDENCIA EXPORT - FILTROS PREVIEW =======
+    const FILTROS_LABELS = {
+        'filtro_desde':  { label: 'Desde',    type: 'date'   },
+        'filtro_hasta':  { label: 'Hasta',    type: 'date'   },
+        'filtro_area':   { label: 'Área',     type: 'select' },
+        'filtro_tipo':   { label: 'Tipo Doc.',type: 'select' },
+        'filtro_estado': { label: 'Estado',   type: 'select' },
+    };
+
+    function buildFilterTags() {
+        const container = document.getElementById('filtrosTagsContainer');
+        const preview   = document.getElementById('filtrosPreview');
+        if (!container) return;
+        container.innerHTML = '';
+        let hasTags = false;
+
+        Object.keys(FILTROS_LABELS).forEach(function(id) {
+            const info = FILTROS_LABELS[id];
+            const el   = document.getElementById(id);
+            if (!el || !el.value) return;
+
+            let display = el.value;
+            if (info.type === 'select') {
+                const opt = el.options[el.selectedIndex];
+                display = opt ? opt.text : el.value;
+            } else if (info.type === 'date') {
+                try {
+                    const parts = el.value.split('-');
+                    display = parts[2]+'/'+parts[1]+'/'+parts[0];
+                } catch(e) { display = el.value; }
+            }
+
+            const tag = document.createElement('span');
+            tag.className = 'inline-flex items-center gap-1 px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-[11px] font-bold rounded-full border border-blue-200 dark:border-blue-700';
+            tag.innerHTML = '<span class="text-blue-400">'+info.label+':</span> '+display+
+                ' <button type="button" onclick="clearFilter(\''+id+'\')" class="ml-1 hover:text-red-500 transition-colors"><span class="material-symbols-outlined" style="font-size:13px;">close</span></button>';
+            container.appendChild(tag);
+            hasTags = true;
+        });
+
+        if (!hasTags) {
+            container.innerHTML = '<span style="font-size:11px;color:#94a3b8;font-style:italic">Sin filtros activos — se exportará toda la correspondencia.</span>';
+        }
+        preview.classList.remove('hidden');
+    }
+
+    window.clearFilter = function(id) {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+        buildFilterTags();
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const btnPrev = document.getElementById('btnPreviewFiltros');
+        if (btnPrev) btnPrev.addEventListener('click', buildFilterTags);
+
+        const btnLimp = document.getElementById('btnLimpiarFiltros');
+        if (btnLimp) btnLimp.addEventListener('click', function() {
+            ['filtro_desde','filtro_hasta','filtro_area','filtro_tipo','filtro_estado'].forEach(function(id) {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            const container = document.getElementById('filtrosTagsContainer');
+            const preview   = document.getElementById('filtrosPreview');
+            if (container) container.innerHTML = '';
+            if (preview)   preview.classList.add('hidden');
+        });
+
+        // Auto-mostrar tags si hay params en URL
+        const params = new URLSearchParams(window.location.search);
+        if (['desde','hasta','area_id','tipo_id','estado_id'].some(k => params.has(k) && params.get(k))) {
+            buildFilterTags();
+        }
+    });
+
+
 </script>
 @endsection

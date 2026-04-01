@@ -151,10 +151,13 @@
     <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
         <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="correspondenciaTabs" role="tablist">
             <li class="mr-2" role="presentation">
-                <button class="inline-block p-4 border-b-2 rounded-t-lg border-primary text-primary dark:border-blue-500 dark:text-blue-500 transition-colors" id="externa-tab" type="button" role="tab" onclick="switchTab('externa')">Bandeja Externa</button>
+                <button class="inline-block p-4 border-b-2 rounded-t-lg transition-colors" id="externa-tab" type="button" role="tab" onclick="switchTab('externa')">Bandeja Externa</button>
             </li>
             <li class="mr-2" role="presentation">
-                <button class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 dark:text-gray-400 text-gray-500 transition-colors" id="interna-tab" type="button" role="tab" onclick="switchTab('interna')">Bandeja Interna</button>
+                <button class="inline-block p-4 border-b-2 border-transparent rounded-t-lg transition-colors" id="interna-tab" type="button" role="tab" onclick="switchTab('interna')">Bandeja Interna</button>
+            </li>
+            <li class="mr-2" role="presentation">
+                <button class="inline-block p-4 border-b-2 border-transparent rounded-t-lg transition-colors" id="mis-comunicados-tab" type="button" role="tab" onclick="switchTab('mis-comunicados')">Mis Comunicados</button>
             </li>
         </ul>
     </div>
@@ -282,7 +285,7 @@
                                     {{ $rec?->radicado ? $rec->radicado->num_radicado : 'S/R' }}
                                 </div>
                                 <div class="text-xs text-gray-600 dark:text-gray-300 font-semibold mt-1 no-print-hide">
-                                    📋 Interno
+                                    
                                 </div>
                                 @if($rec?->num_radicado_ext)
                                 <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -845,6 +848,102 @@
                 </div>
             </div>
         </div>
+
+        <!-- ================= MIS COMUNICADOS TAB ================= -->
+        <div id="mis-comunicados" class="hidden" role="tabpanel">
+            <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
+                <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-slate-900/50 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <h2 class="font-bold text-gray-800 dark:text-white text-sm uppercase tracking-wider">Correspondencia Enviada recientemente</h2>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="toggleModal('modalNuevaInterna')" class="inline-flex items-center gap-2 px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-medium hover:bg-blue-700 transition-colors shadow-sm">
+                            <span class="material-symbols-outlined text-[16px]">add_circle</span>
+                            Nuevo Interno
+                        </button>
+                        <button type="button" onclick="toggleModal('modalNuevaVentanilla')" class="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-medium hover:bg-emerald-700 transition-colors shadow-sm font-bold">
+                            <span class="material-symbols-outlined text-[16px]">outgoing_mail</span>
+                            Nueva Ventanilla
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="text-xs text-gray-500 uppercase bg-gray-50 dark:bg-slate-900/50 dark:text-gray-400">
+                            <tr>
+                                <th class="px-6 py-3 font-medium">Radicado</th>
+                                <th class="px-6 py-3 font-medium">Asunto y Detalles</th>
+                                <th class="px-6 py-3 font-medium">Fecha</th>
+                                <th class="px-6 py-3 font-medium">Destinatarios y Estado Actual</th>
+                                <th class="px-6 py-3 font-medium text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                            @forelse($enviosInternos ?? [] as $envio)
+                                <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors align-top">
+                                    <td class="px-6 py-4 font-bold text-primary dark:text-blue-400">
+                                        {{ $envio->radicado->num_radicado ?? 'S/R' }}
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <p class="font-medium text-gray-900 dark:text-gray-100 max-w-[250px] truncate" title="{{ $envio->asunto }}">
+                                            {{ $envio->asunto }}
+                                        </p>
+                                        <div class="flex gap-2 mt-1">
+                                            <span class="text-[10px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-tighter bg-blue-50 dark:bg-blue-900/30 px-1 rounded border border-blue-100 dark:border-blue-800">
+                                                {{ $envio->tipoEnvio->tipo_nombre ?? 'Interno' }}
+                                            </span>
+                                            <span class="text-[10px] text-gray-400 uppercase tracking-tighter">Folios: {{ $envio->folio }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="text-xs dark:text-white">{{ $envio->fecha->format('d/m/Y') }}</div>
+                                        <div class="text-[10px] text-gray-500">{{ $envio->fecha->format('h:i A') }}</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex flex-col gap-2">
+                                            @foreach($envio->destinatarios_actuales as $dest)
+                                                <div class="flex items-center gap-2">
+                                                    @php
+                                                        $estN = strtolower($dest->estado?->estado_nomb ?? '');
+                                                        $dotCls = 'bg-gray-300';
+                                                        if(str_contains($estN, 'recibido')) $dotCls = 'bg-blue-500';
+                                                        elseif(str_contains($estN, 'tramite')) $dotCls = 'bg-yellow-500';
+                                                        elseif(str_contains($estN, 'finalizado') || str_contains($estN, 'resuelto')) $dotCls = 'bg-green-500';
+                                                    @endphp
+                                                    <span class="w-1.5 h-1.5 rounded-full {{ $dotCls }}"></span>
+                                                    <span class="text-[11px] font-medium text-gray-700 dark:text-gray-300 truncate" title="{{ $dest->quienRecibe->emple_nombres }} {{ $dest->quienRecibe->emple_apellidos }}">
+                                                        {{ $dest->quienRecibe ? $dest->quienRecibe->emple_nombres . ' ' . $dest->quienRecibe->emple_apellidos : 'Ventanilla' }}
+                                                    </span>
+                                                    <span class="text-[9px] font-bold uppercase text-gray-400">({{ $dest->estado?->estado_nomb ?? 'N/A' }})</span>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        @if($envio->destino !== 'Ventanilla' && $envio->destinatarios_actuales->first())
+                                            <a href="{{ route('empleado.historial_interna', $envio->destinatarios_actuales->first()->id_detalle) }}" 
+                                               class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 p-1"
+                                               title="Ver Trazabilidad">
+                                                <span class="material-symbols-outlined">visibility</span>
+                                            </a>
+                                        @else
+                                            <span class="text-gray-300 dark:text-gray-600 cursor-not-allowed p-1">
+                                                <span class="material-symbols-outlined">visibility_off</span>
+                                            </span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400 italic">
+                                        No has enviado comunicados recientemente.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
 </div>
@@ -1344,6 +1443,7 @@
                                 </div>
                             </div>
                         </div>
+                        <input type="hidden" name="id_tipo_envio" id="id_tipo_envio_int_hidden" required>
                     </div>
                 </div>
 
@@ -1544,6 +1644,42 @@
                     </div>
                 </div>
 
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <!-- Empresa Externa -->
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Empresa / Entidad Externa</label>
+                        <div class="relative">
+                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[18px]">business</span>
+                            <input type="text" name="nom_institucion" placeholder="Nombre de la empresa..." 
+                                   class="w-full border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 dark:text-white py-2.5 pl-10 pr-3 text-sm focus:ring-2 focus:ring-primary/50 transition-all">
+                        </div>
+                    </div>
+
+                    <!-- Persona Externa -->
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Persona Externa (Destinatario)</label>
+                        <div class="relative">
+                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[18px]">person</span>
+                            <input type="text" name="nombre_persona" placeholder="Nombre completo..." 
+                                   class="w-full border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 dark:text-white py-2.5 pl-10 pr-3 text-sm focus:ring-2 focus:ring-primary/50 transition-all">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Correo Electrónico -->
+                <div class="space-y-1">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Correo Electrónico para Notificación</label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[18px]">mail</span>
+                        <input type="email" name="correo_persona" placeholder="correo@ejemplo.com" 
+                               class="w-full border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-slate-900 dark:text-white py-2.5 pl-10 pr-3 text-sm focus:ring-2 focus:ring-primary/50 transition-all">
+                    </div>
+                    <p class="text-[11px] text-gray-500 dark:text-gray-400 italic flex items-center gap-1 mt-1">
+                        <span class="material-symbols-outlined text-[14px]">info</span>
+                        Se enviará una notificación automática a este correo al procesar la salida.
+                    </p>
+                </div>
+
                 <!-- Archivo y Anexos -->
                 <div class="p-4 bg-gray-50 dark:bg-slate-800/30 rounded-xl border border-gray-200 dark:border-gray-700 space-y-4">
                     <!-- Documento Principal -->
@@ -1625,33 +1761,30 @@
     }
 
     function switchTab(tab) {
-        const extBtn = document.getElementById('externa-tab');
-        const intBtn = document.getElementById('interna-tab');
-        const extContent = document.getElementById('externa');
-        const intContent = document.getElementById('interna');
-
+        const tabs = ['externa', 'interna', 'mis-comunicados'];
         const activeClasses = ['border-primary', 'text-primary', 'dark:border-blue-500', 'dark:text-blue-500'];
-        const inactiveClasses = ['border-transparent', 'text-gray-500', 'dark:text-gray-400'];
+        const inactiveClasses = ['border-transparent', 'text-gray-500', 'hover:text-gray-600', 'hover:border-gray-300', 'dark:hover:text-gray-300', 'dark:text-gray-400'];
 
-        if (tab === 'externa') {
-            extContent.classList.remove('hidden');
-            intContent.classList.add('hidden');
+        tabs.forEach(t => {
+            const content = document.getElementById(t);
+            const btn = document.getElementById(`${t}-tab`);
             
-            extBtn.classList.add(...activeClasses);
-            extBtn.classList.remove(...inactiveClasses);
-            
-            intBtn.classList.add(...inactiveClasses);
-            intBtn.classList.remove(...activeClasses);
-        } else {
-            intContent.classList.remove('hidden');
-            extContent.classList.add('hidden');
-            
-            intBtn.classList.add(...activeClasses);
-            intBtn.classList.remove(...inactiveClasses);
-            
-            extBtn.classList.add(...inactiveClasses);
-            extBtn.classList.remove(...activeClasses);
-        }
+            if (content) {
+                if (t === tab) {
+                    content.classList.remove('hidden');
+                    if (btn) {
+                        btn.classList.add(...activeClasses);
+                        btn.classList.remove(...inactiveClasses);
+                    }
+                } else {
+                    content.classList.add('hidden');
+                    if (btn) {
+                        btn.classList.add(...inactiveClasses);
+                        btn.classList.remove(...activeClasses);
+                    }
+                }
+            }
+        });
 
         // Persistir pestaña activa
         sessionStorage.setItem('activeCorrespondenceTab', tab);
@@ -1666,10 +1799,14 @@
 
         if (tabFromUrl === 'interna' || urlParams.has('int_page')) {
             switchTab('interna');
+        } else if (tabFromUrl === 'mis-comunicados') {
+            switchTab('mis-comunicados');
         } else if (tabFromUrl === 'externa' || urlParams.has('ext_page')) {
             switchTab('externa');
         } else if (savedTab) {
             switchTab(savedTab);
+        } else {
+            switchTab('externa'); // Default
         }
 
         // Restaurar posición de scroll si existe

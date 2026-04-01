@@ -350,4 +350,33 @@ class UsuarioController extends Controller
             'rem_estado' => 'estado'
         ];
     }
+
+
+    public function historial($doc)
+    {
+        $usuario = \App\Models\Empleado::where('emple_doc', $doc)->firstOrFail();
+        
+        $recibidos = \App\Models\Recibido::with(['estado','tipo','radicado','destinatarios'])
+            ->whereHas('detalles', function($q) use ($doc) {
+                $q->where('det_doc_empleado', $doc);
+            })->get()->map(function($r) {
+                $r->tipo_corresp = 'Externa';
+                $r->fecha_relevante = $r->fecha_hora_recib;
+                return $r;
+            });
+
+        $envios = \App\Models\Envio::with(['estadoEnvio','tipoEnvio','radicado'])
+            ->whereHas('detalles', function($q) use ($doc) {
+                $q->where('id_quien_recibe', $doc)->orWhere('id_quien_envie', $doc);
+            })->get()->map(function($e) {
+                $e->tipo_corresp = 'Interna/Saliente';
+                $e->fecha_relevante = $e->fecha;
+                return $e;
+            });
+
+        $correspondencia = $recibidos->concat($envios)->sortByDesc('fecha_relevante');
+
+        return view('admin.historial_usuario', compact('usuario', 'correspondencia'));
+    }
+
 }

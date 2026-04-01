@@ -80,10 +80,10 @@
                 </p>
             </div>
             <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto mt-4 lg:mt-0">
-                <button id="btnOpenCrearRemitente" onclick="openModal('remitenteModal')"
+                <button id="btnOpenCrearVentanilla" onclick="openModal('remitenteModal')"
                     class="flex items-center justify-center gap-2 px-5 py-2.5 bg-white dark:bg-[#161d2b] text-[#0d121b] dark:text-white border border-[#cfd7e7] dark:border-gray-800 rounded-lg font-bold text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all active:scale-95 w-full sm:w-auto shadow-sm">
-                    <span class="material-symbols-outlined text-lg text-emerald-500">person_add</span>
-                    Crear Remitente
+                    <span class="material-symbols-outlined text-lg text-emerald-500">desk</span>
+                    Crear Ventanilla
                 </button>
                 <button id="btnOpenCrearEmpleado" onclick="openModal('empleadoModal')"
                     class="flex items-center justify-center gap-2 px-5 py-2.5 bg-primary text-white rounded-lg font-bold text-sm shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95 w-full sm:w-auto">
@@ -228,6 +228,9 @@
                                         data-avatar="{{ $empleado->emple_img ? asset('storage/' . $empleado->emple_img) : '' }}">
                                         <span class="material-symbols-outlined text-xl">visibility</span>
                                     </button>
+                                    <a href="{{ route('admin.usuarios.historial', $empleado->emple_doc) }}" class="p-2 text-[#4c669a] hover:text-primary transition-colors" title="Ver Historial de Correspondencia">
+                                        <span class="material-symbols-outlined text-xl">history</span>
+                                    </a>
                                     <button class="p-2 text-[#4c669a] hover:text-primary transition-colors btn-open-edit-empleado"
                                         title="Editar Empleado"
                                         data-id="{{ $empleado->emple_doc }}"
@@ -275,12 +278,12 @@
             <!-- Table Header / Search -->
             <div class="px-6 py-4 border-b border-[#cfd7e7] dark:border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50/50 dark:bg-background-dark/20">
                 <div>
-                    <h2 class="text-lg font-bold text-[#0d121b] dark:text-white">Remitentes (Externos)</h2>
-                    <p class="text-xs text-[#4c669a] dark:text-gray-400">Usuarios registrados para envío de correspondencia.</p>
+                    <h2 class="text-lg font-bold text-[#0d121b] dark:text-white">Ventanilla (Usuarios Externos / Público)</h2>
+                    <p class="text-xs text-[#4c669a] dark:text-gray-400">Usuarios registrados para envío de correspondencia desde Ventanilla.</p>
                 </div>
                 <div class="relative w-full md:w-72">
                     <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#4c669a] text-lg">search</span>
-                    <input type="text" id="searchRemitente" placeholder="Buscar por documento..." 
+                    <input type="text" id="searchVentanilla" placeholder="Buscar por documento..." 
                         class="pl-10 pr-4 py-2 bg-white dark:bg-[#0d121b] border border-[#cfd7e7] dark:border-gray-800 rounded-lg text-sm focus:outline-none focus:border-primary transition-all w-full shadow-sm">
                 </div>
             </div>
@@ -297,7 +300,7 @@
                             <th class="px-6 py-4 text-xs font-bold text-[#4c669a] uppercase tracking-wider text-right">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody id="tableRemitentes" class="divide-y divide-[#cfd7e7] dark:divide-gray-800">
+                    <tbody id="tableVentanillas" class="divide-y divide-[#cfd7e7] dark:divide-gray-800">
                         @forelse($remitentes as $rem)
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors" data-doc="{{ $rem->rem_doc }}">
                             <td class="px-6 py-4" data-label="Nombre Completo">
@@ -338,7 +341,7 @@
                             <td class="px-6 py-4 text-right actions-cell" data-label="Acciones">
                                 <div class="flex items-center justify-end gap-2">
                                     <button class="p-2 text-[#4c669a] hover:text-primary transition-colors btn-view-details" title="Ver Detalles"
-                                        data-type="remitente"
+                                        data-type="ventanilla"
                                         data-doc="{{ $rem->rem_doc }}"
                                         data-nombres="{{ $rem->rem_nombres }} {{ $rem->rem_apellidos }}"
                                         data-correo="{{ $rem->rem_correo }}"
@@ -352,7 +355,7 @@
                                         <span class="material-symbols-outlined text-xl">visibility</span>
                                     </button>
                                     <button class="p-2 text-[#4c669a] hover:text-primary transition-colors btn-open-edit-remitente"
-                                        title="Editar Remitente"
+                                        title="Editar Usuario"
                                         data-id="{{ $rem->rem_doc }}"
                                         data-documento="{{ $rem->rem_doc }}"
                                         data-nombres="{{ $rem->rem_nombres }}"
@@ -370,7 +373,7 @@
                         @empty
                         <tr>
                             <td colspan="7" class="px-6 py-8 text-center text-sm text-[#4c669a]">
-                                No hay remitentes registrados.
+                                No hay usuarios de ventanilla registrados.
                             </td>
                         </tr>
                         @endforelse
@@ -381,7 +384,7 @@
             <!-- PAGINATION REMITENTES -->
             <div class="px-6 py-4 bg-slate-50 dark:bg-background-dark/30 border-t border-[#cfd7e7] dark:border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <span class="text-xs font-medium text-[#4c669a]">
-                    Total: {{ count($remitentes) }} remitentes
+                    Total: {{ count($remitentes) }} usuarios de ventanilla
                 </span>
                 <div class="flex gap-1">
                     <button class="w-8 h-8 flex items-center justify-center rounded-lg border border-[#cfd7e7] dark:border-gray-700 hover:bg-white dark:hover:bg-gray-800 transition-all disabled:opacity-50" disabled>
@@ -402,9 +405,9 @@
             const tableEmpleados = document.getElementById('tableEmpleados');
             const rowsEmpleados = tableEmpleados.querySelectorAll('tr[data-doc]');
 
-            const searchRemitente = document.getElementById('searchRemitente');
-            const tableRemitentes = document.getElementById('tableRemitentes');
-            const rowsRemitentes = tableRemitentes.querySelectorAll('tr[data-doc]');
+            const searchVentanilla = document.getElementById('searchVentanilla');
+            const tableVentanillas = document.getElementById('tableVentanillas');
+            const rowsVentanillas = tableVentanillas.querySelectorAll('tr[data-doc]');
 
             function filterTable(input, rows) {
                 const term = input.value.toLowerCase();
@@ -422,8 +425,8 @@
                 searchEmpleado.addEventListener('input', () => filterTable(searchEmpleado, rowsEmpleados));
             }
 
-            if (searchRemitente) {
-                searchRemitente.addEventListener('input', () => filterTable(searchRemitente, rowsRemitentes));
+            if (searchVentanilla) {
+                searchVentanilla.addEventListener('input', () => filterTable(searchVentanilla, rowsVentanillas));
             }
         });
     </script>
@@ -635,7 +638,7 @@
         <div class="px-6 pt-6">
             <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-4 mb-4">
                 <div>
-                    <h2 class="text-xl font-semibold text-[#0d121b] dark:text-white">Registrar Nuevo Remitente</h2>
+                    <h2 class="text-xl font-semibold text-[#0d121b] dark:text-white">Registrar Nueva Ventanilla</h2>
                     <p class="text-sm text-[#4c669a] dark:text-gray-400">Complete los datos, los campos con (*) son obligatorios.</p>
                 </div>
                 <button class="btn-close text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white">
@@ -719,7 +722,7 @@
             <!-- BOTONES -->
             <div class="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-800">
                 <button type="button" class="btn-close px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800">Cancelar</button>
-                <button id="btnGuardarRemitente" type="submit" class="px-6 py-2 rounded-lg bg-primary hover:bg-primary/90 text-white flex items-center gap-2 transition-colors">
+                <button id="btnGuardarVentanilla" type="submit" class="px-6 py-2 rounded-lg bg-primary hover:bg-primary/90 text-white flex items-center gap-2 transition-colors">
                     <span class="material-symbols-outlined">save</span>
                     Guardar
                 </button>
@@ -734,7 +737,7 @@
         <div class="px-6 pt-6">
             <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-4 mb-4">
                 <div>
-                    <h2 class="text-xl font-semibold text-[#0d121b] dark:text-white">Editar Remitente</h2>
+                    <h2 class="text-xl font-semibold text-[#0d121b] dark:text-white">Editar Ventanilla</h2>
                     <p class="text-sm text-[#4c669a] dark:text-gray-400">Modifique los datos, los campos con (*) son obligatorios.</p>
                 </div>
                 <button class="btn-close text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white">
@@ -743,7 +746,7 @@
             </div>
         </div>
 
-        <form method="POST" id="formEditRemitente" enctype="multipart/form-data" class="flex-1 overflow-y-auto px-6 pb-6 space-y-6">
+        <form method="POST" id="formEditVentanilla" enctype="multipart/form-data" class="flex-1 overflow-y-auto px-6 pb-6 space-y-6">
             @csrf
             @method('PUT')
             <input type="hidden" name="modal_type_remitente" value="edit">
@@ -822,7 +825,7 @@
             <!-- BOTONES -->
             <div class="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-800">
                 <button type="button" class="btn-close px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800">Cancelar</button>
-                <button id="btnGuardarEditRemitente" type="submit" class="px-6 py-2 rounded-lg bg-primary text-white flex items-center gap-2 hover:bg-primary/90 transition-colors">
+                <button id="btnGuardarEditVentanilla" type="submit" class="px-6 py-2 rounded-lg bg-primary text-white flex items-center gap-2 hover:bg-primary/90 transition-colors">
                     <span class="material-symbols-outlined">save</span>
                     Guardar Cambios
                 </button>
@@ -899,9 +902,9 @@
         const modalEmpleado = document.getElementById('empleadoModal');
         const modalEmpleadoEdit = document.getElementById('empleadoModalEdit');
 
-        const btnOpenRemitente = document.getElementById('btnOpenCrearRemitente');
-        const modalRemitente = document.getElementById('remitenteModal');
-        const modalRemitenteEdit = document.getElementById('remitenteModalEdit');
+        const btnOpenVentanilla = document.getElementById('btnOpenCrearVentanilla');
+        const modalVentanilla = document.getElementById('remitenteModal');
+        const modalVentanillaEdit = document.getElementById('remitenteModalEdit');
 
         const modalDetalles = document.getElementById('detallesModal');
 
@@ -924,12 +927,12 @@
             $('#ciudad_remitente').on('change', function() {
                 camposTocados['ciudad_remitente'] = true;
                 if(typeof validarCampoIndividual === 'function') {
-                    validarCampoIndividual('ciudad_remitente', reglasCrearRemitente);
+                    validarCampoIndividual('ciudad_remitente', reglasCrearVentanilla);
                 }
             });
             $('#edit_ciudad_remitente').on('change', function() {
                 if(typeof validarCampoEditar === 'function') {
-                    validarCampoEditar('edit_ciudad_remitente', reglasEditarRemitente);
+                    validarCampoEditar('edit_ciudad_remitente', reglasEditarVentanilla);
                 }
             });
         } catch (error) {
@@ -942,8 +945,8 @@
         if (btnOpenEmpleado) {
             btnOpenEmpleado.addEventListener('click', () => openModal('empleadoModal'));
         }
-        if (btnOpenRemitente) {
-            btnOpenRemitente.addEventListener('click', () => openModal('remitenteModal'));
+        if (btnOpenVentanilla) {
+            btnOpenVentanilla.addEventListener('click', () => openModal('remitenteModal'));
         }
 
         // Toggle eye button for passwords
@@ -980,10 +983,10 @@
         });
 
         const btnGuardarEditEmpleado = document.getElementById('btnGuardarEditEmpleado');
-        const btnGuardarEditRemitente = document.getElementById('btnGuardarEditRemitente');
+        const btnGuardarEditVentanilla = document.getElementById('btnGuardarEditVentanilla');
 
         let originalEditEmpleadoData = {};
-        let originalEditRemitenteData = {};
+        let originalEditVentanillaData = {};
 
         /* ===========================
            MODAL EDITAR EMPLEADO
@@ -1044,7 +1047,7 @@
                     estado: btn.dataset.estado || ''
                 };
 
-                originalEditRemitenteData = { ...data };
+                originalEditVentanillaData = { ...data };
 
                 document.getElementById('edit_doc_remitente').value = data.documento;
                 document.getElementById('edit_nom_remitente').value = data.nombres;
@@ -1060,23 +1063,23 @@
                 }
                 
                 // Forzar trigger de cambio de estado para visualización si es necesario
-                const editEstadoRemitente = document.getElementById('edit_estado_remitente');
-                if(editEstadoRemitente) {
-                    editEstadoRemitente.value = data.estado;
+                const editEstadoVentanilla = document.getElementById('edit_estado_remitente');
+                if(editEstadoVentanilla) {
+                    editEstadoVentanilla.value = data.estado;
                 }
 
-                document.getElementById('formEditRemitente').action = "{{ url('admin/usuarios/remitente') }}/" + data.documento;
+                document.getElementById('formEditVentanilla').action = "{{ url('admin/usuarios/remitente') }}/" + data.documento;
 
-                if(btnGuardarEditRemitente) {
-                    btnGuardarEditRemitente.disabled = false;
-                    btnGuardarEditRemitente.classList.remove('opacity-50', 'cursor-not-allowed');
+                if(btnGuardarEditVentanilla) {
+                    btnGuardarEditVentanilla.disabled = false;
+                    btnGuardarEditVentanilla.classList.remove('opacity-50', 'cursor-not-allowed');
                 }
 
                 // Reset validations
-                Object.keys(reglasEditarRemitente).forEach(id => {
+                Object.keys(reglasEditarVentanilla).forEach(id => {
                     const el = document.getElementById(id);
                     if(el) el.classList.remove('border-red-500', 'border-blue-500');
-                    const err = document.getElementById(reglasEditarRemitente[id].error);
+                    const err = document.getElementById(reglasEditarVentanilla[id].error);
                     if(err) err.classList.add('hidden');
                 });
 
@@ -1122,7 +1125,7 @@
                     document.getElementById('detallesExtra2Value').textContent = btn.dataset.rol || '-';
                     extra2Container.style.display = 'block';
                 } else if (type === 'remitente') {
-                    document.getElementById('detallesTitle').textContent = "Detalles del Remitente";
+                    document.getElementById('detallesTitle').textContent = "Detalles del Ventanilla";
                     document.getElementById('detallesExtra1Label').textContent = "Ciudad";
                     document.getElementById('detallesExtra1Value').textContent = btn.dataset.ciudad || '-';
                     extra1Container.style.display = 'block';
@@ -1441,7 +1444,7 @@
         /* ===========================
            REGLAS REMITENTE CREAR
         ===========================*/
-        const reglasCrearRemitente = {
+        const reglasCrearVentanilla = {
             doc_remitente: { required: true, min: 6, max: 10, regex: /^[0-9]+$/, custom: val => { if(!/^\d+$/.test(val)) return false; if(/^(\d)\1+$/.test(val)) return false; return parseInt(val) <= 2147483647; }, error: 'error-doc-rem', mensajes: { required: 'El documento es obligatorio.', min: 'Mínimo 6 dígitos.', max: 'Máximo 10 dígitos.', regex: 'Solo números.', custom: 'Documento no válido o valor muy alto (máx: 2.147.483.647).' } },
             ciudad_remitente: { required: true, error: 'error-ciu-rem', mensajes: { required: 'La ciudad es obligatoria.' } },
             nom_remitente: { required: true, min: 3, max: 50, regex: /^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3,}( [A-Za-zÁÉÍÓÚáéíóúÑñ]{3,})?$/, custom: val => val.trim().split(/\s+/).length <= 2, error: 'error-nom-rem', mensajes: { required: 'El nombre es obligatorio.', min: 'Mínimo 3 letras.', max: 'No puede superar 50 caracteres.', regex: 'Solo letras, sin espacios.', custom: 'Máximo 2 palabras.' } },
@@ -1451,12 +1454,12 @@
             pass_remitente: { required: true, min: 10, max: 64, isPassword: true, error: 'error-pass-rem', mensajes: { required: 'La contraseña es obligatoria.', min: 'Debe tener mínimo 10 caracteres.', max: 'No puede superar 64 caracteres.', regex: 'Debe incluir: 1 mayúscula, 1 minúscula, 1 número, 1 carácter especial y sin espacios.' } }
         };
 
-        initRealTimeValidation(reglasCrearRemitente);
+        initRealTimeValidation(reglasCrearVentanilla);
 
-        const formCrearRemitente = document.getElementById('remitenteForm');
-        if(formCrearRemitente) {
-            formCrearRemitente.addEventListener('submit', function(e) {
-                if (!validarFormulario(reglasCrearRemitente)) {
+        const formCrearVentanilla = document.getElementById('remitenteForm');
+        if(formCrearVentanilla) {
+            formCrearVentanilla.addEventListener('submit', function(e) {
+                if (!validarFormulario(reglasCrearVentanilla)) {
                     e.preventDefault();
                     Swal.fire({ icon: 'warning', title: 'Campos Incompletos', text: 'Por favor, revise los campos marcados en rojo.', confirmButtonText: 'OK' });
                     return;
@@ -1467,7 +1470,7 @@
         /* ===========================
            REGLAS REMITENTE EDITAR
         ============================*/
-        const reglasEditarRemitente = {
+        const reglasEditarVentanilla = {
             edit_ciudad_remitente: { required: true, error: 'edit-error-ciu-rem', mensajes: { required: 'La ciudad es obligatoria.' } },
             edit_nom_remitente: { required: true, min: 3, max: 50, regex: /^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3,}( [A-Za-zÁÉÍÓÚáéíóúÑñ]{3,})?$/, custom: val => val.trim().split(/\s+/).length <= 2, error: 'edit-error-nom-rem', mensajes: { required: 'El nombre es obligatorio.', min: 'Mínimo 3 letras.', max: 'No puede superar 50 caracteres.', regex: 'Solo letras, sin espacios.', custom: 'Máximo 2 palabras.' } },
             edit_ape_remitente: { required: true, min: 3, max: 50, regex: /^[A-Za-zÁÉÍÓÚáéíóúÑñ]{3,}( [A-Za-zÁÉÍÓÚáéíóúÑñ]{3,})?$/, custom: val => val.trim().split(/\s+/).length <= 2, error: 'edit-error-ape-rem', mensajes: { required: 'Los apellidos son obligatorios.', min: 'Mínimo 3 letras.', max: 'No puede superar 50 caracteres.', regex: 'Solo letras, sin espacios.', custom: 'Máximo 2 palabras.' } },
@@ -1475,30 +1478,30 @@
             edit_cor_remitente: { required: true, min: 8, max: 150, regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, error: 'edit-error-cor-rem', mensajes: { required: 'El correo es obligatorio.', min: 'Mínimo 8 caracteres.', max: 'Máximo 150 caracteres.', regex: 'Formato inválido.' } }
         };
 
-        initRealTimeValidationEditar(reglasEditarRemitente);
+        initRealTimeValidationEditar(reglasEditarVentanilla);
 
         let ultimoEnvioEditRem = 0;
-        const formEditRemitente = document.getElementById('formEditRemitente');
-        if(formEditRemitente) {
-            formEditRemitente.addEventListener('submit', function(e) {
+        const formEditVentanilla = document.getElementById('formEditVentanilla');
+        if(formEditVentanilla) {
+            formEditVentanilla.addEventListener('submit', function(e) {
                 const ahora = Date.now();
                 if (ahora - ultimoEnvioEditRem < 2000) { e.preventDefault(); return; }
                 ultimoEnvioEditRem = ahora;
 
-                if (!validarEditarForm(reglasEditarRemitente)) {
+                if (!validarEditarForm(reglasEditarVentanilla)) {
                     e.preventDefault();
                     Swal.fire({ icon: 'warning', title: 'Errores de Validación', text: 'Por favor, verifica los campos resaltados', timer: 2000, confirmButtonText: 'OK' });
                     return;
                 }
 
                 const huboCambios = (
-                    originalEditRemitenteData.documento !== document.getElementById('edit_doc_remitente').value.trim() ||
-                    originalEditRemitenteData.nombres !== document.getElementById('edit_nom_remitente').value.trim() ||
-                    originalEditRemitenteData.apellidos !== document.getElementById('edit_ape_remitente').value.trim() ||
-                    originalEditRemitenteData.telefono !== document.getElementById('edit_tel_remitente').value.trim() ||
-                    originalEditRemitenteData.correo !== document.getElementById('edit_cor_remitente').value.trim() ||
-                    originalEditRemitenteData.ciudad !== document.getElementById('edit_ciudad_remitente').value ||
-                    originalEditRemitenteData.estado !== document.getElementById('edit_estado_remitente').value
+                    originalEditVentanillaData.documento !== document.getElementById('edit_doc_remitente').value.trim() ||
+                    originalEditVentanillaData.nombres !== document.getElementById('edit_nom_remitente').value.trim() ||
+                    originalEditVentanillaData.apellidos !== document.getElementById('edit_ape_remitente').value.trim() ||
+                    originalEditVentanillaData.telefono !== document.getElementById('edit_tel_remitente').value.trim() ||
+                    originalEditVentanillaData.correo !== document.getElementById('edit_cor_remitente').value.trim() ||
+                    originalEditVentanillaData.ciudad !== document.getElementById('edit_ciudad_remitente').value ||
+                    originalEditVentanillaData.estado !== document.getElementById('edit_estado_remitente').value
                 );
 
                 if (!huboCambios) {
@@ -1517,7 +1520,7 @@
     document.addEventListener("DOMContentLoaded", function() {
 
         const modalTypeEmpleado = "{{ old('modal_type_empleado') }}";
-        const modalTypeRemitente = "{{ old('modal_type_remitente') }}";
+        const modalTypeVentanilla = "{{ old('modal_type_remitente') }}";
 
         if (modalTypeEmpleado === 'edit') {
             openModal('empleadoModalEdit');
@@ -1536,16 +1539,16 @@
                 if (valorOld !== '') input.value = valorOld;
             });
         } 
-        else if (modalTypeRemitente === 'edit') {
+        else if (modalTypeVentanilla === 'edit') {
             openModal('remitenteModalEdit');
-            const modalEditarRemitente = document.getElementById('remitenteModalEdit');
+            const modalEditarVentanilla = document.getElementById('remitenteModalEdit');
 
             const documento = "{{ old('rem_doc') }}";
             if (documento) {
-                document.getElementById('formEditRemitente').action = "{{ url('admin/usuarios/remitente') }}/" + documento;
+                document.getElementById('formEditVentanilla').action = "{{ url('admin/usuarios/remitente') }}/" + documento;
             }
 
-            modalEditarRemitente.querySelectorAll('input, select, textarea').forEach(input => {
+            modalEditarVentanilla.querySelectorAll('input, select, textarea').forEach(input => {
                 const name = input.name;
                 if (!name) return;
                 const valorOld = "{{ old('" + name + "') }}";
@@ -1572,9 +1575,9 @@
 
             if ("{{ old('rem_doc') }}" || "{{ old('rem_nombres') }}") {
                 openModal('remitenteModal');
-                const modalCrearRemitente = document.getElementById('remitenteModal');
+                const modalCrearVentanilla = document.getElementById('remitenteModal');
 
-                modalCrearRemitente.querySelectorAll('input, select, textarea').forEach(input => {
+                modalCrearVentanilla.querySelectorAll('input, select, textarea').forEach(input => {
                     const name = input.name;
                     if (!name) return;
                     const valorOld = "{{ old('" + name + "') }}";
