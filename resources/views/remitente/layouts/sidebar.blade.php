@@ -69,10 +69,17 @@
 
             {{-- Dashboard --}}
             <a href="{{ route('remitente.index') }}"
-                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('remitente.index') || request()->is('remitente') ? 'bg-primary/10 text-primary font-bold dark:bg-primary/20' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800' }}">
+                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('remitente.index') || (request()->is('remitente') && !request()->is('remitente/historial*')) ? 'bg-primary/10 text-primary font-bold dark:bg-primary/20' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800' }}">
                 <span
-                    class="material-symbols-outlined text-[20px] {{ request()->routeIs('remitente.index') || request()->is('remitente') ? 'fill' : '' }}">space_dashboard</span>
+                    class="material-symbols-outlined text-[20px] {{ request()->routeIs('remitente.index') ? 'fill' : '' }}">space_dashboard</span>
                 <p class="text-sm leading-normal">Dashboard</p>
+            </a>
+
+            <a href="{{ route('remitente.historial') }}"
+                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 {{ request()->routeIs('remitente.historial') ? 'bg-primary/10 text-primary font-bold dark:bg-primary/20' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800' }}">
+                <span
+                    class="material-symbols-outlined text-[20px] {{ request()->routeIs('remitente.historial') ? 'fill' : '' }}">history</span>
+                <p class="text-sm leading-normal">Historial General</p>
             </a>
         </div>
 

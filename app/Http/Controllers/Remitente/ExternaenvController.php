@@ -11,6 +11,7 @@ use App\Models\Empleado;
 use App\Models\Radicado;
 use App\Models\Remitente;
 use App\Models\Area;
+use App\Models\AnexoEnvio;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -24,6 +25,7 @@ class ExternaenvController extends Controller
 
         $search = $request->input('search');
         $estadoId = $request->input('estado_id');
+        $tab = $request->input('tab', 'interna');
 
         // Traemos los envíos con sus relaciones cargadas.
         $query = Envio::with([
@@ -33,8 +35,24 @@ class ExternaenvController extends Controller
             'anexos'
         ])
         ->where('nit_empresa', $nitEmpresa)
-        ->where('id_estado_envio', '!=', 0) // Exclude 'En espera' from external view until registered
-        ->orderByRaw('DATE(fecha) DESC')
+        ->where('id_estado_envio', '!=', 0); // Exclude 'En espera' from external view until registered
+
+        // Filtrar por pestaña según el prefijo del radicado
+        if ($tab === 'interna') {
+            $query->whereHas('radicado', function($q) {
+                $q->where('num_radicado', 'like', 'INT-%');
+            });
+        } elseif ($tab === 'saliente') {
+            $query->whereHas('radicado', function($q) {
+                $q->where('num_radicado', 'like', 'SAL-%');
+            });
+        } else {
+            $query->whereHas('radicado', function($q) {
+                $q->where('num_radicado', 'like', 'EXT-%');
+            });
+        }
+
+        $query->orderByRaw('DATE(fecha) DESC')
         ->orderBy(\App\Models\Tipo::select('id_prioridad')
             ->whereColumn('tipo.id_tipo', 'envio.id_tipo_envio')
             ->limit(1), 'asc')
@@ -54,7 +72,26 @@ class ExternaenvController extends Controller
             $query->where('id_estado_envio', $estadoId);
         }
 
-        $envios = $query->paginate(10)->appends(['search' => $search, 'estado_id' => $estadoId]);
+        // T10: Filtro adicional por fecha
+        if ($request->fecha) {
+            $query->whereDate('envio.fecha', $request->fecha);
+        }
+
+        // T11: Filtro por prioridad (buscando a través de la tabla tipo)
+        if ($request->prioridad_id) {
+            $query->whereHas('tipoEnvio', function($q) use ($request) {
+                $q->where('id_prioridad', $request->prioridad_id);
+            });
+        }
+
+        // Re-ordering logic ensuring priority
+        $query->orderByRaw('DATE(fecha) DESC')
+            ->orderBy(\App\Models\Tipo::select('id_prioridad')
+                ->whereColumn('tipo.id_tipo', 'envio.id_tipo_envio')
+                ->limit(1), 'asc')
+            ->orderBy('fecha', 'desc');
+
+        $envios = $query->paginate(10)->appends($request->query());
 
         $stats = [
             'total' => Envio::where('nit_empresa', $nitEmpresa)->count(),
@@ -73,8 +110,9 @@ class ExternaenvController extends Controller
         $estados = Estado::all();
         $ciudades = Ciudad::orderBy('ciudad_nom')->get();
         $areas = Area::orderBy('area_nom')->get();
+        $prioridades = \App\Models\Prioridad::all();
 
-        return view('remitente.externaenv', compact('envios', 'tipos', 'estados', 'ciudades', 'areas', 'search', 'estadoId', 'stats'));
+        return view('remitente.externaenv', compact('envios', 'tipos', 'estados', 'ciudades', 'areas', 'search', 'estadoId', 'stats', 'tab', 'prioridades'));
     }
 
     public function store(Request $request)
@@ -83,42 +121,74 @@ class ExternaenvController extends Controller
         $nitEmpresa = $remitente ? $remitente->nit_empresa : null;
         $docQuienRegistra = $remitente ? $remitente->rem_doc : null;
 
-        $validated = $request->validate([
-            'destino'            => 'required|string|max:200',
-            'asunto'             => 'required|string|max:100',
-            'id_tipo_envio'      => 'required|integer|exists:tipo,id_tipo',
-            'doc_quien_envia'    => 'required|string|max:20|exists:empleado,emple_doc',
+        $request->validate([
+            'destino'            => 'required|string|max:255',
+            'asunto'             => 'required|string|max:500',
+            'id_tipo_envio'      => 'required|exists:tipo,id_tipo',
+            'doc_quien_envia'    => 'nullable|string|max:20',
             'folio'              => 'required|integer|min:1|max:999',
-            'archivo'            => 'nullable|file|mimes:pdf|max:5120',
+            'archivo'            => 'nullable|file|mimes:pdf,doc,docx,jpg,png|max:20480',
+            'anexos'             => 'nullable|array|max:10',
+            'anexos.*'           => 'file|mimes:pdf,doc,docx,jpg,png|max:20480',
         ], [
             'destino.required'         => 'El destino es obligatorio.',
             'asunto.required'          => 'El asunto es obligatorio.',
             'id_tipo_envio.required'   => 'Debe seleccionar un tipo de documento.',
             'id_tipo_envio.exists'     => 'El tipo de documento seleccionado no es válido.',
-            'doc_quien_envia.required' => 'Debe seleccionar la persona que envía.',
-            'doc_quien_envia.exists'   => 'El empleado seleccionado no es válido.',
             'folio.required'           => 'El número de folios es obligatorio.',
             'folio.min'                => 'El número de folios debe ser al menos 1.',
-            'archivo.mimes'            => 'El archivo debe ser en formato PDF.',
-            'archivo.max'              => 'El archivo no debe superar los 5MB.',
+            'archivo.mimes'            => 'El archivo debe ser en formato PDF, Word o Imagen.',
+            'archivo.max'              => 'El archivo no debe superar los 20MB.',
+            'anexos.*.max'             => 'Cada anexo no debe superar los 20MB.',
         ]);
+
+        // Validación de tamaño total acumulado (principal + todos los anexos) = máximo 20MB
+        $totalBytes = 0;
+        if ($request->hasFile('archivo')) {
+            $totalBytes += $request->file('archivo')->getSize();
+        }
+        if ($request->hasFile('anexos')) {
+            foreach ($request->file('anexos') as $anexoFile) {
+                $totalBytes += $anexoFile->getSize();
+            }
+        }
+        if ($totalBytes > 20 * 1024 * 1024) {
+            return redirect()->back()->withInput()->withErrors([
+                'archivo' => 'El tamaño total de todos los archivos adjuntos no debe superar los 20MB. Tamaño actual: ' . round($totalBytes / 1024 / 1024, 2) . 'MB.',
+            ]);
+        }
+
+        // Validación de tamaño total acumulado (archivo + anexos) = máximo 20MB
+        $totalBytes = 0;
+        if ($request->hasFile('archivo')) {
+            $totalBytes += $request->file('archivo')->getSize();
+        }
+        if ($request->hasFile('anexos')) {
+            foreach ($request->file('anexos') as $anexoFile) {
+                $totalBytes += $anexoFile->getSize();
+            }
+        }
+        $maxBytes = 20 * 1024 * 1024; // 20MB
+        if ($totalBytes > $maxBytes) {
+            return redirect()->back()->withInput()->withErrors([
+                'archivo' => 'El tamaño total de archivos adjuntos no debe superar los 20MB. Tamaño actual: ' . round($totalBytes / 1024 / 1024, 2) . 'MB.',
+            ]);
+        }
+
+        // Responsable: siempre el remitente autenticado (auto-asignación)
+        $docQuienEnvioAuto = $docQuienRegistra;
 
         $rutaArchivo = null;
         if ($request->hasFile('archivo')) {
             $rutaArchivo = $request->file('archivo')->store('correspondencia/enviados', 'public');
         }
 
-        // T8a: Validar que no se envíe a sí mismo
-        if ($validated['doc_quien_envia'] == $docQuienRegistra) {
-            return redirect()->back()->withInput()->withErrors(['doc_quien_envia' => 'No puede enviarse correspondencia a usted mismo.']);
-        }
-
         DB::beginTransaction();
         try {
-            // Generación de Radicado — prefijo EXT para correspondencia externa
+            // Generación de Radicado — prefijo SAL para correspondencia saliente
             $currentYear = date('Y');
             $latestRadicado = Radicado::where('nit_empresa', $nitEmpresa)
-                ->where('num_radicado', 'like', 'EXT-' . $currentYear . '-%')
+                ->where('num_radicado', 'like', 'SAL-' . $currentYear . '-%')
                 ->orderBy('num_radicado', 'desc')
                 ->lockForUpdate()
                 ->first();
@@ -126,26 +196,38 @@ class ExternaenvController extends Controller
             $newNumber = $latestRadicado ? intval(substr($latestRadicado->num_radicado, -5)) + 1 : 1;
             
             $radicado = Radicado::create([
-                'num_radicado' => 'EXT-' . $currentYear . '-' . str_pad($newNumber, 5, '0', STR_PAD_LEFT),
+                'num_radicado' => 'SAL-' . $currentYear . '-' . str_pad($newNumber, 5, '0', STR_PAD_LEFT),
                 'nit_empresa'  => $nitEmpresa,
             ]);
 
-            Envio::create([
+            $envio = Envio::create([
                 'num_radicado_int'   => $radicado->id_radicado,
-                'asunto'             => $validated['asunto'],
-                'destino'            => $validated['destino'],
-                'doc_quien_envia'    => $validated['doc_quien_envia'],
+                'asunto'             => $request->asunto,
+                'destino'            => $request->destino,
+                'doc_quien_envia'    => $request->doc_quien_envia ?? $docQuienEnvioAuto,
                 'fecha'              => now(),
-                'folio'              => $validated['folio'],
-                'id_tipo_envio'      => $validated['id_tipo_envio'],
-                'id_estado_envio'    => 12, // 'Enviado' (según la tabla estado en SQL es 12)
+                'folio'              => $request->folio,
+                'id_tipo_envio'      => $request->id_tipo_envio,
+                'id_estado_envio'    => 12, // 'Enviado' 
                 'archivo'            => $rutaArchivo,
                 'nit_empresa'        => $nitEmpresa,
                 'doc_quien_registra' => $docQuienRegistra,
             ]);
 
+            // Guardar anexos si existen
+            if ($request->hasFile('anexos')) {
+                foreach ($request->file('anexos') as $file) {
+                    $path = $file->store('correspondencia/anexos', 'public');
+                    AnexoEnvio::create([
+                        'id_envio' => $envio->id_envio,
+                        'ruta_archivo' => $path,
+                        'nombre_original' => $file->getClientOriginalName(),
+                    ]);
+                }
+            }
+
             DB::commit();
-            return redirect()->back()->with('success', 'Correspondencia enviada exitosamente con radicado: ' . $radicado->num_radicado);
+            return redirect()->back()->with('success', 'Correspondencia saliente registrada exitosamente con radicado: ' . $radicado->num_radicado);
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->withInput()->withErrors(['error' => 'Error al registrar: ' . $e->getMessage()]);
@@ -161,6 +243,7 @@ class ExternaenvController extends Controller
         $remDoc = $remitente ? $remitente->rem_doc : null;
         
         $query = Empleado::leftJoin('area', 'empleado.emple_area', '=', 'area.id_area')
+            ->where('empleado.nit_empresa', $remitente->nit_empresa)
             ->where('empleado.emple_rol', 3) // Solo rol empleado
             ->where('empleado.emple_rol', '!=', 1); // T8b: Excluir Super Admin
 

@@ -9,6 +9,9 @@
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
 
     <link href="https://fonts.googleapis.com" rel="preconnect" />
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
@@ -75,7 +78,7 @@
         @include('remitente.layouts.sidebar')
 
         {{-- Contenedor contenido --}}
-        <div class="flex-1 flex flex-col">
+        <div class="flex-1 flex flex-col min-w-0">
 
             {{-- Header móvil --}}
             <div
@@ -91,7 +94,7 @@
             </div>
 
             {{-- Contenido --}}
-            <main class="flex-1 flex overflow-hidden">
+            <main class="flex-1 overflow-y-auto min-w-0 relative">
                 @yield('content')
             </main>
 
@@ -156,6 +159,93 @@
             sidebar.classList.toggle('-translate-x-full');
             overlay.classList.toggle('hidden');
         }
+
+        // Funciones Globales para Modales
+        window.openModal = function(id) {
+            const modal = document.getElementById(id);
+            if (!modal) return;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+            
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                const inner = modal.querySelector('.relative');
+                if(inner) {
+                    inner.classList.remove('scale-95', 'opacity-0', 'translate-y-4');
+                    inner.classList.add('scale-100', 'opacity-100', 'translate-y-0');
+                }
+            }, 10);
+        };
+
+        window.closeModal = function(id) {
+            const modal = document.getElementById(id);
+            if (!modal) return;
+
+            const inner = modal.querySelector('.relative');
+            if(inner) {
+                inner.classList.remove('scale-100', 'opacity-100', 'translate-y-0');
+                inner.classList.add('scale-95', 'opacity-0', 'translate-y-4');
+            }
+            modal.classList.add('opacity-0');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                document.body.style.overflow = '';
+            }, 300); // 300ms matches Tailwind duration-300
+        };
+
+        // Cerrar modales al hacer clic por fuera
+        document.addEventListener('click', function(e) {
+            if (e.target.hasAttribute('role') && e.target.getAttribute('role') === 'dialog' && !e.target.classList.contains('hidden')) {
+                window.closeModal(e.target.id);
+            }
+        });
+
+        // Validación Global de Tamaño de Archivos (20MB)
+        document.addEventListener('change', function(e) {
+            if (e.target.type === 'file') {
+                const files = e.target.files;
+                let totalSize = 0;
+                for (let i = 0; i < files.length; i++) {
+                    totalSize += files[i].size;
+                }
+
+                const limit = 20 * 1024 * 1024; // 20MB
+                if (totalSize > limit) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Archivo demasiado pesado',
+                        text: 'El tamaño total de los archivos no debe superar los 20MB. Por favor, reduce el peso de los documentos.',
+                        confirmButtonColor: '#1e63e9'
+                    });
+                    e.target.value = ''; // Limpiar el input
+                }
+            }
+        });
+
+        // Validación al enviar cualquier formulario
+        document.addEventListener('submit', function(e) {
+            const fileInputs = e.target.querySelectorAll('input[type="file"]');
+            let totalSize = 0;
+            fileInputs.forEach(input => {
+                for (let i = 0; i < input.files.length; i++) {
+                    totalSize += input.files[i].size;
+                }
+            });
+
+            if (totalSize > 20 * 1024 * 1024) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Límite de peso excedido',
+                    text: 'La suma de todos los archivos adjuntos supera los 20MB. El registro ha sido bloqueado por seguridad.',
+                    confirmButtonColor: '#1e63e9'
+                });
+            }
+        });
     </script>
 
     @yield('scripts')

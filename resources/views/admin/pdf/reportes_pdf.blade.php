@@ -83,6 +83,38 @@
         </div>
     </div>
 
+    <!-- Resumen por Tipo -->
+    <h3 style="color: #0f172a; margin-bottom: 15px; font-size: 14px; font-weight: 900;">RESUMEN POR NATURALEZA (TIPO)</h3>
+    <table style="margin-bottom: 30px;">
+        <thead>
+            <tr>
+                <th style="padding-left: 20px; text-align: left;">Naturaleza</th>
+                <th>Cantidad Registrada</th>
+                <th>Participación</th>
+            </tr>
+        </thead>
+        <tbody>
+            @php
+                $totalT = array_sum($resumenTipos);
+            @endphp
+            <tr>
+                <td class="area-name">Correspondencia INTERNA</td>
+                <td style="font-weight: bold;">{{ $resumenTipos['Interna'] ?? 0 }}</td>
+                <td>{{ $totalT > 0 ? round(($resumenTipos['Interna'] / $totalT) * 100) : 0 }}%</td>
+            </tr>
+            <tr>
+                <td class="area-name">Correspondencia EXTERNA (Entrante)</td>
+                <td style="font-weight: bold;">{{ $resumenTipos['Externa'] ?? 0 }}</td>
+                <td>{{ $totalT > 0 ? round(($resumenTipos['Externa'] / $totalT) * 100) : 0 }}%</td>
+            </tr>
+            <tr>
+                <td class="area-name">Correspondencia SALIENTE (En respuesta)</td>
+                <td style="font-weight: bold;">{{ $resumenTipos['Saliente'] ?? 0 }}</td>
+                <td>{{ $totalT > 0 ? round(($resumenTipos['Saliente'] / $totalT) * 100) : 0 }}%</td>
+            </tr>
+        </tbody>
+    </table>
+
     <!-- Tabla Detalle -->
     <h3 style="color: #0f172a; margin-bottom: 15px; font-size: 14px; font-weight: 900;">DESGLOSE POR DEPENDENCIAS</h3>
     <table>

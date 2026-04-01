@@ -13,6 +13,8 @@ use App\Models\Empleado;
 use App\Models\Area;
 use App\Models\DetalleEnvio;
 use App\Models\Envio;
+use App\Models\Radicado;
+use App\Models\AnexoEnvio;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -21,35 +23,152 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $remitente = Auth::guard('remitente')->user();
+        if (!$remitente) return redirect()->route('login');
         $remDoc = $remitente->rem_doc;
+        $nit = $remitente->nit_empresa;
 
         $this->syncRejected($remDoc);
 
-        // Statistics
+        // --- 1. RECIBIDOS NUEVOS (Recientes o Pendientes) ---
+        $queryRec = $this->getBaseQuery($remDoc)
+            ->whereNotIn('id_estado_rec', [10, 14])
+            ->where(function($q) {
+                $q->whereDate('fecha_hora_recib', '>=', now()->subDays(7))
+                  ->orWhereIn('id_estado_rec', [7, 8, 13]);
+            });
+
+        // --- 2. ENVIOS INTERNOS NUEVOS (Recientes o Pendientes) ---
+        $queryInt = \App\Models\Envio::with(['radicado', 'tipoEnvio', 'quienEnvia', 'estadoEnvio', 'anexos', 'detalles.quienRecibe.area'])
+            ->where('doc_quien_registra', $remDoc)
+            ->whereHas('radicado', fn($q) => $q->where('num_radicado', 'like', 'INT-%'))
+            ->where(function($q) {
+                $q->whereDate('fecha', '>=', now()->subDays(7))
+                  ->orWhereIn('id_estado_envio', [8, 12, 13]);
+            });
+
+        // --- 3. ENVIOS SALIENTES NUEVOS (Sin Recibido asociado para evitar duplicidad) ---
+        $querySal = Envio::with(['radicado', 'tipoEnvio', 'quienEnvia', 'estadoEnvio', 'anexos', 'detalles.quienRecibe.area'])
+            ->where('doc_quien_registra', $remDoc)
+            ->where(function($q) {
+                // Solo envios que NO sean respuestas a un recibidido
+                $q->whereNotExists(function($sub) {
+                    $sub->select(DB::raw(1))
+                        ->from('recibido')
+                        ->whereRaw('recibido.num_radicado_int = envio.num_radicado_int');
+                });
+            })
+            ->where(function($q) {
+                $q->whereDate('fecha', '>=', now()->subDays(7))
+                  ->orWhereIn('id_estado_envio', [8, 12, 13, 14]);
+            });
+
+        // NORMALIZACIÓN PARA TABLA ÚNICA
+        $recibidos = $queryRec->get()->map(function($item) {
+            return (object)[
+                'id' => 'EXT_' . $item->id_recibido,
+                'id_original' => $item->id_recibido,
+                'radicado' => $item->radicado?->num_radicado ?? 'EXT-N/A',
+                'asunto' => $item->asunto,
+                'fecha' => $item->fecha_hora_recib,
+                'tipo' => 'Externa',
+                'tipo_label' => 'IN',
+                'clase' => 'orange',
+                'contacto' => $item->nom_institucion ?: ($item->nombre_persona ?: 'Externo'),
+                'estado' => in_array($item->id_estado_rec, [9, 10]) ? 'RESUELTO' : ($item->estado?->estado_nomb ?? 'Sin estado'),
+                'id_estado' => $item->id_estado_rec,
+                'radicado_ext' => $item->num_radicado_ext,
+                'folios' => $item->folio,
+                'archivo' => $item->archivo,
+                'anexos' => $item->anexos,
+                'destinatarios' => $item->destinatarios,
+                'is_assigned' => $item->destinatarios && $item->destinatarios->count() > 0,
+                'correo' => $item->correo_persona,
+                'id_tipo' => $item->id_tipo,
+                'rad_id' => $item->num_radicado_int,
+                'url_historial' => route('remitente.recibidos') . '?q=' . ($item->radicado?->num_radicado),
+                'has_response' => $item->envios->count() > 0
+            ];
+        });
+
+        $internos = $queryInt->get()->map(function($item) {
+            $primer = $item->detalles->first();
+            return (object)[
+                'id' => 'INT_' . $item->id_envio,
+                'id_original' => $item->id_envio,
+                'radicado' => $item->radicado?->num_radicado ?? 'INT-N/A',
+                'asunto' => $item->asunto,
+                'fecha' => $item->fecha,
+                'tipo' => 'Interna',
+                'tipo_label' => 'INT',
+                'clase' => 'indigo',
+                'contacto' => $primer?->quienRecibe ? $primer->quienRecibe->emple_nombres . ' ' . $primer->quienRecibe->emple_apellidos : 'N/A',
+                'estado' => $item->id_estado_envio == 9 ? 'RESUELTO' : ($item->estadoEnvio?->estado_nomb ?? 'Sin estado'),
+                'id_estado' => $item->id_estado_envio,
+                'folios' => $item->folio,
+                'archivo' => $item->archivo,
+                'anexos' => $item->anexos,
+                'url_historial' => route('remitente.historial') . '?q=' . ($item->radicado?->num_radicado),
+                'correo' => $item->correo ?? null,
+                'id_tipo' => $item->id_tipo_envio,
+                'rad_id' => $item->num_radicado_int
+            ];
+        });
+
+        $salientes = $querySal->get()->map(function($item) {
+            return (object)[
+                'id' => 'SAL_' . $item->id_envio,
+                'id_original' => $item->id_envio,
+                'radicado' => $item->radicado?->num_radicado ?? 'SAL-N/A',
+                'asunto' => $item->asunto,
+                'fecha' => $item->fecha,
+                'tipo' => 'Saliente',
+                'tipo_label' => 'SAL',
+                'clase' => 'blue',
+                'contacto' => $item->destino ?: 'Externo',
+                'estado' => in_array($item->id_estado_envio, [9, 14]) ? 'RESUELTO' : ($item->estadoEnvio?->estado_nomb ?? 'Sin estado'),
+                'id_estado' => $item->id_estado_envio,
+                'folios' => $item->folio,
+                'archivo' => $item->archivo,
+                'anexos' => $item->anexos,
+                'url_historial' => route('remitente.historial') . '?q=' . ($item->radicado?->num_radicado),
+                'correo' => $item->correo ?? null,
+                'id_tipo' => $item->id_tipo_envio,
+                'rad_id' => $item->num_radicado_int
+            ];
+        });
+
+        $completo = $recibidos->concat($internos)->concat($salientes)
+            ->groupBy('radicado')
+            ->map(function($group) {
+                return $group->sortByDesc('fecha')->first();
+            })
+            ->sortByDesc('fecha')
+            ->values();
+        
+        $page = $request->input('page', 1);
+        $perPage = 15;
+        $correspondenciaNueva = new \Illuminate\Pagination\LengthAwarePaginator(
+            $completo->forPage($page, $perPage),
+            $completo->count(),
+            $perPage,
+            $page,
+            ['path' => route('remitente.index'), 'query' => $request->query()]
+        );
+
         $stats = $this->getStats($remDoc);
-        $estadoId = $request->input('estado_id');
-
-        // Dashboard: Show all records NOT "salientes" (14) or "finalizados" (10).
-        $query = $this->getBaseQuery($remDoc)
-            ->whereNotIn('id_estado_rec', [10, 14]);
-
-        if ($estadoId) {
-            $query->where('id_estado_rec', $estadoId);
-        }
-
-        $correspondencias = $query->paginate(10)->appends($request->query());
-
-        $enviosPendientes = \App\Models\Envio::with(['radicado', 'tipoEnvio', 'quienEnvia', 'anexos'])
+        
+        // Mantener colecciones originales para los modales de JS (Compatibilidad)
+        $correspondencias = $queryRec->get();
+        $enviosPendientes = \App\Models\Envio::with(['radicado', 'tipoEnvio', 'quienEnvia', 'anexos', 'detalles.quienRecibe.area'])
             ->where('doc_quien_registra', $remDoc)
             ->where('id_estado_envio', 0)
-            ->orderBy('fecha', 'desc')
             ->get();
 
         $tipos = \App\Models\Tipo::all();
         $empleados = \App\Models\Empleado::where('emple_rol', 3)->get();
         $estados = \App\Models\Estado::all();
-
-        // T8b: Excluir Super Admin (rol=1) y propio usuario de la lista de destinatarios
+        
+        // T8b: Excluir Super Admin (rol=1) y propio usuario para modales de asignación
         $todosDestinatarios = \App\Models\Empleado::with('area')
             ->where('emple_rol', '=', 3)
             ->where('emple_rol', '!=', 1)
@@ -63,32 +182,103 @@ class DashboardController extends Controller
                     'tipo' => 'empleado',
                     'area_nombre' => $e->area ? $e->area->area_nom : null
                 ];
+            });
+
+        $ciudades = \App\Models\Ciudad::with('departamento')->orderBy('ciudad_nom')->get();
+
+        return view('remitente.index', compact('stats', 'correspondenciaNueva', 'correspondencias', 'enviosPendientes', 'tipos', 'empleados', 'estados', 'todosDestinatarios', 'ciudades'));
+
+    }
+
+    public function historial(Request $request)
+    {
+        $remitente = Auth::guard('remitente')->user();
+        $remDoc = $remitente->rem_doc;
+        $nit = $remitente->nit_empresa;
+
+        $q = $request->input('q');
+        $tipo = $request->input('tipo');
+        $estado = $request->input('estado');
+        $desde = $request->input('desde');
+        $hasta = $request->input('hasta');
+
+        // RE-FETCH PARA HISTORIAL COMPLETO
+        $queryRec = $this->getBaseQuery($remDoc);
+        $queryEnv = \App\Models\Envio::with(['radicado', 'tipoEnvio', 'quienEnvia', 'estadoEnvio', 'anexos', 'detalles.quienRecibe.area'])
+            ->where('doc_quien_registra', $remDoc);
+
+        if ($q) {
+            $queryRec->where(function($sub) use ($q) {
+                $sub->where('asunto', 'like', "%$q%")->orWhereHas('radicado', fn($r) => $r->where('num_radicado', 'like', "%$q%"));
+            });
+            $queryEnv->where(function($sub) use ($q) {
+                $sub->where('asunto', 'like', "%$q%")->orWhereHas('radicado', fn($r) => $r->where('num_radicado', 'like', "%$q%"));
+            });
+        }
+
+        if ($desde) {
+            $queryRec->whereDate('fecha_hora_recib', '>=', $desde);
+            $queryEnv->whereDate('fecha', '>=', $desde);
+        }
+        if ($hasta) {
+            $queryRec->whereDate('fecha_hora_recib', '<=', $hasta);
+            $queryEnv->whereDate('fecha', '<=', $hasta);
+        }
+
+        // Mapeo y Unificación
+        $recibidos = $queryRec->get()->map(function($item) {
+            return (object)[
+                'id_original' => $item->id_recibido,
+                'radicado' => $item->radicado?->num_radicado ?? 'EXT-N/A',
+                'asunto' => $item->asunto,
+                'fecha' => $item->fecha_hora_recib,
+                'tipo' => 'Externa',
+                'clase' => 'orange',
+                'contacto' => $item->nom_institucion ?: ($item->nombre_persona ?: 'Externo'),
+                'estado' => in_array($item->id_estado_rec, [9, 10]) ? 'RESUELTO' : ($item->estado?->estado_nomb ?? 'Sin estado'),
+                'id_tipo_cor' => 'EXT',
+                'rad_id' => $item->num_radicado_int
+            ];
+        });
+
+        $envios = $queryEnv->get()->map(function($item) {
+            $prefijo = substr($item->radicado?->num_radicado ?? '', 0, 3);
+            $isSal = ($prefijo === 'SAL' || $prefijo === 'EXT');
+            return (object)[
+                'id_original' => $item->id_envio,
+                'radicado' => $item->radicado?->num_radicado ?? ($isSal ? 'SAL-N/A' : 'INT-N/A'),
+                'asunto' => $item->asunto,
+                'fecha' => $item->fecha,
+                'tipo' => $isSal ? 'Saliente' : 'Interna',
+                'clase' => $isSal ? 'blue' : 'indigo',
+                'contacto' => $isSal ? ($item->destino ?: 'Externo') : ($item->detalles->first()?->quienRecibe->emple_nombres ?? 'N/A'),
+                'estado' => in_array($item->id_estado_envio, [9, 14]) ? 'RESUELTO' : ($item->estadoEnvio?->estado_nomb ?? 'Sin estado'),
+                'id_tipo_cor' => $isSal ? 'SAL' : 'INT',
+                'rad_id' => $item->num_radicado_int
+            ];
+        });
+
+        $completo = $recibidos->concat($envios)
+            ->groupBy('radicado')
+            ->map(function($group) {
+                return $group->sortByDesc('fecha')->first();
             })
-            ->sortBy('emple_nombres')
-            ->values();
+            ->sortByDesc('fecha');
 
-        // ---- Envíos del remitente separados por tipo ----
-        // Internos (radicado INT-)
-        $enviosInternos = \App\Models\Envio::with(['radicado', 'tipoEnvio', 'quienEnvia', 'estadoEnvio', 'anexos',
-            'detalles.quienRecibe.area'])
-            ->where('doc_quien_registra', $remDoc)
-            ->whereHas('radicado', fn($q) => $q->where('num_radicado', 'like', 'INT-%'))
-            ->orderBy('fecha', 'desc')
-            ->paginate(10, ['*'], 'int_page');
+        // Paginación manual para la colección unificada
+        $perPage = 15;
+        $page = $request->input('page', 1);
+        $paginated = new \Illuminate\Pagination\LengthAwarePaginator(
+            $completo->forPage($page, $perPage),
+            $completo->count(),
+            $perPage,
+            $page,
+            ['path' => route('remitente.historial'), 'query' => $request->query()]
+        );
 
-        // Salientes (radicado EXT- o SAL-, o sin radicado con estado 14)
-        $enviosSalientes = \App\Models\Envio::with(['radicado', 'tipoEnvio', 'quienEnvia', 'estadoEnvio', 'anexos',
-            'detalles.quienRecibe.area'])
-            ->where('doc_quien_registra', $remDoc)
-            ->where(function($q) {
-                $q->whereHas('radicado', fn($qr) => $qr->where('num_radicado', 'like', 'EXT-%')
-                        ->orWhere('num_radicado', 'like', 'SAL-%'))
-                  ->orWhere('id_estado_envio', 14);
-            })
-            ->orderBy('fecha', 'desc')
-            ->paginate(10, ['*'], 'sal_page');
+        $estados = \App\Models\Estado::all();
 
-        return view('remitente.index', compact('stats', 'correspondencias', 'enviosPendientes', 'tipos', 'empleados', 'estados', 'estadoId', 'todosDestinatarios', 'enviosInternos', 'enviosSalientes'));
+        return view('remitente.historial', compact('paginated', 'estados'));
     }
 
     public function recibidosProceso(Request $request)
@@ -99,16 +289,35 @@ class DashboardController extends Controller
         $this->syncRejected($remDoc);
         $stats = $this->getStats($remDoc);
         $estadoId = $request->input('estado_id');
+        $fecha = $request->input('fecha');
+        $q = $request->input('q');
 
-        // ONLY records received that are Terminados (9), Archivados (10) or Salientes (14)
-        $query = $this->getBaseQuery($remDoc)
-            ->whereIn('id_estado_rec', [9, 10, 14]);
+        $query = $this->getBaseQuery($remDoc);
             
         if ($estadoId) {
             $query->where('id_estado_rec', $estadoId);
+        } else {
+            // Por defecto, mostrar los que NO están finalizados ni archivados
+            $query->whereNotIn('id_estado_rec', [9, 10, 14]);
         }
 
-        $correspondencias = $query->paginate(10)->appends($request->query());
+        if ($fecha) {
+            $query->whereDate('fecha_hora_recib', $fecha);
+        }
+
+        if ($q) {
+            $query->where(function($sub) use ($q) {
+                $sub->where('asunto', 'like', "%$q%")
+                    ->orWhereHas('radicado', function($r) use ($q) {
+                        $r->where('num_radicado', 'like', "%$q%");
+                    })
+                    ->orWhere('num_radicado_ext', 'like', "%$q%")
+                    ->orWhere('nombre_persona', 'like', "%$q%")
+                    ->orWhere('nom_institucion', 'like', "%$q%");
+            });
+        }
+
+        $recibidos = $query->paginate(15)->appends($request->query());
 
         $tipos = \App\Models\Tipo::all();
         $empleados = \App\Models\Empleado::where('emple_rol', 3)->get();
@@ -133,7 +342,30 @@ class DashboardController extends Controller
             ->sortBy('emple_nombres')
             ->values();
 
-        return view('remitente.recibidos', compact('stats', 'correspondencias', 'tipos', 'empleados', 'estados', 'estadoId', 'ciudades', 'todosDestinatarios'));
+        // Envios internos del remitente (radicado INT-)
+        $enviosInternos = \App\Models\Envio::with(['radicado', 'tipoEnvio', 'estadoEnvio', 'quienEnvia',
+            'detalles.quienRecibe.area'])
+            ->where('doc_quien_registra', $remDoc)
+            ->whereHas('radicado', fn($q) => $q->where('num_radicado', 'like', 'INT-%'))
+            ->orderBy('fecha', 'desc')
+            ->paginate(10, ['*'], 'int_page');
+
+        // Envios salientes del remitente (radicado EXT-/SAL- o estado 14)
+        $enviosSalientes = \App\Models\Envio::with(['radicado', 'tipoEnvio', 'estadoEnvio', 'quienEnvia',
+            'detalles.quienRecibe.area'])
+            ->where('doc_quien_registra', $remDoc)
+            ->where(function($q) {
+                $q->whereHas('radicado', fn($qr) => $qr->where('num_radicado', 'like', 'EXT-%')
+                        ->orWhere('num_radicado', 'like', 'SAL-%'))
+                  ->orWhere('id_estado_envio', 14);
+            })
+            ->orderBy('fecha', 'desc')
+            ->paginate(10, ['*'], 'sal_page');
+        // Filtros adicionales para la vista unificada
+        $tipoFiltro = $request->input('tipo', 'todos');
+        $tab = $request->input('tab', 'externa');
+
+        return view('remitente.recibidos', compact('stats', 'recibidos', 'tipos', 'empleados', 'estados', 'estadoId', 'ciudades', 'todosDestinatarios', 'enviosInternos', 'enviosSalientes', 'tipoFiltro', 'tab'));
     }
 
     public function procesoSalientes()
@@ -194,7 +426,8 @@ class DashboardController extends Controller
             },
             'detalles.anexosRespuesta',
             'detalles.empleado.area',
-            'detalles.estado'
+            'detalles.estado',
+            'envios'
         ])
             ->where('nit_empresa', $nitEmpresa)
             ->where(function($q) use ($remDoc) {
@@ -247,73 +480,168 @@ class DashboardController extends Controller
 
     public function getHistory($id)
     {
-        $remitente = Auth::guard('remitente')->user();
-        
-        // 1. Initial Registration Data from 'recibido'
-        $registration = DB::table('recibido as r')
-            ->join('radicados as rad', 'r.num_radicado_int', '=', 'rad.id_radicado')
-            ->leftJoin('remitente as rem', 'r.doc_quien_registra', '=', 'rem.rem_doc')
-            ->where('r.id_recibido', $id)
-            ->select(
-                DB::raw("'registry' as type"),
-                'r.fecha_hora_recib as fecha',
-                'rem.rem_nombres as nombres',
-                'rem.rem_apellidos as apellidos',
-                'rad.num_radicado',
-                DB::raw("'Registrado y Enviado' as estado_nomb"),
-                'r.observaciones',
-                DB::raw("NULL as img")
-            )
-            ->first();
-
-        // 2. Lifecycle transitions from 'detalle_recibido'
-        $details = DB::table('detalle_recibido as dr')
-            ->leftJoin('estado as e', 'dr.id_estado_rec', '=', 'e.id_estado')
-            ->leftJoin('empleado as emp', 'dr.det_doc_empleado', '=', 'emp.emple_doc')
-            ->leftJoin('area as area_e', 'emp.emple_area', '=', 'area_e.id_area')
-            ->leftJoin('remitente as rem', 'dr.det_doc_empleado', '=', 'rem.rem_doc')
-            ->where('dr.det_id_recibido', $id)
-            ->select(
-                DB::raw("'detail' as type"),
-                'dr.fecha_re as fecha',
-                DB::raw("COALESCE(emp.emple_nombres, rem.rem_nombres, 'No') as nombres"),
-                DB::raw("COALESCE(emp.emple_apellidos, rem.rem_apellidos, 'asignada') as apellidos"),
-                DB::raw("NULL as num_radicado"),
-                DB::raw("COALESCE(e.estado_nomb, CASE WHEN dr.id_estado_rec = 14 THEN 'Saliente' ELSE 'Estado desconocido' END) as estado_nomb"),
-                'dr.observaciones',
-                'area_e.area_nom as area_e',
-                'emp.emple_img as img',
-                'dr.id_estado_rec',
-                'dr.id_det_recibido',
-                'dr.archivo_res'
-            )
-            ->orderBy('dr.fecha_re', 'asc')
-            ->get();
-
-        $history = [];
-        if ($registration) {
-            $history[] = (array) $registration;
-        }
-
-        foreach ($details as $d) {
-            $det = (array) $d;
+        try {
+            $remitente = Auth::guard('remitente')->user();
             
-            // Fetch annexes for this detail
-            $det['anexos'] = DB::table('anexo_respuesta')
-                ->where('id_detalle', $d->id_det_recibido)
-                ->select('ruta_archivo', 'nombre_original')
-                ->get();
-
-            // Strip sensitive document info from observations (Case insensitive and more robust)
-            if (!empty($det['observaciones'])) {
-                // Remove prefix like "CC 12345678 - " or "NIT 123-456 - "
-                $det['observaciones'] = preg_replace('/^(CC|TI|CE|NIT|PAS|PEP)\s*[\d\.\-]+\s*-\s*/i', '', $det['observaciones']);
+            // Priority 1: Check if the ID is already a Radicado ID (recommended for unified processes)
+            $isRadicado = DB::table('radicados')->where('id_radicado', $id)->exists();
+            if ($isRadicado) {
+                $radId = $id;
+            } else {
+                // Priority 2: Traditional ID lookup (Recibido or Envio)
+                $radId = DB::table('recibido')->where('id_recibido', $id)->value('num_radicado_int');
+                if (!$radId) {
+                    $radId = DB::table('envio')->where('id_envio', $id)->value('num_radicado_int');
+                }
             }
+
+            if (!$radId) return response()->json([]);
+
+            // 1. Initial Registrations (Incoming/Outgoing)
+            $recibidos = DB::table('recibido as r')
+                ->join('radicados as rad', 'r.num_radicado_int', '=', 'rad.id_radicado')
+                ->leftJoin('remitente as rem', 'r.doc_quien_registra', '=', 'rem.rem_doc')
+                ->where('r.num_radicado_int', $radId)
+                ->select(
+                    DB::raw("'registry' as type"),
+                    'r.fecha_hora_recib as fecha',
+                    DB::raw("COALESCE(rem.rem_nombres, 'Sistema') as nombres"),
+                    DB::raw("COALESCE(rem.rem_apellidos, '') as apellidos"),
+                    'rad.num_radicado',
+                    DB::raw("'Ingreso a Ventanilla' as estado_nomb"),
+                    'r.observaciones',
+                    DB::raw("NULL as img")
+                )->get();
+
+            $envios = DB::table('envio as env')
+                ->join('radicados as rad', 'env.num_radicado_int', '=', 'rad.id_radicado')
+                ->leftJoin('remitente as rem', 'env.doc_quien_registra', '=', 'rem.rem_doc')
+                ->where('env.num_radicado_int', $radId)
+                ->select(
+                    DB::raw("'registry' as type"),
+                    'env.fecha as fecha',
+                    DB::raw("COALESCE(rem.rem_nombres, 'Sistema') as nombres"),
+                    DB::raw("COALESCE(rem.rem_apellidos, '') as apellidos"),
+                    'rad.num_radicado',
+                    DB::raw("'Registro de Salida/Respuesta' as estado_nomb"),
+                    'env.asunto as observaciones',
+                    DB::raw("NULL as img")
+                )->get();
+
+            // 2. Lifecycle transitions (Details)
+            $detailsRec = DB::table('detalle_recibido as dr')
+                ->join('recibido as r', 'dr.det_id_recibido', '=', 'r.id_recibido')
+                ->leftJoin('estado as e', 'dr.id_estado_rec', '=', 'e.id_estado')
+                ->leftJoin('empleado as emp', 'dr.det_doc_empleado', '=', 'emp.emple_doc')
+                ->leftJoin('area as area_e', 'emp.emple_area', '=', 'area_e.id_area')
+                ->leftJoin('remitente as rem_d', 'dr.det_doc_empleado', '=', 'rem_d.rem_doc')
+                ->where('r.num_radicado_int', $radId)
+                ->select(
+                    DB::raw("'detail' as type"),
+                    'dr.fecha_re as fecha',
+                    DB::raw("COALESCE(emp.emple_nombres, rem_d.rem_nombres, 'Destinatario') as nombres"),
+                    DB::raw("COALESCE(emp.emple_apellidos, rem_d.rem_apellidos, '') as apellidos"),
+                    DB::raw("NULL as num_radicado"),
+                    DB::raw("COALESCE(e.estado_nomb, 'Gestión') as estado_nomb"),
+                    'dr.observaciones',
+                    'area_e.area_nom as area_e',
+                    'emp.emple_img as img',
+                    'dr.id_estado_rec',
+                    'dr.id_det_recibido',
+                    'dr.archivo_res'
+                )->get();
+
+            $detailsEnv = DB::table('detalle_envio as de')
+                ->join('envio as env', 'de.id_envio', '=', 'env.id_envio')
+                ->leftJoin('estado as e', 'de.id_estado_rec', '=', 'e.id_estado')
+                ->leftJoin('empleado as emp', 'de.id_quien_recibe', '=', 'emp.emple_doc')
+                ->leftJoin('area as area_e', 'emp.emple_area', '=', 'area_e.id_area')
+                ->where('env.num_radicado_int', $radId)
+                ->select(
+                    DB::raw("'detail' as type"),
+                    'de.fecha_traslado as fecha',
+                    DB::raw("COALESCE(emp.emple_nombres, 'Funcionario') as nombres"),
+                    DB::raw("COALESCE(emp.emple_apellidos, '') as apellidos"),
+                    DB::raw("NULL as num_radicado"),
+                    DB::raw("COALESCE(e.estado_nomb, 'Saliente') as estado_nomb"),
+                    'de.observaciones',
+                    'area_e.area_nom as area_e',
+                    'emp.emple_img as img',
+                    'de.id_estado_rec',
+                    DB::raw("de.id_detalle as id_det_recibido"),
+                    DB::raw("NULL as archivo_res")
+                )->get();
+
+            // 3. Merge and cleanup
+            $historyCollection = $recibidos
+                ->concat($envios)
+                ->concat($detailsRec)
+                ->concat($detailsEnv)
+                ->sortBy('fecha');
+
+            $finalHistory = [];
+            foreach ($historyCollection as $h) {
+                $item = (array) $h;
                 
-            $history[] = $det;
+                if (!empty($item['id_det_recibido'])) {
+                    $item['anexos'] = DB::table('anexo_respuesta')
+                        ->where('id_detalle', $item['id_det_recibido'])
+                        ->select('ruta_archivo', 'nombre_original')
+                        ->get();
+                } else {
+                    $item['anexos'] = [];
+                }
+
+                if (!empty($item['observaciones'])) {
+                    $item['observaciones'] = preg_replace('/^(CC|TI|CE|NIT|PAS|PEP)\s*[\d\.\-]+\s*-\s*/i', '', $item['observaciones']);
+                }
+                    
+                $finalHistory[] = $item;
+            }
+
+            return response()->json($finalHistory);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Retorna el historial de trazabilidad de un Envio (interno/saliente)
+     * en el mismo formato que getHistory() para reutilizar el historyModal.
+     */
+    public function getHistoryEnvio($id)
+    {
+        return $this->getHistory($id);
+    }
+
+    public function exportHistoryPdf(Request $request, $id)
+    {
+        $tipo = $request->query('tipo', 'recibido');
+        
+        $historyResponse = $tipo === 'envio' ? $this->getHistoryEnvio($id) : $this->getHistory($id);
+        $history = json_decode($historyResponse->content(), true);
+        
+        if (empty($history)) {
+            return redirect()->back()->with('error', 'No se encontró historial para generar el PDF.');
         }
 
-        return response()->json($history);
+        $radicado = $history[0]['num_radicado'] ?? 'S/R';
+        if ($radicado === 'S/R' || !$radicado) {
+            foreach($history as $h) {
+                if (!empty($h['num_radicado'])) {
+                    $radicado = $h['num_radicado'];
+                    break;
+                }
+            }
+        }
+        $asunto = $history[0]['observaciones'] ?? 'Sin Asunto';
+        
+        try {
+            $pdf = Pdf::loadView('remitente.pdf.trazabilidad_pdf', compact('history', 'radicado', 'asunto', 'tipo'))->setPaper('A4', 'portrait');
+            return $pdf->download('Trazabilidad_Radicado_' . $radicado . '.pdf');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error al generar el PDF de Trazabilidad: ' . $e->getMessage());
+        }
     }
 
     public function finalize($id)
@@ -406,38 +734,51 @@ class DashboardController extends Controller
             ->firstOrFail();
 
         $request->validate([
-            'destino'         => 'required|string|max:200',
-            'asunto'          => 'required|string|max:100',
-            'doc_quien_envia' => 'required|string|max:20',
+            'destino'         => 'required|string|max:255',
+            'asunto'          => 'required|string|max:500',
+            'doc_quien_envia' => 'nullable|string|max:20',
             'id_tipo_envio'   => 'required|integer',
             'folio'           => 'required|integer|min:1',
         ]);
 
+        $docQuienEnvioAuto = $docQuienRegistra;
+
+        // Ensure doc_quien_envia exists in empleado table to avoid FK error
+        $senderId = $request->doc_quien_envia ?? $docQuienEnvioAuto;
+        $existsInEmpleado = DB::table('empleado')->where('emple_doc', $senderId)->exists();
+        
+        if (!$existsInEmpleado) {
+            // Find any valid official from this company as proxy (rol 1 or 3)
+            $proxy = DB::table('empleado')
+                ->where('nit_empresa', $nitEmpresa)
+                ->orderByRaw("FIELD(emple_rol, 3, 1) DESC") // Preferrol 3 then 1
+                ->first();
+            if ($proxy) {
+                $senderId = $proxy->emple_doc;
+            }
+        }
+
         DB::beginTransaction();
         try {
-            // 1. SKIP Radicado SAL- Logic. Use existing Radicado INT-
-            $radicado = $recibido->radicado;
-            if (!$radicado) {
-                // Should not happen for public registration, but for safety:
-                throw new \Exception('La correspondencia no tiene un radicado asociado.');
-            }
+            // Use the original radicado record from the correspondence base
+            $radicadoId = $recibido->num_radicado_int;
+            $numRadicado = $recibido->radicado?->num_radicado ?? 'S/R';
 
-
-            // 2. Identify the response file and annexes
+            // Identify the response file and annexes
             $responseDetail = $recibido->detalles()->whereNotNull('archivo_res')->first();
             $archivoPrincipal = $responseDetail ? $responseDetail->archivo_res : '';
             
-            // 3. Create Envio
-            $envio = \App\Models\Envio::create([
-                'num_radicado_int'   => $radicado->id_radicado,
+            // Create Envio
+            $envio = Envio::create([
+                'num_radicado_int'   => $radicadoId,
                 'asunto'             => $request->asunto,
                 'destino'            => $request->destino,
-                'doc_quien_envia'    => $request->doc_quien_envia,
+                'doc_quien_envia'    => $senderId,
                 'fecha'              => now(),
                 'folio'              => $request->folio,
                 'id_tipo_envio'      => $request->id_tipo_envio,
                 'id_estado_envio'    => 12, // Enviado
-                'archivo'            => $archivoPrincipal, // FIX: Field archivo is required
+                'archivo'            => $archivoPrincipal,
                 'nit_empresa'        => $nitEmpresa,
                 'doc_quien_registra' => $docQuienRegistra,
             ]);
@@ -457,18 +798,24 @@ class DashboardController extends Controller
                 }
             }
 
-            // 5. Mark the received correspondence as Saliente (14)
+            // 5. Mark the received correspondence as Finalized (9)
             if ($recibido->id_estado_rec != 10) {
-                $recibido->id_estado_rec = 14; 
+                $recibido->id_estado_rec = 9; 
                 $recibido->save();
 
-                // 6. Log traceability entry
+                // 6. Log traceability entry with Technical Responsible for FK
+                $responsableTecnico = DB::table('empleado')
+                    ->where('nit_empresa', $nitEmpresa)
+                    ->orderBy('emple_rol', 'asc')
+                    ->first();
+                $idResponsable = $responsableTecnico ? $responsableTecnico->emple_doc : 999000;
+
                 DetalleRecibido::create([
                     'det_id_recibido'  => $recibido->id_recibido,
-                    'det_doc_empleado' => $request->doc_quien_envia,
+                    'det_doc_empleado' => $idResponsable,
                     'fecha_re'         => now(),
-                    'id_estado_rec'    => 14,
-                    'observaciones'    => 'Registrado como envío saliente (Respuesta enviada).',
+                    'id_estado_rec'    => 9,
+                    'observaciones'    => "Respuesta enviada al ciudadano y radicado finalizado por (Remitente) {$remitente->rem_nombres} {$remitente->rem_apellidos}.",
                     'visto'            => 1
                 ]);
             }
@@ -477,13 +824,13 @@ class DashboardController extends Controller
             if (!empty($recibido->correo_persona)) {
                 try {
                     $correoDestino = $recibido->correo_persona;
-                    $numRadicado = $radicado->num_radicado;
-                    $asuntoEmail = 'Respuesta a su correspondencia - Radicado: ' . $numRadicado;
+                    $numRadicadoComp = $numRadicado; // Reference already fetched original radicado
+                    $asuntoEmail = 'Respuesta a su correspondencia - Radicado: ' . $numRadicadoComp;
                     $urlConsulta = route('public.correspondencia.consultar');
 
-                    \Illuminate\Support\Facades\Log::info("Enviando correo de notificación a: $correoDestino para el radicado: $numRadicado");
+                    \Illuminate\Support\Facades\Log::info("Enviando correo de notificación a: $correoDestino para el radicado: $numRadicadoComp");
 
-                    \Illuminate\Support\Facades\Mail::send([], [], function ($message) use ($correoDestino, $numRadicado, $asuntoEmail, $urlConsulta, $recibido) {
+                    \Illuminate\Support\Facades\Mail::send([], [], function ($message) use ($correoDestino, $numRadicadoComp, $asuntoEmail, $urlConsulta, $recibido) {
                         $message->to($correoDestino)
                             ->subject($asuntoEmail)
                             ->html("
@@ -500,7 +847,7 @@ class DashboardController extends Controller
                                     <div style='background-color: #f1f5f9; border-radius: 12px; padding: 24px; margin-bottom: 32px;'>
                                         <div style='text-align: center;'>
                                             <span style='color: #94a3b8; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;'>Número de Radicado</span>
-                                            <p style='color: #059669; font-size: 24px; font-weight: 700; margin: 8px 0 0;'>$numRadicado</p>
+                                            <p style='color: #059669; font-size: 24px; font-weight: 700; margin: 8px 0 0;'>$numRadicadoComp</p>
                                         </div>
                                     </div>
 
@@ -524,7 +871,7 @@ class DashboardController extends Controller
             }
 
             DB::commit();
-            return redirect()->back()->with('success', 'Envío saliente registrado exitosamente con el radicado: ' . $radicado->num_radicado);
+            return redirect()->back()->with('success', 'Respuesta registrada exitosamente bajo el radicado: ' . $numRadicado);
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Error al registrar envío: ' . $e->getMessage());
@@ -549,6 +896,10 @@ class DashboardController extends Controller
 
         DB::beginTransaction();
         try {
+            $currentYear = date('Y');
+            $radicado = $envio->radicado;
+            $radicadoId = $radicado ? $radicado->id_radicado : null;
+
             $envio->destino = $request->destino;
             $envio->asunto = $request->asunto;
             
@@ -558,17 +909,27 @@ class DashboardController extends Controller
             }
             $envio->observaciones = substr($obs, 0, 250);
             
-            $envio->id_estado_envio = 12; // Enviado
+            $envio->id_estado_envio = 9; // Terminado/Finalizado por Ventanilla
+            // Asegurar responsable automático
+            if (!$envio->doc_quien_envia) {
+                $envio->doc_quien_envia = $remitente->rem_doc;
+            }
             $envio->save();
             
-            // Log trazabilidad if needed
-            DB::table('detalle_envio')->insert([
-                'id_envio' => $envio->id_envio,
-                'id_quien_envie' => $envio->doc_quien_envia,
-                'id_quien_recibe' => $envio->doc_quien_envia, // Copiamos el mismo ID o dejamos null
-                'fecha_traslado' => now(),
-                'id_estado_rec' => 12,
-                'observaciones' => 'Envío procesado por ventanilla. ' . $envio->observaciones
+            // Buscar un responsable técnico válido (Empleado) para satisfacer la FK de detalle_envio
+            $responsableTecnico = DB::table('empleado')
+                ->where('nit_empresa', $nitEmpresa)
+                ->orderBy('emple_rol', 'asc')
+                ->first();
+            $idResponsable = $responsableTecnico ? $responsableTecnico->emple_doc : 999000;
+
+            // Log trazabilidad (Cierre por Ventanilla)
+            DB::table('detalles_envio')->insert([
+                'id_envio'        => $envio->id_envio,
+                'doc_quien_recibe' => $idResponsable,
+                'fecha_envio'     => now(),
+                'id_estado_envio' => 9,
+                'detalles'        => "Correspondencia enviada y radicado finalizado por (Remitente) {$remitente->rem_nombres} {$remitente->rem_apellidos}."
             ]);
 
             DB::commit();
@@ -649,8 +1010,10 @@ class DashboardController extends Controller
             return view('remitente.reportes', ['reporteAreas' => [], 'mensaje' => 'No estás registrado a una empresa.']);
         }
 
-        $reporteAreas = $this->calcularReporteAreas($request);
-        return view('remitente.reportes', compact('reporteAreas'));
+        $datos = $this->calcularReporteAreas($request);
+        $reporteAreas = $datos['areas'];
+        $resumenTipos = $datos['tipos'];
+        return view('remitente.reportes', compact('reporteAreas', 'resumenTipos'));
     }
 
     public function exportPdf(Request $request)
@@ -660,11 +1023,13 @@ class DashboardController extends Controller
             return redirect()->back()->with('error', 'No estás registrado a una empresa.');
         }
 
-        $reporteAreas = $this->calcularReporteAreas($request);
+        $datos = $this->calcularReporteAreas($request);
+        $reporteAreas = $datos['areas'];
+        $resumenTipos = $datos['tipos'];
         $barChart = $request->input('barChart');
         $doughnutChart = $request->input('doughnutChart');
 
-        $pdf = Pdf::loadView('admin.pdf.reportes_pdf', compact('reporteAreas', 'barChart', 'doughnutChart'))->setPaper('A4', 'portrait');
+        $pdf = Pdf::loadView('admin.pdf.reportes_pdf', compact('reporteAreas', 'resumenTipos', 'barChart', 'doughnutChart'))->setPaper('A4', 'portrait');
         return $pdf->download('reporte_gestion_remitente.pdf');
     }
 
@@ -680,6 +1045,11 @@ class DashboardController extends Controller
 
         $areas = Area::all();
         $reporteAreas = [];
+        $resumenTipos = [
+            'Interna' => 0,
+            'Externa' => 0,
+            'Saliente' => 0
+        ];
 
         foreach ($areas as $area) {
             $empleadosDocs = Empleado::where('emple_area', $area->id_area)
@@ -711,6 +1081,16 @@ class DashboardController extends Controller
 
             $detallesInternos = $queryInterna->get();
             $detallesExternos = $queryExterna->get();
+
+            // Categorization by type
+            foreach ($detallesInternos as $det) {
+                $prefijo = substr($det->envio->radicado->num_radicado ?? '', 0, 3);
+                if ($prefijo === 'SAL') $resumenTipos['Saliente']++;
+                else $resumenTipos['Interna']++;
+            }
+            foreach ($detallesExternos as $det) {
+                $resumenTipos['Externa']++;
+            }
 
             $totalAsignados = $detallesInternos->count() + $detallesExternos->count();
             $countTramite = 0;
@@ -752,7 +1132,10 @@ class DashboardController extends Controller
             ];
         }
 
-        return $reporteAreas;
+        return [
+            'areas' => $reporteAreas,
+            'tipos' => $resumenTipos
+        ];
     }
 
     private function applyDateFilters($query, Request $request, $periodo, $dateColumn)

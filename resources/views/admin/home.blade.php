@@ -215,7 +215,7 @@
             <a href="{{ route('admin.correspondencia') }}" class="text-xs font-bold text-primary hover:underline">Ver Todo</a>
         </div>
         <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
+            <table class="w-full text-left text-sm responsive-table">
                 <thead class="text-[11px] text-slate-400 uppercase bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
                     <tr>
                         <th class="px-6 py-3 font-bold">Tipo / Remitente</th>
@@ -229,7 +229,7 @@
                     @forelse($recientes as $reciente)
                         <tr onclick="window.location='{{ $reciente->url }}'" 
                             class="group hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-all">
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4" data-label="Tipo / Remitente">
                                 <div class="flex items-center gap-3">
                                     <div class="size-8 rounded-lg flex items-center justify-center {{ $reciente->tipo == 'Interna' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400' }}">
                                         <span class="material-symbols-outlined text-lg">{{ $reciente->icon }}</span>
@@ -242,18 +242,18 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4" data-label="Asunto">
                                 <span class="text-slate-600 dark:text-gray-400 font-medium line-clamp-1 group-hover:text-primary transition-colors" title="{{ $reciente->asunto }}">
                                     {{ $reciente->asunto }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4" data-label="Radicado">
                                 <div class="inline-flex items-center gap-1.5 px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded font-mono text-[11px] text-slate-600 dark:text-slate-400 font-bold border border-slate-200 dark:border-slate-700">
                                     <span class="material-symbols-outlined text-[14px]">tag</span>
                                     {{ $reciente->radicado }}
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-center">
+                            <td class="px-6 py-4 text-center actions-cell" data-label="Estado">
                                 @php
                                     $estadoNomb = strtolower($reciente->estado);
                                     $badgeClass = 'bg-slate-100 text-slate-600';
@@ -271,7 +271,7 @@
                                     {{ $reciente->estado }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-right">
+                            <td class="px-6 py-4 text-right actions-cell" data-label="Fecha">
                                 <div class="flex flex-col items-end">
                                     <span class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ $reciente->fecha->format('d M, Y') }}</span>
                                     <span class="text-[10px] text-slate-400 uppercase font-medium">{{ $reciente->fecha->diffForHumans() }}</span>

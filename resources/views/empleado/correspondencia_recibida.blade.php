@@ -1,6 +1,140 @@
 @extends('empleado.layouts.app')
 
 @section('content')
+<style>
+    @media print {
+        /* Hide navigation and controls */
+        aside, nav, header, .no-print, button, #formFiltroExt, #formFiltroInt, .flex-col.sm\:flex-row.gap-4, .mt-8.mb-4,
+        [id^="btn-"], .p-2.text-blue-600, [class*="Acciones"], thead th:last-child, tbody td:last-child,
+        #correspondenciaTabs {
+            display: none !important;
+        }
+
+        /* Show all table elements */
+        .max-h-\[calc\(100vh-280px\)\], .overflow-y-auto, .overflow-x-auto {
+            max-height: none !important;
+            height: auto !important;
+            overflow: visible !important;
+        }
+
+        body, main, .flex-1 {
+            overflow: visible !important;
+            height: auto !important;
+        }
+
+        body {
+            background-color: white !important;
+            color: black !important;
+            font-size: 9pt;
+            margin: 10mm;
+        }
+
+        .bg-white { background-color: white !important; }
+        .dark\:bg-gray-800 { background-color: white !important; }
+        .dark\:bg-slate-800 { background-color: white !important; }
+        
+        table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            page-break-inside: avoid;
+            table-layout: fixed;
+        }
+
+        thead {
+            display: table-header-group;
+        }
+
+        th {
+            border: 1px solid #333 !important;
+            padding: 8px !important;
+            text-align: left !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            background-color: #2d5aa7 !important;
+            color: white !important;
+            font-weight: bold !important;
+            font-size: 8pt !important;
+        }
+
+        td {
+            border: 1px solid #ccc !important;
+            padding: 6px !important;
+            text-align: left !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            font-size: 8pt !important;
+            word-wrap: break-word;
+        }
+
+        tr {
+            page-break-inside: avoid;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #f9f9f9 !important;
+        }
+
+        tbody tr:nth-child(odd) {
+            background-color: white !important;
+        }
+
+        /* Title styles */
+        .print\:block { display: block !important; }
+
+        /* Status badges */
+        .bg-emerald-100, .bg-blue-100, .bg-yellow-100, .bg-red-100, .bg-slate-100 {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        /* Pagination */
+        [id$="paginacion"], .p-4.border-t { 
+            display: none !important; 
+        }
+
+        /* Grid layout fixes */
+        .grid { display: block !important; }
+        .gap-4 { gap: 0 !important; }
+
+        /* Radicado column visible */
+        .hidden.lg\:table-cell,
+        .hidden.md\:table-cell,
+        .hidden.sm\:table-cell { 
+            display: table-cell !important; 
+        }
+
+        span.block { display: block !important; }
+    }
+</style>
+
+    <!-- Títulos de impresión (solo visibles al imprimir) -->
+    <div class="hidden print:block print:mb-6 print:p-6 print:text-center">
+        <h1 style="font-size: 22pt; font-weight: bold; margin-bottom: 10pt; color: #1a1a1a;">
+            REPORTE DE CORRESPONDENCIA RECIBIDA
+        </h1>
+        <p style="font-size: 11pt; color: #666; margin-bottom: 5pt;">
+            Bandeja Externa - Estado: Recibida y En Trámite
+        </p>
+        <p style="font-size: 10pt; color: #999;">
+            Fecha de reporte: {{ \Carbon\Carbon::now()->format('d/m/Y H:i:s') }}
+        </p>
+        <hr style="margin: 15pt 0; border: none; border-top: 1px solid #333;">
+    </div>
+
+    <!-- Títulos de impresión interna (solo visibles al imprimir) -->
+    <div class="hidden print:block print:mb-6 print:p-6 print:text-center" id="print-title-interna">
+        <h1 style="font-size: 22pt; font-weight: bold; margin-bottom: 10pt; color: #1a1a1a;">
+            REPORTE DE CORRESPONDENCIA INTERNA RECIBIDA
+        </h1>
+        <p style="font-size: 11pt; color: #666; margin-bottom: 5pt;">
+            Bandeja Interna
+        </p>
+        <p style="font-size: 10pt; color: #999;">
+            Fecha de reporte: {{ \Carbon\Carbon::now()->format('d/m/Y H:i:s') }}
+        </p>
+        <hr style="margin: 15pt 0; border: none; border-top: 1px solid #333;">
+    </div>
+
 <div class="space-y-6">
 
     <!-- Header Page -->
@@ -141,15 +275,18 @@
                                 ? $rec?->nom_institucion
                                 : ($rec?->nombre_persona ?? $rec?->doc_persona ?? '—');
                         @endphp
-                        <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors align-top">
+                        <tr>
                             <!-- 1. Radicados -->
                             <td class="px-6 py-4">
-                                <div class="font-medium text-primary dark:text-blue-400" title="Radicado Interno">
+                                <div class="font-bold text-primary dark:text-blue-400 text-base no-print-hide" title="Radicado Interno">
                                     {{ $rec?->radicado ? $rec->radicado->num_radicado : 'S/R' }}
                                 </div>
+                                <div class="text-xs text-gray-600 dark:text-gray-300 font-semibold mt-1 no-print-hide">
+                                    📋 Interno
+                                </div>
                                 @if($rec?->num_radicado_ext)
-                                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1" title="Radicado Externo">
-                                    EXT: {{ $rec->num_radicado_ext }}
+                                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    🔗 EXT: {{ $rec->num_radicado_ext }}
                                 </div>
                                 @endif
                             </td>
@@ -340,7 +477,12 @@
                             </td>
                             
                             <!-- 8. Acciones -->
-                            <td class="px-6 py-4 text-right">
+                            <td class="px-6 py-4 text-right space-x-2 flex justify-end">
+                                <a href="{{ route('empleado.historial_externa', $item->id_det_recibido) }}" 
+                                    title="Ver Detalles y Trazabilidad"
+                                    class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 p-1">
+                                    <span class="material-symbols-outlined text-xl">visibility</span>
+                                </a>
                                 @if(in_array($item->id_estado_rec, [9, 10]) || $isRechazado)
                                     <button title="Registro Bloqueado (Solo Lectura)" class="text-gray-300 dark:text-gray-600 p-1 cursor-not-allowed">
                                         <span class="material-symbols-outlined text-xl">lock</span>
@@ -664,7 +806,12 @@
                                             {{ $int->estado ? $int->estado->estado_nomb : 'Sin estado' }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 text-right">
+                                    <td class="px-6 py-4 text-right space-x-2 flex justify-end">
+                                        <a href="{{ route('empleado.historial_interna', $int->id_detalle) }}" 
+                                            title="Ver Detalles y Trazabilidad"
+                                            class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 p-1">
+                                            <span class="material-symbols-outlined text-xl">visibility</span>
+                                        </a>
                                         @if(in_array($int->id_estado_rec, [9, 10]) || $isRechazadoInt || !$isLatestInterna)
                                             <button title="Registro Bloqueado (Solo Lectura)" class="text-gray-300 dark:text-gray-600 p-1 cursor-not-allowed">
                                                 <span class="material-symbols-outlined text-xl">lock</span>

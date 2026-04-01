@@ -83,7 +83,15 @@
     </div>
 
     <div class="info">
-        Fecha de reporte: {{ \Carbon\Carbon::now()->format('d/m/Y H:i') }} <br>
+        Fecha de reporte: {{ \Carbon\Carbon::now()->format('d/m/Y H:i') }}<br>
+        @if(!empty($filtrosActivos))
+            <strong>Filtros aplicados:</strong>
+            @foreach($filtrosActivos as $nombre => $valor)
+                | {{ $nombre }}: <strong>{{ $valor }}</strong>
+            @endforeach
+        @else
+            Mostrando: Toda la correspondencia (sin filtros).
+        @endif
     </div>
 
     <table>

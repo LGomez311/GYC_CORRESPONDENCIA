@@ -120,6 +120,37 @@
             </div>
         </div>
 
+        <!-- Seccion: Distribucion por Tipo -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-slate-100/50 dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                <div>
+                    <h4 class="text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-widest">Interna</h4>
+                    <p class="text-2xl font-black text-slate-800 dark:text-white mt-1">{{ $resumenTipos['Interna'] ?? 0 }}</p>
+                </div>
+                <div class="w-10 h-10 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center text-indigo-600">
+                    <span class="material-symbols-outlined text-xl">corporate_fare</span>
+                </div>
+            </div>
+            <div class="bg-slate-100/50 dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                <div>
+                    <h4 class="text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-widest">Externa</h4>
+                    <p class="text-2xl font-black text-slate-800 dark:text-white mt-1">{{ $resumenTipos['Externa'] ?? 0 }}</p>
+                </div>
+                <div class="w-10 h-10 bg-orange-50 dark:bg-orange-900/30 rounded-xl flex items-center justify-center text-orange-600">
+                    <span class="material-symbols-outlined text-xl">mail</span>
+                </div>
+            </div>
+            <div class="bg-slate-100/50 dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                <div>
+                    <h4 class="text-xs font-bold text-slate-500 dark:text-gray-400 uppercase tracking-widest">Saliente</h4>
+                    <p class="text-2xl font-black text-slate-800 dark:text-white mt-1">{{ $resumenTipos['Saliente'] ?? 0 }}</p>
+                </div>
+                <div class="w-10 h-10 bg-emerald-50 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center text-emerald-600">
+                    <span class="material-symbols-outlined text-xl">send</span>
+                </div>
+            </div>
+        </div>
+
         <!-- Filter Control Panel -->
         <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm overflow-hidden relative">
             <form method="GET" action="{{ route('remitente.reportes') }}" class="flex flex-wrap items-end gap-6 relative z-10">

@@ -65,11 +65,11 @@ class AdminCorrespondenciaController extends Controller
         ));
     }
 
-    private function getCorrespondenciaFiltered()
+    private function getCorrespondenciaFiltered(Request $request = null)
     {
         $nitEmpresa = Auth::user()->nit_empresa;
 
-        $recibidos = $this->getBaseRecibidosQuery($nitEmpresa)
+        $recibidos = $this->getBaseRecibidosQuery($nitEmpresa, $request)
             ->get()
             ->map(function ($item) {
                 return $this->formatRecibidoExport($item);
@@ -77,7 +77,7 @@ class AdminCorrespondenciaController extends Controller
             ->sortByDesc('fecha')
             ->values();
 
-        $envios = $this->getBaseEnviosQuery($nitEmpresa)
+        $envios = $this->getBaseEnviosQuery($nitEmpresa, $request)
             ->get()
             ->map(function ($item) {
                 return $this->formatEnvioExport($item);
@@ -91,19 +91,52 @@ class AdminCorrespondenciaController extends Controller
         ];
     }
 
-    public function exportExcel()
+    public function exportExcel(Request $request)
     {
-        $data = $this->getCorrespondenciaFiltered();
+        $data = $this->getCorrespondenciaFiltered($request);
         $correspondencias = $data['recibidos']->concat($data['envios'])->sortByDesc('fecha')->values();
         return Excel::download(new CorrespondenciaExport($correspondencias), 'correspondencia.xlsx');
     }
 
-    public function exportPdf()
+    public function exportPdf(Request $request)
     {
-        $data = $this->getCorrespondenciaFiltered();
-        $correspondencias = $data['recibidos']->concat($data['envios'])->sortByDesc('fecha')->values();
-        $pdf = Pdf::loadView('admin.pdf.correspondencia_pdf', compact('correspondencias'))->setPaper('A4', 'landscape');
-        return $pdf->download('correspondencia.pdf');
+        $tab = $request->get('tab', 'todas');
+        $nitEmpresa = Auth::user()->nit_empresa;
+
+        // Segun tab activa, exportar solo esa categoria
+        if ($tab === 'externa') {
+            $items = $this->getBaseRecibidosQuery($nitEmpresa, $request)->get()
+                ->map(fn($i) => $this->formatRecibidoExport($i));
+        } elseif ($tab === 'interna') {
+            $items = $this->getBaseEnviosQuery($nitEmpresa, $request)
+                ->whereHas('radicado', fn($q) => $q->where('num_radicado', 'like', 'INT-%'))
+                ->get()->map(fn($i) => $this->formatEnvioExport($i));
+        } elseif ($tab === 'saliente') {
+            $items = $this->getBaseEnviosQuery($nitEmpresa, $request)
+                ->where(function($q) {
+                    $q->whereHas('radicado', fn($qr) => $qr->where('num_radicado', 'like', 'EXT-%')
+                        ->orWhere('num_radicado', 'like', 'SAL-%'))
+                      ->orWhere('id_estado_envio', 14);
+                })
+                ->get()->map(fn($i) => $this->formatEnvioExport($i));
+        } else {
+            // Todas las categorias combinadas
+            $data = $this->getCorrespondenciaFiltered($request);
+            $items = $data['recibidos']->concat($data['envios']);
+        }
+
+        $correspondencias = $items->sortByDesc('fecha')->values();
+        $filtrosActivos = array_filter([
+            'Tipo' => $request->tipo ? \App\Models\Tipo::find($request->tipo)?->tipo_nombre : null,
+            'Estado' => $request->estado_fil,
+            'Desde' => $request->fecha_desde,
+            'Hasta' => $request->fecha_hasta,
+            'Busqueda' => $request->q,
+            'Pestaña' => $tab !== 'todas' ? ucfirst($tab) : null,
+        ]);
+
+        $pdf = Pdf::loadView('admin.pdf.correspondencia_pdf', compact('correspondencias', 'filtrosActivos'))->setPaper('A4', 'landscape');
+        return $pdf->download('correspondencia_' . $tab . '.pdf');
     }
 
     public function historialInterna($id)

@@ -168,19 +168,24 @@
                 </div>
             </div>
 
+            <!-- Buscador columna Externa -->
+            <div class="mb-3 flex gap-2">
+                <input type="text" id="searchExterna" onkeyup="filtrarTabla('searchExterna','tablaExterna')" placeholder="Buscar radicado, procedencia, asunto..." class="w-full sm:w-80 px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 focus:outline-none focus:border-primary dark:text-white">
+            </div>
+
             <!-- Table Section Externa -->
             <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm">
+                    <table id="tablaExterna" class="w-full text-left text-sm responsive-table">
                         <thead class="text-xs text-gray-500 uppercase bg-gray-50 dark:bg-slate-900/50 dark:text-gray-400">
                             <tr>
-                                <th class="px-6 py-3 font-medium">Radicados</th>
-                                <th class="px-6 py-3 font-medium">Procedencia</th>
-                                <th class="px-6 py-3 font-medium">Detalles Documento</th>
-                                <th class="px-6 py-3 font-medium hidden lg:table-cell">Detalles Técnicos</th>
-                                <th class="px-6 py-3 font-medium hidden lg:table-cell">Ingreso / Registro</th>
-                                <th class="px-6 py-3 font-medium">Archivos / Anexos</th>
-                                <th class="px-6 py-3 font-medium">Estado</th>
+                                <th class="px-6 py-3 font-medium whitespace-nowrap">Radicados</th>
+                                <th class="px-6 py-3 font-medium whitespace-nowrap">Procedencia</th>
+                                <th class="px-6 py-3 font-medium whitespace-nowrap">Detalles Documento</th>
+                                <th class="px-6 py-3 font-medium">Detalles Técnicos</th>
+                                <th class="px-6 py-3 font-medium">Ingreso / Registro</th>
+                                <th class="px-6 py-3 font-medium whitespace-nowrap">Archivos</th>
+                                <th class="px-6 py-3 font-medium text-center whitespace-nowrap">Estado</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -203,7 +208,7 @@
                                         <span class="block text-[10px] text-slate-400 mt-1 uppercase font-medium">Ext: {{ $rec->num_radicado_ext }}</span>
                                     @endif
                                 </td>
-                                    <td class="px-6 py-4">
+                                    <td class="px-6 py-4" data-label="Procedencia">
                                         <div class="font-medium dark:text-white max-w-[180px] break-words whitespace-normal">{{ $procedencia }}</div>
                                         <span class="inline-flex items-center gap-0.5 text-xs {{ $esEmpresa ? 'text-blue-500' : 'text-purple-500' }} mt-0.5">
                                             <span class="material-symbols-outlined" style="font-size:13px">{{ $esEmpresa ? 'business' : 'person' }}</span>
@@ -216,10 +221,10 @@
                                             </div>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4 text-sm">
+                                    <td class="px-6 py-4 text-sm" data-label="Asunto">
                                         <div class="font-medium text-gray-900 dark:text-gray-100 mb-1 max-w-[200px] whitespace-normal break-words">{{ $rec->asunto }}</div>
                                     </td>
-                                    <td class="px-6 py-4 hidden lg:table-cell">
+                                    <td class="px-6 py-4" data-label="Detalles">
                                         <div class="flex flex-col gap-1.5 text-[11px] leading-tight text-gray-600 dark:text-gray-400">
                                             <div><span class="material-symbols-outlined text-[14px] align-text-bottom">description</span> {{ $rec->tipo ? $rec->tipo->tipo_nombre : 'Externo' }}</div>
                                             <div><span class="material-symbols-outlined text-[14px] align-text-bottom">layers</span> Folios: {{ $rec->folio ?? 0 }}</div>
@@ -240,10 +245,10 @@
                                             @endif
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 hidden lg:table-cell">
+                                    <td class="px-6 py-4" data-label="Fecha">
                                         <div class="font-medium text-gray-900 dark:text-white">{{ $rec->fecha_hora_recib ? \Carbon\Carbon::parse($rec->fecha_hora_recib)->format('d M Y') : 'N/A' }}</div>
                                     </td>
-                                     <td class="px-6 py-4">
+                                     <td class="px-6 py-4" data-label="Archivos">
                                           @php
                                               $archivosDatos = [
                                                   'id' => $rec->id_recibido,
@@ -279,17 +284,30 @@
                                               <span class="material-symbols-outlined text-[16px]">visibility</span> Ver Detalle
                                           </button>
                                      </td>
-                                    <td class="px-6 py-4">
+                                    <td class="px-6 py-4 actions-cell" data-label="Estado">
                                         @php
-                                            $bgClass = 'bg-gray-100 text-gray-800';
-                                            if (str_contains($estadoNombL, 'recibido')) $bgClass = 'bg-blue-100 text-blue-800';
-                                            elseif (str_contains($estadoNombL, 'tramite') || str_contains($estadoNombL, 'trámite')) $bgClass = 'bg-yellow-100 text-yellow-800';
-                                            elseif (str_contains($estadoNombL, 'finalizado')) $bgClass = 'bg-green-100 text-green-800';
+                                            $lowDesc = strtolower($rec->estado ? $rec->estado->estado_nomb : '');
+                                            $idEst = $rec->id_estado_rec;
+                                            $clases = 'bg-gray-100 text-gray-600 border-gray-200';
+                                            
+                                            if (str_contains($lowDesc, 'resuelto') || $idEst == 9) {
+                                                $clases = 'bg-emerald-50 text-emerald-600 border-emerald-200';
+                                            } elseif (str_contains($lowDesc, 'enviado') || str_contains($lowDesc, 'saliente') || $idEst == 12) {
+                                                $clases = 'bg-blue-50 text-blue-600 border-blue-200';
+                                            } elseif (str_contains($lowDesc, 'recibido') || $idEst == 7) {
+                                                $clases = 'bg-indigo-50 text-indigo-600 border-indigo-200';
+                                            } elseif (str_contains($lowDesc, 'pendiente') || in_array($idEst, [8, 13])) {
+                                                $clases = 'bg-amber-50 text-amber-600 border-amber-200';
+                                            } elseif (str_contains($lowDesc, 'rechazado') || $idEst == 11) {
+                                                $clases = 'bg-red-50 text-red-600 border-red-200';
+                                            } elseif (str_contains($lowDesc, 'archivado') || $idEst == 10) {
+                                                $clases = 'bg-slate-50 text-slate-600 border-slate-200';
+                                            }
                                         @endphp
-                                        <div class="flex flex-col gap-2 items-start">
-                                            <span class="px-2 py-0.5 rounded-full text-xs {{ $bgClass }}">{{ $rec->estado ? $rec->estado->estado_nomb : 'Sin estado' }}</span>
-                                            <a href="{{ route('admin.correspondencia.historial_externa', $rec->id_recibido) }}" class="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:text-blue-800 transition-colors">
-                                                <span class="material-symbols-outlined text-[14px]">history</span> Ver Historial
+                                        <div class="flex flex-col gap-2 items-center">
+                                            <span class="px-2 py-1 rounded-lg text-[10px] font-black uppercase border {{ $clases }}">{{ $rec->estado ? $rec->estado->estado_nomb : 'Sin estado' }}</span>
+                                            <a href="{{ route('admin.correspondencia.historial_externa', $rec->id_recibido) }}" class="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:text-blue-800 transition-colors whitespace-nowrap">
+                                                <span class="material-symbols-outlined text-[14px]">history</span> Historial
                                             </a>
                                         </div>
                                     </td>
@@ -325,19 +343,24 @@
                 </div>
             </div>
 
+            <!-- Buscador columna Interna -->
+            <div class="mb-3 flex gap-2">
+                <input type="text" id="searchInterna" onkeyup="filtrarTabla('searchInterna','tablaInterna')" placeholder="Buscar radicado, remitente, asunto..." class="w-full sm:w-80 px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 focus:outline-none focus:border-primary dark:text-white">
+            </div>
+
             <!-- Table Section Interna -->
             <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm">
+                    <table id="tablaInterna" class="w-full text-left text-sm responsive-table">
                         <thead class="text-xs text-gray-500 uppercase bg-gray-50 dark:bg-slate-900/50">
                             <tr>
-                                <th class="px-6 py-3 font-medium">Radicado</th>
-                                <th class="px-6 py-3 font-medium">De / Remitente</th>
-                                <th class="px-6 py-3 font-medium">Para / Destinatario</th>
+                                <th class="px-6 py-3 font-medium whitespace-nowrap">Radicado</th>
+                                <th class="px-6 py-3 font-medium whitespace-nowrap">Remitente</th>
+                                <th class="px-6 py-3 font-medium whitespace-nowrap">Destinatario</th>
                                 <th class="px-6 py-3 font-medium">Asunto</th>
                                 <th class="px-6 py-3 font-medium">Fecha</th>
-                                <th class="px-6 py-3 font-medium">Documentos</th>
-                                <th class="px-6 py-3 font-medium">Estado</th>
+                                <th class="px-6 py-3 font-medium text-center">Docs</th>
+                                <th class="px-6 py-3 font-medium text-center">Estado</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -349,17 +372,17 @@
                                              {{ $int->radicado ? $int->radicado->num_radicado : 'INT-N/A' }}
                                          </span>
                                      </td>
-                                     <td class="px-6 py-4">{{ $int->quienEnvia ? $int->quienEnvia->emple_nombres . ' ' . $int->quienEnvia->emple_apellidos : 'N/A' }}</td>
-                                     <td class="px-6 py-4">
+                                     <td class="px-6 py-4" data-label="Remitente">{{ $int->quienEnvia ? $int->quienEnvia->emple_nombres . ' ' . $int->quienEnvia->emple_apellidos : 'N/A' }}</td>
+                                     <td class="px-6 py-4" data-label="Destinatario">
                                          @if($int->detalles->count() > 0)
                                              {{ $int->detalles->first()->quienRecibe ? $int->detalles->first()->quienRecibe->emple_nombres : 'N/A' }}
                                          @else
                                              N/A
                                          @endif
                                      </td>
-                                     <td class="px-6 py-4">{{ $int->asunto }}</td>
-                                     <td class="px-6 py-4">{{ \Carbon\Carbon::parse($int->fecha)->format('d M Y') }}</td>
-                                     <td class="px-6 py-4">
+                                     <td class="px-6 py-4" data-label="Asunto">{{ $int->asunto }}</td>
+                                     <td class="px-6 py-4" data-label="Fecha">{{ \Carbon\Carbon::parse($int->fecha)->format('d M Y') }}</td>
+                                     <td class="px-6 py-4" data-label="Archivos">
                                          @php
                                              $quienRecibeNom = 'N/A';
                                              if($int->detalles->count() > 0 && $int->detalles->first()->quienRecibe) {
@@ -399,11 +422,22 @@
                                              <span class="material-symbols-outlined text-[16px]">visibility</span> Ver Detalle
                                          </button>
                                      </td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex flex-col gap-2 items-start">
-                                            <span class="px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-800">{{ $int->estadoEnvio ? $int->estadoEnvio->estado_nomb : 'Sin estado' }}</span>
-                                            <a href="{{ route('admin.correspondencia.historial_interna', $int->id_envio) }}" class="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:text-blue-800 transition-colors">
-                                                <span class="material-symbols-outlined text-[14px]">history</span> Ver Historial
+                                    <td class="px-6 py-4 actions-cell" data-label="Estado">
+                                        <div class="flex flex-col gap-2 items-center">
+                                            @php
+                                                $idEstInt = $int->id_estado_envio;
+                                                $lowInt = strtolower($int->estadoEnvio ? $int->estadoEnvio->estado_nomb : '');
+                                                $clasesInt = 'bg-gray-100 text-gray-600 border-gray-200';
+                                                
+                                                if (str_contains($lowInt, 'resuelto') || $idEstInt == 9) $clasesInt = 'bg-emerald-50 text-emerald-600 border-emerald-200';
+                                                elseif (str_contains($lowInt, 'enviado') || $idEstInt == 12) $clasesInt = 'bg-blue-50 text-blue-600 border-blue-200';
+                                                elseif (str_contains($lowInt, 'pendiente') || in_array($idEstInt, [8, 13])) $clasesInt = 'bg-amber-50 text-amber-600 border-amber-200';
+                                                elseif ($idEstInt == 11) $clasesInt = 'bg-red-50 text-red-600 border-red-200';
+                                                elseif ($idEstInt == 10) $clasesInt = 'bg-slate-50 text-slate-600 border-slate-200';
+                                            @endphp
+                                            <span class="px-2 py-1 rounded-lg text-[10px] font-black uppercase border {{ $clasesInt }}">{{ $int->estadoEnvio ? $int->estadoEnvio->estado_nomb : 'Sin estado' }}</span>
+                                            <a href="{{ route('admin.correspondencia.historial_interna', $int->id_envio) }}" class="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:text-blue-800 transition-colors whitespace-nowrap">
+                                                <span class="material-symbols-outlined text-[14px]">history</span> Historial
                                             </a>
                                         </div>
                                     </td>
@@ -421,24 +455,6 @@
         </div>
     </div>
 
-</div>
-
-<!-- Modal Ver Detalle (Unificado) -->
-<div id="modalDetalleCor" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
-    <div class="bg-white dark:bg-slate-900 rounded-[1rem] shadow-xl w-full max-w-3xl flex flex-col max-h-[95vh] overflow-hidden">
-        <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50">
-            <h3 class="font-bold text-lg text-gray-800 dark:text-white flex items-center gap-2">
-                <span class="material-symbols-outlined text-primary">description</span>
-                Detalle de Correspondencia
-            </h3>
-            <button onclick="toggleModal('modalDetalleCor')" class="text-gray-400 hover:text-gray-600"><span class="material-symbols-outlined">close</span></button>
-        </div>
-        <div class="p-6 space-y-6 overflow-y-auto flex-1" id="modalDetalleContent"></div>
-        <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end bg-gray-50 dark:bg-slate-800/80">
-            <button type="button" onclick="toggleModal('modalDetalleCor')" class="px-6 py-2 bg-gray-200 dark:bg-slate-700 rounded-lg text-sm text-gray-800 dark:text-white font-bold">Cerrar</button>
-        </div>
-    </div>
-
     <!-- ================= SALIENTE TAB ================= -->
     <div id="saliente" class="hidden" role="tabpanel">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -450,27 +466,36 @@
             </div>
         </div>
 
+        <!-- Buscador columna Saliente -->
+        <div class="mb-3 flex gap-2">
+            <input type="text" id="searchSaliente" onkeyup="filtrarTabla('searchSaliente','tablaSaliente')" placeholder="Buscar radicado, remitente, asunto..." class="w-full sm:w-80 px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 focus:outline-none focus:border-primary dark:text-white">
+        </div>
+
         <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm">
+                <table id="tablaSaliente" class="w-full text-left text-sm responsive-table">
                     <thead class="text-xs text-gray-500 uppercase bg-gray-50 dark:bg-slate-900/50">
                         <tr>
-                            <th class="px-6 py-3 font-medium">Radicado</th>
-                            <th class="px-6 py-3 font-medium">Enviado Por</th>
-                            <th class="px-6 py-3 font-medium">Destinatario</th>
+                            <th class="px-6 py-3 font-medium whitespace-nowrap">Radicado</th>
+                            <th class="px-6 py-3 font-medium whitespace-nowrap">Enviado Por</th>
+                            <th class="px-6 py-3 font-medium whitespace-nowrap">Destinatario</th>
                             <th class="px-6 py-3 font-medium">Asunto</th>
                             <th class="px-6 py-3 font-medium">Fecha</th>
-                            <th class="px-6 py-3 font-medium">Documentos</th>
-                            <th class="px-6 py-3 font-medium">Estado</th>
+                            <th class="px-6 py-3 font-medium text-center">Docs</th>
+                            <th class="px-6 py-3 font-medium text-center">Estado</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                         @forelse($correspondenciasSalientes as $sal)
                             @php
                                 $estadoSalNomb = $sal->estadoEnvio ? $sal->estadoEnvio->estado_nomb : 'Sin estado';
-                                $quienRecibeNom = 'N/A';
+                                $quienRecibeNom = $sal->destino ?? 'N/A';
                                 if($sal->detalles->count() > 0 && $sal->detalles->first()->quienRecibe) {
                                     $quienRecibeNom = $sal->detalles->first()->quienRecibe->emple_nombres . ' ' . $sal->detalles->first()->quienRecibe->emple_apellidos;
+                                }
+                                $areaDestSal = 'N/A';
+                                if($sal->detalles->count() > 0 && $sal->detalles->first()->quienRecibe) {
+                                    $areaDestSal = $sal->detalles->first()->quienRecibe->area->area_nom ?? 'Sin área';
                                 }
                             @endphp
                             <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors align-top" data-envio-id="{{ $sal->id_envio }}">
@@ -480,11 +505,11 @@
                                         {{ $sal->radicado ? $sal->radicado->num_radicado : 'SAL-N/A' }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4">{{ $sal->quienEnvia ? $sal->quienEnvia->emple_nombres . ' ' . $sal->quienEnvia->emple_apellidos : 'N/A' }}</td>
-                                <td class="px-6 py-4">{{ $quienRecibeNom }}</td>
-                                <td class="px-6 py-4 max-w-[180px] whitespace-normal break-words">{{ $sal->asunto }}</td>
-                                <td class="px-6 py-4">{{ $sal->fecha ? \Carbon\Carbon::parse($sal->fecha)->format('d M Y') : 'N/A' }}</td>
-                                <td class="px-6 py-4">
+                                <td class="px-6 py-4" data-label="Enviado Por">{{ $sal->quienEnvia ? $sal->quienEnvia->emple_nombres . ' ' . $sal->quienEnvia->emple_apellidos : 'N/A' }}</td>
+                                <td class="px-6 py-4" data-label="Destinatario">{{ $quienRecibeNom }}</td>
+                                <td class="px-6 py-4 max-w-[180px] whitespace-normal break-words" data-label="Asunto">{{ $sal->asunto }}</td>
+                                <td class="px-6 py-4" data-label="Fecha">{{ $sal->fecha ? \Carbon\Carbon::parse($sal->fecha)->format('d M Y') : 'N/A' }}</td>
+                                <td class="px-6 py-4" data-label="Archivos">
                                     @php
                                         $archivosSal = [
                                             'id' => $sal->id_envio,
@@ -510,11 +535,22 @@
                                         <span class="material-symbols-outlined text-[16px]">visibility</span> Ver Detalle
                                     </button>
                                 </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex flex-col gap-2 items-start">
-                                        <span class="estado-badge px-2 py-0.5 rounded-full text-xs bg-orange-100 text-orange-800">{{ $estadoSalNomb }}</span>
-                                        <a href="{{ route('admin.correspondencia.historial_interna', $sal->id_envio) }}" class="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:text-blue-800 transition-colors">
-                                            <span class="material-symbols-outlined text-[14px]">history</span> Ver Historial
+                                <td class="px-6 py-4 actions-cell" data-label="Estado">
+                                    <div class="flex flex-col gap-2 items-center">
+                                        @php
+                                            $idEstSal = $sal->id_estado_envio;
+                                            $lowSal = strtolower($sal->estadoEnvio ? $sal->estadoEnvio->estado_nomb : '');
+                                            $clasesSal = 'bg-gray-100 text-gray-600 border-gray-200';
+                                            
+                                            if (str_contains($lowSal, 'resuelto') || $idEstSal == 9) $clasesSal = 'bg-emerald-50 text-emerald-600 border-emerald-200';
+                                            elseif (str_contains($lowSal, 'enviado') || $idEstSal == 12) $clasesSal = 'bg-blue-50 text-blue-600 border-blue-200';
+                                            elseif (str_contains($lowSal, 'pendiente') || in_array($idEstSal, [8, 13])) $clasesSal = 'bg-amber-50 text-amber-600 border-amber-200';
+                                            elseif ($idEstSal == 11) $clasesSal = 'bg-red-50 text-red-600 border-red-200';
+                                            elseif ($idEstSal == 10) $clasesSal = 'bg-slate-50 text-slate-600 border-slate-200';
+                                        @endphp
+                                        <span class="px-2 py-1 rounded-lg text-[10px] font-black uppercase border {{ $clasesSal }}">{{ $estadoSalNomb }}</span>
+                                        <a href="{{ route('admin.correspondencia.historial_interna', $sal->id_envio) }}" class="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:text-blue-800 transition-colors whitespace-nowrap">
+                                            <span class="material-symbols-outlined text-[14px]">history</span> Historial
                                         </a>
                                     </div>
                                 </td>
@@ -530,14 +566,33 @@
             </div>
         </div>
     </div>
+
 </div>
+
+<!-- Modal Ver Detalle (Unificado) -->
+<div id="modalDetalleCor" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-slate-900 rounded-[1rem] shadow-xl w-full max-w-3xl flex flex-col max-h-[95vh] overflow-hidden">
+        <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50">
+            <h3 class="font-bold text-lg text-gray-800 dark:text-white flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">description</span>
+                Detalle de Correspondencia
+            </h3>
+            <button onclick="toggleModal('modalDetalleCor')" class="text-gray-400 hover:text-gray-600"><span class="material-symbols-outlined">close</span></button>
+        </div>
+        <div class="p-6 space-y-6 overflow-y-auto flex-1" id="modalDetalleContent"></div>
+        <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end bg-gray-50 dark:bg-slate-800/80">
+            <button type="button" onclick="toggleModal('modalDetalleCor')" class="px-6 py-2 bg-gray-200 dark:bg-slate-700 rounded-lg text-sm text-gray-800 dark:text-white font-bold">Cerrar</button>
+        </div>
+    </div>
+
+
 
 <!-- Modal Exportar -->
 <div id="exportModalCor" class="fixed inset-0 bg-black/40 flex items-center justify-center hidden z-50 p-4">
     <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg w-72 p-5 relative">
         <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-4">Exportar Correspondencia</h3>
         <div class="flex flex-col gap-3">
-            <a href="{{ route('admin.correspondencia.export.pdf') }}" class="flex items-center gap-2 px-4 py-2 text-sm font-semibold border rounded-lg hover:bg-gray-100 dark:text-white"><span class="material-symbols-outlined text-red-600">picture_as_pdf</span> PDF</a>
+            <a id="btnExportPdf" href="#" class="flex items-center gap-2 px-4 py-2 text-sm font-semibold border rounded-lg hover:bg-gray-100 dark:text-white"><span class="material-symbols-outlined text-red-600">picture_as_pdf</span> PDF</a>
             <a href="{{ route('admin.correspondencia.export.excel') }}" class="flex items-center gap-2 px-4 py-2 text-sm font-semibold border rounded-lg hover:bg-gray-100 dark:text-white"><span class="material-symbols-outlined text-green-600">grid_on</span> Excel</a>
         </div>
         <button onclick="closeExportModalCor()" class="mt-4 w-full text-xs text-gray-500 hover:text-gray-700">Cancelar</button>
@@ -545,7 +600,19 @@
 </div>
 
 <script>
-    function toggleModal(id) { document.getElementById(id).classList.toggle('hidden'); }
+    function toggleModal(id) { 
+        const m = document.getElementById(id); 
+        if(m && m.classList.contains('hidden')) { openModal(id); } else { closeModal(id); } 
+    }
+
+    // ── Buscador por columna ─────────────────────────────────────────
+    function filtrarTabla(inputId, tableId) {
+        const filtro = document.getElementById(inputId).value.toLowerCase();
+        const filas  = document.querySelectorAll('#' + tableId + ' tbody tr');
+        filas.forEach(fila => {
+            fila.style.display = fila.textContent.toLowerCase().includes(filtro) ? '' : 'none';
+        });
+    }
 
     function switchTab(tab) {
         const tabs = ['externa', 'interna', 'saliente'];
@@ -563,6 +630,18 @@
             }
         });
         sessionStorage.setItem('activeCorrespondenceTab', tab);
+
+        // Actualizar URL del PDF con la pestaña activa
+        actualizarUrlPdf(tab);
+    }
+
+    // ── PDF filtrado: pasa los query params actuales + tab activa ─────
+    function actualizarUrlPdf(tab) {
+        const params = new URLSearchParams(window.location.search);
+        params.set('tab', tab);
+        const base = '{{ route("admin.correspondencia.export.pdf") }}';
+        const btn = document.getElementById('btnExportPdf');
+        if (btn) btn.href = base + '?' + params.toString();
     }
 
     // T4: Polling de estados en tiempo real cada 30 segundos
@@ -586,7 +665,7 @@
                         if (badge) badge.textContent = data.estado;
                     }).catch(() => {});
             });
-        }, 30000); // cada 30 segundos
+        }, 30000);
     }
 
     function abrirModalDetalle(datosJson) {
@@ -595,7 +674,6 @@
         
         let html = `
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {{-- Sección Info Básica --}}
                 <div class="space-y-4">
                     <div class="border-b pb-2">
                         <h4 class="text-xs font-black text-slate-400 uppercase tracking-wider">Información General</h4>
@@ -619,7 +697,6 @@
                             <span class="px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-black uppercase rounded-full border border-blue-100">${datos.estado}</span>
                         </div>
                     </div>
-
                     <div class="pt-2">
                         <p class="text-[10px] text-gray-500 uppercase font-black mb-1">Asunto / Descripción</p>
                         <div class="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-800 text-sm italic text-slate-600 dark:text-slate-400">
@@ -627,13 +704,10 @@
                         </div>
                     </div>
                 </div>
-
-                {{-- Sección Participantes y Archivos --}}
                 <div class="space-y-4">
                     <div class="border-b pb-2">
                         <h4 class="text-xs font-black text-slate-400 uppercase tracking-wider">Actores y Documentos</h4>
                     </div>
-                    
                     <div class="space-y-3">
                         <div class="flex items-start gap-2">
                             <span class="material-symbols-outlined text-slate-400 text-sm mt-0.5">person</span>
@@ -651,13 +725,10 @@
                             </div>
                         </div>` : ''}
                     </div>
-
                     <div class="pt-4 space-y-3">
                         <p class="text-[10px] text-gray-500 uppercase font-black mb-2 flex items-center gap-1">
                             <span class="material-symbols-outlined text-sm">attach_file</span> Archivos Adjuntos
                         </p>
-                        
-                        {{-- Principal --}}
                         ${datos.principal ? `
                         <a href="${datos.principal}" target="_blank" class="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-xl hover:bg-blue-100 transition-colors group">
                            <div class="flex items-center gap-2">
@@ -667,8 +738,6 @@
                            </div>
                            <span class="material-symbols-outlined text-blue-400 group-hover:translate-x-1 transition-transform">open_in_new</span>
                         </a>` : '<p class="text-xs text-slate-400 italic">No hay documento principal cargado.</p>'}
-
-                        {{-- Anexos --}}
                         ${datos.anexos && datos.anexos.length > 0 ? `
                         <div class="grid grid-cols-1 gap-2 mt-2">
                             ${datos.anexos.map(ax => `
@@ -679,7 +748,6 @@
                                 </a>
                             `).join('')}
                         </div>` : ''}
-
                         ${datos.anexo_texto ? `
                         <div class="p-2 border-l-4 border-orange-400 bg-orange-50 dark:bg-orange-900/20 text-[11px] text-orange-800 dark:text-orange-200">
                             <strong>Nota de Anexo Físico:</strong> ${datos.anexo_texto}
@@ -688,20 +756,57 @@
                 </div>
             </div>
         `;
-
         container.innerHTML = html;
         toggleModal('modalDetalleCor');
     }
 
-    function openExportModalCor() { document.getElementById('exportModalCor').classList.remove('hidden'); }
-    function closeExportModalCor() { document.getElementById('exportModalCor').classList.add('hidden'); }
+    function openExportModalCor() { openModal('exportModalCor'); }
+    function closeExportModalCor() { closeModal('exportModalCor'); }
 
     document.addEventListener('DOMContentLoaded', () => {
         const urlParams = new URLSearchParams(window.location.search);
         const tab = urlParams.get('tab') || sessionStorage.getItem('activeCorrespondenceTab') || 'externa';
         if (tab) switchTab(tab);
-        iniciarPollingEstados(); // T4: iniciar polling de estados
+        iniciarPollingEstados();
     });
 </script>
 
+    <style>
+        @media print {
+            aside, nav, header, #exportModalCor, .p-6.border-b, .mb-4.border-b, .grid.grid-cols-1.md\:grid-cols-5, .mb-3.flex.gap-2, .px-6.py-4.border-t, tr td:last-child, button {
+                display: none !important;
+            }
+            body {
+                background-color: white !important;
+                color: black !important;
+                font-size: 10pt;
+            }
+            .space-y-6 {
+                padding: 0 !important;
+            }
+            .bg-white.dark\:bg-slate-800 {
+                margin: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
+            table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+            }
+            th, td {
+                border: 1px solid #ddd !important;
+                padding: 8px !important;
+                -webkit-print-color-adjust: exact;
+            }
+            th {
+                background-color: #f8f9fa !important;
+            }
+            .hidden {
+                display: table-cell !important;
+            }
+            .lg\:table-cell, .md\:table-cell, .sm\:table-cell {
+                display: table-cell !important;
+            }
+        }
+    </style>
 @endsection

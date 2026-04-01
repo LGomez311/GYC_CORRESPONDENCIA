@@ -27,6 +27,8 @@ class ExternarecController extends Controller
         // Filtro de tipo recibido desde la URL (?tipo=persona|entidad)
         $tipoFiltro = $request->input('tipo', 'todos');
 
+        $tab = $request->input('tab', 'externa');
+
         // Pull recibido records for this company, joined with tipo, prioridad and estado
         $query = DB::table('recibido as r')
             ->leftJoin('tipo as t',      'r.id_tipo',       '=', 't.id_tipo')
@@ -34,8 +36,18 @@ class ExternarecController extends Controller
             ->leftJoin('estado as e',    'r.id_estado_rec', '=', 'e.id_estado')
             ->leftJoin('radicados as rad', 'r.num_radicado_int', '=', 'rad.id_radicado')
             ->where('r.nit_empresa', $nitEmpresa)
-            ->whereIn('r.id_estado_rec', [7, 12]) // Show 'Recibido' (External) and 'Enviado' records
-            ->orderByDesc('r.fecha_hora_recib')
+            ->whereIn('r.id_estado_rec', [7, 8, 9, 11, 12, 13]); // Show all management states including Resolved
+
+        // Filtrar por pestaña según el prefijo del radicado
+        if ($tab === 'interna') {
+            $query->where('rad.num_radicado', 'like', 'INT-%');
+        } elseif ($tab === 'saliente') {
+            $query->where('rad.num_radicado', 'like', 'SAL-%');
+        } else { // externa
+            $query->where('rad.num_radicado', 'like', 'EXT-%');
+        }
+
+        $query->orderByDesc('r.fecha_hora_recib')
             ->select(
                 'r.id_recibido',
                 'r.num_radicado_ext',
@@ -53,6 +65,7 @@ class ExternarecController extends Controller
                 'p.prioridad_nombre',
                 'e.estado_nomb',
                 'r.id_estado_rec',
+                'r.folio',
                 DB::raw("(
                     SELECT GROUP_CONCAT(DISTINCT COALESCE(CONCAT(emp.emple_nombres, ' ', emp.emple_apellidos), CONCAT(rem.rem_nombres, ' ', rem.rem_apellidos)) SEPARATOR ', ')
                     FROM detalle_recibido dr
@@ -117,8 +130,22 @@ class ExternarecController extends Controller
             })
             ->sortBy('emple_nombres')
             ->values();
+        $remDoc = $remitente ? $remitente->rem_doc : null;
+        $statsBase = DB::table('recibido')
+            ->where('nit_empresa', $nitEmpresa)
+            ->where(function($q) use ($remDoc) {
+                $q->where('doc_quien_registra', $remDoc)
+                  ->orWhereNull('doc_quien_registra');
+            });
 
-        return view('remitente.externarec', compact('tipos', 'estados', 'ciudades', 'radicados', 'recibidos', 'tipoFiltro', 'todosDestinatarios'));
+        $stats = [
+            'total'     => (clone $statsBase)->count(),
+            'rejected'  => (clone $statsBase)->where('id_estado_rec', 11)->count(),
+            'resolved'  => (clone $statsBase)->whereIn('id_estado_rec', [9, 10, 14])->count(),
+            'pending'   => (clone $statsBase)->whereNotIn('id_estado_rec', [9, 10, 11, 14])->count(),
+        ];
+
+        return view('remitente.recibidos', compact('tipos', 'estados', 'ciudades', 'radicados', 'recibidos', 'tipoFiltro', 'todosDestinatarios', 'tab', 'stats'));
     }
 
     /**
@@ -185,9 +212,9 @@ class ExternarecController extends Controller
             'folio'              => 'nullable|integer|min:1',
             'anexo'              => 'nullable|string|max:500',
             'observaciones'      => 'nullable|string|max:250',
-            'archivo'            => 'nullable|file|mimes:pdf|max:5120',
-            'anexos'             => 'nullable|array|max:1',
-            'anexos.*'           => 'file|mimes:pdf|max:5120',
+            'archivo'            => 'nullable|file|mimes:pdf,doc,docx,jpg,png|max:20480',
+            'anexos'             => 'nullable|array|max:5', // Aumentado para permitir más anexos si es necesario
+            'anexos.*'           => 'file|mimes:pdf,doc,docx,jpg,png|max:20480',
             'destinatarios'      => 'nullable|array',
             'destinatarios.*'    => 'nullable|string|max:20',
         ];
@@ -219,6 +246,23 @@ class ExternarecController extends Controller
         }
 
         // 3. Procesamiento del archivo digitalizado (documento principal)
+        // Validación de tamaño total acumulado (archivo + anexos) = máximo 20MB
+        $totalBytes = 0;
+        if ($request->hasFile('archivo')) {
+            $totalBytes += $request->file('archivo')->getSize();
+        }
+        if ($request->hasFile('anexos')) {
+            foreach ($request->file('anexos') as $anexoFile) {
+                $totalBytes += $anexoFile->getSize();
+            }
+        }
+        $maxBytes = 20 * 1024 * 1024; // 20MB
+        if ($totalBytes > $maxBytes) {
+            return redirect()->back()->withInput()->withErrors([
+                'archivo' => 'El tamaño total de archivos adjuntos no debe superar los 20MB. Tamaño actual: ' . round($totalBytes / 1024 / 1024, 2) . 'MB.',
+            ]);
+        }
+
         $rutaArchivo = null;
         if ($request->hasFile('archivo')) {
             $rutaArchivo = $request->file('archivo')->store('correspondencia', 'public');
@@ -444,13 +488,22 @@ class ExternarecController extends Controller
                 'doc_quien_registra' => $remitente->rem_doc
             ]);
 
-            // 2. Insertar registro en detalle_recibido
+            // 2. Buscar un responsable técnico válido (Empleado) para satisfacer la FK de detalle_recibido
+            // Buscamos primero un administrador o el primer empleado disponible de la misma empresa
+            $responsableTecnico = DB::table('empleado')
+                ->where('nit_empresa', $remitente->nit_empresa)
+                ->orderBy('emple_rol', 'asc') // Admins suelen tener roles bajos (1 o 2)
+                ->first();
+
+            $idResponsable = $responsableTecnico ? $responsableTecnico->emple_doc : 999000; // Fallback extremo a Super Admin
+
+            // 3. Insertar registro en detalle_recibido (usando un empleado válido para la FK)
             DB::table('detalle_recibido')->insert([
                 'det_id_recibido'  => $id,
-                'det_doc_empleado' => null,
+                'det_doc_empleado' => $idResponsable,
                 'fecha_re'         => now(),
                 'id_estado_rec'    => 11, // Rechazado
-                'observaciones'    => 'Correspondencia Rechazada por Remitente: ' . $validated['observaciones'],
+                'observaciones'    => "Rechazado por (Remitente) {$remitente->rem_nombres} {$remitente->rem_apellidos}: " . $validated['observaciones'],
             ]);
 
             DB::commit();
@@ -462,8 +515,13 @@ class ExternarecController extends Controller
                 $motivo = $validated['observaciones'];
                 $urlEnviar = route('public.correspondencia.enviar');
 
+                // Obtener anexos para adjuntar
+                $anexos_originales = DB::table('anexo_recibido')
+                    ->where('id_recibido', $id)
+                    ->get();
+
                 try {
-                    \Illuminate\Support\Facades\Mail::send([], [], function ($message) use ($correoDestino, $asuntoEmail, $motivo, $recibido, $urlEnviar) {
+                    \Illuminate\Support\Facades\Mail::send([], [], function ($message) use ($correoDestino, $asuntoEmail, $motivo, $recibido, $urlEnviar, $anexos_originales) {
                         $message->to($correoDestino)
                             ->subject($asuntoEmail)
                             ->html("
@@ -496,16 +554,41 @@ class ExternarecController extends Controller
                                         <p style='color: #334155; font-size: 15px; margin-bottom: 16px;'>Por favor, corrija los inconvenientes mencionados y vuelva a radicar su correspondencia haciendo clic en el siguiente botón:</p>
                                         <a href='{$urlEnviar}' style='background-color: #2563eb; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;'>Volver a Enviar Documento</a>
                                     </div>
+
+                                    <p style='color: #64748b; font-size: 12px; font-style: italic; text-align: center; margin-bottom: 24px;'>Adjunto a este correo encontrará el/los documento(s) que usted envió originalmente para su referencia.</p>
                                     
                                     <p style='font-size: 11px; color: #94a3b8; text-align: center; margin: 0;'>Este es un mensaje automático generado por el Sistema de Gestión Documental. Por favor no responda a este correo.</p>
                                 </div>
                             </div>");
+
+                        // Adjuntar Documento Principal
+                        if ($recibido->archivo) {
+                            $pathP = storage_path('app/public/' . $recibido->archivo);
+                            if (file_exists($pathP)) {
+                                $message->attach($pathP, [
+                                    'as' => 'Documento_Original_' . $recibido->id_recibido . '.pdf'
+                                ]);
+                            }
+                        }
+
+                        // Adjuntar Anexos
+                        foreach ($anexos_originales as $an) {
+                            if ($an->ruta_archivo) {
+                                $pathA = storage_path('app/public/' . $an->ruta_archivo);
+                                if (file_exists($pathA)) {
+                                    $message->attach($pathA, [
+                                        'as' => $an->nombre_original ?: 'Anexo_' . $an->id_anexo_rec . '.pdf'
+                                    ]);
+                                }
+                            }
+                        }
                     });
                 } catch (\Exception $mailEx) {
                     \Illuminate\Support\Facades\Log::error('Error enviando correo de rechazo: ' . $mailEx->getMessage());
                     // Correo falló pero se continua con el éxito del rechazo en base de datos.
                 }
             }
+
 
             return redirect()->back()->with('success', 'Correspondencia rechazada exitosamente.');
 

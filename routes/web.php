@@ -254,6 +254,7 @@ Route::prefix('empleado')->middleware(['auth:web', 'licencia.activa'])->name('em
 // ================= REMITENTE =================
 Route::prefix('remitente')->middleware(['auth:remitente', 'licencia.activa'])->name('remitente.')->group(function () {
     Route::get('/', [RemitenteDashboardController::class, 'index'])->name('index');
+    Route::get('/historial', [RemitenteDashboardController::class, 'historial'])->name('historial');
     
     // Antiguas y actuales vistas y modulos
     Route::get('/interna', function () { return view('remitente.interna'); })->name('interna');
@@ -277,10 +278,31 @@ Route::prefix('remitente')->middleware(['auth:remitente', 'licencia.activa'])->n
     Route::get('/reportes', [RemitenteDashboardController::class, 'reportes'])->name('reportes');
     Route::post('/reportes/export/pdf', [RemitenteDashboardController::class, 'exportPdf'])->name('reportes.export.pdf');
     Route::get('/history/{id}', [RemitenteDashboardController::class, 'getHistory'])->name('history');
+    Route::get('/envio/{id}/history', [RemitenteDashboardController::class, 'getHistoryEnvio'])->name('envio.history');
     Route::post('/{id}/finalize', [RemitenteDashboardController::class, 'finalize'])->name('finalize');
     Route::post('/{id}/store-saliente', [RemitenteDashboardController::class, 'storeSalienteFromResponse'])->name('store_saliente');
     Route::post('/envio/{id}/store-saliente', [RemitenteDashboardController::class, 'storeSalienteFromEnvio'])->name('store_saliente_envio');
     Route::post('/{id}/update-rejected', [RemitenteDashboardController::class, 'updateRejected'])->name('update_rejected');
+});
+
+// ================= VENTANILLA API ENDPOINTS =================
+// These mirror the Remitente endpoints for the modernized frontend
+Route::prefix('ventanilla')->middleware(['auth:remitente', 'licencia.activa'])->name('ventanilla.')->group(function () {
+    Route::get('/externarec', [ExternarecController::class, 'index'])->name('externarec');
+    Route::get('/externaenv/{id}/history', [ExternaenvController::class, 'getHistory'])->name('externaenv.history');
+    Route::post('/externarec/{id}/asignar', [ExternarecController::class, 'asignarDestinatarios'])->name('externarec.asignar');
+    Route::post('/externarec/{id}/rechazar', [ExternarecController::class, 'rechazar'])->name('externarec.rechazar');
+    Route::get('/externarec/{id}/archivos', [ExternarecController::class, 'getArchivos'])->name('externarec.archivos');
+
+    Route::get('/history/{id}', [RemitenteDashboardController::class, 'getHistory'])->name('history');
+    Route::get('/envio/{id}/history', [RemitenteDashboardController::class, 'getHistoryEnvio'])->name('envio.history');
+    Route::get('/trazabilidad/{id}/pdf', [RemitenteDashboardController::class, 'exportHistoryPdf'])->name('trazabilidad.pdf');
+    Route::post('/{id}/store-saliente', [RemitenteDashboardController::class, 'storeSalienteFromResponse'])->name('store_saliente');
+    Route::post('/envio/{id}/store-saliente', [RemitenteDashboardController::class, 'storeSalienteFromEnvio'])->name('store_saliente_envio');
+    Route::post('/{id}/update-rejected', [RemitenteDashboardController::class, 'updateRejected'])->name('update_rejected');
+    Route::get('/externaenv', [ExternaenvController::class, 'index'])->name('externaenv');
+    Route::post('/externaenv', [ExternaenvController::class, 'store'])->name('externaenv.store');
+    Route::get('/empleados/buscar', [ExternaenvController::class, 'buscarEmpleados'])->name('buscar_empleados');
 });
 
 // Original legacy names that lacked prefixes but were highly linked

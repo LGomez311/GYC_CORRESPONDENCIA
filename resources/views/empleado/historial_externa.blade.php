@@ -1,6 +1,91 @@
 @extends('empleado.layouts.app')
 
 @section('content')
+
+<style>
+    @media print {
+        /* Hide all interactive elements */
+        aside, nav, header, button, input, select, .no-print,
+        [id^="btn-"], .flex.gap-2, .transition-all {
+            display: none !important;
+        }
+
+        /* Show print content */
+        .overflow-y-auto, .max-h-\[60vh\],
+        .max-h-\[calc\(100vh-280px\)\] {
+            overflow: visible !important;
+            max-height: none !important;
+        }
+
+        body {
+            background-color: white !important;
+            color: #1a1a1a !important;
+            font-size: 11pt;
+            margin: 10mm;
+        }
+
+        .space-y-6 { display: block; }
+        .grid { display: block !important; }
+        .lg\:col-span-1, .lg\:col-span-2 { width: 100% !important; }
+
+        /* Card styles */
+        .bg-white { background-color: white !important; }
+        .dark\:bg-slate-800 { background-color: white !important; }
+        .rounded-xl { page-break-inside: avoid; }
+
+        /* Header */
+        h1, h2 { 
+            font-size: 16pt !important;
+            font-weight: bold !important;
+            margin: 15pt 0 10pt 0 !important;
+            color: #1a1a1a !important;
+        }
+
+        h3 { 
+            font-size: 12pt !important;
+            font-weight: bold !important;
+            margin: 10pt 0 5pt 0 !important;
+        }
+
+        /* Info boxes */
+        .p-5, .p-4 { page-break-inside: avoid; }
+
+        /* Timeline */
+        .relative.border-l-2 { border-left: 2px solid #333 !important; }
+        .bg-gray-50, .bg-slate-50 { background-color: #f5f5f5 !important; }
+
+        /* Lists */
+        ul, li { margin: 5pt 0 !important; }
+
+        /* Links and text */
+        a { 
+            color: #0066cc !important; 
+            text-decoration: underline !important;
+        }
+
+        /* Status badges */
+        .px-3.py-1 { 
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            border: 1px solid #333;
+            display: inline-block;
+        }
+
+        /* Hidden elements visibility */
+        .hidden.lg\:table-cell,
+        .hidden.md\:table-cell,
+        .hidden.sm\:table-cell { 
+            display: table-cell !important; 
+        }
+
+        /* Dark mode override */
+        .dark\:text-white, .text-white { color: #1a1a1a !important; }
+        .dark\:text-gray-300, .text-gray-300 { color: #333 !important; }
+        .dark\:bg-slate-900 { background-color: white !important; }
+        .dark\:border-gray-700 { border-color: #333 !important; }
+    }
+</style>
+
     <div class="space-y-6">
         <!-- Header -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -29,6 +114,10 @@
                 </p>
             </div>
             <div class="flex gap-2">
+                <button onclick="window.print()" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">
+                    <span class="material-symbols-outlined text-[18px]">print</span>
+                    Imprimir
+                </button>
                 <a href="{{ route('empleado.correspondencia_recibida') }}"
                     class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors shadow-sm">
                     <span class="material-symbols-outlined text-[18px]">arrow_back</span>

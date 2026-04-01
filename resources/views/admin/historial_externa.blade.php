@@ -137,42 +137,29 @@
                             @foreach ($destinatarios as $dest_id => $trazas)
                                 @php
                                     $ultimo = $trazas->last();
-                                    $estadoNomb = strtolower($ultimo->estado?->estado_nomb ?? '');
-                                    $badgeClass = 'bg-gray-100 text-gray-600';
-                                    if (str_contains($estadoNomb, 'recibido')) {
-                                        $badgeClass = 'bg-blue-100 text-blue-700';
-                                    } elseif (
-                                        str_contains($estadoNomb, 'tramite') ||
-                                        str_contains($estadoNomb, 'trámite')
-                                    ) {
-                                        $badgeClass = 'bg-yellow-100 text-yellow-700';
-                                    } elseif (
-                                        str_contains($estadoNomb, 'finalizado') ||
-                                        str_contains($estadoNomb, 'resuelto')
-                                    ) {
-                                        $badgeClass = 'bg-green-100 text-blue-700';
-                                    } elseif (str_contains($estadoNomb, 'rechazado')) {
-                                        $badgeClass = 'bg-red-100 text-red-700';
-                                    }
+                                    $lowEst = strtolower($ultimo->estado?->estado_nomb ?? '');
+                                    $idEst = $ultimo->id_estado_rec;
+                                    $clases = 'bg-gray-100 text-gray-600 border-gray-200';
+                                    
+                                    if (in_array($idEst, [9, 10])) $clases = 'bg-emerald-50 text-emerald-600 border-emerald-200';
+                                    elseif (str_contains($lowEst, 'enviado') || $idEst == 12) $clases = 'bg-blue-50 text-blue-600 border-blue-200';
+                                    elseif (str_contains($lowEst, 'recibido') || $idEst == 7) $clases = 'bg-indigo-50 text-indigo-600 border-indigo-200';
+                                    elseif (str_contains($lowEst, 'pendiente') || in_array($idEst, [8, 13])) $clases = 'bg-amber-50 text-amber-600 border-amber-200';
+                                    elseif (str_contains($lowEst, 'rechazado') || $idEst == 11) $clases = 'bg-red-50 text-red-600 border-red-200';
                                 @endphp
                                 <li class="p-4 hover:bg-gray-50 dark:hover:bg-slate-900 transition-colors">
-                                    <div class="flex items-start justify-between">
+                                    <div class="flex items-start justify-between gap-2">
                                         <div class="flex items-center gap-3">
-                                            <div
-                                                class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-slate-700 flex items-center justify-center">
-                                                <span
-                                                    class="material-symbols-outlined text-[18px] text-gray-400">person</span>
+                                            <div class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-slate-700 flex items-center justify-center shrink-0">
+                                                <span class="material-symbols-outlined text-[18px] text-gray-400">person</span>
                                             </div>
-                                            <div>
-                                                <p class="text-sm font-bold dark:text-white">
-                                                    {{ $ultimo->empleado->emple_nombres ?? 'N/A' }}</p>
-                                                <p class="text-[10px] text-gray-500">
-                                                    {{ $ultimo->empleado->area->area_nom ?? 'Sin Área' }}</p>
+                                            <div class="min-w-0">
+                                                <p class="text-sm font-bold dark:text-white truncate">{{ $ultimo->empleado->emple_nombres ?? 'N/A' }}</p>
+                                                <p class="text-[10px] text-gray-500 truncate">{{ $ultimo->empleado->area->area_nom ?? 'Sin Área' }}</p>
                                             </div>
                                         </div>
-                                        <span
-                                            class="px-2 py-0.5 rounded text-[9px] font-bold uppercase {{ $badgeClass }}">
-                                            {{ $ultimo->estado?->estado_nomb ?? 'N/A' }}
+                                        <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase border shrink-0 {{ $clases }}">
+                                            {{ in_array($idEst, [9, 10]) ? 'RESUELTO' : ($ultimo->estado?->estado_nomb ?? 'N/A') }}
                                         </span>
                                     </div>
                                 </li>
@@ -196,28 +183,16 @@
                         <div class="relative border-l-2 border-gray-100 dark:border-gray-700 ml-4 space-y-10 pb-4">
                             @foreach ($trazabilidad as $trace)
                                 @php
-                                    $estadoTrace = strtolower($trace->estado?->estado_nomb ?? '');
+                                    $lowT = strtolower($trace->estado?->estado_nomb ?? '');
+                                    $idT = $trace->id_estado_rec;
                                     $pointColor = 'bg-gray-300';
                                     $icon = 'radio_button_checked';
-                                    if (str_contains($estadoTrace, 'recibido')) {
-                                        $pointColor = 'bg-blue-500';
-                                        $icon = 'mark_email_read';
-                                    } elseif (str_contains($estadoTrace, 'tramite')) {
-                                        $pointColor = 'bg-yellow-500';
-                                        $icon = 'pending';
-                                    } elseif (
-                                        str_contains($estadoTrace, 'finalizado') ||
-                                        str_contains($estadoTrace, 'resuelto')
-                                    ) {
-                                        $pointColor = 'bg-blue-500';
-                                        $icon = 'verified';
-                                    } elseif (str_contains($estadoTrace, 'archivado')) {
-                                        $pointColor = 'bg-slate-500';
-                                        $icon = 'archive';
-                                    } elseif (str_contains($estadoTrace, 'rechazado')) {
-                                        $pointColor = 'bg-red-500';
-                                        $icon = 'cancel';
-                                    }
+                                    
+                                    if (in_array($idT, [9, 10])) { $pointColor = 'bg-emerald-500'; $icon = 'verified'; }
+                                    elseif (str_contains($lowT, 'enviado') || $idT == 12) { $pointColor = 'bg-blue-500'; $icon = 'send'; }
+                                    elseif (str_contains($lowT, 'recibido') || $idT == 7) { $pointColor = 'bg-indigo-500'; $icon = 'mark_email_read'; }
+                                    elseif (str_contains($lowT, 'pendiente') || in_array($idT, [8, 13])) { $pointColor = 'bg-amber-500'; $icon = 'pending'; }
+                                    elseif (str_contains($lowT, 'rechazado') || $idT == 11) { $pointColor = 'bg-red-500'; $icon = 'cancel'; }
                                 @endphp
                                 <div class="relative pl-10">
                                     <!-- Indicador Timeline -->
@@ -233,7 +208,7 @@
                                             <div class="flex items-center gap-2">
                                                 <span
                                                     class="px-3 py-1 bg-white dark:bg-slate-800 rounded-full text-xs font-bold text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600">
-                                                    {{ $trace->estado?->estado_nomb ?? 'Cambio de Estado' }}
+                                                    {{ in_array($idT, [9, 10]) ? 'RESUELTO' : ($trace->estado?->estado_nomb ?? 'Cambio de Estado') }}
                                                 </span>
                                                 <span class="text-[11px] text-gray-400 flex items-center gap-1">
                                                     <span

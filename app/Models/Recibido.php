@@ -115,4 +115,12 @@ class Recibido extends Model
     {
         return $this->hasMany(DetalleRecibido::class, 'det_id_recibido', 'id_recibido');
     }
+
+    /**
+     * Relación con envíos de respuesta
+     */
+    public function envios()
+    {
+        return $this->hasMany(Envio::class, 'num_radicado_int', 'num_radicado_int');
+    }
 }

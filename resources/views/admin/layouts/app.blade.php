@@ -156,7 +156,7 @@
     </script>
 
 
-    {{-- Toggle Sidebar --}}
+    {{-- Toggle Sidebar & Modales Generales --}}
     <script>
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -165,6 +165,75 @@
             sidebar.classList.toggle('-translate-x-full');
             overlay.classList.toggle('hidden');
         }
+
+        /* =========================================================
+           SISTEMA GLOBAL DE MODALES (Animaciones Tailwind)
+           ========================================================= */
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                // Remove hidden, make it flex (visible but visually hidden initially if opacity-0 is there)
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                
+                // Prevent body scroll
+                document.body.style.overflow = 'hidden';
+                
+                // Triggers reflow so animation works
+                void modal.offsetWidth;
+
+                // Animate overlay (if any nested animation classes)
+                const panel = modal.querySelector('.transform');
+                if (panel) {
+                    panel.classList.remove('scale-95', 'opacity-0');
+                    panel.classList.add('scale-100', 'opacity-100');
+                } else {
+                    // Fallback for simple modals: just fade in the container
+                    modal.classList.remove('opacity-0');
+                    modal.classList.add('opacity-100');
+                }
+            }
+        }
+
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                const panel = modal.querySelector('.transform');
+                
+                if (panel) {
+                    // Animate out
+                    panel.classList.remove('scale-100', 'opacity-100');
+                    panel.classList.add('scale-95', 'opacity-0');
+                    
+                    // Wait for transition before hiding
+                    setTimeout(() => {
+                        modal.classList.add('hidden');
+                        modal.classList.remove('flex');
+                        document.body.style.overflow = '';
+                    }, 300); // 300ms matches Tailwind's duration-300
+                } else {
+                    // Fallback fade out
+                    modal.classList.remove('opacity-100');
+                    modal.classList.add('opacity-0');
+                    setTimeout(() => {
+                        modal.classList.add('hidden');
+                        modal.classList.remove('flex');
+                        document.body.style.overflow = '';
+                    }, 300);
+                }
+            }
+        }
+    </script>
+    <script>
+        // Cerrar modal al hacer clic fuera (en el fondo oscuro)
+        window.addEventListener('click', function(e) {
+            if (e.target.classList.contains('fixed') && e.target.classList.contains('inset-0')) {
+                // Verificamos si es un modal (su id)
+                if (e.target.id) {
+                    closeModal(e.target.id);
+                }
+            }
+        });
     </script>
 
     <style>

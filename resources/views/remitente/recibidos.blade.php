@@ -3,9 +3,7 @@
 @section('title', 'Recibidos en Proceso - Remitente')
 
 @section('content')
-    <div class="flex flex-col h-screen w-full bg-gray-50 dark:bg-gray-900 overflow-hidden">
-        <!-- Main Content Area -->
-        <main class="flex-1 flex flex-col p-6 overflow-y-auto">
+    <div class="flex flex-col p-6 min-w-0 gap-8">
             <!-- Page Header -->
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                 <div>
@@ -15,23 +13,17 @@
                     <p class="text-gray-500 dark:text-gray-400 mt-1">Correspondencia recibida y registrada por ti, pendiente
                         de respuesta.</p>
                 </div>
-                <div class="flex flex-wrap gap-4">
-                    <button id="btnAbrirModal" type="button" onclick="openModal('modalCorrespondencia')"
-                        class="flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 active:scale-95">
-                        <span class="material-symbols-outlined text-[20px]">move_to_inbox</span>
+                <div class="flex flex-col sm:flex-row w-full md:w-auto gap-4">
+                    <button type="button" onclick="openModal('modalCorrespondencia')"
+                        class="flex items-center justify-center gap-3 px-6 py-3 text-sm font-bold text-white bg-blue-600 rounded-2xl hover:bg-blue-700 transition-all active:scale-95 w-full sm:w-auto shadow-md">
+                        <span class="material-symbols-outlined text-[24px]">move_to_inbox</span>
                         Registrar Recibido
                     </button>
-
-                    <a href="{{ route('remitente.externaenv') }}?abrir=nuevo"
-                        class="flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-emerald-600 rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200 active:scale-95">
-                        <span class="material-symbols-outlined text-[20px]">outbox</span>
-                        Registrar Saliente
-                    </a>
                 </div>
             </div>
 
             <!-- Stats Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10 w-full relative z-0">
                 <!-- Stat Card: Total -->
                 <div
                     class="bg-white dark:bg-gray-800 p-5 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
@@ -92,28 +84,43 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Correspondence Table -->
-            <div
-                class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col flex-1">
-                <div
-                    class="p-6 border-b border-gray-200 dark:border-gray-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <h2 class="text-lg font-bold text-gray-900 dark:text-white">Correspondencia Reciente</h2>
-                        <p class="text-xs text-gray-500 mt-0.5">Listado de tus registros y sus estados actuales.</p>
-                    </div>
-                    <form method="GET" action="{{ route('remitente.recibidos') }}"
-                        class="flex flex-col sm:flex-row w-full md:w-auto gap-3">
-                        <div class="relative w-full sm:w-48">
-                            <select name="estado_id" onchange="this.form.submit()"
-                                class="block w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-sm focus:ring-primary focus:border-primary dark:text-white">
-                                <option value="">Todos los estados</option>
+            <!-- Correspondence Table Section -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm mb-12 block w-full">
+                <!-- Header with Filters -->
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700 block w-full">
+                    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 w-full">
+                        <div class="w-full">
+                            <h2 class="text-xl font-bold text-gray-900 dark:text-white">Correspondencia Recibida</h2>
+                            <p class="text-sm text-gray-500 mt-1">Gestione sus registros y consulte sus estados actuales.</p>
+                        </div>
+                        <form method="GET" action="{{ route('remitente.recibidos') }}"
+                            class="flex flex-col sm:flex-row w-full lg:w-auto gap-4">
+                            <div class="relative w-full sm:w-56">
+                                <select name="estado_id" onchange="this.form.submit()"
+                                    class="block w-full h-11 px-4 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-primary focus:border-primary dark:text-white appearance-none">
+                                    <option value="">Todos los estados</option>
                                 @foreach ($estados as $est)
-                                    <option value="{{ $est->id_estado }}"
-                                        {{ request('estado_id') == $est->id_estado ? 'selected' : '' }}>
-                                        {{ $est->estado_nomb }}</option>
+                                    @if (in_array($est->id_estado, [7, 8, 9, 10, 11, 12, 13, 14, 15]))
+                                        <option value="{{ $est->id_estado }}"
+                                            {{ request('estado_id') == $est->id_estado ? 'selected' : '' }}>
+                                            {{ $est->estado_nomb }}</option>
+                                    @endif
                                 @endforeach
                             </select>
+                        </div>
+
+                        {{-- Filtro Fecha --}}
+                        <div class="relative w-full sm:w-56 flex items-center gap-2">
+                            <input type="date" name="fecha" value="{{ request('fecha') }}" onchange="this.form.submit()"
+                                max="{{ date('Y-m-d') }}"
+                                class="block w-full h-11 px-4 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-primary focus:border-primary dark:text-white appearance-none cursor-pointer flex-1">
+                            @if (request('fecha'))
+                                <a href="{{ request()->fullUrlWithQuery(['fecha' => null]) }}"
+                                    class="p-2 bg-red-50 dark:bg-red-400/10 text-red-500 hover:bg-red-100 dark:hover:bg-red-400/20 rounded-xl transition-all"
+                                    title="Limpiar filtro de fecha">
+                                    <span class="material-symbols-outlined text-sm">close</span>
+                                </a>
+                            @endif
                         </div>
                         <div class="relative w-full sm:w-64">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3">
@@ -125,190 +132,100 @@
                         </div>
                     </form>
                 </div>
-                <div class="overflow-x-auto flex-1">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-gray-50/50 dark:bg-gray-900/30 border-b border-gray-100 dark:border-gray-800">
-                                <th class="px-4 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Radicados
-                                </th>
-                                <th class="px-4 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Procedencia
-                                </th>
-                                <th class="px-4 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Asunto</th>
-                                <th class="px-4 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">
-                                    Destinatarios</th>
-                                <th class="px-4 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest text-center">
-                                    Registro</th>
-                                <th class="px-4 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest text-center">
-                                    Estado</th>
-                                <th class="px-4 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest text-center">
-                                    Acciones</th>
+                <div class="table-container-remitente overflow-x-auto w-full custom-scrollbar min-w-0" style="min-height: 400px; padding-bottom: 2rem;">
+                    <table class="w-full text-left text-sm responsive-table min-w-[1200px]">
+                        <thead class="text-[10px] text-gray-500 uppercase bg-gray-50 dark:bg-slate-900/50 dark:text-gray-400 tracking-wider">
+                            <tr>
+                                <th class="px-6 py-4 font-black">Radicados</th>
+                                <th class="px-6 py-4 font-black">Procedencia / Remitente</th>
+                                <th class="px-6 py-4 font-black">Asunto / Tipo Dossier</th>
+                                <th class="px-6 py-4 font-black">Asignación ACTUAL</th>
+                                <th class="px-6 py-4 font-black text-center">Fecha Registro</th>
+                                <th class="px-6 py-4 font-black text-center">Estado</th>
+                                <th class="px-6 py-4 font-black text-center">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody id="tablaRecibidosBody" class="divide-y divide-gray-50 dark:divide-gray-800/50">
-                            @forelse($correspondencias as $c)
-                                <tr class="group hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-all duration-200">
+                        <tbody id="correspondenceTableBody" class="divide-y divide-gray-200 dark:divide-gray-700">
+                            @forelse($recibidos as $c)
+                                <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors align-top group">
 
-                                    <td class="px-4 py-4 whitespace-nowrap align-middle">
-                                        <div class="flex flex-col gap-1">
-                                            <span class="text-sm font-bold text-gray-900 dark:text-white tracking-tight">
+                                    <td class="px-6 py-4 whitespace-nowrap align-middle" data-label="Radicados">
+                                        <div class="flex flex-col gap-1.5 items-start">
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 text-[11px] font-black border border-[#cfd7e7] dark:border-slate-700 shadow-sm">
+                                                <span class="material-symbols-outlined text-[15px] font-variation-icon">tag</span>
                                                 {{ $c->radicado ? $c->radicado->num_radicado : 'SIN RADICADO' }}
                                             </span>
                                             @if ($c->num_radicado_ext)
-                                                <span class="text-[10px] font-medium text-gray-500 dark:text-gray-400">
+                                                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-900/20 text-indigo-500 dark:text-indigo-400 text-[9px] font-black uppercase border border-indigo-100/50 dark:border-indigo-800/50">
                                                     EXT: {{ $c->num_radicado_ext }}
                                                 </span>
                                             @endif
                                         </div>
                                     </td>
 
-                                    <td class="px-4 py-4 align-middle">
-                                        <div class="flex flex-col gap-1.5">
-                                            @if ($c->nom_institucion)
-                                                {{-- Caso Entidad --}}
-                                                <div class="flex items-center gap-2">
-                                                    <span
-                                                        class="px-1.5 py-0.5 bg-blue-50/50 dark:bg-blue-900/10 text-blue-600 dark:text-blue-400 text-[10px] font-semibold rounded border border-blue-100/50 dark:border-blue-800/50">Entidad</span>
-                                                    <span
-                                                        class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate max-w-[200px]"
-                                                        title="{{ $c->nom_institucion }}">
-                                                        {{ $c->nom_institucion }}
-                                                    </span>
+                                    <td class="px-6 py-4" data-label="Procedencia">
+                                        <div class="font-medium dark:text-white max-w-[180px] break-words whitespace-normal">
+                                            {{ $c->nom_institucion ?: ($c->nombre_persona ?? 'Particular') }}
+                                        </div>
+                                        <span class="inline-flex items-center gap-0.5 text-xs {{ $c->nom_institucion ? 'text-blue-500' : 'text-purple-500' }} mt-0.5">
+                                            <span class="material-symbols-outlined" style="font-size:13px">{{ $c->nom_institucion ? 'business' : 'person' }}</span>
+                                            {{ $c->nom_institucion ? 'Entidad / Empresa' : 'Persona Natural' }}
+                                        </span>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+                                            <span class="material-symbols-outlined text-[14px]">location_on</span>
+                                            {{ $c->ciudad ? $c->ciudad->ciudad_nom : 'Desconocida' }}
+                                        </div>
+                                    </td>
+
+                                    <td class="px-6 py-4 text-sm" data-label="Asunto">
+                                        <div class="font-medium text-gray-900 dark:text-gray-100 mb-1 max-w-[200px] whitespace-normal break-words">{{ $c->asunto }}</div>
+                                        <div class="flex flex-wrap gap-1 mt-1">
+                                            <div class="flex items-center gap-0.5 text-[10px] text-gray-500 font-bold uppercase">
+                                                <span class="material-symbols-outlined text-[14px]">layers</span>
+                                                F: {{ $c->folio ?? 0 }}
+                                            </div>
+                                            @if ($c->id_tipo_rec)
+                                                <div class="flex items-center gap-0.5 text-[10px] text-orange-600 font-bold uppercase">
+                                                    {{ $c->tipo ? $c->tipo->tipo_nombre : 'TIPO' }}
                                                 </div>
-                                                @if ($c->num_radicado_ext)
-                                                    <div class="hidden items-center gap-1 text-gray-500">
-                                                        <span class="material-symbols-outlined text-[12px]">tag</span>
-                                                        <span class="text-[10px] font-medium italic">Rad. Ext:
-                                                            {{ $c->num_radicado_ext }}</span>
-                                                    </div>
-                                                @endif
-                                                @if ($c->correo_persona)
-                                                    <div class="flex items-center gap-1 text-gray-500 dark:text-gray-400">
-                                                        <span class="material-symbols-outlined text-[12px]">mail</span>
-                                                        <span
-                                                            class="text-[10px] lowercase truncate max-w-[180px]">{{ $c->correo_persona }}</span>
-                                                    </div>
-                                                @endif
-                                            @else
-                                                {{-- Caso Persona Natural --}}
-                                                <div class="flex items-center gap-2">
-                                                    <span
-                                                        class="px-1.5 py-0.5 bg-purple-50/50 dark:bg-purple-900/10 text-purple-600 dark:text-purple-400 text-[10px] font-semibold rounded border border-purple-100/50 dark:border-purple-800/50">Natural</span>
-                                                    <span
-                                                        class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate max-w-[200px]">
-                                                        {{ $c->nombre_persona ?? 'Particular' }}
-                                                    </span>
-                                                </div>
-                                                <div class="hidden grid-cols-2 gap-x-2 mt-0.5">
-                                                    @if ($c->doc_persona)
-                                                        <div class="flex items-center gap-1 text-gray-500">
-                                                            <span class="material-symbols-outlined text-[12px]">badge</span>
-                                                            <span
-                                                                class="text-[10px] font-medium">{{ $c->doc_persona }}</span>
-                                                        </div>
-                                                    @endif
-                                                    @if ($c->tel_persona)
-                                                        <div class="flex items-center gap-1 text-gray-500">
-                                                            <span class="material-symbols-outlined text-[12px]">call</span>
-                                                            <span
-                                                                class="text-[10px] font-medium">{{ $c->tel_persona }}</span>
-                                                        </div>
-                                                    @endif
-                                                </div>
-                                                @if ($c->correo_persona)
-                                                    <div
-                                                        class="flex items-center gap-1 text-gray-500 dark:text-gray-400 mt-0.5">
-                                                        <span class="material-symbols-outlined text-[12px]">mail</span>
-                                                        <span
-                                                            class="text-[10px] lowercase truncate max-w-[180px]">{{ $c->correo_persona }}</span>
-                                                    </div>
-                                                @endif
                                             @endif
-
-                                            <div
-                                                class="flex items-center gap-1 text-gray-500 dark:text-gray-400 mt-0.5 border-t border-gray-100 dark:border-gray-800/50 pt-1.5">
-                                                <span
-                                                    class="material-symbols-outlined text-[12px] font-variation-icon">location_on</span>
-                                                <span class="text-[9px] font-semibold uppercase tracking-tight">
-                                                    {{ $c->ciudad ? $c->ciudad->ciudad_nom : '-' }}
-                                                    @if ($c->ciudad && $c->ciudad->departamento)
-                                                        - {{ $c->ciudad->departamento->dpto_nombre }}
-                                                    @endif
-                                                </span>
-                                            </div>
                                         </div>
                                     </td>
 
-                                    <td class="px-4 py-4 align-middle">
-                                        <div class="flex flex-col gap-1">
-                                            <span
-                                                class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 max-w-[250px]"
-                                                title="{{ $c->asunto }}">
-                                                {{ $c->asunto }}
-                                            </span>
-
-                                            <div class="hidden flex-wrap gap-1 mt-1">
-                                                <div
-                                                    class="flex items-center gap-0.5 bg-gray-100 dark:bg-gray-700/50 px-1.5 py-0.5 rounded text-[8px] font-bold text-gray-500 uppercase tracking-tighter">
-                                                    <span
-                                                        class="material-symbols-outlined text-[10px] font-variation-icon">layers</span>
-                                                    F: {{ $c->folio ?? 0 }}
-                                                </div>
-                                                @if ($c->id_tipo_rec)
-                                                    <div
-                                                        class="flex items-center gap-0.5 bg-orange-50 dark:bg-orange-900/10 px-1.5 py-0.5 rounded text-[8px] font-bold text-orange-600 uppercase tracking-tighter">
-                                                        {{ $c->tipo ? $c->tipo->tipo_nombre : 'TIPO' }}
-                                                    </div>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    <td class="px-4 py-4 align-middle">
+                                    <td class="px-6 py-4" data-label="Destinatarios">
                                         <div class="flex flex-wrap gap-2 max-w-[200px]">
                                             @php
-                                                // Obtenemos solo el último estado de cada empleado y filtramos los históricos
-                                                $filteredDetalles = $c->detalles
-                                                    ->sortByDesc('id_det_recibido')
-                                                    ->unique('det_doc_empleado')
-                                                    ->filter(function ($d) {
-                                                        // Ocultamos registros marcados como Resueltos (9)
-                                                        // ya que representan gestiones pasadas o finalizadas.
-                                                        // Mantenemos Archivados (10) para que no desaparezcan de la vista del remitente
-                                                        // cuando otro usuario toma la correspondencia.
-                                                        return $d->id_estado_rec != 9;
-                                                    });
+                                                $ultimosPorEmpleado = $c->detalles->sortByDesc('id_det_recibido')->unique('det_doc_empleado');
+                                                $hayResuelto = $ultimosPorEmpleado->contains(fn($d) => in_array($d->id_estado_rec, [9, 10, 14]));
+                                                $filteredDetalles = $hayResuelto
+                                                    ? $ultimosPorEmpleado->filter(fn($d) => in_array($d->id_estado_rec, [9, 10, 14]))
+                                                    : $ultimosPorEmpleado->filter(fn($d) => $d->id_estado_rec != 9);
                                             @endphp
                                             @forelse($filteredDetalles as $det)
-                                                <div class="flex items-center gap-2"
-                                                    title="{{ $det->empleado->emple_nombres ?? 'Usuario' }} {{ $det->empleado->emple_apellidos ?? '' }}">
-                                                    <div
-                                                        class="w-7 h-7 rounded-full {{ $det->empleado && $det->empleado->emple_img ? '' : 'bg-blue-600' }} flex items-center justify-center overflow-hidden border border-gray-200 dark:border-gray-700 flex-shrink-0">
+                                                <div class="flex items-center gap-2 group/user" title="{{ $det->empleado->emple_nombres ?? 'Usuario' }}">
+                                                    <div class="w-8 h-8 rounded-full {{ $det->empleado && $det->empleado->emple_img ? '' : 'bg-blue-600' }} flex items-center justify-center overflow-hidden border border-gray-200 dark:border-gray-700 flex-shrink-0 shadow-sm">
                                                         @if ($det->empleado && $det->empleado->emple_img)
-                                                            <img src="{{ asset('storage/' . $det->empleado->emple_img) }}"
-                                                                class="w-full h-full object-cover">
+                                                            <img src="{{ asset('storage/' . $det->empleado->emple_img) }}" class="w-full h-full object-cover">
                                                         @else
-                                                            <span class="text-xs font-bold text-white">
+                                                            <span class="text-[10px] font-bold text-white">
                                                                 {{ strtoupper(substr($det->empleado->emple_nombres ?? 'U', 0, 1)) }}{{ strtoupper(substr($det->empleado->emple_apellidos ?? 'A', 0, 1)) }}
                                                             </span>
                                                         @endif
                                                     </div>
                                                     <div class="flex flex-col min-w-0">
-                                                        <span
-                                                            class="text-[10px] font-bold text-gray-700 dark:text-gray-300 leading-none truncate max-w-[120px]">
+                                                        <span class="text-[10px] font-bold text-gray-700 dark:text-gray-300 leading-tight truncate">
                                                             {{ $det->empleado->emple_nombres ?? 'Usuario' }}
-                                                            {{ $det->empleado->emple_apellidos ?? '' }}
                                                         </span>
                                                         @php
-                                                            $detStatusColor = match ($det->id_estado_rec) {
-                                                                7 => 'text-green-600 dark:text-green-400',
-                                                                11 => 'text-red-600 dark:text-red-400',
-                                                                8 => 'text-amber-600 dark:text-amber-400',
-                                                                9, 10, 14 => 'text-emerald-600 dark:text-emerald-400',
-                                                                default => 'text-gray-500 dark:text-gray-400',
+                                                            $detStatusClass = match ($det->id_estado_rec) {
+                                                                7 => 'bg-indigo-50 text-indigo-600 border-indigo-100',
+                                                                11 => 'bg-red-50 text-red-600 border-red-100',
+                                                                8 => 'bg-amber-50 text-amber-600 border-amber-100',
+                                                                9, 10, 14 => 'bg-emerald-50 text-emerald-600 border-emerald-100',
+                                                                default => 'bg-gray-50 text-gray-500 border-gray-100',
                                                             };
                                                         @endphp
-                                                        <span
-                                                            class="text-[9px] font-medium {{ $detStatusColor }} leading-none mt-1">
+                                                        <span class="px-1 px-1 py-0.5 rounded text-[8px] font-black uppercase border {{ $detStatusClass }} mt-1">
                                                             {{ $det->estado->estado_nomb ?? 'Pendiente' }}
                                                         </span>
                                                     </div>
@@ -318,36 +235,32 @@
                                             @endforelse
                                         </div>
                                     </td>
-
-                                    <td class="px-4 py-4 text-center whitespace-nowrap align-middle">
-                                        <div class="inline-flex flex-col items-center">
-                                            <span class="text-xs font-medium text-gray-900 dark:text-gray-200">
-                                                {{ \Carbon\Carbon::parse($c->fecha_hora_recib)->format('d M, Y') }}
-                                            </span>
-                                            <span class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
-                                                {{ \Carbon\Carbon::parse($c->fecha_hora_recib)->format('h:i A') }}
-                                            </span>
+                                    <td class="px-6 py-4" data-label="Registro">
+                                        <div class="font-medium text-gray-900 dark:text-white">
+                                            {{ $c->fecha_hora_recib ? \Carbon\Carbon::parse($c->fecha_hora_recib)->format('d M Y') : 'N/A' }}
                                         </div>
+                                        <div class="text-[10px] text-gray-500">{{ $c->fecha_hora_recib ? \Carbon\Carbon::parse($c->fecha_hora_recib)->format('h:i A') : '' }}</div>
                                     </td>
 
-                                    <td class="px-4 py-4 text-center align-middle">
+                                    <td class="px-6 py-4 text-center" data-label="Estado">
                                         @php
-                                            $statusColor = match ($c->id_estado_rec) {
-                                                11
-                                                    => 'bg-red-50 text-red-600 border-red-200 dark:bg-red-900/20 dark:border-red-800',
-                                                9,
-                                                10
-                                                    => 'bg-blue-50 text-green-600 border-green-200 dark:bg-green-900/20 dark:border-green-800',
-                                                8
-                                                    => 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800',
-                                                14
-                                                    => 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-800',
-                                                default
-                                                    => 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800',
-                                            };
+                                            $lowDesc = strtolower($c->estado ? $c->estado->estado_nomb : '');
+                                            $idEst = $c->id_estado_rec;
+                                            $clases = 'bg-gray-100 text-gray-600 border-gray-200';
+                                            
+                                            if (str_contains($lowDesc, 'resuelto') || $idEst == 9 || in_array($idEst, [10, 14])) {
+                                                $clases = 'bg-emerald-50 text-emerald-600 border-emerald-200';
+                                            } elseif (str_contains($lowDesc, 'enviado') || $idEst == 12) {
+                                                $clases = 'bg-blue-50 text-blue-600 border-blue-200';
+                                            } elseif (str_contains($lowDesc, 'recibido') || $idEst == 7) {
+                                                $clases = 'bg-indigo-50 text-indigo-600 border-indigo-200';
+                                            } elseif (str_contains($lowDesc, 'pendiente') || in_array($idEst, [8, 13])) {
+                                                $clases = 'bg-amber-50 text-amber-600 border-amber-200';
+                                            } elseif (str_contains($lowDesc, 'rechazado') || $idEst == 11) {
+                                                $clases = 'bg-red-50 text-red-600 border-red-200';
+                                            }
                                         @endphp
-                                        <span
-                                            class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-semibold tracking-wide border {{ $statusColor }}">
+                                        <span class="px-2 py-1 rounded-lg text-[10px] font-black uppercase border {{ $clases }}">
                                             {{ $c->estado ? $c->estado->estado_nomb : 'PENDIENTE' }}
                                         </span>
                                     </td>
@@ -360,9 +273,15 @@
                                                 <span
                                                     class="material-symbols-outlined text-[20px] font-variation-icon">visibility</span>
                                             </button>
-                                            <button onclick="showHistory({{ $c->id_recibido }})"
+                                            <a href="{{ url('/remitente/historial') }}?q={{ $c->radicado ? $c->radicado->num_radicado : '' }}"
                                                 class="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:hover:text-white dark:hover:bg-gray-700/50 rounded-lg transition-colors"
-                                                title="Trazabilidad">
+                                                title="Ver en Historial General">
+                                                <span
+                                                    class="material-symbols-outlined text-[20px] font-variation-icon">history_edu</span>
+                                            </a>
+                                            <button onclick="showHistory({{ $c->num_radicado_int }}, '{{ $c->radicado ? $c->radicado->num_radicado : ($c->num_radicado_ext ?: 'EN PROCESO') }}', 'EXT')"
+                                                class="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:hover:text-white dark:hover:bg-gray-700/50 rounded-lg transition-colors"
+                                                title="Trazabilidad Rápida">
                                                 <span
                                                     class="material-symbols-outlined text-[20px] font-variation-icon">timeline</span>
                                             </button>
@@ -373,28 +292,29 @@
                                                     <span class="material-symbols-outlined text-[20px]">edit_note</span>
                                                 </button>
                                                 <button onclick="confirmFinalize({{ $c->id_recibido }})"
-                                                    class="p-1.5 text-green-600 hover:bg-blue-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
+                                                    class="p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
                                                     title="Finalizar">
                                                     <span class="material-symbols-outlined text-[20px]">check_circle</span>
                                                 </button>
+                                            @elseif(in_array($c->id_estado_rec, [7, 12]))
+                                                <!-- Asignar Button -->
+                                                <button type="button" 
+                                                    class="btn-abrir-asignar p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors border border-blue-100 dark:border-blue-800"
+                                                    data-id="{{ $c->id_recibido }}"
+                                                    data-radicado="{{ $c->radicado ? $c->radicado->num_radicado : ($c->num_radicado_ext ?: 'EN PROCESO') }}"
+                                                    data-asunto="{{ $c->asunto }}"
+                                                    title="Asignar a Funcionario(s)">
+                                                    <span class="material-symbols-outlined text-[20px] font-variation-icon">person_add</span>
+                                                </button>
+                                                <!-- Rechazar Button -->
+                                                <button type="button" onclick="openRejectModal('{{ $c->id_recibido }}', '{{ $c->radicado ? $c->radicado->num_radicado : ($c->num_radicado_ext ?: 'EN PROCESO') }}')"
+                                                    class="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors border border-red-100 dark:border-red-800"
+                                                    title="Rechazar Documento">
+                                                    <span class="material-symbols-outlined text-[20px] font-variation-icon">cancel</span>
+                                                </button>
                                             @else
-                                                @php
-                                                    $hasResponse = $c->detalles->contains(
-                                                        fn($d) => !empty($d->archivo_res),
-                                                    );
-                                                @endphp
-                                                @if ($hasResponse && $c->id_estado_rec != 14 && $c->id_estado_rec != 10)
-                                                    <button onclick="openSalienteModal({{ $c->id_recibido }})"
-                                                        class="p-1.5 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors"
-                                                        title="Registrar Saliente">
-                                                        <span
-                                                            class="material-symbols-outlined text-[20px] font-variation-icon">outbox</span>
-                                                    </button>
-                                                @else
-                                                    <div class="p-1.5 text-gray-300 dark:text-gray-700 cursor-not-allowed">
-                                                        <span class="material-symbols-outlined text-[20px]">lock</span>
-                                                    </div>
-                                                @endif
+                                            
+                                                {{-- No Registrar Saliente here anymore --}}
                                             @endif
                                         </div>
                                     </td>
@@ -417,20 +337,19 @@
                         </tbody>
                     </table>
                 </div>
-                <div id="paginacionRecibidos" class="px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
-                    {{ $correspondencias->appends(request()->query())->links() }}
+                <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+                    {{ $recibidos->appends(request()->query())->links() }}
                 </div>
             </div>
-        </main>
     </div>
 
     <!-- View Details Modal -->
-    <div id="detailsModal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
-        <div class="flex items-center justify-center min-h-screen p-4">
+    <div id="detailsModal" class="fixed inset-0 z-50 hidden items-center justify-center overflow-y-auto" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen w-full p-4 relative">
             <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
                 onclick="closeModal('detailsModal')"></div>
             <div
-                class="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden transform transition-all">
+                class="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden transform transition-all my-auto">
                 <div class="absolute top-4 right-4 z-10">
                     <button onclick="closeModal('detailsModal')"
                         class="p-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-colors text-gray-500 dark:text-gray-400">
@@ -517,24 +436,31 @@
     </div>
 
     <!-- History Modal -->
-    <div id="historyModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title"
+    <div id="historyModal" class="fixed inset-0 z-50 hidden items-center justify-center overflow-y-auto" aria-labelledby="modal-title"
         role="dialog" aria-modal="true">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="flex items-center justify-center min-h-screen w-full p-4 relative sm:block sm:p-0">
             <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
                 onclick="closeModal('historyModal')"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
             <div
-                class="inline-block align-middle bg-white dark:bg-gray-800 rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full">
+                class="inline-block align-middle bg-white dark:bg-gray-800 rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full my-auto">
                 <div
                     class="px-8 py-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-900/20">
-                    <div>
+                    <div class="flex-1">
                         <h3 class="text-xl font-bold text-gray-900 dark:text-white">Trazabilidad de Documento</h3>
                         <p class="text-xs text-gray-500 mt-0.5" id="historyRadText"></p>
                     </div>
-                    <button onclick="closeModal('historyModal')"
-                        class="p-2 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all">
-                        <span class="material-symbols-outlined">close</span>
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <a id="btnDownloadTrazabilidad" href="#" target="_blank"
+                            class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-blue-200 dark:shadow-none">
+                            <span class="material-symbols-outlined text-[16px]">download</span>
+                            Descargar
+                        </a>
+                        <button onclick="closeModal('historyModal')"
+                            class="p-2 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
                 </div>
                 <div class="p-8 max-h-[70vh] overflow-y-auto bg-white dark:bg-gray-800">
                     <div id="historyTimeline" class="relative">
@@ -551,16 +477,16 @@
     </div>
 
     <!-- Edit Modal (for rejected) -->
-    <div id="editModal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
-        <div class="flex items-center justify-center min-h-screen p-4">
+    <div id="editModal" class="fixed inset-0 z-50 hidden items-center justify-center overflow-y-auto" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen w-full p-4 relative">
             <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeModal('editModal')">
             </div>
             <div
-                class="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden transform transition-all">
-                <form id="editForm" method="POST">
+                class="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden transform transition-all my-auto">
+                <form id="editForm" method="POST" class="flex flex-col flex-1 min-h-0">
                     @csrf
                     <div
-                        class="px-8 py-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-900/20">
+                        class="px-8 py-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-900/20 shrink-0">
                         <div>
                             <h3 class="text-xl font-bold text-gray-900 dark:text-white">Corregir Correspondencia</h3>
                             <p class="text-xs text-gray-500 mt-0.5">Ajusta los datos y genera un nuevo radicado de envío.
@@ -571,7 +497,7 @@
                             <span class="material-symbols-outlined">close</span>
                         </button>
                     </div>
-                    <div class="p-8 space-y-6">
+                    <div class="flex-1 overflow-y-auto form-body-scroll p-8 space-y-6">
                         <div>
                             <label
                                 class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Asunto</label>
@@ -648,7 +574,7 @@
                         </div>
                     </div>
                     <div
-                        class="px-8 py-6 border-t border-gray-100 dark:border-gray-700 flex justify-end gap-3 bg-gray-50/50 dark:bg-gray-900/20">
+                        class="px-8 py-6 border-t border-gray-100 dark:border-gray-700 flex justify-end gap-3 bg-gray-50/50 dark:bg-gray-900/20 shrink-0">
                         <button type="button" onclick="closeModal('editModal')"
                             class="px-6 py-2.5 text-sm text-gray-600 dark:text-gray-400 font-bold hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all">Cancelar</button>
                         <button type="submit"
@@ -664,25 +590,87 @@
 
     <script>
         // Global data store to avoid quote/escaping issues in onclick handlers
-        window.correspondenceData = @json($correspondencias->keyBy('id_recibido'));
+        window.correspondenceData = @json($recibidos->keyBy('id_recibido'));
 
         // Modal general logic
         function openModal(id) {
-            const el = document.getElementById(id);
-            el.classList.remove('hidden');
-            if (el.classList.contains('items-center')) {
-                el.classList.add('flex');
-            }
+            const modal = document.getElementById(id);
+            if (!modal) return;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
             document.body.style.overflow = 'hidden';
+            
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                const inner = modal.querySelector('.relative');
+                if(inner) {
+                    inner.classList.remove('scale-95', 'opacity-0', 'translate-y-4');
+                    inner.classList.add('scale-100', 'opacity-100', 'translate-y-0');
+                }
+            }, 10);
         }
 
         function closeModal(id) {
-            const el = document.getElementById(id);
-            el.classList.add('hidden');
-            if (el.classList.contains('items-center')) {
-                el.classList.remove('flex');
+            const modal = document.getElementById(id);
+            if (!modal) return;
+
+            const inner = modal.querySelector('.relative');
+            if(inner) {
+                inner.classList.remove('scale-100', 'opacity-100', 'translate-y-0');
+                inner.classList.add('scale-95', 'opacity-0', 'translate-y-4');
             }
-            document.body.style.overflow = '';
+            modal.classList.add('opacity-0');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                document.body.style.overflow = '';
+            }, 300);
+        }
+
+        // Registrar Saliente Modal Logic
+        function openSalienteModal(id) {
+            const c = window.correspondenceData[id];
+            if (!c) return;
+
+            // Set Form action
+            document.getElementById('salienteForm').action = `/ventanilla/${id}/store-saliente`;
+
+            // Pre-fill data
+            document.getElementById('salienteDestino').value = c.nom_institucion || c.nombre_persona || '';
+            document.getElementById('salienteAsunto').value = 'R: ' + c.asunto;
+            document.getElementById('salienteFolio').value = c.folio || 0;
+
+            // Set Notification Email
+            const emailInput = document.getElementById('salienteEmailNotif');
+            const emailContainer = document.getElementById('emailNotifContainer');
+            if (c.correo_persona) {
+                emailInput.value = c.correo_persona;
+                emailContainer.classList.remove('hidden');
+            } else {
+                emailInput.value = '';
+                emailContainer.classList.add('hidden');
+            }
+
+            // Preview documents
+            const preview = document.getElementById('salienteFilePreview');
+            preview.innerHTML = '';
+            
+            if (c.archivo) {
+                const fileName = c.archivo.split('/').pop();
+                preview.innerHTML += `
+                    <div class="flex items-center gap-3 p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-2xl">
+                        <span class="material-symbols-outlined text-emerald-600">description</span>
+                        <div class="flex-1">
+                            <p class="text-[10px] font-black text-emerald-900 dark:text-emerald-400 uppercase tracking-widest">Documento Principal</p>
+                            <p class="text-xs text-emerald-700/60 dark:text-emerald-500/60 truncate font-mono">${fileName}</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            openModal('salienteModal');
         }
 
         document.addEventListener("DOMContentLoaded", function() {
@@ -719,7 +707,7 @@
             document.getElementById('detailFolios').textContent = c.folio || '0';
             document.getElementById('detailObservations').textContent = c.observaciones || 'Sin observaciones.';
             document.getElementById('detailInstitution').textContent = c.nom_institucion || 'Particular';
-            document.getElementById('detailCity').textContent = c.ciudad ? c.ciudad.ciudad_nom : 'No disponible';
+            document.getElementById('detailCity').textContent = c.ciudad ? c.ciudad.ciudad_nomb : 'No disponible';
 
             // Status pill
             const statusSpan = document.getElementById('detailStatus');
@@ -728,7 +716,7 @@
             if (c.id_estado_rec == 11) {
                 statusSpan.classList.add('bg-red-100', 'text-red-700', 'dark:bg-red-900/50', 'dark:text-red-400');
             } else if (c.id_estado_rec == 9 || c.id_estado_rec == 10) {
-                statusSpan.classList.add('bg-green-100', 'text-blue-700', 'dark:bg-green-900/50', 'dark:text-green-400');
+                statusSpan.classList.add('bg-green-100', 'text-green-700', 'dark:bg-green-900/50', 'dark:text-green-400');
             } else {
                 statusSpan.classList.add('bg-blue-100', 'text-blue-700', 'dark:bg-blue-900/50', 'dark:text-blue-400');
             }
@@ -896,14 +884,30 @@
             openModal('detailsModal');
         }
 
+        // Rechazar Correspondencia Logic
+        function openRejectModal(id, radicadoText) {
+            document.getElementById('rejectRadText').textContent = `Radicado: ${radicadoText || 'EN PROCESO'}`;
+            document.getElementById('rejectForm').action = `/ventanilla/externarec/${id}/rechazar`;
+            document.getElementById('rejectObs').value = '';
+            openModal('rejectModal');
+        }
+
         // History Timeline Logic
-        function showHistory(id) {
+        function showHistory(id, radTextStr, tipoCor) {
             const historyTimeline = document.getElementById('historyTimeline');
+            const btnDownload = document.getElementById('btnDownloadTrazabilidad');
+            
+            // Set download URL
+            if (btnDownload && radTextStr) {
+                const isEnvioLink = tipoCor === 'SAL' || tipoCor === 'INT';
+                btnDownload.href = `{{ url('/ventanilla/trazabilidad') }}/${id}/pdf?tipo=${isEnvioLink ? 'envio' : 'recibido'}`;
+            }
+
             historyTimeline.innerHTML =
                 '<div class="flex justify-center p-12"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>';
             openModal('historyModal');
 
-            fetch(`/remitente/history/${id}`)
+            fetch(`{{ url('/ventanilla/history') }}/${id}?type=${tipoCor}`)
                 .then(response => response.json())
                 .then(data => {
                     historyTimeline.innerHTML = '';
@@ -958,7 +962,7 @@
                                 case 9: // Resuelto
                                 case 10: // Archivado
                                     icon = 'check_circle';
-                                    colorClass = 'bg-blue-500';
+                                    colorClass = 'bg-green-500';
                                     circleClass = 'bg-green-100 text-green-600';
                                     break;
                                 case 11: // Rechazado
@@ -1013,25 +1017,25 @@
                                     </div>
 
                                     ${item.observaciones ? `
-                                                                            <div class="relative p-4 bg-white dark:bg-gray-800 border-l-4 border-primary/20 rounded-r-xl shadow-sm group hover:border-primary transition-colors">
-                                                                                <span class="material-symbols-outlined absolute -right-2 -top-2 text-primary/5 text-4xl group-hover:scale-110 transition-transform">format_quote</span>
-                                                                                <p class="text-[12px] text-gray-600 dark:text-gray-400 italic leading-relaxed">"${item.observaciones}"</p>
-                                                                            </div>
-                                                                        ` : ''}
+                                                                                <div class="relative p-4 bg-white dark:bg-gray-800 border-l-4 border-primary/20 rounded-r-xl shadow-sm group hover:border-primary transition-colors">
+                                                                                    <span class="material-symbols-outlined absolute -right-2 -top-2 text-primary/5 text-4xl group-hover:scale-110 transition-transform">format_quote</span>
+                                                                                    <p class="text-[12px] text-gray-600 dark:text-gray-400 italic leading-relaxed">"${item.observaciones}"</p>
+                                                                                </div>
+                                                                            ` : ''}
 
                                     ${item.archivo_res ? `
-                                                                <div class="mt-3">
-                                                                    <a href="/storage/${item.archivo_res}" target="_blank" 
-                                                                       class="inline-flex items-center gap-2 px-3 py-2 text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-xl hover:bg-emerald-100 transition-all">
-                                                                        <span class="material-symbols-outlined text-[18px]">task</span>
-                                                                        Ver Documento de Respuesta
-                                                                    </a>
-                                                                </div>
-                                                            ` : ''}
+                                                                    <div class="mt-3">
+                                                                        <a href="/storage/${item.archivo_res}" target="_blank" 
+                                                                           class="inline-flex items-center gap-2 px-3 py-2 text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-xl hover:bg-emerald-100 transition-all">
+                                                                            <span class="material-symbols-outlined text-[18px]">task</span>
+                                                                            Ver Documento de Respuesta
+                                                                        </a>
+                                                                    </div>
+                                                                ` : ''}
 
                                     ${item.anexos && item.anexos.length > 0 ? `
-                                                                <div class="mt-2 flex flex-wrap gap-2">
-                                                                    ${item.anexos.map((anexo, idx) => `
+                                                                    <div class="mt-2 flex flex-wrap gap-2">
+                                                                        ${item.anexos.map((anexo, idx) => `
                                                 <a href="/storage/${anexo.ruta_archivo}" target="_blank" 
                                                    class="inline-flex items-center gap-2 px-2.5 py-1.5 text-[10px] font-bold text-teal-600 bg-teal-50 dark:bg-teal-900/20 border border-teal-100 dark:border-teal-800 rounded-lg hover:bg-teal-100 transition-all"
                                                    title="${anexo.nombre_original}">
@@ -1039,8 +1043,8 @@
                                                     Anexo ${idx + 1}
                                                 </a>
                                             `).join('')}
-                                                                </div>
-                                                            ` : ''}
+                                                                    </div>
+                                                                ` : ''}
                                 </div>
                             </div>
                         `;
@@ -1061,7 +1065,7 @@
 
             document.getElementById('editAsunto').value = c.asunto;
             document.getElementById('editObs').value = ''; // Clear notes for new corrections
-            document.getElementById('editForm').action = `/remitente/${c.id_recibido}/update-rejected`;
+            document.getElementById('editForm').action = `/ventanilla/${c.id_recibido}/update-rejected`;
 
             // Clear and set checkboxes
             const checkboxes = document.querySelectorAll('.recipient-checkbox');
@@ -1109,7 +1113,7 @@
                 text: "Esta acción marcará la solicitud rechazada como archivada definitivamente.",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#1e63e9',
+                confirmButtonColor: '#135bec',
                 cancelButtonColor: '#d33',
                 confirmButtonText: 'Sí, finalizar',
                 cancelButtonText: 'Cancelar',
@@ -1130,7 +1134,7 @@
                 title: '¡Éxito!',
                 text: "{{ session('success') }}",
                 icon: 'success',
-                confirmButtonColor: '#1e63e9',
+                confirmButtonColor: '#135bec',
                 customClass: {
                     container: 'font-display',
                     popup: 'rounded-3xl border-none shadow-2xl dark:bg-gray-800 dark:text-white',
@@ -1143,11 +1147,13 @@
             const c = window.correspondenceData[id];
             if (!c) return;
 
+
+
             // Find response data
             const responseDetail = c.detalles.find(d => d.archivo_res);
             const responseAnnexes = c.detalles.flatMap(d => d.anexos_respuesta || []);
 
-            document.getElementById('salienteForm').action = `/remitente/${id}/store-saliente`;
+            document.getElementById('salienteForm').action = `/ventanilla/${id}/store-saliente`;
             document.getElementById('salienteAsunto').value = 'RESPUESTA: ' + c.asunto;
             document.getElementById('salienteDestino').value = c.nom_institucion || (c.nombre_persona ? c
                 .nombre_persona : '');
@@ -1261,50 +1267,22 @@
             openModal('salienteModal');
         }
     </script>
-
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            const modal = document.getElementById('modalCorrespondencia');
-            const btnAbrir = document.getElementById('btnAbrirModal');
-            const btnCerrar = document.getElementById('btnCerrarModal');
-
-            // Función para abrir el modal
-            btnAbrir.addEventListener('click', function(e) {
-                e.preventDefault();
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-                document.body.style.overflow = 'hidden';
-            });
+            if (new URLSearchParams(window.location.search).get('abrir') === 'nuevo') {
+                openModal('modalCorrespondencia');
+            }
 
             // Auto-abrir el modal si hay errores de validación del intento anterior
             @if ($errors->any())
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-                document.body.style.overflow = 'hidden';
-                // Scroll al tope del modal para ver el bloque de errores
+                openModal('modalCorrespondencia');
+                // Scroll al tope del modal principal
                 setTimeout(function() {
-                    const scrollable = modal.querySelector('.overflow-y-auto');
-                    if (scrollable) scrollable.scrollTop = 0;
+                    const formBody = document.querySelector('#modalCorrespondencia .form-body-scroll');
+                    if (formBody) formBody.scrollTop = 0;
                 }, 100);
             @endif
 
-            // Función para cerrar el modal desde el botón Cancelar
-            btnCerrar.addEventListener('click', function() {
-                cerrarModal();
-            });
-
-            // Función para cerrar el modal si se hace clic afuera
-            modal.addEventListener('click', function(e) {
-                if (e.target === modal) {
-                    cerrarModal();
-                }
-            });
-
-            function cerrarModal() {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-                document.body.style.overflow = '';
-            }
 
 
             // ===== ASIDE DETALLE DE REGISTRO =====
@@ -1425,7 +1403,7 @@
                             `;
                 }
 
-                fetch('{{ url('/remitente/externarec') }}/' + id + '/archivos', {
+                fetch('{{ url('/ventanilla/externarec') }}/' + id + '/archivos', {
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest'
                         }
@@ -1517,666 +1495,72 @@
                     sessionStorage.removeItem('externarec_selected');
                 }
             }
-            // ===== BUSCADOR DE CIUDAD PROVENIENTE =====
-            const TODAS_CIUDADES = @json($ciudades);
-            const btnToggleCiudades = document.getElementById('btnToggleCiudades');
-            const dropdownCiudades = document.getElementById('ciudadesDropdown');
-            const inputBuscarCiudad = document.getElementById('buscarCiudadInput');
-            const listaCiudadesEl = document.getElementById('listaCiudades');
-            const hiddenCiudad = document.getElementById('ciudad_proveniente_value');
-            const labelBtnCiudad = document.getElementById('btnToggleCiudadesLabel');
-
-            function renderCiudades(ciudadesMostrar) {
-                listaCiudadesEl.innerHTML = '';
-                if (ciudadesMostrar.length === 0) {
-                    listaCiudadesEl.innerHTML = '<li class="px-3 py-2 text-slate-400 italic">Sin resultados</li>';
-                    return;
-                }
-
-                // Protect against massive DOM updates, limit to 100 max
-                const totalMostrados = Math.min(ciudadesMostrar.length, 100);
-
-                for (let i = 0; i < totalMostrados; i++) {
-                    const ciudad = ciudadesMostrar[i];
-                    const li = document.createElement('li');
-                    li.className =
-                        'px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer flex flex-col gap-0.5';
-
-                    // Added department to display
-                    const deptoText = ciudad.departamento && ciudad.departamento.dpto_nombre ? ciudad.departamento
-                        .dpto_nombre : 'N/A';
-
-                    li.innerHTML = `
-                                <div class="flex items-center gap-2">
-                                    <span class="material-symbols-outlined text-sm text-slate-400">location_city</span>
-                                    <span>
-                                        <span class="font-mono text-xs text-slate-500">${ciudad.ciudad_cod_post}</span> — ${ciudad.ciudad_nom}
-                                    </span>
-                                </div>
-                                <div class="text-[10px] text-slate-400 font-medium pl-6">
-                                    Dpto: ${deptoText}
-                                </div>
-                            `;
-
-                    li.addEventListener('click', function() {
-                        hiddenCiudad.value = ciudad.ciudad_cod_post;
-                        labelBtnCiudad.textContent = `${ciudad.ciudad_nom} (${deptoText})`;
-                        labelBtnCiudad.classList.remove('text-slate-400');
-                        labelBtnCiudad.classList.add('text-slate-900', 'dark:text-white');
-                        dropdownCiudades.classList.add('hidden');
-                        inputBuscarCiudad.value = '';
-                        // Re-render initial state for next open
-                        renderCiudades(TODAS_CIUDADES);
-                    });
-                    listaCiudadesEl.appendChild(li);
-                }
-
-                if (ciudadesMostrar.length > 100) {
-                    const liMore = document.createElement('li');
-                    liMore.className =
-                        'px-3 py-2 text-slate-400 italic text-xs text-center border-t border-slate-100 dark:border-slate-700/50';
-                    liMore.textContent =
-                        `Mostrando 100 de ${ciudadesMostrar.length} resultados. Escriba para filtrar más.`;
-                    listaCiudadesEl.appendChild(liMore);
-                }
-            }
-
-            // Render initial state when DOM is loaded
-            renderCiudades(TODAS_CIUDADES);
-
-            btnToggleCiudades.addEventListener('click', function(e) {
-                e.stopPropagation();
-                dropdownCiudades.classList.toggle('hidden');
-                if (!dropdownCiudades.classList.contains('hidden')) {
-                    inputBuscarCiudad.focus();
-                }
-            });
-
-            document.addEventListener('click', function(e) {
-                const wrapperCiudad = document.getElementById('ciudad-proveniente-wrapper');
-                if (wrapperCiudad && !wrapperCiudad.contains(e.target)) {
-                    dropdownCiudades.classList.add('hidden');
-                }
-            });
-
-            inputBuscarCiudad.addEventListener('input', function() {
-                const q = this.value.trim().toLowerCase();
-
-                // If empty, reset list to all cities
-                if (q.length === 0) {
-                    renderCiudades(TODAS_CIUDADES);
-                    return;
-                }
-
-                // Instant client-side filtering without debounce
-                const filtradas = TODAS_CIUDADES.filter(c => {
-                    const matchCod = String(c.ciudad_cod_post).toLowerCase().includes(q);
-                    const matchNom = String(c.ciudad_nom).toLowerCase().includes(q);
-                    const matchDep = c.departamento && c.departamento.dpto_nombre ?
-                        String(c.departamento.dpto_nombre).toLowerCase().includes(q) :
-                        false;
-                    return matchCod || matchNom || matchDep;
-                });
-
-                renderCiudades(filtradas);
-            });
-
-            // ===== BUSCADOR DE DESTINATARIOS (múltiple) =====
-            const TODOS_DESTINATARIOS = @json($todosDestinatarios);
-
-            /**
-             * Inicializa el buscador de empleados dentro de un bloque `.destinatario-block`.
-             */
-            function inicializarBuscadorDestinatario(block) {
-                const btnToggle = block.querySelector('.dest-btn-toggle');
-                const dropdown = block.querySelector('.dest-dropdown');
-                const searchInput = block.querySelector('.dest-search-input');
-                const lista = block.querySelector('.dest-list');
-                const hidden = block.querySelector('.dest-hidden-input');
-                const label = block.querySelector('.dest-label');
-                const btnRemove = block.querySelector('.dest-btn-remove');
-
-                function renderDestinatarios(destMostrar) {
-                    lista.innerHTML = '';
-                    if (destMostrar.length === 0) {
-                        lista.innerHTML = '<li class="px-3 py-2 text-slate-400 italic">Sin resultados</li>';
-                        return;
-                    }
-
-                    const totalMostrados = Math.min(destMostrar.length, 100);
-
-                    for (let i = 0; i < totalMostrados; i++) {
-                        const emp = destMostrar[i];
-                        const li = document.createElement('li');
-                        li.className =
-                            'px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer flex flex-col gap-0.5';
-
-                        const areaHtml = emp.area_nombre ?
-                            `<div class="text-[10px] text-slate-400 font-medium pl-6">Área: ${emp.area_nombre}</div>` :
-                            '';
-
-                        li.innerHTML = `
-                                    <div class="flex items-center gap-2">
-                                        <span class="material-symbols-outlined text-sm text-slate-400">person</span>
-                                        <span>
-                                            <span class="font-mono text-xs text-slate-500">${emp.emple_doc}</span> — ${emp.emple_nombres} ${emp.emple_apellidos}
-                                        </span>
-                                    </div>
-                                    ${areaHtml}
-                                `;
-
-                        li.addEventListener('click', function() {
-                            hidden.value = emp.emple_doc;
-                            label.textContent = emp.emple_doc + ' — ' + emp.emple_nombres + ' ' + emp
-                                .emple_apellidos;
-                            label.classList.remove('text-slate-400');
-                            label.classList.add('text-slate-900', 'dark:text-white');
-                            dropdown.classList.add('hidden');
-                            searchInput.value = '';
-                            renderDestinatarios(TODOS_DESTINATARIOS);
-                        });
-                        lista.appendChild(li);
-                    }
-
-                    if (destMostrar.length > 100) {
-                        const liMore = document.createElement('li');
-                        liMore.className =
-                            'px-3 py-2 text-slate-400 italic text-xs text-center border-t border-slate-100 dark:border-slate-700/50';
-                        liMore.textContent =
-                            `Mostrando 100 de ${destMostrar.length} resultados. Escriba para filtrar.`;
-                        lista.appendChild(liMore);
-                    }
-                }
-
-                // Render initial state
-                renderDestinatarios(TODOS_DESTINATARIOS);
-
-                // Abrir / cerrar dropdown
-                btnToggle.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    // Cerrar todos los demás dropdowns abiertos
-                    document.querySelectorAll('.dest-dropdown').forEach(function(dd) {
-                        if (dd !== dropdown) dd.classList.add('hidden');
-                    });
-                    dropdown.classList.toggle('hidden');
-                    if (!dropdown.classList.contains('hidden')) searchInput.focus();
-                });
-
-                // Cerrar al hacer clic fuera del bloque
-                document.addEventListener('click', function(e) {
-                    if (!block.contains(e.target)) dropdown.classList.add('hidden');
-                });
-
-                // Búsqueda instantánea
-                searchInput.addEventListener('input', function() {
-                    const q = this.value.trim().toLowerCase();
-
-                    if (q.length === 0) {
-                        renderDestinatarios(TODOS_DESTINATARIOS);
-                        return;
-                    }
-
-                    const filtrados = TODOS_DESTINATARIOS.filter(emp => {
-                        const matchDoc = String(emp.emple_doc).toLowerCase().includes(q);
-                        const matchNom = String(emp.emple_nombres).toLowerCase().includes(q);
-                        const matchApe = String(emp.emple_apellidos).toLowerCase().includes(q);
-                        const matchArea = emp.area_nombre ? String(emp.area_nombre).toLowerCase()
-                            .includes(q) : false;
-
-                        return matchDoc || matchNom || matchApe || matchArea;
-                    });
-
-                    renderDestinatarios(filtrados);
-                });
-
-                // Botón quitar
-                if (btnRemove) {
-                    btnRemove.addEventListener('click', function() {
-                        block.remove();
-                    });
-                }
-            }
-
-            // Inicializar el primer bloque
-            document.querySelectorAll('.destinatario-block').forEach(inicializarBuscadorDestinatario);
-
-            // Botón "+ Agregar destinatario"
-            document.getElementById('btnAgregarDestinatario').addEventListener('click', function() {
-                const container = document.getElementById('destinatarios-container');
-                const template = container.querySelector('.destinatario-block');
-
-                // Clonar profundamente el primer bloque
-                const clone = template.cloneNode(true);
-
-                // Limpiar valores del clon
-                clone.querySelector('.dest-hidden-input').value = '';
-                clone.querySelector('.dest-label').textContent = 'Seleccione un documento o nombre...';
-                clone.querySelector('.dest-label').classList.add('text-slate-400');
-                clone.querySelector('.dest-label').classList.remove('text-slate-900', 'dark:text-white');
-                clone.querySelector('.dest-search-input').value = '';
-                clone.querySelector('.dest-list').innerHTML =
-                    '<li class="px-3 py-2 text-slate-400 italic">Escriba para buscar...</li>';
-                clone.querySelector('.dest-dropdown').classList.add('hidden');
-
-                // Mostrar el botón de quitar en el clon
-                clone.querySelector('.dest-btn-remove').classList.remove('hidden');
-                clone.querySelector('.dest-btn-remove').classList.add('flex');
-
-                container.appendChild(clone);
-                inicializarBuscadorDestinatario(clone);
-            });
-
-            // ===== MANEJADOR DE ARCHIVOS (Principal y Anexos) =====
-            window.handleFileSelect = function(event, listId, inputId) {
-                const input = document.getElementById(inputId);
-                const container = document.getElementById(listId);
-
-                // Solo permitimos 1 archivo por input en esta lógica
-                const newFile = event.target.files[0];
-                const dt = new DataTransfer();
-                if (newFile) dt.items.add(newFile);
-
-                input.files = dt.files;
-                renderPills(input, container, inputId);
-
-                // Disparar evento change manualmente para que otros listeners (como el de folios) se enteren
-                input.dispatchEvent(new Event('change', {
-                    bubbles: true
-                }));
-            };
-
-            function renderPills(input, container, inputId) {
-                container.innerHTML = '';
-                if (!input.files || input.files.length === 0) return;
-
-                Array.from(input.files).forEach((file, index) => {
-                    const pill = document.createElement('div');
-                    pill.className =
-                        'flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-full px-3 py-1 text-xs text-blue-700 dark:text-blue-300';
-
-                    // Botón de ver
-                    const viewBtn = document.createElement('button');
-                    viewBtn.type = 'button';
-                    viewBtn.className =
-                        'flex items-center text-blue-400 hover:text-blue-600 transition-colors mr-1';
-                    viewBtn.title = 'Ver documento';
-                    viewBtn.innerHTML = '<span class="material-symbols-outlined text-sm">visibility</span>';
-                    viewBtn.onclick = (e) => {
-                        e.stopPropagation();
-                        window.open(URL.createObjectURL(file), '_blank');
-                    };
-
-                    pill.appendChild(viewBtn);
-
-                    const nameSpan = document.createElement('span');
-                    nameSpan.className = 'max-w-[120px] truncate';
-                    nameSpan.title = file.name;
-                    nameSpan.textContent = file.name;
-                    pill.appendChild(nameSpan);
-
-                    const removeBtn = document.createElement('button');
-                    removeBtn.type = 'button';
-                    removeBtn.className = 'ml-1 text-blue-400 hover:text-red-500 transition-colors';
-                    removeBtn.setAttribute('aria-label', 'Quitar archivo');
-                    removeBtn.innerHTML = '<span class="material-symbols-outlined text-sm">close</span>';
-
-                    removeBtn.addEventListener('click', function() {
-                        const newDt = new DataTransfer();
-                        // Al ser límite 1, simplemente vaciamos si se quita
-                        input.files = newDt.files;
-
-                        // Resetear el conteo de folios
-                        if (inputId === 'anexos_nuevos_input' && typeof window.resetFoliosAnexo ===
-                            'function') {
-                            window.resetFoliosAnexo();
-                        } else if (typeof window.resetFoliosPrincipal === 'function') {
-                            window.resetFoliosPrincipal();
-                        }
-
-                        renderPills(input, container, inputId);
-
-                        // Notificar el cambio para recalcular folios totales si es necesario
-                        input.dispatchEvent(new Event('change', {
-                            bubbles: true
-                        }));
-                    });
-
-                    pill.appendChild(removeBtn);
-                    container.appendChild(pill);
-                });
-            }
-        });
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const tabEmpresa = document.getElementById('tabEmpresa');
-            const tabPersona = document.getElementById('tabPersona');
-
-            const bloqueEmpresa = document.getElementById('bloqueEmpresa');
-            const bloquePersona = document.getElementById('bloquePersona');
-
-            const tipoRemitenteInput = document.getElementById('tipoRemitente');
-
-            // Inputs que cambian su estado "required"
-            const inputsEmpresa = document.querySelectorAll('.input-empresa');
-            const inputsPersona = document.querySelectorAll('.input-persona');
-
-            function activarTab(tipo) {
-                if (tipo === 'empresa') {
-                    // Estilos del Tab
-                    tabEmpresa.classList.add('font-bold', 'text-primary', 'border-b-2', 'border-primary');
-                    tabEmpresa.classList.remove('font-medium', 'text-slate-500', 'dark:text-slate-400');
-
-                    tabPersona.classList.remove('font-bold', 'text-primary', 'border-b-2', 'border-primary');
-                    tabPersona.classList.add('font-medium', 'text-slate-500', 'dark:text-slate-400');
-
-                    // Mostrar/Ocultar
-                    bloqueEmpresa.classList.remove('hidden');
-                    bloquePersona.classList.add('hidden');
-
-                    // Limpiar inputs del bloque oculto (persona)
-                    bloquePersona.querySelectorAll('input, select, textarea').forEach(function(el) {
-                        el.value = '';
-                    });
-
-                    // Valor al form
-                    tipoRemitenteInput.value = 'empresa';
-
-                    // Manejo de Required (evita que inputs ocultos bloqueen el submit)
-                    inputsEmpresa.forEach(input => input.setAttribute('required', 'required'));
-                    inputsPersona.forEach(input => input.removeAttribute('required'));
-
-                } else {
-                    // Estilos del Tab
-                    tabPersona.classList.add('font-bold', 'text-primary', 'border-b-2', 'border-primary');
-                    tabPersona.classList.remove('font-medium', 'text-slate-500', 'dark:text-slate-400');
-
-                    tabEmpresa.classList.remove('font-bold', 'text-primary', 'border-b-2', 'border-primary');
-                    tabEmpresa.classList.add('font-medium', 'text-slate-500', 'dark:text-slate-400');
-
-                    // Mostrar/Ocultar
-                    bloquePersona.classList.remove('hidden');
-                    bloqueEmpresa.classList.add('hidden');
-
-                    // Limpiar inputs del bloque oculto (empresa)
-                    bloqueEmpresa.querySelectorAll('input, select, textarea').forEach(function(el) {
-                        el.value = '';
-                    });
-
-                    // Valor al form
-                    tipoRemitenteInput.value = 'persona';
-
-                    // Manejo de Required
-                    inputsPersona.forEach(input => input.setAttribute('required', 'required'));
-                    inputsEmpresa.forEach(input => input.removeAttribute('required'));
-                }
-            }
-
-            // Event Listeners
-            if (tabEmpresa && tabPersona) {
-                tabEmpresa.addEventListener('click', () => activarTab('empresa'));
-                tabPersona.addEventListener('click', () => activarTab('persona'));
-            }
-        });
-
-        // ===== FILTRO DE REMITENTE — navegación por URL =====
-        document.addEventListener('DOMContentLoaded', function() {
-            const btnFiltro = document.getElementById('btnFiltroRemitente');
-            const dropdown = document.getElementById('dropdownFiltroRemitente');
-            const wrapper = document.getElementById('filtroRemitenteWrapper');
-
-            if (!btnFiltro) return;
-
-            // Toggle dropdown
-            btnFiltro.addEventListener('click', function(e) {
-                e.stopPropagation();
-                dropdown.classList.toggle('hidden');
-            });
-
-            // Cerrar si se hace clic fuera
-            document.addEventListener('click', function(e) {
-                if (wrapper && !wrapper.contains(e.target)) {
-                    dropdown.classList.add('hidden');
-                }
-            });
-
-            // Al seleccionar opción â†’ navegar a URL con ?tipo=
-            document.querySelectorAll('.filtro-remitente-btn').forEach(function(btn) {
-                btn.addEventListener('click', function() {
-                    const tipo = btn.dataset.tipo;
-                    const url = new URL(window.location.href);
-
-                    if (tipo === 'todos') {
-                        url.searchParams.delete('tipo');
-                    } else {
-                        url.searchParams.set('tipo', tipo);
-                    }
-
-                    // Siempre volver a la página 1 al cambiar filtro
-                    url.searchParams.delete('page');
-
-                    window.location.href = url.toString();
-                });
-            });
-
-            // ===== BUSQUEDA GLOBAL EN TIEMPO REAL =====
-            const searchInputGlobal = document.getElementById('searchInputGlobal');
-            const formSearchGlobal = document.getElementById('formSearchGlobal');
-            const btnClearSearchGlobal = document.getElementById('btnClearSearchGlobal');
-            const searchIconGlobal = document.getElementById('searchIconGlobal');
-            const searchSpinnerGlobal = document.getElementById('searchSpinnerGlobal');
-            const tablaRecibidosBody = document.getElementById('tablaRecibidosBody');
-            const paginacionRecibidos = document.getElementById('paginacionRecibidos');
-            const asideVacioForm = document.getElementById('asideVacio');
-            const asideContenidoForm = document.getElementById('asideContenido');
-
-            if (searchInputGlobal) {
-                let debounceTimer;
-
-                searchInputGlobal.addEventListener('input', function() {
-                    clearTimeout(debounceTimer);
-                    const query = this.value;
-
-                    // Mostrar/Ocultar botón de limpiar
-                    if (query.length > 0) {
-                        btnClearSearchGlobal.classList.remove('hidden');
-                        btnClearSearchGlobal.classList.add('flex');
-                        searchInputGlobal.classList.remove('rounded-r-lg');
-                    } else {
-                        btnClearSearchGlobal.classList.add('hidden');
-                        btnClearSearchGlobal.classList.remove('flex');
-                        searchInputGlobal.classList.add('rounded-r-lg');
-                    }
-
-                    // Cerrar el aside al buscar para evitar desincronización
-                    if (asideVacioForm && asideContenidoForm) {
-                        asideVacioForm.classList.remove('hidden');
-                        asideContenidoForm.classList.add('hidden');
-                    }
-
-                    debounceTimer = setTimeout(() => {
-                        // Mostrar spinner
-                        searchIconGlobal.classList.add('hidden');
-                        searchSpinnerGlobal.classList.remove('hidden');
-
-                        // Construir URL con los parámetros actuales
-                        const url = new URL(window.location.href);
-                        url.searchParams.set('search', query);
-                        url.searchParams.delete('page'); // reset pagination
-
-                        fetch(url.toString(), {
-                                headers: {
-                                    'X-Requested-With': 'XMLHttpRequest'
-                                }
-                            })
-                            .then(response => response.text())
-                            .then(html => {
-                                // Parse HTML
-                                const parser = new DOMParser();
-                                const doc = parser.parseFromString(html, 'text/html');
-
-                                // Extraer nuevas filas y nueva paginación
-                                const newTbody = doc.getElementById('tablaRecibidosBody');
-                                const newPagination = doc.getElementById('paginacionRecibidos');
-
-                                if (newTbody) tablaRecibidosBody.innerHTML = newTbody.innerHTML;
-                                if (newPagination) paginacionRecibidos.innerHTML = newPagination
-                                    .innerHTML;
-
-                                // Actualizar URL sin recargar
-                                window.history.pushState({}, '', url.toString());
-                            })
-                            .catch(err => console.error('Error al buscar:', err))
-                            .finally(() => {
-                                // Ocultar spinner
-                                searchSpinnerGlobal.classList.add('hidden');
-                                searchIconGlobal.classList.remove('hidden');
-                            });
-                    }, 400); // 400ms delay
-                });
-
-                if (btnClearSearchGlobal) {
-                    btnClearSearchGlobal.addEventListener('click', function() {
-                        searchInputGlobal.value = '';
-                        searchInputGlobal.dispatchEvent(new Event('input', {
-                            bubbles: true
-                        }));
-                    });
-                }
             }
         });
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-@endsection
 
-@section('modals')
-    <!-- Registrar Saliente Modal -->
-    <div id="salienteModal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
-        <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
-                onclick="closeModal('salienteModal')"></div>
-
-            <div
-                class="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all font-display">
+    <!-- Saliente Modal (Registrar Respuesta) -->
+    <div id="salienteModal" tabindex="-1" aria-hidden="true"
+        class="fixed inset-0 z-50 hidden items-center justify-center overflow-y-auto" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen w-full p-4 relative">
+            <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeModal('salienteModal')"></div>
+            <div class="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden transform transition-all font-display flex flex-col my-auto z-10">
                 <!-- Header -->
-                <div
-                    class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-emerald-50/50 dark:bg-emerald-900/20">
+                <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-emerald-50/50 dark:bg-emerald-900/20">
                     <div class="flex items-center gap-3">
-                        <div
-                            class="w-10 h-10 rounded-2xl bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                        <div class="w-10 h-10 rounded-2xl bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                             <span class="material-symbols-outlined">outbox</span>
                         </div>
                         <div>
-                            <h3 class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">Registrar
-                                Saliente</h3>
-                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Generar Radicado SAL-
-                            </p>
+                            <h3 class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">Registrar Saliente</h3>
+                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Generar Radicado SAL-</p>
                         </div>
                     </div>
-                    <button onclick="closeModal('salienteModal')"
-                        class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+                    <button onclick="closeModal('salienteModal')" class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
                         <span class="material-symbols-outlined">close</span>
                     </button>
                 </div>
 
-                <form id="salienteForm" method="POST">
+                <form id="salienteForm" method="POST" class="flex-1 flex flex-col min-h-0">
                     @csrf
-                    <div class="p-6 space-y-4">
-                        <!-- Destino -->
+                    <div class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-4">
                         <div>
-                            <label
-                                class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Destino
-                                / Institución</label>
-                            <input type="text" name="destino" id="salienteDestino" required
-                                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none dark:text-white"
-                                placeholder="Nombre de la institución o persona destino">
+                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Destino / Institución</label>
+                            <input type="text" name="destino" id="salienteDestino" required class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none dark:text-white">
                         </div>
-
-                        <!-- Asunto -->
                         <div>
-                            <label
-                                class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Asunto</label>
-                            <input type="text" name="asunto" id="salienteAsunto" required
-                                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none dark:text-white"
-                                placeholder="Asunto del envío">
+                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Asunto</label>
+                            <input type="text" name="asunto" id="salienteAsunto" required class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none dark:text-white">
                         </div>
-
-                        <!-- Email de Notificación -->
-                        <div id="emailNotifContainer" class="hidden">
-                            <label
-                                class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Correo
-                                de Notificación</label>
-                            <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-3">
-                                    <span class="material-symbols-outlined text-emerald-500 text-sm">mail</span>
-                                </span>
-                                <input type="email" id="salienteEmailNotif" disabled
-                                    class="w-full pl-10 pr-4 py-3 bg-emerald-50/30 dark:bg-emerald-900/10 border border-emerald-100/50 dark:border-emerald-800/50 rounded-2xl text-xs font-bold text-emerald-700 dark:text-emerald-400 cursor-not-allowed transition-all outline-none"
-                                    placeholder="No hay correo registrado">
-                            </div>
-                            <p class="text-[9px] text-gray-400 mt-1.5 px-1 flex items-center gap-1">
-                                <span class="material-symbols-outlined text-[12px]">info</span>
-                                Se enviará un correo de notificación a esta dirección.
-                            </p>
-                        </div>
-
                         <div class="grid grid-cols-2 gap-4">
-                            <!-- Tipo Envío -->
                             <div>
-                                <label
-                                    class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Tipo
-                                    de Envío</label>
-                                <select name="id_tipo_envio" id="salienteTipo" required
-                                    class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none dark:text-white select2-tipo-saliente">
+                                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Tipo de Envío</label>
+                                <select name="id_tipo_envio" id="salienteTipo" required class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none dark:text-white">
                                     <option value="">Seleccionar...</option>
                                     @foreach ($tipos as $t)
                                         <option value="{{ $t->id_tipo }}">{{ $t->tipo_nombre }}</option>
                                     @endforeach
                                 </select>
                             </div>
-
-                            <!-- Folios -->
                             <div>
-                                <label
-                                    class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Folios</label>
-                                <input type="text" name="folio" id="salienteFolio" required readonly tabindex="-1"
-                                    class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none dark:text-gray-400 cursor-not-allowed select-none">
+                                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Folios</label>
+                                <input type="text" name="folio" id="salienteFolio" required readonly class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm dark:text-gray-400 cursor-not-allowed">
                             </div>
                         </div>
-
-                        <!-- Quien Envía -->
                         <div>
-                            <label
-                                class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Funcionario
-                                que envía</label>
-                            <select name="doc_quien_envia" id="salienteFuncionario" required
-                                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none dark:text-white appearance-none">
-                                <option value="">Seleccionar funcionario...</option>
+                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Funcionario que envía</label>
+                            <select name="doc_quien_envia" id="salienteFuncionario" required class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none dark:text-white">
+                                <option value="">Seleccionar...</option>
                                 @foreach ($empleados as $e)
-                                    <option value="{{ $e->emple_doc }}">{{ $e->emple_nombres }}
-                                        {{ $e->emple_apellidos }}</option>
+                                    <option value="{{ $e->emple_doc }}">{{ $e->emple_nombres }} {{ $e->emple_apellidos }}</option>
                                 @endforeach
                             </select>
                         </div>
-
-                        <!-- Preview Area -->
-                        <div class="pt-2">
-                            <label
-                                class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Documentos
-                                a enviar</label>
-                            <div id="salienteFilePreview" class="space-y-2">
-                                <!-- Dynamic Preview -->
-                            </div>
-                        </div>
+                        <div id="salienteFilePreview" class="space-y-2"></div>
                     </div>
-
-                    <div
-                        class="p-6 bg-gray-50/50 dark:bg-gray-900/30 border-t border-gray-100 dark:border-gray-700 flex gap-3">
-                        <button type="button" onclick="closeModal('salienteModal')"
-                            class="flex-1 px-5 py-3 text-xs font-black uppercase tracking-widest text-gray-500 hover:text-gray-700 transition-all">
-                            Cancelar
-                        </button>
-                        <button type="submit"
-                            class="flex-[2] flex items-center justify-center gap-2 px-6 py-3 text-xs font-bold text-white bg-emerald-600 rounded-2xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200 dark:shadow-emerald-900/30 active:scale-[0.98]">
+                    <div class="p-6 bg-gray-50/50 dark:bg-gray-900/30 border-t border-gray-100 dark:border-gray-700 flex gap-3 shrink-0">
+                        <button type="button" onclick="closeModal('salienteModal')" class="flex-1 px-5 py-3 text-xs font-black uppercase tracking-widest text-gray-500 hover:text-gray-700 transition-all">Cancelar</button>
+                        <button type="submit" class="flex-[2] flex items-center justify-center gap-2 px-6 py-3 text-xs font-bold text-white bg-emerald-600 rounded-2xl hover:bg-emerald-700 transition-all shadow-lg active:scale-[0.98]">
                             <span class="material-symbols-outlined text-[18px]">done_all</span>
                             Registrar Envío Saliente
                         </button>
@@ -2186,460 +1570,28 @@
         </div>
     </div>
 
-    <div id="modalCorrespondencia" tabindex="-1" aria-hidden="true"
-        class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
-
-        <div class="relative w-full max-w-5xl max-h-full my-auto">
-
-            <form action="{{ route('externarec.store') }}" method="POST" class="relative"
-                enctype="multipart/form-data">
-                @csrf
-
-                {{-- Campo oculto para saber qué tipo de formulario se envió --}}
-                <input type="hidden" name="tipo_remitente" id="tipoRemitente" value="empresa">
-
-                <div
-                    class="space-y-8 bg-white dark:bg-slate-900 p-8 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xl max-h-[90vh] overflow-y-auto">
-
-                    <div
-                        class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-4 mb-4">
-                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">Registrar Nueva
-                            Correspondencia</h3>
-                        <button type="button" onclick="closeModal('modalCorrespondencia')" class="text-slate-400 hover:text-slate-600 transition-colors">
-                            <span class="material-symbols-outlined">close</span>
-                        </button>
-                    </div>
-
-                    {{-- Bloque de errores de validación --}}
-                    @if ($errors->any())
-                        <div class="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4">
-                            <div class="flex items-start gap-3">
-                                <span class="material-symbols-outlined text-red-500 flex-shrink-0">error</span>
-                                <div>
-                                    <p class="text-sm font-semibold text-red-700 dark:text-red-400 mb-1">Por favor
-                                        corrige los siguientes errores:</p>
-                                    <ul class="list-disc list-inside text-sm text-red-600 dark:text-red-300 space-y-0.5">
-                                        @foreach ($errors->all() as $error)
-                                            <li>{{ $error }}</li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-
-                    {{-- ===== TABS DE SELECCIÓN ===== --}}
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4">
-                        <button type="button" id="tabEmpresa"
-                            class="group relative overflow-hidden flex items-center justify-center gap-4 p-5 rounded-2xl border-2 border-primary bg-blue-50/50 transition-all duration-300">
-                            <div class="p-3 bg-primary rounded-xl text-white group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-primary/20">
-                                <span class="material-symbols-outlined text-2xl">corporate_fare</span>
-                            </div>
-                            <div class="text-left">
-                                <p class="text-[10px] font-black text-primary/60 uppercase tracking-widest leading-none mb-1">Soy una</p>
-                                <h4 class="text-lg font-black text-slate-800 leading-none">Entidad / Empresa</h4>
-                            </div>
-                        </button>
-                        <button type="button" id="tabPersona"
-                            class="group relative overflow-hidden flex items-center justify-center gap-4 p-5 rounded-2xl border-2 border-slate-100 bg-slate-50/50 hover:border-primary/30 hover:bg-white transition-all duration-300">
-                            <div class="p-3 bg-slate-100 group-hover:bg-primary/10 rounded-xl text-slate-400 group-hover:text-primary group-hover:scale-110 transition-all duration-300">
-                                <span class="material-symbols-outlined text-2xl">person</span>
-                            </div>
-                            <div class="text-left">
-                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Soy una</p>
-                                <h4 class="text-lg font-black text-slate-500 group-hover:text-slate-800 leading-none">Persona Natural</h4>
-                            </div>
-                        </button>
-                    </div>
-
-                    {{-- ===== BLOQUE 1: EMPRESA (Visible por defecto) ===== --}}
-                    <div id="bloqueEmpresa" class="grid grid-cols-1 gap-6 sm:grid-cols-2 bg-slate-50 dark:bg-slate-800/20 p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
-                        <div class="sm:col-span-2">
-                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Nombre Institución <span class="text-red-500">*</span></label>
-                            <input type="text" name="nom_institucion" id="nom_institucion" 
-                                class="input-empresa w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none transition-all" 
-                                placeholder="Escribe el nombre de la empresa" required />
-                            <p id="error-nom_institucion" class="text-xs text-red-500 mt-1 hidden"></p>
-                        </div>
-                        <div class="sm:col-span-1">
-                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">NIT <span class="text-red-500">*</span></label>
-                            <input type="text" name="nit_institucion" id="nit_institucion" 
-                                class="input-empresa w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none transition-all" 
-                                placeholder="Ej: 900.123.456-1" required />
-                            <p id="error-nit_institucion" class="text-xs text-red-500 mt-1 hidden"></p>
-                        </div>
-                        <div class="sm:col-span-1">
-                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Núm. Radicado Externo</label>
-                            <input type="text" name="num_radicado_ext" placeholder="Opcional"
-                                class="w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none transition-all" />
-                        </div>
-                    </div>
-
-                    {{-- ===== BLOQUE 2: PERSONA NATURAL (Oculto por defecto) ===== --}}
-                    <div id="bloquePersona" class="hidden grid grid-cols-1 gap-6 sm:grid-cols-2 bg-slate-50 dark:bg-slate-800/20 p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
-                        <div class="sm:col-span-1">
-                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Tipo de Documento <span class="text-red-500">*</span></label>
-                            <select name="tipo_documento" id="tipo_documento" class="input-persona w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none transition-all">
-                                <option value="">Seleccione...</option>
-                                <option value="CC">Cédula de Ciudadanía</option>
-                                <option value="CE">Cédula de Extranjería</option>
-                                <option value="NIT">NIT</option>
-                                <option value="PASAPORTE">Pasaporte</option>
-                            </select>
-                            <p id="error-tipo_documento" class="text-xs text-red-500 mt-1 hidden"></p>
-                        </div>
-                        <div class="sm:col-span-1">
-                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Número Documento <span class="text-red-500">*</span></label>
-                            <input type="text" name="numero_documento" id="numero_documento" class="input-persona w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none transition-all" placeholder="Ej: 10203040" />
-                            <p id="error-numero_documento" class="text-xs text-red-500 mt-1 hidden"></p>
-                        </div>
-                        <div class="sm:col-span-2">
-                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Nombre Completo <span class="text-red-500">*</span></label>
-                            <input type="text" name="nombre_persona" id="nombre_persona" class="input-persona w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none transition-all" placeholder="Escribe tus nombres y apellidos" />
-                            <p id="error-nombre_persona" class="text-xs text-red-500 mt-1 hidden"></p>
-                        </div>
-                        <div class="sm:col-span-1">
-                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Teléfono</label>
-                            <input type="text" name="telefono_persona" id="telefono_persona" class="w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none transition-all" placeholder="Opcional" />
-                        </div>
-                    </div>
-
-                    {{-- ===== CAMPOS COMPARTIDOS (Siempre visibles) ===== --}}
-                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                        <div class="sm:col-span-1">
-                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Correo Electrónico <span class="text-red-500">*</span></label>
-                            <input type="email" name="correo_persona" id="correo_persona_shared" 
-                                class="w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none transition-all" 
-                                placeholder="correo@ejemplo.com" required />
-                            <p id="error-correo_persona" class="text-xs text-red-500 mt-1 hidden"></p>
-                        </div>
-                        <div class="sm:col-span-1 relative" id="ciudad-proveniente-wrapper">
-                            <input type="hidden" name="ciudad_proveniente" id="ciudad_proveniente_value">
-                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Ciudad Proveniente <span class="text-red-500">*</span></label>
-                            <button type="button" id="btnToggleCiudades"
-                                class="flex items-center justify-between w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none text-left h-[46px]">
-                                <span id="btnToggleCiudadesLabel" class="text-slate-400">Seleccione ciudad...</span>
-                                <span class="material-symbols-outlined text-slate-400 text-lg">expand_more</span>
-                            </button>
-                            <p id="error-ciudad_proveniente" class="text-xs text-red-500 mt-1 hidden"></p>
-
-                            <div id="ciudadesDropdown"
-                                class="hidden absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg shadow-lg overflow-hidden">
-                                <div class="p-2 border-b border-slate-200 dark:border-slate-700">
-                                    <div class="relative">
-                                        <span class="absolute inset-y-0 left-0 flex items-center pl-3">
-                                            <span class="material-symbols-outlined text-slate-400 text-sm">search</span>
-                                        </span>
-                                        <input type="text" id="buscarCiudadInput"
-                                            class="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-900 text-slate-900 dark:text-white py-2 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                            placeholder="Buscar ciudad..." />
-                                    </div>
-                                </div>
-                                <ul id="listaCiudades"
-                                    class="max-h-48 overflow-y-auto py-1 text-sm text-slate-700 dark:text-slate-200">
-                                    <li class="px-3 py-2 text-slate-400 italic">Escriba para buscar...</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- ===== SECCIÓN DESTINATARIOS ===== --}}
-                    <div class="space-y-3">
-                        <p class="text-slate-900 dark:text-white text-sm font-bold leading-normal">
-                            Destinatario(s) <span class="text-red-500">*</span>
-                        </p>
-                        <div id="destinatarios-container" class="space-y-2">
-                            <div class="destinatario-block flex items-start gap-2" data-index="0">
-                                <input type="hidden" name="destinatarios[]" class="dest-hidden-input">
-                                <div class="relative flex-1" style="min-width:0">
-                                    <button type="button"
-                                        class="dest-btn-toggle w-full flex items-center justify-between rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none text-left h-[46px]">
-                                        <span class="dest-label text-slate-400">Seleccione un destinatario...</span>
-                                        <span class="material-symbols-outlined text-slate-400 text-lg flex-shrink-0">expand_more</span>
-                                    </button>
-                                    <div
-                                        class="dest-dropdown hidden absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg shadow-lg overflow-hidden">
-                                        <div class="p-2 border-b border-slate-200 dark:border-slate-700">
-                                            <div class="relative">
-                                                <span class="absolute inset-y-0 left-0 flex items-center pl-3">
-                                                    <span class="material-symbols-outlined text-slate-400 text-sm">search</span>
-                                                </span>
-                                                <input type="text"
-                                                    class="dest-search-input w-full rounded-md border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-900 text-slate-900 dark:text-white py-2 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                                    placeholder="Buscar por cédula o nombre..." />
-                                            </div>
-                                        </div>
-                                        <ul
-                                            class="dest-list max-h-48 overflow-y-auto py-1 text-sm text-slate-700 dark:text-slate-200">
-                                            <li class="px-3 py-2 text-slate-400 italic">Escriba para buscar...</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <button type="button"
-                                    class="dest-btn-remove hidden mt-0.5 flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-lg border border-red-100 text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                                    title="Quitar destinatario">
-                                    <span class="material-symbols-outlined text-[20px]">close</span>
-                                </button>
-                            </div>
-                        </div>
-                        <button type="button" id="btnAgregarDestinatario"
-                            class="flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary/80 transition-colors mt-1 px-1">
-                            <span class="material-symbols-outlined text-base">person_add</span>
-                            + AGREGAR OTRO DESTINATARIO
-                        </button>
-                    </div>
-
-                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                        <div class="sm:col-span-1">
-                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Asunto <span class="text-red-500">*</span></label>
-                            <input type="text" name="asunto" id="asunto" 
-                                class="w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none transition-all" 
-                                placeholder="Resumen del documento" required />
-                            <p id="error-asunto" class="text-xs text-red-500 mt-1 hidden"></p>
-                        </div>
-                        <div class="sm:col-span-1 relative" id="tipo-documento-wrapper">
-                            <input type="hidden" name="id_tipo" id="id_tipo_value">
-                            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Tipo de Documento <span class="text-red-500">*</span></label>
-                            <button type="button" id="btnToggleTipos"
-                                class="flex items-center justify-between w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 bg-white dark:bg-slate-800 text-[#0d121b] dark:text-gray-100 p-2.5 focus:ring-2 focus:ring-primary/50 outline-none text-left h-[46px]">
-                                <span id="btnToggleTiposLabel" class="text-slate-400">Seleccione el tipo...</span>
-                                <span class="material-symbols-outlined text-slate-400 text-lg">expand_more</span>
-                            </button>
-                            <p id="error-id_tipo" class="text-xs text-red-500 mt-1 hidden"></p>
-
-                            <div id="tiposDropdown"
-                                class="hidden absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg shadow-lg overflow-hidden">
-                                <div class="p-2 border-b border-slate-200 dark:border-slate-700">
-                                    <div class="relative">
-                                        <span class="absolute inset-y-0 left-0 flex items-center pl-3">
-                                            <span class="material-symbols-outlined text-slate-400 text-sm">search</span>
-                                        </span>
-                                        <input type="text" id="buscarTipoInput"
-                                            class="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-900 text-slate-900 dark:text-white py-2 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                            placeholder="Buscar tipo de documento..." />
-                                    </div>
-                                </div>
-                                <ul id="listaTipos"
-                                    class="max-h-48 overflow-y-auto py-1 text-sm text-slate-700 dark:text-slate-200">
-                                    <li class="px-3 py-2 text-slate-400 italic">Escriba para buscar...</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2">
-                        <div class="sm:col-span-1">
-                            <label class="flex flex-col h-full">
-                                <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
-                                    Observaciones</p>
-                                <textarea name="observaciones" rows="3" maxlength="250"
-                                    class="form-textarea flex w-full min-w-0 flex-1 resize-y rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 border border-slate-300 dark:border-slate-700 bg-background-light dark:bg-slate-800 p-3.5 text-base font-normal"
-                                    placeholder="Notas adicionales sobre la correspondencia..."></textarea>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div
-                        class="grid grid-cols-1 md:grid-cols-3 gap-5 p-4 bg-gray-50 dark:bg-slate-800/30 rounded-lg border border-gray-200 dark:border-gray-700">
-                        <div class="md:col-span-1">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Documento
-                                Principal (PDF)</label>
-                            <div class="border-2 border-dashed border-primary/30 dark:border-primary/20 rounded-lg p-3 text-center hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors cursor-pointer relative"
-                                onclick="document.getElementById('archivo_principal_input').click()">
-                                <span class="material-symbols-outlined text-primary text-2xl mb-1">picture_as_pdf</span>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Clic aquí para añadir Principal</p>
-                                <input type="file" id="archivo_principal_input" name="archivo" accept=".pdf"
-                                    class="hidden"
-                                    onchange="handleFileSelect(event, 'archivoPrincipalList', 'archivo_principal_input')">
-                            </div>
-                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Solo PDF · Tamaño máximo: 5MB</p>
-                            <div id="archivoPrincipalList" class="mt-2 flex flex-wrap gap-2 empty:hidden"></div>
-                        </div>
-
-                        <div class="md:col-span-1">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Anexo
-                                Adicional (PDF opcional)</label>
-                            <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-3 text-center hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors cursor-pointer relative"
-                                onclick="document.getElementById('anexos_nuevos_input').click()">
-                                <span class="material-symbols-outlined text-gray-400 text-2xl mb-1">note_add</span>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Clic aquí para añadir 1 PDF</p>
-                                <input type="file" id="anexos_nuevos_input" name="anexos[]" accept=".pdf"
-                                    class="hidden"
-                                    onchange="handleFileSelect(event, 'anexosNuevosList', 'anexos_nuevos_input')">
-                            </div>
-                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Máximo 1 anexo · 5 MB</p>
-                            <div id="anexosNuevosList" class="mt-2 flex flex-wrap gap-2 empty:hidden"></div>
-                        </div>
-
-                        <div class="md:col-span-1">
-                            <label class="flex flex-col">
-                                <p class="text-slate-900 dark:text-white text-sm font-medium leading-normal pb-2">
-                                    Folios
-                                    <span class="text-xs font-normal text-slate-400 dark:text-slate-500 ml-1">(calculado
-                                        automáticamente)</span>
-                                </p>
-                                <div class="relative">
-                                    <input type="text" name="folio" id="inputFolios" readonly
-                                        class="form-input flex w-full min-w-0 flex-1 rounded-lg text-slate-900 dark:text-white border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-700/50 h-12 px-3.5 text-base font-semibold text-center cursor-not-allowed select-none"
-                                        placeholder="—" />
-                                    <span id="foliosSpinner"
-                                        class="hidden absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined animate-spin text-blue-400 text-lg">progress_activity</span>
-                                </div>
-                                <p class="mt-1 text-xs text-slate-400 dark:text-slate-500">Se suma al adjuntar PDFs</p>
-                            </label>
-                        </div>
-                    </div>
-
-                    <script>
-                        // Diccionario para rastrear archivos por inputID
-                        const customFilesState = {
-                            'archivo_principal_input': new DataTransfer(),
-                            'anexos_nuevos_input': new DataTransfer()
-                        };
-
-                        const inputFolios = document.getElementById('inputFolios');
-                        const spinner = document.getElementById('foliosSpinner');
-
-                        // Estado de páginas por tipo de archivo
-                        let paginasPrincipal = 0;
-                        let paginasAnexo = 0;
-                        let cargando = 0;
-
-                        const iniciarCarga = () => {
-                            cargando++;
-                            if (spinner) spinner.classList.remove('hidden');
-                        };
-                        const finalizarCarga = () => {
-                            cargando = Math.max(0, cargando - 1);
-                            if (cargando === 0 && spinner) spinner.classList.add('hidden');
-                        };
-
-                        const actualizarFoliosUI = () => {
-                            const total = paginasPrincipal + paginasAnexo;
-                            if (inputFolios) inputFolios.value = total > 0 ? total : '';
-                        };
-
-                        const contarPaginas = async (file) => {
-                            if (!file || file.type !== 'application/pdf') return 0;
-                            try {
-                                const buf = await file.arrayBuffer();
-                                if (typeof pdfjsLib === 'undefined') {
-                                    console.warn('pdfjsLib no cargado, usando fallback');
-                                    return 1;
-                                }
-                                pdfjsLib.GlobalWorkerOptions.workerSrc =
-                                    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-                                const pdf = await pdfjsLib.getDocument({
-                                    data: buf
-                                }).promise;
-                                return pdf.numPages;
-                            } catch (err) {
-                                console.error('[PDF.js] Error al leer:', err);
-                                return 1;
-                            }
-                        };
-
-                        window.handleFileSelect = async (event, listContainerId, inputId) => {
-                            const input = event.target;
-                            const files = input.files;
-                            if (!files.length) return;
-
-                            // Como es máximo 1 por input, reiniciamos el estado
-                            const dt = new DataTransfer();
-                            dt.items.add(files[0]);
-                            customFilesState[inputId] = dt;
-                            input.files = dt.files;
-
-                            iniciarCarga();
-                            const p = await contarPaginas(files[0]);
-                            if (inputId === 'archivo_principal_input') paginasPrincipal = p;
-                            else paginasAnexo = p;
-                            finalizarCarga();
-
-                            renderFilePills(inputId, listContainerId);
-                            actualizarFoliosUI();
-                        };
-
-                        window.renderFilePills = (inputId, listContainerId) => {
-                            const container = document.getElementById(listContainerId);
-                            if (!container) return;
-                            const dt = customFilesState[inputId];
-                            container.innerHTML = '';
-
-                            for (let i = 0; i < dt.files.length; i++) {
-                                const file = dt.files[i];
-                                let display = file.name;
-                                if (display.length > 25) {
-                                    display = display.substring(0, 15) + '...' + display.substring(display.lastIndexOf('.'));
-                                }
-
-                                const pill = document.createElement('div');
-                                pill.className =
-                                    'flex items-center gap-2 bg-blue-50/50 dark:bg-slate-800/50 text-primary dark:text-blue-400 border border-blue-200 dark:border-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm animate-in fade-in zoom-in duration-200 w-fit';
-
-                                const fileURL = URL.createObjectURL(file);
-
-                                pill.innerHTML = `
-                                    <span class="material-symbols-outlined text-[16px]">picture_as_pdf</span>
-                                    <span class="truncate max-w-[150px]" title="${file.name}">${display}</span>
-                                    <div class="flex items-center gap-1.5 ml-2 border-l border-blue-200 dark:border-slate-700 pl-2">
-                                        <a href="${fileURL}" target="_blank" class="p-1 hover:bg-blue-100 dark:hover:bg-slate-700 rounded-md transition-all text-blue-600 dark:text-blue-400" title="Ver documento">
-                                            <span class="material-symbols-outlined text-[16px]">visibility</span>
-                                        </a>
-                                        <button type="button" class="p-1 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500 rounded-md transition-all" onclick="removeFile('${inputId}', '${listContainerId}')" title="Quitar">
-                                            <span class="material-symbols-outlined text-[16px]">close</span>
-                                        </button>
-                                    </div>
-                                `;
-                                container.appendChild(pill);
-                            }
-                        };
-
-                        window.removeFile = (inputId, listContainerId) => {
-                            const input = document.getElementById(inputId);
-                            customFilesState[inputId] = new DataTransfer();
-                            if (input) input.value = '';
-
-                            if (inputId === 'archivo_principal_input') paginasPrincipal = 0;
-                            else paginasAnexo = 0;
-
-                            const container = document.getElementById(listContainerId);
-                            if (container) container.innerHTML = '';
-
-                            actualizarFoliosUI();
-                        };
-                    </script>
-
-                    <div class="flex items-center justify-end gap-4 pt-6 border-t border-slate-200 dark:border-slate-800">
-                        <button type="button" onclick="closeModal('modalCorrespondencia')"
-                            class="flex items-center justify-center h-11 px-6 rounded-lg text-sm font-bold bg-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Cancelar</button>
-                        <button type="submit"
-                            class="flex items-center justify-center h-11 px-6 rounded-lg text-sm font-bold bg-primary text-white hover:bg-primary/90 transition-colors shadow-sm">Enviar
-                            Correspondencia</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
+    @include('remitente.partials.modal_recibido')
 
     {{-- MODAL ASIGNAR DESTINATARIOS --}}
     <div id="modalAsignar" tabindex="-1" aria-hidden="true"
-        class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
-        <div class="relative w-full max-w-2xl max-h-full my-auto">
-            <form id="formAsignar" method="POST" class="relative">
-                @csrf
-                <div
-                    class="space-y-6 bg-white dark:bg-slate-900 p-8 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xl">
-                    <div
-                        class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-4 mb-4">
+        class="fixed inset-0 z-50 hidden items-center justify-center overflow-y-auto" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen w-full p-4 relative">
+            <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity btnCerrarAsignar"></div>
+            <div class="relative bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden my-auto z-10 transition-all">
+                <form id="formAsignar" method="POST" class="flex flex-col flex-1 min-h-0">
+                    @csrf
+                    
+                    {{-- Header Fijo --}}
+                    <div class="px-8 py-5 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex justify-between items-center shrink-0">
                         <h3 class="text-xl font-bold text-slate-900 dark:text-white">Asignar Destinatarios</h3>
-                        <button type="button"
-                            class="btnCerrarAsignar text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                            <span class="material-symbols-outlined">close</span>
+                        <button type="button" class="btnCerrarAsignar p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full">
+                            <span class="material-symbols-outlined font-bold text-xl leading-none">close</span>
                         </button>
                     </div>
 
-                    <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
+                    {{-- Body con scroll --}}
+                    <div class="flex-1 overflow-y-auto form-body-scroll p-8 space-y-6 bg-white dark:bg-slate-900">
+                        <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
                         <p class="text-xs font-semibold text-blue-800 dark:text-blue-300 uppercase tracking-wider mb-1">
                             Correspondencia</p>
                         <p id="asignar-radicado" class="text-sm font-bold text-slate-900 dark:text-white"></p>
@@ -2709,15 +1661,17 @@
                             placeholder="Opcional..."></textarea>
                     </div>
 
-                    <div class="flex items-center justify-end gap-4 pt-6 border-t border-slate-200 dark:border-slate-800">
-                        <button type="button"
-                            class="btnCerrarAsignar h-11 px-6 rounded-lg text-sm font-bold bg-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Cancelar</button>
-                        <button type="submit"
-                            class="h-11 px-6 rounded-lg text-sm font-bold bg-primary text-white hover:bg-primary/90 transition-colors">Confirmar
-                            Asignación</button>
                     </div>
-                </div>
-            </form>
+
+                    {{-- Footer Fijo --}}
+                    <div class="flex items-center justify-end gap-4 px-8 py-5 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 shrink-0">
+                        <button type="button"
+                            class="btnCerrarAsignar h-11 px-6 rounded-lg text-sm font-bold bg-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">Cancelar</button>
+                        <button type="submit"
+                            class="h-11 px-6 rounded-lg text-sm font-bold bg-primary text-white hover:bg-primary/90 transition-colors shadow-sm">Confirmar Asignación</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -2728,160 +1682,10 @@
             const asignarRadicadoLabel = document.getElementById('asignar-radicado');
             const asignarAsuntoLabel = document.getElementById('asignar-asunto');
             const ALL_DESTINATARIOS = @json($todosDestinatarios);
-            const ALL_TIPOS = @json($tipos);
 
-            // ===== LOGICA TABS MODAL CORRESPONDENCIA =====
-            const tabEmpresa = document.getElementById('tabEmpresa');
-            const tabPersona = document.getElementById('tabPersona');
-            const bloqueEmpresa = document.getElementById('bloqueEmpresa');
-            const bloquePersona = document.getElementById('bloquePersona');
-            const tipoRemitente = document.getElementById('tipoRemitente');
 
-            function switchTab(type) {
-                if (type === 'empresa') {
-                    tabEmpresa.classList.replace('border-slate-100', 'border-primary');
-                    tabEmpresa.classList.replace('bg-slate-50/50', 'bg-blue-50/50');
-                    tabEmpresa.querySelector('div').classList.replace('bg-slate-100', 'bg-primary');
-                    tabEmpresa.querySelector('span').classList.replace('text-slate-400', 'text-white');
-                    tabEmpresa.querySelector('h4').classList.replace('text-slate-500', 'text-slate-800');
 
-                    tabPersona.classList.replace('border-primary', 'border-slate-100');
-                    tabPersona.classList.replace('bg-blue-50/50', 'bg-slate-50/50');
-                    tabPersona.querySelector('div').classList.replace('bg-primary', 'bg-slate-100');
-                    tabPersona.querySelector('span').classList.replace('text-white', 'text-slate-400');
-                    tabPersona.querySelector('h4').classList.replace('text-slate-800', 'text-slate-500');
-
-                    bloqueEmpresa.classList.remove('hidden');
-                    bloquePersona.classList.add('hidden');
-                    tipoRemitente.value = 'empresa';
-                    document.querySelectorAll('.input-empresa').forEach(el => el.required = true);
-                    document.querySelectorAll('.input-persona').forEach(el => el.required = false);
-                } else {
-                    tabPersona.classList.replace('border-slate-100', 'border-primary');
-                    tabPersona.classList.replace('bg-slate-50/50', 'bg-blue-50/50');
-                    tabPersona.querySelector('div').classList.replace('bg-slate-100', 'bg-primary');
-                    tabPersona.querySelector('span').classList.replace('text-slate-400', 'text-white');
-                    tabPersona.querySelector('h4').classList.replace('text-slate-500', 'text-slate-800');
-
-                    tabEmpresa.classList.replace('border-primary', 'border-slate-100');
-                    tabEmpresa.classList.replace('bg-blue-50/50', 'bg-slate-50/50');
-                    tabEmpresa.querySelector('div').classList.replace('bg-primary', 'bg-slate-100');
-                    tabEmpresa.querySelector('span').classList.replace('text-white', 'text-slate-400');
-                    tabEmpresa.querySelector('h4').classList.replace('text-slate-800', 'text-slate-500');
-
-                    bloquePersona.classList.remove('hidden');
-                    bloqueEmpresa.classList.add('hidden');
-                    tipoRemitente.value = 'persona';
-                    document.querySelectorAll('.input-empresa').forEach(el => el.required = false);
-                    document.querySelectorAll('.input-persona').forEach(el => el.required = true);
-                }
-            }
-
-            if (tabEmpresa) tabEmpresa.addEventListener('click', () => switchTab('empresa'));
-            if (tabPersona) tabPersona.addEventListener('click', () => switchTab('persona'));
-
-            // ===== LOGICA CIUDADES =====
-            const btnToggleCiudades = document.getElementById('btnToggleCiudades');
-            const ciudadesDropdown = document.getElementById('ciudadesDropdown');
-            const buscarCiudadInput = document.getElementById('buscarCiudadInput');
-            const listaCiudades = document.getElementById('listaCiudades');
-            const ciudadValue = document.getElementById('ciudad_proveniente_value');
-            const btnToggleCiudadesLabel = document.getElementById('btnToggleCiudadesLabel');
-
-            if (btnToggleCiudades) {
-                btnToggleCiudades.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    ciudadesDropdown.classList.toggle('hidden');
-                    if (!ciudadesDropdown.classList.contains('hidden')) {
-                        buscarCiudadInput.focus();
-                        buscarCiudad(buscarCiudadInput.value);
-                    }
-                });
-
-                buscarCiudadInput.addEventListener('input', (e) => {
-                    buscarCiudad(e.target.value);
-                });
-
-                async function buscarCiudad(q) {
-                    try {
-                        const response = await fetch(`{{ route('externarec.ciudades.buscar') }}?q=` + encodeURIComponent(q));
-                        const data = await response.json();
-                        listaCiudades.innerHTML = '';
-                        if (data.length === 0) {
-                            listaCiudades.innerHTML = '<li class="px-3 py-2 text-slate-400 italic">No se encontraron ciudades</li>';
-                            return;
-                        }
-                        data.forEach(ciudad => {
-                            const li = document.createElement('li');
-                            li.className = 'px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer border-b border-slate-50 dark:border-slate-700/50 last:border-0';
-                            li.innerHTML = `<span class="font-bold text-slate-700 dark:text-slate-200">${ciudad.ciudad_nom}</span> <span class="text-[10px] text-slate-500">(CP: ${ciudad.ciudad_cod_post})</span>`;
-                            li.addEventListener('click', (e) => {
-                                e.stopPropagation();
-                                ciudadValue.value = ciudad.ciudad_cod_post;
-                                btnToggleCiudadesLabel.textContent = `${ciudad.ciudad_nom}`;
-                                btnToggleCiudadesLabel.classList.remove('text-slate-400');
-                                btnToggleCiudadesLabel.classList.add('text-slate-900', 'dark:text-white');
-                                ciudadesDropdown.classList.add('hidden');
-                            });
-                            listaCiudades.appendChild(li);
-                        });
-                    } catch (error) {
-                        console.error('Error cargando ciudades:', error);
-                    }
-                }
-            }
-
-            // ===== LOGICA TIPOS DE DOCUMENTO (ASUNTO) =====
-            const btnToggleTipos = document.getElementById('btnToggleTipos');
-            const tiposDropdown = document.getElementById('tiposDropdown');
-            const buscarTipoInput = document.getElementById('buscarTipoInput');
-            const listaTipos = document.getElementById('listaTipos');
-            const tipoValue = document.getElementById('id_tipo_value');
-            const btnToggleTiposLabel = document.getElementById('btnToggleTiposLabel');
-
-            if (btnToggleTipos) {
-                btnToggleTipos.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    tiposDropdown.classList.toggle('hidden');
-                    if (!tiposDropdown.classList.contains('hidden')) {
-                        buscarTipoInput.focus();
-                        const q = buscarTipoInput.value.toLowerCase();
-                        const filtrados = ALL_TIPOS.filter(t => t.tipo_nombre.toLowerCase().includes(q));
-                        renderTipos(filtrados);
-                    }
-                });
-
-                buscarTipoInput.addEventListener('input', (e) => {
-                    const q = e.target.value.toLowerCase();
-                    const filtrados = ALL_TIPOS.filter(t => t.tipo_nombre.toLowerCase().includes(q));
-                    renderTipos(filtrados);
-                });
-
-                function renderTipos(items) {
-                    listaTipos.innerHTML = '';
-                    if (items.length === 0) {
-                        listaTipos.innerHTML = '<li class="px-3 py-2 text-slate-400 italic">No se encontraron tipos</li>';
-                        return;
-                    }
-                    items.forEach(tipo => {
-                        const li = document.createElement('li');
-                        li.className = 'px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer border-b border-slate-50 dark:border-slate-700/50 last:border-0';
-                        li.innerHTML = `<span class="font-bold text-slate-700 dark:text-slate-200">${tipo.tipo_nombre}</span>`;
-                        li.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            tipoValue.value = tipo.id_tipo;
-                            btnToggleTiposLabel.textContent = tipo.tipo_nombre;
-                            btnToggleTiposLabel.classList.remove('text-slate-400');
-                            btnToggleTiposLabel.classList.add('text-slate-900', 'dark:text-white');
-                            tiposDropdown.classList.add('hidden');
-                        });
-                        listaTipos.appendChild(li);
-                    });
-                }
-            }
-
-            // ===== LOGICA BUSCADOR ASIGNAR / DESTINATARIOS =====
-            function initBuscadorDestinatario(block) {
+            function initBuscadorAsignar(block) {
                 const btnToggle = block.querySelector('.dest-btn-toggle');
                 const dropdown = block.querySelector('.dest-dropdown');
                 const searchInput = block.querySelector('.dest-search-input');
@@ -2893,17 +1697,20 @@
                 function render(items) {
                     list.innerHTML = '';
                     if (items.length === 0) {
-                        list.innerHTML = '<li class="px-3 py-2 text-slate-400 italic">Sin resultados</li>';
+                        list.innerHTML =
+                            '<li class="px-3 py-2 text-slate-400 italic">No se encontraron resultados</li>';
                         return;
                     }
                     items.forEach(item => {
                         const li = document.createElement('li');
-                        li.className = 'px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer border-b border-slate-50 dark:border-slate-700/50 last:border-0';
+                        li.className =
+                            'px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer border-b border-slate-50 dark:border-slate-700/50 last:border-0';
                         li.innerHTML = `
-                            <div class="flex flex-col gap-0.5 pointer-events-none">
-                                <span class="font-bold text-slate-700 dark:text-slate-200">${item.emple_nombres} ${item.emple_apellidos}</span>
-                                <span class="text-[10px] text-blue-500 font-mono">CC: ${item.emple_doc} ${item.area_nombre ? '— ' + item.area_nombre : ''}</span>
-                            </div>`;
+                                    <div class="flex flex-col gap-0.5">
+                                        <span class="font-bold text-slate-700 dark:text-slate-200">${item.emple_nombres} ${item.emple_apellidos}</span>
+                                        <span class="text-[10px] text-blue-500 font-mono">CC: ${item.emple_doc} ${item.area_nombre ? '— ' + item.area_nombre : ''}</span>
+                                    </div>
+                                `;
                         li.addEventListener('click', (e) => {
                             e.stopPropagation();
                             hidden.value = item.emple_doc;
@@ -2918,17 +1725,13 @@
 
                 btnToggle.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    document.querySelectorAll('.dest-dropdown').forEach(d => { if (d !== dropdown) d.classList.add('hidden'); });
+                    modalAsignar.querySelectorAll('.dest-dropdown').forEach(d => {
+                        if (d !== dropdown) d.classList.add('hidden');
+                    });
                     dropdown.classList.toggle('hidden');
                     if (!dropdown.classList.contains('hidden')) {
                         searchInput.focus();
-                        const q = searchInput.value.toLowerCase();
-                        const filtrados = ALL_DESTINATARIOS.filter(d =>
-                            d.emple_doc.toLowerCase().includes(q) ||
-                            d.emple_nombres.toLowerCase().includes(q) ||
-                            d.emple_apellidos.toLowerCase().includes(q)
-                        );
-                        render(filtrados);
+                        render(ALL_DESTINATARIOS);
                     }
                 });
 
@@ -2942,176 +1745,156 @@
                     render(filtrados);
                 });
 
-                if (btnRemove) btnRemove.addEventListener('click', () => block.remove());
+                if (btnRemove) {
+                    btnRemove.addEventListener('click', () => block.remove());
+                }
             }
 
-            // Initialize first block
-            const firstDest = document.querySelector('.destinatario-block');
-            if (firstDest) initBuscadorDestinatario(firstDest);
+            window.openAsignarModal = function(id, radicado, asunto) {
+                asignarRadicadoLabel.textContent = radicado;
+                asignarAsuntoLabel.textContent = asunto;
+                formAsignar.action = `{{ url('/ventanilla/externarec') }}/${id}/asignar`;
 
-            document.getElementById('btnAgregarDestinatario').addEventListener('click', () => {
-                const container = document.getElementById('destinatarios-container');
-                const template = container.querySelector('.destinatario-block');
-                const clone = template.cloneNode(true);
+                const container = document.getElementById('asignar-destinatarios-container');
+                const blocks = container.querySelectorAll('.destinatario-block-asignar');
+                for (let i = 1; i < blocks.length; i++) blocks[i].remove();
 
-                // Reset values in clone
-                clone.querySelector('.dest-hidden-input').value = '';
-                clone.querySelector('.dest-label').textContent = 'Seleccione un destinatario...';
-                clone.querySelector('.dest-label').classList.add('text-slate-400');
-                clone.querySelector('.dest-label').classList.remove('text-slate-900', 'dark:text-white');
-                clone.querySelector('.dest-search-input').value = '';
-                clone.querySelector('.dest-dropdown').classList.add('hidden'); // Ensure closed
-                clone.querySelector('.dest-btn-remove').classList.remove('hidden');
+                const firstBlock = blocks[0];
+                firstBlock.querySelector('.dest-hidden-input').value = '';
+                firstBlock.querySelector('.dest-label').textContent = 'Seleccione un documento o nombre...';
+                firstBlock.querySelector('.dest-label').classList.add('text-slate-400');
+                firstBlock.querySelector('.dest-search-input').value = '';
 
-                container.appendChild(clone);
-                initBuscadorDestinatario(clone);
-            });
+                initBuscadorAsignar(firstBlock);
+                window.openModal('modalAsignar');
+            };
 
-            // Global click to close dropdowns correctly
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('#ciudad-proveniente-wrapper')) {
-                    if (ciudadesDropdown) ciudadesDropdown.classList.add('hidden');
-                }
-                if (!e.target.closest('#tipo-documento-wrapper')) {
-                    if (tiposDropdown) tiposDropdown.classList.add('hidden');
-                }
-                if (!e.target.closest('.destinatario-block')) {
-                    document.querySelectorAll('.dest-dropdown').forEach(d => d.classList.add('hidden'));
-                }
-                if (!e.target.closest('.destinatario-block-asignar')) {
-                    document.querySelectorAll('.dest-dropdown').forEach(d => d.classList.add('hidden'));
-                }
-            });
-
-            // ===== LOGICA ASIGNAR (MODAL INDEPENDIENTE) =====
-            document.addEventListener('click', function(e) {
-                const btn = e.target.closest('.btn-abrir-asignar');
-                if (btn) {
-                    const id = btn.dataset.id;
-                    const radicado = btn.dataset.radicado;
-                    const asunto = btn.dataset.asunto;
-
-                    asignarRadicadoLabel.textContent = radicado;
-                    asignarAsuntoLabel.textContent = asunto;
-                    formAsignar.action = `{{ url('/remitente/externarec') }}/${id}/asignar`;
-
-                    const container = document.getElementById('asignar-destinatarios-container');
-                    const blocks = container.querySelectorAll('.destinatario-block-asignar');
-                    for (let i = 1; i < blocks.length; i++) blocks[i].remove();
-
-                    const firstBlock = blocks[0];
-                    firstBlock.querySelector('.dest-hidden-input').value = '';
-                    firstBlock.querySelector('.dest-label').textContent = 'Seleccione un documento o nombre...';
-                    firstBlock.querySelector('.dest-label').classList.add('text-slate-400');
-                    firstBlock.querySelector('.dest-search-input').value = '';
-                    initBuscadorDestinatario(firstBlock);
-
-                    modalAsignar.classList.remove('hidden');
-                    modalAsignar.classList.add('flex');
-                    document.body.style.overflow = 'hidden';
-                }
-
-                if (e.target.closest('.btnCerrarAsignar')) {
-                    modalAsignar.classList.add('hidden');
-                    modalAsignar.classList.remove('flex');
-                    document.body.style.overflow = 'auto';
-                }
+            document.querySelectorAll('.btnCerrarAsignar').forEach(btn => {
+                btn.addEventListener('click', () => window.closeModal('modalAsignar'));
             });
 
             document.getElementById('btnAgregarDestinatarioAsignar').addEventListener('click', function() {
                 const container = document.getElementById('asignar-destinatarios-container');
                 const template = container.querySelector('.destinatario-block-asignar');
                 const clone = template.cloneNode(true);
+
                 clone.querySelector('.dest-hidden-input').value = '';
                 clone.querySelector('.dest-label').textContent = 'Seleccione un documento o nombre...';
                 clone.querySelector('.dest-label').classList.add('text-slate-400');
-                clone.querySelector('.dest-label').classList.remove('text-slate-900', 'dark:text-white');
                 clone.querySelector('.dest-search-input').value = '';
                 clone.querySelector('.dest-btn-remove').classList.remove('hidden');
+
                 container.appendChild(clone);
-                initBuscadorDestinatario(clone);
+                initBuscadorAsignar(clone);
             });
 
-            // ===== VALIDACIÓN ANTES DE ENVIAR =====
-            const formPrincipal = document.getElementById('formCorrespondencia');
-            if (formPrincipal) {
-                formPrincipal.addEventListener('submit', function(e) {
-                    let hasErrors = false;
-                    const errors = document.querySelectorAll('[id^="error-"]');
-                    errors.forEach(err => err.classList.add('hidden'));
-
-                    const type = tipoRemitente.value;
-                    if (type === 'empresa') {
-                        const inputNom = document.getElementById('nom_institucion');
-                        const inputNit = document.getElementById('nit_institucion');
-                        if (!inputNom.value.trim()) {
-                            showError('nom_institucion', 'El nombre de la empresa es obligatorio.');
-                            hasErrors = true;
-                        }
-                        if (!inputNit.value.trim()) {
-                            showError('nit_institucion', 'El NIT es obligatorio.');
-                            hasErrors = true;
-                        }
-                    } else {
-                        const inputTipoDoc = document.getElementById('tipo_documento');
-                        const inputNumDoc = document.getElementById('numero_documento');
-                        const inputNomPers = document.getElementById('nombre_persona');
-                        if (!inputTipoDoc.value) {
-                            showError('tipo_documento', 'Seleccione el tipo de documento.');
-                            hasErrors = true;
-                        }
-                        if (!inputNumDoc.value.trim()) {
-                            showError('numero_documento', 'El número de documento es obligatorio.');
-                            hasErrors = true;
-                        }
-                        if (!inputNomPers.value.trim()) {
-                            showError('nombre_persona', 'El nombre completo es obligatorio.');
-                            hasErrors = true;
-                        }
-                    }
-
-                    const inputCorreo = document.getElementById('correo_persona_shared');
-                    if (!inputCorreo.value.trim()) {
-                        showError('correo_persona', 'El correo electrónico es obligatorio.');
-                        hasErrors = true;
-                    }
-
-                    if (!ciudadValue.value) {
-                        showError('ciudad_proveniente', 'Debe seleccionar una ciudad.');
-                        hasErrors = true;
-                    }
-                    if (!document.getElementById('asunto').value.trim()) {
-                        showError('asunto', 'El asunto es obligatorio.');
-                        hasErrors = true;
-                    }
-                    if (!tipoValue.value) {
-                        showError('id_tipo', 'Seleccione el tipo de documento.');
-                        hasErrors = true;
-                    }
-
-                    // Validar al menos un destinatario
-                    const selectedDests = Array.from(document.querySelectorAll('input[name="destinatarios[]"]'))
-                        .filter(input => input.value.trim() !== "");
-                    if (selectedDests.length === 0) {
-                        alert("Debe seleccionar al menos un destinatario.");
-                        hasErrors = true;
-                    }
-
-                    if (hasErrors) {
-                        e.preventDefault();
-                        const firstError = document.querySelector('[id^="error-"]:not(.hidden)');
-                        if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                });
-            }
-
-            function showError(id, msg) {
-                const p = document.getElementById('error-' + id);
-                if (p) {
-                    p.textContent = msg;
-                    p.classList.remove('hidden');
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.destinatario-block-asignar') && !e.target.closest(
+                        '.destinatario-block')) {
+                    document.querySelectorAll('.dest-dropdown').forEach(d => d.classList.add('hidden'));
                 }
-            }
+            });
+
+            // (Redundant registration logic removed, handled by partial)
         });
     </script>
+
+    <script>
+        // Global data store for Recibidos
+        window.correspondenceData = @json($recibidos->keyBy('id_recibido'));
+
+        // Registrar Saliente Modal Logic
+        function openSalienteModal(id) {
+            const c = window.correspondenceData[id];
+            if (!c) return;
+
+            document.getElementById('salienteForm').action = `{{ url('/ventanilla') }}/${id}/store-saliente`;
+            document.getElementById('salienteDestino').value = c.nom_institucion || c.nombre_persona || '';
+            document.getElementById('salienteAsunto').value = 'R: ' + (c.asunto || '');
+            document.getElementById('salienteFolio').value = c.folio || 0;
+            
+            // Auto-fill Email and Type
+            if (document.getElementById('salienteEmailNotif')) {
+                document.getElementById('salienteEmailNotif').value = c.correo_persona || '';
+            }
+            if (document.getElementById('salienteTipo')) {
+                document.getElementById('salienteTipo').value = c.id_tipo || '';
+            }
+
+            // Auto-select Funcionario (Current logged user)
+            if (document.getElementById('salienteFuncionario')) {
+                const currentDoc = "{{ auth()->guard('remitente')->user()->rem_doc }}";
+                document.getElementById('salienteFuncionario').value = currentDoc;
+            }
+
+            const preview = document.getElementById('salienteFilePreview');
+            preview.innerHTML = '';
+            if (c.archivo) {
+                const fileName = c.archivo.split('/').pop();
+                preview.innerHTML += `
+                    <div class="flex items-center gap-3 p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-2xl">
+                        <span class="material-symbols-outlined text-emerald-600">description</span>
+                        <div class="flex-1">
+                            <p class="text-[10px] font-black text-emerald-900 dark:text-emerald-400 uppercase tracking-widest">Documento Principal</p>
+                            <p class="text-xs text-emerald-700/60 dark:text-emerald-500/60 truncate font-mono">${fileName}</p>
+                        </div>
+                    </div>
+                `;
+            }
+            window.openModal('salienteModal');
+        }
+
+        function openRejectModal(id, radicado) {
+            document.getElementById('rejectRadText').textContent = 'Radicado: ' + radicado;
+            document.getElementById('rejectForm').action = `{{ url('/ventanilla') }}/${id}/rechazar`;
+            window.openModal('rejectModal');
+        }
+    </script>
+
+<!-- Reject Modal -->
+<div id="rejectModal" class="fixed inset-0 z-[60] hidden items-center justify-center overflow-y-auto" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen w-full p-4 relative">
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeModal('rejectModal')"></div>
+        <div class="relative w-full max-w-lg bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden transform transition-all flex flex-col max-h-[90vh] my-auto">
+            <div class="shrink-0 px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-red-50/50 dark:bg-red-900/20">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-red-100 dark:bg-red-900/40 flex items-center justify-center text-red-600 dark:text-red-400">
+                        <span class="material-symbols-outlined font-variation-icon text-xl">cancel</span>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">Rechazar Correspondencia</h3>
+                        <p id="rejectRadText" class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Radicado: ---</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeModal('rejectModal')" class="p-2 text-gray-400 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl hover:bg-red-50 hover:text-red-500 transition-all active:scale-95">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
+            <form id="rejectForm" method="POST" action="" class="flex flex-col overflow-hidden h-full">
+                @csrf
+                <div class="p-6 overflow-y-auto custom-scrollbar flex-1">
+                    <div class="space-y-5">
+                        <div class="p-4 bg-orange-50 border border-orange-200 rounded-xl text-orange-800 dark:bg-orange-900/20 dark:border-orange-800 dark:text-orange-200 text-sm mb-4 flex items-start gap-3">
+                            <span class="material-symbols-outlined shrink-0 mt-0.5" style="font-size: 20px;">info</span>
+                            <p>Al rechazar, esta correspondencia se dará por terminada con estado de <strong>Rechazo</strong> y se enviará una notificación por correo al remitente original explicando los motivos indicados abajo.</p>
+                        </div>
+                        <div>
+                            <label class="flex items-center gap-2 text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-widest mb-1.5 ml-1">
+                                <span class="material-symbols-outlined text-[14px]">text_snippet</span> Motivo del Rechazo <span class="text-red-500">*</span>
+                            </label>
+                            <textarea name="observaciones" id="rejectObs" required rows="4" maxlength="250" placeholder="Escriba aquí los detalles..." class="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-2xl bg-gray-50 focus:bg-white dark:bg-gray-900/50 dark:focus:bg-gray-800 dark:text-white focus:ring-2 focus:ring-red-500/50 focus:border-red-500 transition-all text-sm resize-none"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="shrink-0 px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex justify-end gap-3 rounded-b-3xl">
+                    <button type="button" onclick="closeModal('rejectModal')" class="px-5 py-2.5 text-sm font-bold text-gray-600 border border-gray-200 bg-white rounded-xl hover:bg-gray-50 transition-all active:scale-95">Cancelar</button>
+                    <button type="submit" class="px-5 py-2.5 text-sm font-bold text-white bg-red-600 rounded-xl hover:bg-red-700 transition-all shadow-md active:scale-95 flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">cancel</span> Confirmar Rechazo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @endsection

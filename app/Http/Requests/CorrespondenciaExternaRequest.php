@@ -31,9 +31,9 @@ class CorrespondenciaExternaRequest extends FormRequest
             'asunto'             => 'required|string|max:100',
             'folio'              => 'required|integer|min:1',
             'observaciones'      => 'nullable|string|max:250',
-            'archivo'            => 'required|file|mimes:pdf|max:5120',  // 5MB máximo, solo PDF
-            'anexos'             => 'nullable|array|max:1',              // Máximo 1 anexo
-            'anexos.*'           => 'file|mimes:pdf|max:25600',          // Solo PDF, 25MB máximo
+            'archivo'            => 'required|file|mimes:pdf,doc,docx,jpg,png|max:20480',  // 20MB máximo
+            'anexos'             => 'nullable|array|max:5',              // Máximo 5 anexos
+            'anexos.*'           => 'file|mimes:pdf,doc,docx,jpg,png|max:20480',          // 20MB máximo
         ];
 
         if ($this->input('tipo_remitente') === 'Empresa') {

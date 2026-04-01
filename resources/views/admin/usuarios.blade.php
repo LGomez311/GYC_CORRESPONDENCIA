@@ -80,12 +80,12 @@
                 </p>
             </div>
             <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto mt-4 lg:mt-0">
-                <button id="btnOpenCrearRemitente"
+                <button id="btnOpenCrearRemitente" onclick="openModal('remitenteModal')"
                     class="flex items-center justify-center gap-2 px-5 py-2.5 bg-white dark:bg-[#161d2b] text-[#0d121b] dark:text-white border border-[#cfd7e7] dark:border-gray-800 rounded-lg font-bold text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all active:scale-95 w-full sm:w-auto shadow-sm">
                     <span class="material-symbols-outlined text-lg text-emerald-500">person_add</span>
                     Crear Remitente
                 </button>
-                <button id="btnOpenCrearEmpleado"
+                <button id="btnOpenCrearEmpleado" onclick="openModal('empleadoModal')"
                     class="flex items-center justify-center gap-2 px-5 py-2.5 bg-primary text-white rounded-lg font-bold text-sm shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95 w-full sm:w-auto">
                     <span class="material-symbols-outlined text-lg">badge</span>
                     Crear Empleado
@@ -429,8 +429,8 @@
     </script>
 
 {{-- MODAL CREAR EMPLEADO --}}
-<div id="empleadoModal" class="fixed inset-0 bg-black/40 flex items-center justify-center hidden z-50 p-4">
-    <div class="bg-white dark:bg-[#161d2b] w-full max-w-3xl rounded-xl shadow-xl relative my-10 max-h-[90vh] flex flex-col overflow-hidden">
+<div id="empleadoModal" class="fixed inset-0 bg-black/40 flex items-center justify-center hidden z-[60] p-4 transition-opacity duration-300" role="dialog" aria-modal="true">
+    <div class="bg-white dark:bg-[#161d2b] w-full max-w-3xl rounded-xl shadow-xl relative my-10 max-h-[90vh] flex flex-col overflow-hidden transform scale-95 opacity-0 transition-all duration-300 ease-out text-left">
         <div class="px-6 pt-6 bg-white dark:bg-[#161d2b]">
             <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-4 mb-4">
                 <div>
@@ -528,8 +528,8 @@
 </div>
 
 {{-- MODAL EDITAR EMPLEADO --}}
-<div id="empleadoModalEdit" class="fixed inset-0 bg-black/40 flex items-center justify-center hidden z-50 p-4">
-    <div class="bg-white dark:bg-[#161d2b] w-full max-w-3xl rounded-xl shadow-xl relative my-10 max-h-[90vh] flex flex-col overflow-hidden">
+<div id="empleadoModalEdit" class="fixed inset-0 bg-black/40 flex items-center justify-center hidden z-[60] p-4 transition-opacity duration-300" role="dialog" aria-modal="true">
+    <div class="bg-white dark:bg-[#161d2b] w-full max-w-3xl rounded-xl shadow-xl relative my-10 max-h-[90vh] flex flex-col overflow-hidden transform scale-95 opacity-0 transition-all duration-300 ease-out text-left">
         <div class="px-6 pt-6">
             <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-4 mb-4">
                 <div>
@@ -630,8 +630,8 @@
 </div>
 
 {{-- MODAL CREAR REMITENTE --}}
-<div id="remitenteModal" class="fixed inset-0 bg-black/40 flex items-center justify-center hidden z-50 p-4">
-    <div class="bg-white dark:bg-[#161d2b] w-full max-w-3xl rounded-xl shadow-xl relative my-10 max-h-[90vh] flex flex-col overflow-hidden">
+<div id="remitenteModal" class="fixed inset-0 bg-black/40 flex items-center justify-center hidden z-[60] p-4 transition-opacity duration-300" role="dialog" aria-modal="true">
+    <div class="bg-white dark:bg-[#161d2b] w-full max-w-3xl rounded-xl shadow-xl relative my-10 max-h-[90vh] flex flex-col overflow-hidden transform scale-95 opacity-0 transition-all duration-300 ease-out text-left">
         <div class="px-6 pt-6">
             <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-4 mb-4">
                 <div>
@@ -729,8 +729,8 @@
 </div>
 
 {{-- MODAL EDITAR REMITENTE --}}
-<div id="remitenteModalEdit" class="fixed inset-0 bg-black/40 flex items-center justify-center hidden z-50 p-4">
-    <div class="bg-white dark:bg-[#161d2b] w-full max-w-3xl rounded-xl shadow-xl relative my-10 max-h-[90vh] flex flex-col overflow-hidden">
+<div id="remitenteModalEdit" class="fixed inset-0 bg-black/40 flex items-center justify-center hidden z-[60] p-4 transition-opacity duration-300" role="dialog" aria-modal="true">
+    <div class="bg-white dark:bg-[#161d2b] w-full max-w-3xl rounded-xl shadow-xl relative my-10 max-h-[90vh] flex flex-col overflow-hidden transform scale-95 opacity-0 transition-all duration-300 ease-out text-left">
         <div class="px-6 pt-6">
             <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-4 mb-4">
                 <div>
@@ -832,8 +832,8 @@
 </div>
 
 {{-- MODAL VER DETALLES --}}
-<div id="detallesModal" class="fixed inset-0 bg-black/40 flex items-center justify-center hidden z-50 p-4">
-    <div class="bg-white dark:bg-[#161d2b] w-full max-w-2xl rounded-xl shadow-xl relative my-10 max-h-[90vh] flex flex-col overflow-hidden">
+<div id="detallesModal" class="fixed inset-0 bg-black/40 flex items-center justify-center hidden z-[60] p-4 transition-opacity duration-300" role="dialog" aria-modal="true">
+    <div class="bg-white dark:bg-[#161d2b] w-full max-w-2xl rounded-xl shadow-xl relative my-10 max-h-[90vh] flex flex-col overflow-hidden transform scale-95 opacity-0 transition-all duration-300 ease-out text-left">
         <div class="px-6 pt-6 pb-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
             <h2 class="text-xl font-semibold text-[#0d121b] dark:text-white" id="detallesTitle">Detalles del Usuario</h2>
             <button class="btn-close text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white">
@@ -940,10 +940,10 @@
            MODALES ABRIR / CERRAR
         ============================*/
         if (btnOpenEmpleado) {
-            btnOpenEmpleado.addEventListener('click', () => modalEmpleado.classList.remove('hidden'));
+            btnOpenEmpleado.addEventListener('click', () => openModal('empleadoModal'));
         }
         if (btnOpenRemitente) {
-            btnOpenRemitente.addEventListener('click', () => modalRemitente.classList.remove('hidden'));
+            btnOpenRemitente.addEventListener('click', () => openModal('remitenteModal'));
         }
 
         // Toggle eye button for passwords
@@ -972,7 +972,10 @@
 
         document.querySelectorAll('.btn-close').forEach(btn => {
             btn.addEventListener('click', () => {
-                btn.closest('.fixed').classList.add('hidden');
+                const modal = btn.closest('.fixed');
+                if (modal) {
+                    closeModal(modal.id);
+                }
             });
         });
 
@@ -1022,7 +1025,7 @@
                     if(err) err.classList.add('hidden');
                 });
 
-                modalEmpleadoEdit.classList.remove('hidden');
+                openModal('empleadoModalEdit');
             });
         });
 
@@ -1077,7 +1080,7 @@
                     if(err) err.classList.add('hidden');
                 });
 
-                modalRemitenteEdit.classList.remove('hidden');
+                openModal('remitenteModalEdit');
             });
         });
 
@@ -1129,7 +1132,7 @@
                     extra2Container.style.display = 'block';
                 }
                 
-                modalDetalles.classList.remove('hidden');
+                openModal('detallesModal');
             });
         });
 
@@ -1517,8 +1520,8 @@
         const modalTypeRemitente = "{{ old('modal_type_remitente') }}";
 
         if (modalTypeEmpleado === 'edit') {
+            openModal('empleadoModalEdit');
             const modalEditarEmpleado = document.getElementById('empleadoModalEdit');
-            modalEditarEmpleado.classList.remove('hidden');
 
             const documento = "{{ old('emple_doc') }}";
             if (documento) {
@@ -1534,8 +1537,8 @@
             });
         } 
         else if (modalTypeRemitente === 'edit') {
+            openModal('remitenteModalEdit');
             const modalEditarRemitente = document.getElementById('remitenteModalEdit');
-            modalEditarRemitente.classList.remove('hidden');
 
             const documento = "{{ old('rem_doc') }}";
             if (documento) {
@@ -1556,8 +1559,8 @@
         } 
         else {
             if ("{{ old('emple_doc') }}" || "{{ old('emple_nombres') }}") {
+                openModal('empleadoModal');
                 const modalCrearEmpleado = document.getElementById('empleadoModal');
-                modalCrearEmpleado.classList.remove('hidden');
 
                 modalCrearEmpleado.querySelectorAll('input, select, textarea').forEach(input => {
                     const name = input.name;
@@ -1568,8 +1571,8 @@
             }
 
             if ("{{ old('rem_doc') }}" || "{{ old('rem_nombres') }}") {
+                openModal('remitenteModal');
                 const modalCrearRemitente = document.getElementById('remitenteModal');
-                modalCrearRemitente.classList.remove('hidden');
 
                 modalCrearRemitente.querySelectorAll('input, select, textarea').forEach(input => {
                     const name = input.name;
