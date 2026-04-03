@@ -29,7 +29,7 @@ class CiudadSeeder extends Seeder
             ['ciudad_cod_post' => '91798', 'ciudad_nom' => 'Tarapacá', 'ciudad_id_dpto' => '91'],
 
             // --- ANTIOQUIA (05) - (Muestra representativa de los 125) ---
-            ['ciudad_cod_post' => '05001', 'ciudad_nom' => 'Medellín', 'ciudad_id_dpto' => '05'],
+            ['ciudad_cod_post' => '05001', 'ciudad_nom' => 'Medellin', 'ciudad_id_dpto' => '05'],
             ['ciudad_cod_post' => '05002', 'ciudad_nom' => 'Abejorral', 'ciudad_id_dpto' => '05'],
             ['ciudad_cod_post' => '05004', 'ciudad_nom' => 'Abriaquí', 'ciudad_id_dpto' => '05'],
             ['ciudad_cod_post' => '05021', 'ciudad_nom' => 'Alejandría', 'ciudad_id_dpto' => '05'],
