@@ -68,7 +68,9 @@ class HomeController extends Controller
         $recibidos = 0;
         $enviados = 0;
         $mensajeCorrespondencia = '';
-        $recientes = []; // Para actividad reciente
+        $recientes = new \Illuminate\Pagination\LengthAwarePaginator(
+            [], 0, 10, 1, ['path' => request()->url(), 'query' => request()->query()]
+        ); // Para actividad reciente
 
         // Solo mostrar datos si la licencia está activa
         if ($estaActiva) {

@@ -315,8 +315,8 @@
         </div>
 
     <!-- View Details Modal (Expanded with Traceability) -->
-    <div id="detailsModal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
-        <div class="flex items-center justify-center min-h-screen p-4 w-full">
+    <div id="detailsModal" class="fixed inset-0 z-50 hidden items-center justify-center overflow-y-auto" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen p-4 w-full relative">
             <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeModal('detailsModal')"></div>
             <div class="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden transform transition-all my-auto flex flex-col font-display">
                 <!-- Header -->
@@ -439,13 +439,13 @@
     </div>
 
     <!-- History Modal -->
-    <div id="historyModal" class="fixed inset-0 z-[60] hidden overflow-y-auto" aria-labelledby="modal-title"
+    <div id="historyModal" class="fixed inset-0 z-[60] hidden items-center justify-center overflow-y-auto" aria-labelledby="modal-title"
         role="dialog" aria-modal="true">
-        <div class="flex items-center justify-center min-h-screen p-4 w-full">
+        <div class="flex items-center justify-center min-h-screen p-4 w-full relative">
             <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
                 onclick="closeModal('historyModal')"></div>
             <div
-                class="relative bg-white dark:bg-gray-800 rounded-3xl w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl transform transition-all">
+                class="relative bg-white dark:bg-gray-800 rounded-3xl w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl transform transition-all my-auto">
                 <div
                     class="shrink-0 px-8 py-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-900/20">
                     <div class="flex-1">
@@ -585,12 +585,12 @@
     </div>
 
     <!-- Assign Modal -->
-    <div id="assignModal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
-        <div class="flex items-center justify-center min-h-screen p-4">
+    <div id="assignModal" class="fixed inset-0 z-50 hidden items-center justify-center overflow-y-auto" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen p-4 w-full relative">
             <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
                 onclick="closeModal('assignModal')"></div>
             <div
-                class="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden transform transition-all font-display">
+                class="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden transform transition-all font-display my-auto">
                 <form id="assignForm" method="POST">
                     @csrf
                     <div
@@ -684,16 +684,7 @@
         window.correspondenceData = @json($correspondencias->keyBy('id_recibido'));
         window.enviosPendientesData = @json($enviosPendientes->keyBy('id_envio'));
 
-        // Modal general logic
-        function openModal(id) {
-            document.getElementById(id).classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
 
-        function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
-            document.body.style.overflow = '';
-        }
 
         // Assignment Modal Logic
         function openAssignModal(id, radText = '') {
