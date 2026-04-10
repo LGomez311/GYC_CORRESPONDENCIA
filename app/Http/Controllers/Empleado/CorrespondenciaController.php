@@ -1429,22 +1429,28 @@ class CorrespondenciaController extends Controller
             }
 
             // Check if consolidated radicado is resolved
-            $radicadoObj = \App\Models\Radicado::find($radId);
             $isResuelto = false;
-            if ($radicadoObj) {
-                // States that mean "Resolved": 9 (Finalizado), 10 (Archivado), etc.
-                // We'll also check by name just in case.
-                $estadoRad = DB::table('estado')->where('id_estado', $radicadoObj->id_estado)->first();
-                $estN = strtolower($estadoRad->estado_nomb ?? '');
-                $isResuelto = in_array($radicadoObj->id_estado, [9, 10]) || 
-                              str_contains($estN, 'finalizado') || 
-                              str_contains($estN, 'resuelto');
+            
+            // Check states in 'recibido' table
+            $recState = DB::table('recibido')->where('num_radicado_int', $radId)->value('id_estado_rec');
+            if ($recState && in_array($recState, [9, 10, 11])) {
+                $isResuelto = true;
             }
+            
+            // Check states in 'envio' table if not already resolved
+            if (!$isResuelto) {
+                $envState = DB::table('envio')->where('num_radicado_int', $radId)->value('id_estado_envio');
+                if ($envState && in_array($envState, [9, 10, 11])) {
+                    $isResuelto = true;
+                }
+            }
+
+            $numRadicado = DB::table('radicados')->where('id_radicado', $radId)->value('num_radicado');
 
             return response()->json([
                 'history' => $finalHistory,
                 'is_resuelto' => $isResuelto,
-                'num_radicado' => $radicadoObj->num_radicado ?? 'N/A'
+                'num_radicado' => $numRadicado ?? 'N/A'
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);

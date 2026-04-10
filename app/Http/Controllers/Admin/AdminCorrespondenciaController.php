@@ -220,10 +220,11 @@ class AdminCorrespondenciaController extends Controller
                 }
 
                 $statusName = strtolower($det->estado->estado_nomb ?? '');
-                $isResolved = in_array($det->det_id_estado, [9, 10]) || 
+                $isResolved = in_array($det->det_id_estado, [9, 10, 11]) || 
                              str_contains($statusName, 'resuelt') || 
                              str_contains($statusName, 'finaliz') || 
-                             str_contains($statusName, 'archiv');
+                             str_contains($statusName, 'archiv') ||
+                             str_contains($statusName, 'rechaz');
 
                 $timeline->push((object)[
                     'tipo' => 'Entrada',
@@ -246,7 +247,7 @@ class AdminCorrespondenciaController extends Controller
 
         // 2. Process Envios
         foreach ($envios as $e) {
-            $isResolved = in_array($e->id_estado_envio, [9, 10]);
+            $isResolved = in_array($e->id_estado_envio, [9, 10, 11]);
             // Main Outgoing Registration Event
             $timeline->push((object)[
                 'tipo' => 'Salida',
@@ -268,10 +269,11 @@ class AdminCorrespondenciaController extends Controller
             // Its Traceability
             foreach ($e->detalles as $det) {
                 $statusName = strtolower($det->estado->estado_nomb ?? '');
-                $isResolved = in_array($det->id_estado_rec, [9, 10]) || 
+                $isResolved = in_array($det->id_estado_rec, [9, 10, 11]) || 
                              str_contains($statusName, 'resuelt') || 
                              str_contains($statusName, 'finaliz') || 
-                             str_contains($statusName, 'archiv');
+                             str_contains($statusName, 'archiv') ||
+                             str_contains($statusName, 'rechaz');
                 
                 $timeline->push((object)[
                     'tipo' => 'Salida',
@@ -358,10 +360,11 @@ class AdminCorrespondenciaController extends Controller
                 }
 
                 $statusName = strtolower($det->estado->estado_nomb ?? '');
-                $isResolved = in_array($det->det_id_estado, [9, 10]) || 
+                $isResolved = in_array($det->det_id_estado, [9, 10, 11]) || 
                              str_contains($statusName, 'resuelt') || 
                              str_contains($statusName, 'finaliz') || 
-                             str_contains($statusName, 'archiv');
+                             str_contains($statusName, 'archiv') ||
+                             str_contains($statusName, 'rechaz');
 
                 $timeline->push((object)[
                     'tipo' => 'Entrada',
@@ -384,7 +387,7 @@ class AdminCorrespondenciaController extends Controller
 
         // 2. Process Envios
         foreach ($envios as $e) {
-            $isResolved = in_array($e->id_estado_envio, [9, 10]);
+            $isResolved = in_array($e->id_estado_envio, [9, 10, 11]);
             $timeline->push((object)[
                 'tipo' => 'Salida',
                 'fecha' => $e->created_at ?? $e->fecha,
@@ -404,10 +407,11 @@ class AdminCorrespondenciaController extends Controller
 
             foreach ($e->detalles as $det) {
                 $statusName = strtolower($det->estado->estado_nomb ?? '');
-                $isResolved = in_array($det->id_estado_rec, [9, 10]) || 
+                $isResolved = in_array($det->id_estado_rec, [9, 10, 11]) || 
                              str_contains($statusName, 'resuelt') || 
                              str_contains($statusName, 'finaliz') || 
-                             str_contains($statusName, 'archiv');
+                             str_contains($statusName, 'archiv') ||
+                             str_contains($statusName, 'rechaz');
 
                 $timeline->push((object)[
                     'tipo' => 'Salida',

@@ -2879,8 +2879,8 @@
                         <span class="material-symbols-outlined text-2xl font-bold">verified</span>
                     </div>
                     <div>
-                        <h4 class="text-green-800 dark:text-green-300 font-bold text-base leading-tight uppercase tracking-tight">Proceso Consolidado</h4>
-                        <p class="text-green-600 dark:text-green-400 text-xs mt-1 font-medium italic">Esta correspondencia ya se encuentra resuelta y finalizada en su totalidad. No requiere más gestiones.</p>
+                        <h4 class="text-green-800 dark:text-green-300 font-bold text-base leading-tight uppercase tracking-tight">Trámite Finalizado</h4>
+                        <p class="text-green-600 dark:text-green-400 text-xs mt-1 font-medium italic">Esta correspondencia ya se encuentra resuelta o finalizada en su totalidad. No requiere más gestiones.</p>
                     </div>
                 </div>`;
             } else {

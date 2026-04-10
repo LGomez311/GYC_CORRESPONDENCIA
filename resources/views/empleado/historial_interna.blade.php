@@ -477,7 +477,7 @@
                             <span class="material-symbols-outlined text-4xl">check_circle</span>
                         </div>
                         <div>
-                            <h4 class="text-lg font-bold">Proceso Consolidado</h4>
+                            <h4 class="text-lg font-bold">Trámite Finalizado</h4>
                             <p class="text-sm opacity-90">Todos los destinatarios han dado respuesta a esta
                                 correspondencia. El radicado se encuentra totalmente gestionado.</p>
                         </div>

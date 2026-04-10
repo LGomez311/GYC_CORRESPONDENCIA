@@ -97,10 +97,17 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-right">
-                                <button onclick="Swal.fire('Información', 'Para ver el detalle completo, consulte el módulo de {{ $item->tipo_corresp == 'Externa' ? 'Recibidos' : 'Enviados' }}.', 'info')" 
-                                        class="p-2 text-primary hover:bg-primary/10 rounded-lg transition-all" title="Ver Detalle">
-                                    <span class="material-symbols-outlined">visibility</span>
-                                </button>
+                                @if($item->tipo_corresp == 'Externa')
+                                    <a href="{{ route('admin.correspondencia.historial_externa', $item->id_recibido) }}" 
+                                       class="p-2 text-primary hover:bg-primary/10 rounded-lg transition-all inline-flex items-center" title="Ver Detalle">
+                                        <span class="material-symbols-outlined">visibility</span>
+                                    </a>
+                                @else
+                                    <a href="{{ route('admin.correspondencia.historial_interna', $item->id_envio) }}" 
+                                       class="p-2 text-primary hover:bg-primary/10 rounded-lg transition-all inline-flex items-center" title="Ver Detalle">
+                                        <span class="material-symbols-outlined">visibility</span>
+                                    </a>
+                                @endif
                             </td>
                         </tr>
                     @empty
