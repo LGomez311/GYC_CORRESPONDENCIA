@@ -131,16 +131,19 @@ class DashboardController extends Controller
                 'tipo' => 'Saliente',
                 'tipo_label' => 'SAL',
                 'clase' => 'blue',
-                'contacto' => $item->destino ?: 'Externo',
+                'contacto' => $item->nom_institucion ?: ($item->nombre_persona ?: ($item->destino ?: 'Externo')),
                 'estado' => in_array($item->id_estado_envio, [9, 14]) ? 'RESUELTO' : ($item->estadoEnvio?->estado_nomb ?? 'Sin estado'),
                 'id_estado' => $item->id_estado_envio,
                 'folios' => $item->folio,
                 'archivo' => $item->archivo,
                 'anexos' => $item->anexos,
                 'url_historial' => route('remitente.historial') . '?q=' . ($item->radicado?->num_radicado),
-                'correo' => $item->correo ?? null,
+                'correo' => $item->correo_persona ?? ($item->correo ?? null),
                 'id_tipo' => $item->id_tipo_envio,
-                'rad_id' => $item->num_radicado_int
+                'rad_id' => $item->num_radicado_int,
+                'nom_institucion' => $item->nom_institucion,
+                'nombre_persona' => $item->nombre_persona,
+                'doc_quien_envia' => $item->doc_quien_envia
             ];
         });
 

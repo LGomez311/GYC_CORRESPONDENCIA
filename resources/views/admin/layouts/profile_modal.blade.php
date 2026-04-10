@@ -1,13 +1,24 @@
-<!-- Global User Settings Modal -->
 @php
     $profileUser = null;
     $profileGuard = null;
-    if (auth('web')->check()) {
-        $profileUser = auth('web')->user();
-        $profileGuard = 'web';
-    } elseif (auth('remitente')->check()) {
-        $profileUser = auth('remitente')->user();
-        $profileGuard = 'remitente';
+    
+    // Prioritize remitente if we are in that module
+    if (request()->is('remitente*') || request()->is('ventanilla*') || auth('remitente')->check() && !auth('web')->check()) {
+        if (auth('remitente')->check()) {
+            $profileUser = auth('remitente')->user();
+            $profileGuard = 'remitente';
+        } elseif (auth('web')->check()) {
+            $profileUser = auth('web')->user();
+            $profileGuard = 'web';
+        }
+    } else {
+        if (auth('web')->check()) {
+            $profileUser = auth('web')->user();
+            $profileGuard = 'web';
+        } elseif (auth('remitente')->check()) {
+            $profileUser = auth('remitente')->user();
+            $profileGuard = 'remitente';
+        }
     }
 @endphp
 <div id="userProfileModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-[100]">
@@ -36,6 +47,7 @@
             <div id="tabContentGeneral" class="block">
                 <form id="formProfileGeneral" onsubmit="submitProfileGeneral(event)">
                     @csrf
+                    <input type="hidden" name="current_guard" value="{{ $profileGuard }}">
                     <!-- Foto -->
                     <div class="flex flex-col items-center mb-6">
                         <div class="w-24 h-24 rounded-full bg-slate-100 dark:bg-gray-800 border-2 border-[#cfd7e7] dark:border-gray-700 overflow-hidden mb-3 relative group flex items-center justify-center" id="profileImagePreviewContainer">
@@ -96,6 +108,7 @@
             <div id="tabContentPassword" class="hidden">
                 <form id="formProfilePassword" onsubmit="submitProfilePassword(event)">
                     @csrf
+                    <input type="hidden" name="current_guard" value="{{ $profileGuard }}">
                     <div class="mb-4">
                         <label class="block text-sm font-bold text-[#0d121b] dark:text-white mb-2">Contraseña Anterior</label>
                         <div class="relative">

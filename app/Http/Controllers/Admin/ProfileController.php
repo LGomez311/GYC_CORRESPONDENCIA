@@ -17,9 +17,9 @@ class ProfileController extends Controller
 {
     public function updateProfile(Request $request)
     {
-        /** @var \App\Models\Empleado|\App\Models\Remitente $user */
-        /** @var \App\Models\Empleado|\App\Models\Remitente $user */
-        $user = auth()->user();
+        $guard = $request->input('current_guard');
+        $user = ($guard && auth($guard)->check()) ? auth($guard)->user() : auth()->user();
+        
         $isEmpleado = $user instanceof \App\Models\Empleado;
         
         $telField = $isEmpleado ? 'emple_tel' : 'rem_tel';
@@ -119,9 +119,8 @@ class ProfileController extends Controller
 
     public function updatePassword(Request $request)
     {
-        /** @var \App\Models\Empleado|\App\Models\Remitente $user */
-        /** @var \App\Models\Empleado|\App\Models\Remitente $user */
-        $user = auth()->user();
+        $guard = $request->input('current_guard');
+        $user = ($guard && auth($guard)->check()) ? auth($guard)->user() : auth()->user();
 
         $request->validate([
             'password_old' => 'required|string',

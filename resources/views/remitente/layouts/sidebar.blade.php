@@ -1,3 +1,6 @@
+@php
+    $u = auth('remitente')->user();
+@endphp
 <script id="tailwind-config">
     tailwind.config = {
         darkMode: "class",
@@ -56,7 +59,7 @@
             <span class="material-symbols-outlined text-[20px]">apartment</span>
         </div>
         <h2 class="text-[#0d121b] dark:text-white text-base font-bold leading-tight tracking-tight truncate">
-            {{ auth()->user()->empresa->nomb_empresa ?? 'Sin empresa asignada' }}
+            {{ $u->empresa->nomb_empresa ?? 'Sin empresa asignada' }}
         </h2>
     </div>
 
@@ -120,15 +123,18 @@
     <div class="mt-auto">
         <div class="p-3 border-t border-[#cfd7e7] dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/20 flex items-center justify-between">
             <div class="flex items-center gap-3 px-2 overflow-hidden flex-1">
+                @php
+                    $img = $u->rem_img ? asset('storage/' . $u->rem_img) : 'https://ui-avatars.com/api/?name=' . urlencode($u->rem_nombres) . '&background=1e63e9&color=fff';
+                @endphp
                 <div class="size-9 rounded-full bg-cover bg-center border border-gray-200 dark:border-gray-700 shrink-0 shadow-sm"
-                    style='background-image: url("{{ auth()->user()->rem_img ? asset('storage/' . auth()->user()->rem_img) : asset('images/default-avatar.png') }}");'>
+                    style='background-image: url("{{ $img }}");'>
                 </div>
                 <div class="overflow-hidden">
                     <p class="text-sm font-bold truncate text-gray-900 dark:text-white">
                         Ventanilla
                     </p>
                     <p class="text-xs text-[#4c669a] truncate dark:text-gray-400 font-medium">
-                        {{ auth()->user()->rem_nombres }} {{ auth()->user()->rem_apellidos }}
+                        {{ $u->rem_nombres }} {{ $u->rem_apellidos }}
                     </p>
                 </div>
             </div>

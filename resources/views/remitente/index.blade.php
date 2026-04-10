@@ -1208,10 +1208,8 @@
             if (typeSelect && c.id_tipo) typeSelect.value = c.id_tipo;
             
             const officialSelect = document.getElementById('salienteFuncionario');
-            if (officialSelect && isManualEnv) {
-                // If it's a manual envío from employee, try to map the sender if we have it in the normalized object
-                // Usually c.doc_quien_envia was not in the normalized object, but we can assume it for SAL
-                // Actually, let's just default to selecting... and user can pick.
+            if (officialSelect && isManualEnv && c.doc_quien_envia) {
+                officialSelect.value = c.doc_quien_envia;
             }
 
             // Preview Section

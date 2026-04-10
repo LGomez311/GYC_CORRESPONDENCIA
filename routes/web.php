@@ -228,8 +228,8 @@ Route::prefix('admin')->middleware(['auth:web', 'licencia.activa', 'role:2'])->n
 // Arreglo para nombres que originalmente no llevaban "admin." en auth:web
 Route::post('admin/pagos', [AdminPagoController::class, 'store'])->name('pagos.store')->middleware(['auth:web', 'licencia.activa', 'role:2']);
 
-// ================= EMPLEADOS (Cualquier rol web autenticado) =================
-Route::middleware(['auth:web', 'licencia.activa'])->group(function () {
+// ================= EMPLEADOS Y REMITENTES (Perfil compartido) =================
+Route::middleware(['auth:web,remitente', 'licencia.activa'])->group(function () {
     // Perfil / Ajustes de cuenta (Compartido)
     Route::post('/perfil/actualizar', [AdminProfileController::class, 'updateProfile'])->name('admin.profile.update');
     Route::post('/perfil/actualizar-password', [AdminProfileController::class, 'updatePassword'])->name('admin.profile.update_password');
