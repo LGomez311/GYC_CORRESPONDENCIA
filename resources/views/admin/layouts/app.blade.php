@@ -6,6 +6,7 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Gestión de Usuarios (Admin.)</title>
 
+    <!-- Dependencias: Tailwind CSS, Fuentes y Material Symbols -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 
     <link href="https://fonts.googleapis.com" rel="preconnect" />
@@ -99,7 +100,7 @@
                 </h2>
             </div>
 
-            {{-- Contenido --}}
+            <!-- Contenedor Principal de la Página -->
             <main class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
                 @yield('content')
             </main>
@@ -109,7 +110,7 @@
     </div>
 
 
-    {{-- ======= MODALES ======= --}}
+    <!-- Modales Globales -->
     @include('admin.layouts.profile_modal')
     @yield('modals')
 
@@ -166,9 +167,10 @@
             overlay.classList.toggle('hidden');
         }
 
-        /* =========================================================
+        /* 
            SISTEMA GLOBAL DE MODALES (Animaciones Tailwind)
-           ========================================================= */
+           Controla la apertura y cierre de ventanas emergentes con transiciones suaves.
+        */
         function openModal(id) {
             const modal = document.getElementById(id);
             if (modal) {
@@ -323,12 +325,10 @@
             }
             /* Ajuste de botones al final */
             .responsive-table td.actions-cell {
-                justify-content: flex-end; /* Acelerar a la derecha */
-            }
-            .responsive-table td.actions-cell::before {
-                display: none; /* Ocultar etiqueta "Acciones" en móvil si los botones son auto-explicativos o la mantenemos */
+                justify-content: flex-end; 
             }
         }
+        /* ESTILOS PERSONALIZADOS DE TABLAS PARA DISPOSITIVOS MÓVILES */
     </style>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

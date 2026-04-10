@@ -2,7 +2,10 @@
 
 @section('content')
 <div class="space-y-6">
-    <!-- Header -->
+    <!-- 
+        ENCABEZADO DE LA SECCIÓN
+        Muestra el título de la página y la descripción del módulo de envíos internos.
+    -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -15,7 +18,11 @@
         </div>
     </div>
 
-    <!-- Filtros y Tabla -->
+    <!-- 
+        TABLA DE LISTADO Y FILTROS
+        Visualiza todos los envíos realizados por el empleado con sus detalles principales, 
+        destinatarios y acciones disponibles.
+    -->
     <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
         <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-slate-900/50 flex flex-col md:flex-row justify-between items-center gap-4">
             <h2 class="font-bold text-gray-800 dark:text-white text-sm uppercase tracking-wider">Listado de Correspondencia Enviada</h2>
@@ -112,7 +119,10 @@
     </div>
 </div>
 
-<!-- Modal Historial y Línea de Tiempo Unificado -->
+ <!-- 
+    MODAL DE HISTORIAL (TRAZABILIDAD)
+    Permite visualizar la línea de vida y los movimientos de un radicado específico en tiempo real.
+ -->
 <div id="historyModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 translate-z-0">
     <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col border border-gray-100 dark:border-gray-800 animate-in fade-in zoom-in duration-200">
         <!-- Header -->
@@ -165,6 +175,10 @@
     </div>
 </div>
 
+<!-- 
+    SCRIPTS DE INTERACCIÓN
+    Contiene la lógica JS para gestionar el historial (fetch a API) y mostrar detalles de destinatarios.
+-->
 <script>
 function abrirModalDestinatarios(destinatarios) {
     const lista = document.getElementById('listaDestinatariosModal');

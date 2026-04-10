@@ -15,6 +15,10 @@ use Illuminate\Support\Facades\Auth;
 
 class AdminCorrespondenciaController extends Controller
 {
+    /**
+     * VISTA PRINCIPAL DE CORRESPONDENCIA (ADMIN)
+     * Centraliza la visualización de correspondencia externa, interna y saliente con contadores globales.
+     */
     public function index(Request $request)
     {
         $nitEmpresa = Auth::user()->nit_empresa;
@@ -87,6 +91,10 @@ class AdminCorrespondenciaController extends Controller
         ];
     }
 
+    /**
+     * EXPORTAR A EXCEL
+     * Genera un archivo .xlsx filtrado según la pestaña activa y los criterios de búsqueda.
+     */
     public function exportExcel(Request $request)
     {
         $data = $this->getCorrespondenciaFiltered($request);
@@ -105,6 +113,10 @@ class AdminCorrespondenciaController extends Controller
         return Excel::download(new CorrespondenciaExport($correspondencias), 'correspondencia_' . $tab . '.xlsx');
     }
 
+    /**
+     * EXPORTAR A PDF
+     * Genera un listado en PDF con orientación landscape de los registros filtrados.
+     */
     public function exportPdf(Request $request)
     {
         $tab = $request->get('tab', 'todas');
@@ -151,6 +163,10 @@ class AdminCorrespondenciaController extends Controller
         return $pdf->download('correspondencia_' . $tab . '.pdf');
     }
 
+    /**
+     * VER HISTORIAL DE CORRESPONDENCIA INTERNA
+     * Carga el detalle y la línea de tiempo de trazabilidad para un radicado tipo INT/SAL.
+     */
     public function historialInterna($id)
     {
         $env = \App\Models\Envio::with(['radicado', 'tipoEnvio', 'anexos', 'quienEnvia.area'])->findOrFail($id);
@@ -287,6 +303,10 @@ class AdminCorrespondenciaController extends Controller
         return view('admin.historial_interna', compact('detalle', 'trazabilidad', 'destinatarios', 'empleados'));
     }
 
+    /**
+     * VER HISTORIAL DE CORRESPONDENCIA EXTERNA
+     * Muestra la trazabilidad detallada de un radicado tipo EXT recibido desde ventanilla o externo.
+     */
     public function historialExterna($id)
     {
         $recibido = \App\Models\Recibido::with(['radicado', 'tipo.prioridad', 'anexos', 'registradoPor.area', 'remitenteRegistrador'])->findOrFail($id);
@@ -427,6 +447,10 @@ class AdminCorrespondenciaController extends Controller
     // MÉTODOS PRIVADOS PARA DRY (Consultas Base)
     // ==========================================================
 
+    /**
+     * CONSULTA BASE DE RECIBIDOS
+     * Aplica los filtros de búsqueda y empresa para registros de correspondencia externa.
+     */
     private function getBaseRecibidosQuery($nitEmpresa, Request $request = null)
     {
         $query = Recibido::with(['destinatarios', 'registradoPor', 'estado', 'ciudad', 'radicado', 'tipo.prioridad', 'anexos', 'detalles.anexosRespuesta'])
@@ -477,6 +501,10 @@ class AdminCorrespondenciaController extends Controller
         return $query;
     }
 
+    /**
+     * CONSULTA BASE DE ENVIOS
+     * Aplica filtros para correspondencia interna y saliente.
+     */
     private function getBaseEnviosQuery($nitEmpresa, Request $request = null)
     {
         $query = Envio::with(['detalles.quienRecibe', 'quienEnvia', 'estadoEnvio', 'radicado', 'tipoEnvio.prioridad', 'anexos', 'detalles.anexosRespuesta'])
@@ -550,6 +578,10 @@ class AdminCorrespondenciaController extends Controller
         ]);
     }
 
+    /**
+     * OBTENER TRAZABILIDAD (JSON API)
+     * Método centralizado para reconstruir la cronología de eventos de cualquier radicado.
+     */
     public function getHistory($id)
     {
         try {

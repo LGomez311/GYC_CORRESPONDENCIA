@@ -17,6 +17,10 @@ use App\Mail\CorrespondenciaSalienteNotification;
 
 class CorrespondenciaController extends Controller
 {
+    /**
+     * BANDEJA DE ENTRADA (MÓDULO PRINCIPAL)
+     * Carga y filtra las correspondencias externas e internas pendientes de gestión para el empleado autenticado.
+     */
     public function recibida(Request $request)
     {
         // Get the current user
@@ -104,7 +108,7 @@ class CorrespondenciaController extends Controller
         $enTramiteInt = (clone $queryBandejaUnicaInt)->where('id_estado_rec', 8)->count();
         $finalizadasInt = (clone $queryBandejaUnicaInt)->where('id_estado_rec', 9)->count();
         $archivadasInt = (clone $queryBandejaUnicaInt)->where('id_estado_rec', 10)->count();
-        $vencidasInt = 0; // Same, placeholder for overdue.
+        $vencidasInt = 0; // Marcador de posición para vencidas.
 
         $searchInt = $request->input('search_int', '');
         $estadoInt = $request->input('estado_int', '');
@@ -132,7 +136,7 @@ class CorrespondenciaController extends Controller
                       ->orWhere('tipo.tipo_nombre', 'like', '%' . $searchInt . '%');
                 }
             })
-            ->select('detalle_envio.*') // Prevent column overlap
+            ->select('detalle_envio.*') // Evitar superposición de columnas
             ->orderByRaw("
                 CASE 
                     WHEN detalle_envio.id_estado_rec = 7 THEN 1
@@ -194,6 +198,10 @@ class CorrespondenciaController extends Controller
         ));
     }
 
+    /**
+     * BANDEJA DE FINALIZADAS
+     * Muestra el histórico de correspondencias que ya han sido resueltas, archivadas o rechazadas por el empleado.
+     */
     public function finalizada(Request $request)
     {
         // Get the current user
@@ -306,6 +314,11 @@ class CorrespondenciaController extends Controller
         ));
     }
 
+    /**
+     * ACTUALIZAR ESTADO (CORRESPONDENCIA EXTERNA)
+     * Permite al empleado cambiar el estado de una correspondencia externa, adjuntar archivos de respuesta 
+     * y registrar observaciones en la trazabilidad.
+     */
     public function actualizarEstado(Request $request, $id)
     {
         $user = Auth::user();
@@ -462,6 +475,10 @@ class CorrespondenciaController extends Controller
     }
 
 
+    /**
+     * ACTUALIZAR ESTADO (CORRESPONDENCIA INTERNA)
+     * Realiza el mismo proceso que actualizarEstado pero para comunicados internos entre colaboradores.
+     */
     public function actualizarEstadoInterna(Request $request, $id)
     {
         $user = Auth::user();
@@ -587,6 +604,10 @@ class CorrespondenciaController extends Controller
         return back()->with('success', 'Estado de correspondencia interna actualizado correctamente.');
     }
 
+    /**
+     * REASIGNAR CORRESPONDENCIA
+     * Permite transferir un radicado a otro empleado para que este continúe con la gestión.
+     */
     public function reasignar(Request $request, $id)
     {
         $request->validate([
@@ -656,6 +677,10 @@ class CorrespondenciaController extends Controller
         return back()->with('success', 'Correspondencia reasignada correctamente al nuevo empleado.');
     }
 
+    /**
+     * CREAR NUEVA CORRESPONDENCIA INTERNA
+     * Inicia un radicado de tipo interno (INT) dirigido a uno o varios colaboradores de la empresa.
+     */
     public function nuevaInterna(Request $request)
     {
         try {
@@ -756,6 +781,10 @@ class CorrespondenciaController extends Controller
             return back()->with('error', 'Error interno al guardar: ' . $e->getMessage())->withInput();
         }
     }
+    /**
+     * CREAR ENVÍO A VENTANILLA
+     * Registra un radicado de salida (SAL) dirigido a los usuarios de Ventanilla/Remitente para despacho físico.
+     */
     public function nuevaVentanilla(Request $request)
     {
         try {

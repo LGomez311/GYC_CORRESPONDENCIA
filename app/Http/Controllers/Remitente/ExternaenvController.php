@@ -18,6 +18,10 @@ use Illuminate\Support\Facades\DB;
 
 class ExternaenvController extends Controller
 {
+    /**
+     * BANDEJA DE ENVIADOS (VENTANILLA)
+     * Visualiza el historial de correspondencia despachada por la empresa a destinatarios externos o internos.
+     */
     public function index(Request $request)
     {
         $remitente = Auth::guard('remitente')->user();
@@ -116,6 +120,10 @@ class ExternaenvController extends Controller
         return view('remitente.externaenv', compact('envios', 'tipos', 'estados', 'ciudades', 'areas', 'search', 'estadoId', 'stats', 'tab', 'prioridades', 'empleados'));
     }
 
+    /**
+     * REGISTRAR ENVÍO SALIENTE
+     * Crea un nuevo radicado de salida, guarda el documento principal y notifica por correo al destinatario.
+     */
     public function store(Request $request)
     {
         $remitente = Auth::guard('remitente')->user();
@@ -319,6 +327,10 @@ class ExternaenvController extends Controller
         return response()->json($empleados);
     }
 
+    /**
+     * OBTENER HISTORIAL DE ENVÍO
+     * Recupera la trazabilidad completa (registro inicial + traslados) para el componente de línea de tiempo.
+     */
     public function getHistory($id)
     {
         $remitente = Auth::guard('remitente')->user();

@@ -3,6 +3,11 @@
 @section('content')
 
 <style>
+    /* 
+       SECCIÓN DE ESTILOS DE IMPRESIÓN
+       Configura cómo se verá el documento al ser impreso, ocultando elementos interactivos
+       y ajustando el diseño para que quepa en una hoja de papel.
+    */
     @media print {
         /* Hide all interactive elements */
         aside, nav, header, button, input, select, .no-print,
@@ -87,7 +92,10 @@
 </style>
 
     <div class="space-y-6">
-        <!-- Header -->
+        <!-- 
+            ENCABEZADO DE LA PÁGINA 
+            Contiene el breadcrumb (ruta de navegación), el título principal y los botones de acción (Imprimir y Regresar).
+        -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
                 <nav class="flex mb-2" aria-label="Breadcrumb">
@@ -127,7 +135,10 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Columna Izquierda: Información del Documento -->
+            <!-- 
+                COLUMNA IZQUIERDA: INFORMACIÓN DETALLADA DEL DOCUMENTO 
+                Muestra los datos técnicos del radicado, el remitente y los archivos adjuntos.
+            -->
             <div class="lg:col-span-1 space-y-6">
                 <div
                     class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
@@ -215,7 +226,10 @@
                     </div>
                 </div>
 
-                <!-- Listado de Destinatarios y su estado actual -->
+                <!-- 
+                    LISTADO DE COLABORADORES
+                    Identifica a las personas asignadas a este radicado y el estado actual de su gestión individual.
+                -->
                 <div
                     class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
                     <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-slate-900/50">
@@ -279,7 +293,10 @@
                 </div>
             </div>
 
-            <!-- Columna Derecha: Timeline de Trazabilidad -->
+            <!-- 
+                COLUMNA DERECHA: LÍNEA DE TIEMPO (TRAZABILIDAD) 
+                Visualiza cronológicamente todos los movimientos, respuestas y cambios de estado del documento.
+            -->
             <div class="lg:col-span-2 space-y-6">
                 <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
                     <div class="p-5 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
@@ -375,7 +392,10 @@
                     </div>
                 </div>
 
-                <!-- Info Box Footer -->
+                <!-- 
+                    RESUMEN DE ESTADO (FOOTER DEL CONTENIDO)
+                    Determina visualmente si el trámite está "Consolidado" (todos terminaron) o "En Seguimiento".
+                -->
                 @php
                     $isConsolidado = true;
                     $conAsignaciones = false;

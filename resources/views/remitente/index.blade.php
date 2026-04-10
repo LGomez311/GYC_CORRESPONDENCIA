@@ -4,7 +4,10 @@
 
 @section('content')
     <div class="flex flex-col p-4 md:p-6 min-w-0 gap-8">
-            <!-- Page Header -->
+            <!-- 
+                ENCABEZADO DE PÁGINA
+                Bienvenida y acciones rápidas para registrar correspondencia (Recibida y Saliente).
+            -->
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10 w-full">
                 <div class="w-full md:w-auto">
                     <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
@@ -27,7 +30,10 @@
                 </div>
             </div>
 
-            <!-- Stats Grid -->
+            <!-- 
+                TARJETAS DE ESTADÍSTICAS
+                Resumen cuantitativo de radicados: Total, Rechazados, En Trámite y Finalizados.
+            -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10 w-full relative z-0">
                 <!-- Stat Card: Total -->
                 <div
@@ -138,6 +144,10 @@
                         </div>
                     </form>
                 </div>
+                <!-- 
+                    TABLA DE CORRESPONDENCIA RECIENTE
+                    Listado dinámico que integra correspondencia externa, interna y saliente gestionada por ventanilla.
+                -->
                 <div class="table-container-remitente overflow-x-auto w-full custom-scrollbar min-w-0" style="min-height: 400px; padding-bottom: 2rem;">
                     <table class="w-full text-left text-sm responsive-table min-w-[1200px]">
                         <thead class="text-[10px] text-gray-500 uppercase bg-gray-50 dark:bg-slate-900/50 dark:text-gray-400 tracking-wider">
@@ -466,6 +476,10 @@
                 </div>
                 
                 <!-- Footer -->
+                <!-- 
+                    MODAL DE DETALLES
+                    Muestra la información completa de un radicado, incluyendo metadatos, asunto y archivos adjuntos.
+                -->
                 <div class="shrink-0 px-8 py-4 bg-gray-50/80 dark:bg-gray-900/40 border-t border-gray-100 dark:border-gray-700 flex justify-end gap-3 rounded-b-3xl">
                     <button onclick="closeModal('detailsModal')" class="px-6 py-2.5 text-xs font-black uppercase tracking-widest text-gray-500 hover:text-gray-700 transition-all">Cerrar</button>
                 </div>

@@ -19,6 +19,10 @@ use Illuminate\Support\Str;
 
 class UsuarioController extends Controller
 {
+    /**
+     * LISTADO DE ADMINISTRADORES
+     * Gestiona los usuarios con rol de Admin (Rol 2) asociados a cada empresa.
+     */
     public function index()
     {
         $users = Empleado::with(['empresa', 'estado', 'rol'])
@@ -64,6 +68,10 @@ class UsuarioController extends Controller
         return view('sadmin.admins', compact('users', 'empresas', 'estados', 'estadoActivo', 'auditorias'));
     }
 
+    /**
+     * CREAR NUEVO ADMINISTRADOR
+     * Registra un usuario administrador validando nit de empresa, documento único y filtros de seguridad de contraseña.
+     */
     public function store(Request $request)
     {
         $request->validate([
@@ -216,6 +224,10 @@ class UsuarioController extends Controller
         return redirect()->back()->with('success', 'Administrador creado correctamente');
     }
 
+    /**
+     * ACTUALIZAR ADMINISTRADOR
+     * Permite actualizar la información básica, estado e imagen del administrador.
+     */
     public function update(Request $request, $emple_doc)
     {
         $empleado = Empleado::with(['estado', 'rol'])->findOrFail($emple_doc);
@@ -337,6 +349,10 @@ class UsuarioController extends Controller
         return redirect()->back()->with('success', 'Administrador actualizado correctamente');
     }
 
+    /**
+     * EXPORTAR ADMINISTRADORES A PDF
+     * Genera un reporte en PDF de todos los administradores filtrados por empresa.
+     */
     public function exportPdf()
     {
         $admins = Empleado::with(['empresa', 'estado', 'rol'])

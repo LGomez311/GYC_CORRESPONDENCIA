@@ -5,7 +5,10 @@
 @section('content')
 <div class="space-y-6">
 
-    <!-- Header Page -->
+    <!-- 
+        ENCABEZADO DE PÁGINA
+        Título principal y botón de exportación global.
+    -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Consulta de Correspondencia</h1>
@@ -21,7 +24,10 @@
         </div>
     </div>
 
-    <!-- Filtros -->
+    <!-- 
+        FILTROS DE BÚSQUEDA AVANZADA
+        Criterios de búsqueda por radicado, ciudad, tipo, estado y rango de fechas.
+    -->
     <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
         <form action="{{ route('admin.correspondencia') }}" method="GET" class="flex flex-wrap items-end gap-4">
             <input type="hidden" name="tab" value="{{ request('tab', 'externa') }}">
@@ -91,7 +97,10 @@
         </form>
     </div>
 
-    <!-- Tabs -->
+    <!-- 
+        SISTEMA DE PESTAÑAS (TABS)
+        Divide la visualización en Externa, Interna y Saliente.
+    -->
     <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
         <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="correspondenciaTabs" role="tablist">
             <li class="mr-2" role="presentation">
@@ -116,7 +125,10 @@
     </div>
 
     <div id="tabContent">
-        <!-- ================= EXTERNA TAB ================= -->
+        <!-- 
+            LISTADO DE CORRESPONDENCIA EXTERNA
+            Muestra registros recibidos desde ventanilla o registrados externamente.
+        -->
         <div id="externa" role="tabpanel">
             <!-- Stats Boxes -->
             <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
@@ -280,7 +292,10 @@
             </div>
         </div>
 
-        <!-- ================= INTERNA TAB ================= -->
+        <!-- 
+            LISTADO DE CORRESPONDENCIA INTERNA
+            Documentos circulados entre colaboradores de la misma empresa.
+        -->
         <div id="interna" class="hidden" role="tabpanel">
              <div class="mb-3">
                 <input type="text" id="searchInterna" onkeyup="filtrarTabla('searchInterna','tablaInterna')" placeholder="Filtrar bandeja interna..." class="w-full sm:w-80 px-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-50 dark:bg-slate-900 focus:outline-none dark:text-white shadow-sm">
@@ -372,7 +387,10 @@
             </div>
         </div>
 
-        <!-- ================= SALIENTE TAB ================= -->
+        <!-- 
+            LISTADO DE CORRESPONDENCIA SALIENTE
+            Documentos destinados a entidades o personas externas en respuesta o iniciativa propia.
+        -->
         <div id="saliente" class="hidden" role="tabpanel">
             <div class="mb-3">
                 <input type="text" id="searchSaliente" onkeyup="filtrarTabla('searchSaliente','tablaSaliente')" placeholder="Filtrar bandeja saliente..." class="w-full sm:w-80 px-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-50 dark:bg-slate-900 focus:outline-none dark:text-white shadow-sm">

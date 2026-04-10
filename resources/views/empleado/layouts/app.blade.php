@@ -8,6 +8,7 @@
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 
+    <!-- Configuración de Fuentes, Iconos y Tailwind CSS -->
     <link href="https://fonts.googleapis.com" rel="preconnect" />
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,100..900;1,100..900&display=swap"
@@ -97,7 +98,7 @@
                 </h2>
             </div>
 
-            {{-- Contenido --}}
+            <!-- Contenedor de Contenido Dinámico -->
             <main class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
                 @yield('content')
             </main>
@@ -107,7 +108,7 @@
     </div>
 
 
-    {{-- ======= MODALES ======= --}}
+    <!-- Inclusión de Modales Globales (Perfil y otros) -->
     @yield('modals')
     @include('admin.layouts.profile_modal')
 

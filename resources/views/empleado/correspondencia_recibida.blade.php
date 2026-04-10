@@ -137,7 +137,10 @@
 
 <div class="space-y-6">
 
-    <!-- Header Page -->
+    <!-- 
+        ENCABEZADO PRINCIPAL DE LA PÁGINA 
+        Contiene el título y la descripción de la bandeja de entrada del empleado.
+    -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Correspondencia Recibida</h1>
@@ -147,7 +150,10 @@
         </div>
     </div>
 
-    <!-- Tabs -->
+    <!-- 
+        NAVEGACIÓN POR PESTAÑAS (TABS)
+        Permite alternar entre la Bandeja Externa, Bandeja Interna y Mis Comunicados.
+    -->
     <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
         <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="correspondenciaTabs" role="tablist">
             <li class="mr-2" role="presentation">
@@ -164,6 +170,10 @@
 
     <div id="tabContent">
         <!-- ================= EXTERNA TAB ================= -->
+        <!-- 
+            INTERFAZ DE BANDEJA EXTERNA 
+            Muestra las estadísticas rápidas, filtros de búsqueda y la tabla de documentos externos.
+        -->
         <div id="externa" role="tabpanel">
     <!-- Stats Boxes -->
     <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6" id="stats-externa">
@@ -526,6 +536,10 @@
         </div>
 
         <!-- ================= INTERNA TAB ================= -->
+        <!-- 
+            INTERFAZ DE BANDEJA INTERNA 
+            Sección dedicada a los comunicados entre colaboradores dentro de la misma empresa.
+        -->
         <div id="interna" class="hidden" role="tabpanel">
             <!-- Stats Boxes Interna -->
             <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6" id="stats-interna">

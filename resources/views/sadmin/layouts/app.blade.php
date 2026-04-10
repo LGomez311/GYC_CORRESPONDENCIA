@@ -5,6 +5,7 @@
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Gestión de Empresas (Super Admin)</title>
+    <!-- Dependencias y Configuración del Tema -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;900&amp;display=swap"
         rel="stylesheet" />
@@ -73,7 +74,7 @@
             {{-- Header (Desktop/Optional) --}}
             @include('sadmin.layouts.header')
 
-            {{-- Page content --}}
+            <!-- Área de Contenido de la Página -->
             <div class="p-4 md:p-6 lg:p-8">
                 @yield('content')
             </div>
@@ -85,6 +86,7 @@
     @yield('modals')
     @include('admin.layouts.profile_modal')
 
+    <!-- Scripts de Funcionalidad General y Persistencia -->
     <script>
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');

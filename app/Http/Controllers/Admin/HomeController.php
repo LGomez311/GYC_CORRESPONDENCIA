@@ -13,6 +13,10 @@ class HomeController extends Controller
     /**
      * Muestra el dashboard del admin
      */
+    /**
+     * VISTA PRINCIPAL (DASHBOARD ADMIN)
+     * Procesa el estado de la licencia, estadísticas de correspondencia y actividad reciente unificada.
+     */
     public function index()
     {
         $user = Auth::user();
@@ -184,6 +188,10 @@ class HomeController extends Controller
     }
 
 
+    /**
+     * OBTENER TRAZABILIDAD UNIFICADA (API)
+     * Reconstruye el historial completo de un documento desde su radicación externa hasta su finalización interna.
+     */
     public function getHistory($id)
     {
         try {

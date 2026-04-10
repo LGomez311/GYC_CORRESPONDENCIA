@@ -22,6 +22,10 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class DashboardController extends Controller
 {
+    /**
+     * VISTA PRINCIPAL (DASHBOARD) - VENTANILLA
+     * Carga el resumen de actividades recientes, estadísticas y bandeja de entrada unificada.
+     */
     public function index(Request $request)
     {
         $remitente = Auth::guard('remitente')->user();
@@ -194,6 +198,10 @@ class DashboardController extends Controller
 
     }
 
+    /**
+     * HISTORIAL GENERAL
+     * Permite consultar todos los registros históricos (recibidos, internos y salientes) con filtros.
+     */
     public function historial(Request $request)
     {
         $remitente = Auth::guard('remitente')->user();
@@ -285,6 +293,10 @@ class DashboardController extends Controller
         return view('remitente.historial', compact('paginated', 'estados'));
     }
 
+    /**
+     * BANDEJA DE RECIBIDOS EN PROCESO
+     * Filtra y muestra la correspondencia que se encuentra actualmente en gestión por los empleados.
+     */
     public function recibidosProceso(Request $request)
     {
         $remitente = Auth::guard('remitente')->user();
@@ -371,6 +383,10 @@ class DashboardController extends Controller
         return view('remitente.recibidos', compact('stats', 'recibidos', 'tipos', 'empleados', 'estados', 'estadoId', 'ciudades', 'todosDestinatarios', 'enviosInternos', 'enviosSalientes', 'tipoFiltro', 'tab'));
     }
 
+    /**
+     * PROCESO DE SALIENTES (PENDIENTES DE DESPACHO)
+     * Muestra la correspondencia resuelta por empleados que espera ser enviada físicamente por Ventanilla.
+     */
     public function procesoSalientes()
     {
         $remitente = Auth::guard('remitente')->user();
@@ -412,6 +428,10 @@ class DashboardController extends Controller
         return view('remitente.finalizados', compact('stats', 'correspondencias', 'tipos', 'empleados'));
     }
 
+    /**
+     * CONSULTA BASE DE CORRESPONDENCIA
+     * Genera el query centralizado para obtener radicados con sus relaciones (estado, tipo, trazabilidad).
+     */
     private function getBaseQuery($remDoc)
     {
         $remitente = Auth::guard('remitente')->user();
@@ -482,6 +502,10 @@ class DashboardController extends Controller
             ->update(['id_estado_rec' => 11]);
     }
 
+    /**
+     * OBTENER TRAZABILIDAD (API)
+     * Retorna el flujo completo de vida de un radicado para ser visualizado en la línea de tiempo.
+     */
     public function getHistory($id)
     {
         try {
@@ -650,6 +674,10 @@ class DashboardController extends Controller
         }
     }
 
+    /**
+     * FINALIZAR TRÁMITE MANUALMENTE
+     * Permite a Ventanilla cerrar un radicado sin esperar respuesta, marcándolo como archivado.
+     */
     public function finalize($id)
     {
         $remitente = Auth::guard('remitente')->user();
@@ -685,6 +713,10 @@ class DashboardController extends Controller
         return redirect()->back()->with('success', 'Correspondencia finalizada exitosamente.');
     }
 
+    /**
+     * ACTUALIZAR RADICADO TRAS RECHAZO
+     * Permite corregir y re-enviar una correspondencia que fue rechazada por un colaborador.
+     */
     public function updateRejected(Request $request, $id)
     {
         $remitente = Auth::guard('remitente')->user();

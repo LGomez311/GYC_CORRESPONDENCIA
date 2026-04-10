@@ -17,6 +17,10 @@ class EmpresaController extends Controller
 {
 
     // listado de empresas
+    /**
+     * LISTADO DE EMPRESAS
+     * Muestra todas las empresas registradas en el sistema con su historial de auditoría.
+     */
     public function index()
     {
 
@@ -28,6 +32,10 @@ class EmpresaController extends Controller
         return view('sadmin.empresas', compact('empresas', 'auditorias'));
     }
 
+    /**
+     * REGISTRAR NUEVA EMPRESA
+     * Valida y crea una nueva entidad empresarial en el sistema.
+     */
     public function store(Request $request)
     {
         $request->validate([
@@ -130,6 +138,10 @@ class EmpresaController extends Controller
 
     /**
      * Actualizar empresa (incluye edición de NIT)
+     */
+    /**
+     * ACTUALIZAR EMPRESA
+     * Modifica los datos de una empresa existente, permitiendo el cambio de NIT solo si no tiene empleados.
      */
     public function update(Request $request, $nit)
 
@@ -265,6 +277,10 @@ class EmpresaController extends Controller
 
     // Exportar empresas a PDF y Excel
 
+    /**
+     * EXPORTAR EMPRESAS A PDF
+     * Genera un reporte descargable con el listado completo de empresas registradas.
+     */
     public function exportPdf()
     {
         $empresas = Empresa::orderBy('nomb_empresa')->get();

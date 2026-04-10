@@ -13,6 +13,10 @@ use App\Models\Empleado;
 
 class ExternarecController extends Controller
 {
+    /**
+     * BANDEJA DE RECIBIDOS (VENTANILLA)
+     * Lista toda la correspondencia que llega a la empresa, permitiendo filtrar por externa, interna o saliente.
+     */
     public function index(Request $request)
     {
         $tipos     = Tipo::all();
@@ -196,6 +200,10 @@ class ExternarecController extends Controller
         return response()->json($results);
     }
 
+    /**
+     * REGISTRAR CORRESPONDENCIA
+     * Procesa el formulario de registro de nuevos documentos recibidos en ventanilla.
+     */
     public function store(Request $request)
     {
         // 1. Obtener el remitente autenticado
@@ -401,6 +409,10 @@ class ExternarecController extends Controller
     /**
      * Asigna uno o más destinatarios a una correspondencia externa recien registrada.
      */
+    /**
+     * ASIGNAR DESTINATARIOS
+     * Permite delegar un radicado a uno o más funcionarios de la empresa para su gestión.
+     */
     public function asignarDestinatarios(Request $request, $id)
     {
         $validated = $request->validate([
@@ -456,6 +468,10 @@ class ExternarecController extends Controller
 
     /**
      * Rechaza una correspondencia y notifica al remitente original.
+     */
+    /**
+     * RECHAZAR CORRESPONDENCIA
+     * Invalida un radicado por errores en los datos y envía una notificación automática al remitente.
      */
     public function rechazar(Request $request, $id)
     {

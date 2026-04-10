@@ -3,7 +3,10 @@
 @section('content')
 <div class="space-y-6">
 
-    <!-- Header Page -->
+    <!-- 
+        ENCABEZADO DE LA SECCIÓN
+        Muestra el título de la página y describe el propósito de la bandeja de documentos finalizados.
+    -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Correspondencia Finalizada</h1>
@@ -13,7 +16,10 @@
         </div>
     </div>
 
-    <!-- Tabs -->
+    <!-- 
+        SISTEMA DE PESTAÑAS (TABS)
+        Permite navegar entre el histórico de correspondencia externa e interna que ya ha sido cerrada.
+    -->
     <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
         <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="correspondenciaTabs" role="tablist">
             <li class="mr-2" role="presentation">
@@ -27,6 +33,10 @@
 
     <div id="tabContent">
         <!-- ================= EXTERNA TAB ================= -->
+        <!-- 
+            HISTÓRICO DE BANDEJA EXTERNA 
+            Sección que agrupa las tarjetas de estadísticas de finalizadas y la tabla de registros externos cerrados.
+        -->
         <div id="externa" role="tabpanel">
     <!-- Stats Boxes -->
     <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6" id="stats-externa">
@@ -312,6 +322,10 @@
         </div>
 
         <!-- ================= INTERNA TAB ================= -->
+        <!-- 
+            HISTÓRICO DE BANDEJA INTERNA 
+            Sección dedicada a los registros de comunicación interna que han concluido su ciclo de vida.
+        -->
         <div id="interna" class="hidden" role="tabpanel">
             <!-- Stats Boxes Interna -->
             <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6" id="stats-interna">
