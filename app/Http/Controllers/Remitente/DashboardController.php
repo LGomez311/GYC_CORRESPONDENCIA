@@ -168,7 +168,7 @@ class DashboardController extends Controller
             ->get();
 
         $tipos = \App\Models\Tipo::all();
-        $empleados = \App\Models\Empleado::where('emple_rol', 3)->get();
+        $empleados = \App\Models\Empleado::where('emple_rol', 3)->where('nit_empresa', $nit)->get();
         $estados = \App\Models\Estado::all();
         
         // T8b: Excluir Super Admin (rol=1) y propio usuario para modales de asignación
@@ -176,6 +176,7 @@ class DashboardController extends Controller
             ->where('emple_rol', '=', 3)
             ->where('emple_rol', '!=', 1)
             ->where('emple_doc', '!=', $remDoc)
+            ->where('nit_empresa', $nit)
             ->get()
             ->map(function($e) {
                 return [
@@ -318,9 +319,10 @@ class DashboardController extends Controller
         }
 
         $recibidos = $query->paginate(15)->appends($request->query());
+        $nitEmpresa = $remitente->nit_empresa;
 
         $tipos = \App\Models\Tipo::all();
-        $empleados = \App\Models\Empleado::where('emple_rol', 3)->get();
+        $empleados = \App\Models\Empleado::where('emple_rol', 3)->where('nit_empresa', $nitEmpresa)->get();
         $estados = \App\Models\Estado::all();
         $ciudades = \App\Models\Ciudad::with('departamento')->orderBy('ciudad_nom')->get();
 
@@ -329,6 +331,7 @@ class DashboardController extends Controller
             ->where('emple_rol', '=', 3)
             ->where('emple_rol', '!=', 1)
             ->where('emple_doc', '!=', $remDoc)
+            ->where('nit_empresa', $nitEmpresa)
             ->get()
             ->map(function($e) {
                 return [
@@ -385,7 +388,7 @@ class DashboardController extends Controller
             ->paginate(10);
 
         $tipos = \App\Models\Tipo::all();
-        $empleados = \App\Models\Empleado::where('emple_rol', 3)->get();
+        $empleados = \App\Models\Empleado::where('emple_rol', 3)->where('nit_empresa', $remitente->nit_empresa)->get();
 
         return view('remitente.proceso_salientes', compact('stats', 'correspondencias', 'tipos', 'empleados'));
     }
@@ -404,7 +407,7 @@ class DashboardController extends Controller
             ->paginate(10);
 
         $tipos = \App\Models\Tipo::all();
-        $empleados = \App\Models\Empleado::where('emple_rol', 3)->get();
+        $empleados = \App\Models\Empleado::where('emple_rol', 3)->where('nit_empresa', $remitente->nit_empresa)->get();
 
         return view('remitente.finalizados', compact('stats', 'correspondencias', 'tipos', 'empleados'));
     }
@@ -427,6 +430,7 @@ class DashboardController extends Controller
             'detalles.anexosRespuesta',
             'detalles.empleado.area',
             'detalles.estado',
+            'remitenteRegistrador',
             'envios'
         ])
             ->where('nit_empresa', $nitEmpresa)
@@ -516,15 +520,16 @@ class DashboardController extends Controller
             $envios = DB::table('envio as env')
                 ->join('radicados as rad', 'env.num_radicado_int', '=', 'rad.id_radicado')
                 ->leftJoin('remitente as rem', 'env.doc_quien_registra', '=', 'rem.rem_doc')
+                ->leftJoin('empleado as emp_env', 'env.doc_quien_envia', '=', 'emp_env.emple_doc')
                 ->where('env.num_radicado_int', $radId)
                 ->select(
                     DB::raw("'registry' as type"),
                     'env.fecha as fecha',
                     DB::raw("COALESCE(rem.rem_nombres, 'Sistema') as nombres"),
-                    DB::raw("COALESCE(rem.rem_apellidos, '') as apellidos"),
+                    DB::raw("COALESCE(rem.rem_apellidos, 'Ventanilla') as apellidos"),
                     'rad.num_radicado',
                     DB::raw("'Registro de Salida/Respuesta' as estado_nomb"),
-                    'env.asunto as observaciones',
+                    DB::raw("CONCAT('Origen: ', COALESCE(emp_env.emple_nombres, 'N/A'), ' ', COALESCE(emp_env.emple_apellidos, ''), ' | Asunto: ', env.asunto) as observaciones"),
                     DB::raw("NULL as img")
                 )->get();
 
@@ -534,13 +539,13 @@ class DashboardController extends Controller
                 ->leftJoin('estado as e', 'dr.id_estado_rec', '=', 'e.id_estado')
                 ->leftJoin('empleado as emp', 'dr.det_doc_empleado', '=', 'emp.emple_doc')
                 ->leftJoin('area as area_e', 'emp.emple_area', '=', 'area_e.id_area')
-                ->leftJoin('remitente as rem_d', 'dr.det_doc_empleado', '=', 'rem_d.rem_doc')
+                ->leftJoin('remitente as rem_p', 'r.doc_quien_registra', '=', 'rem_p.rem_doc')
                 ->where('r.num_radicado_int', $radId)
                 ->select(
                     DB::raw("'detail' as type"),
                     'dr.fecha_re as fecha',
-                    DB::raw("COALESCE(emp.emple_nombres, rem_d.rem_nombres, 'Destinatario') as nombres"),
-                    DB::raw("COALESCE(emp.emple_apellidos, rem_d.rem_apellidos, '') as apellidos"),
+                    DB::raw("CASE WHEN (dr.observaciones LIKE '%(Remitente)%' OR dr.observaciones LIKE '%Ventanilla%') THEN COALESCE(rem_p.rem_nombres, 'Ventanilla') ELSE COALESCE(emp.emple_nombres, 'Destinatario') END as nombres"),
+                    DB::raw("CASE WHEN (dr.observaciones LIKE '%(Remitente)%' OR dr.observaciones LIKE '%Ventanilla%') THEN COALESCE(rem_p.rem_apellidos, 'Oficial') ELSE COALESCE(emp.emple_apellidos, '') END as apellidos"),
                     DB::raw("NULL as num_radicado"),
                     DB::raw("COALESCE(e.estado_nomb, 'Gestión') as estado_nomb"),
                     'dr.observaciones',
@@ -556,12 +561,13 @@ class DashboardController extends Controller
                 ->leftJoin('estado as e', 'de.id_estado_rec', '=', 'e.id_estado')
                 ->leftJoin('empleado as emp', 'de.id_quien_recibe', '=', 'emp.emple_doc')
                 ->leftJoin('area as area_e', 'emp.emple_area', '=', 'area_e.id_area')
+                ->leftJoin('remitente as rem_p', 'env.doc_quien_registra', '=', 'rem_p.rem_doc')
                 ->where('env.num_radicado_int', $radId)
                 ->select(
                     DB::raw("'detail' as type"),
                     'de.fecha_traslado as fecha',
-                    DB::raw("COALESCE(emp.emple_nombres, 'Funcionario') as nombres"),
-                    DB::raw("COALESCE(emp.emple_apellidos, '') as apellidos"),
+                    DB::raw("CASE WHEN (de.observaciones LIKE '%(Remitente)%' OR de.observaciones LIKE '%Ventanilla%') THEN COALESCE(rem_p.rem_nombres, 'Ventanilla') ELSE COALESCE(emp.emple_nombres, 'Funcionario') END as nombres"),
+                    DB::raw("CASE WHEN (de.observaciones LIKE '%(Remitente)%' OR de.observaciones LIKE '%Ventanilla%') THEN COALESCE(rem_p.rem_apellidos, 'Oficial') ELSE COALESCE(emp.emple_apellidos, '') END as apellidos"),
                     DB::raw("NULL as num_radicado"),
                     DB::raw("COALESCE(e.estado_nomb, 'Saliente') as estado_nomb"),
                     'de.observaciones',
@@ -655,6 +661,21 @@ class DashboardController extends Controller
         $recibido->id_estado_rec = 10; // Archivado/Finalizado
         $recibido->save();
 
+        // Registrar trazabilidad del cierre
+        $responsableTecnico = DB::table('empleado')
+            ->where('nit_empresa', $remitente->nit_empresa)
+            ->orderBy('emple_rol', 'asc')
+            ->first();
+        $idProxy = $responsableTecnico ? $responsableTecnico->emple_doc : 999000;
+
+        DB::table('detalle_recibido')->insert([
+            'det_id_recibido'  => $id,
+            'det_doc_empleado' => $idProxy,
+            'fecha_re'         => now(),
+            'id_estado_rec'    => 10,
+            'observaciones'    => "Correspondencia archivada y finalizada manualmente por (Remitente) {$remitente->rem_nombres} {$remitente->rem_apellidos}."
+        ]);
+
         // Also mark details as resolved if they were rejected
         DB::table('detalle_recibido')
             ->where('det_id_recibido', $id)
@@ -740,12 +761,14 @@ class DashboardController extends Controller
             'id_tipo_envio'   => 'required|integer',
             'folio'           => 'required|integer|min:1',
             'correo'          => 'nullable|email|max:150',
+            'doc_quien_registra' => 'nullable|string|max:20',
         ]);
 
-        $docQuienEnvioAuto = $docQuienRegistra;
+        $docQuienRegistraAuto = $docQuienRegistra;
+        $docQuienRegistra = $request->doc_quien_registra ?? $docQuienRegistraAuto;
 
         // Ensure doc_quien_envia exists in empleado table to avoid FK error
-        $senderId = $request->doc_quien_envia ?? $docQuienEnvioAuto;
+        $senderId = $request->doc_quien_envia ?? $docQuienRegistraAuto;
         $existsInEmpleado = DB::table('empleado')->where('emple_doc', $senderId)->exists();
         
         if (!$existsInEmpleado) {
@@ -855,6 +878,8 @@ class DashboardController extends Controller
             'asunto'  => 'required|string|max:100',
             'correo'  => 'nullable|email|max:150',
             'observaciones' => 'nullable|string|max:250',
+            'doc_quien_envia' => 'nullable|string|max:20',
+            'doc_quien_registra' => 'nullable|string|max:20',
         ]);
 
         DB::beginTransaction();
@@ -874,10 +899,20 @@ class DashboardController extends Controller
             $envio->observaciones = substr($obs, 0, 250);
             
             $envio->id_estado_envio = 9; // Terminado/Finalizado por Ventanilla
-            // Asegurar responsable automático
-            if (!$envio->doc_quien_envia) {
+            
+            // Actualizar responsables si vienen en el request
+            if ($request->filled('doc_quien_envia')) {
+                $envio->doc_quien_envia = $request->doc_quien_envia;
+            } else if (!$envio->doc_quien_envia) {
                 $envio->doc_quien_envia = $remitente->rem_doc;
             }
+
+            if ($request->filled('doc_quien_registra')) {
+                $envio->doc_quien_registra = $request->doc_quien_registra;
+            } else {
+                $envio->doc_quien_registra = $remitente->rem_doc;
+            }
+
             $envio->save();
             
             // Buscar un responsable técnico válido (Empleado) para satisfacer la FK de detalle_envio

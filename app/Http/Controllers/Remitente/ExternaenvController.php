@@ -108,11 +108,12 @@ class ExternaenvController extends Controller
 
         $tipos = Tipo::all();
         $estados = Estado::all();
+        $empleados = Empleado::where('emple_rol', 3)->where('nit_empresa', $nitEmpresa)->get();
         $ciudades = Ciudad::orderBy('ciudad_nom')->get();
         $areas = Area::orderBy('area_nom')->get();
         $prioridades = \App\Models\Prioridad::all();
 
-        return view('remitente.externaenv', compact('envios', 'tipos', 'estados', 'ciudades', 'areas', 'search', 'estadoId', 'stats', 'tab', 'prioridades'));
+        return view('remitente.externaenv', compact('envios', 'tipos', 'estados', 'ciudades', 'areas', 'search', 'estadoId', 'stats', 'tab', 'prioridades', 'empleados'));
     }
 
     public function store(Request $request)
@@ -124,7 +125,9 @@ class ExternaenvController extends Controller
         $request->validate([
             'destino'            => 'required|string|max:255',
             'asunto'             => 'required|string|max:500',
-            'id_tipo_envio'      => 'required|exists:tipo,id_tipo',
+            'id_tipo_envio'      => 'required', // Se valida manualmente si es OTRO
+            'tipo_otro'          => 'required_if:id_tipo_envio,OTRO|nullable|string|max:100',
+            'notificar_correo'   => 'nullable|email|max:150',
             'doc_quien_envia'    => 'nullable|string|max:20',
             'folio'              => 'required|integer|min:1|max:999',
             'archivo'            => 'nullable|file|mimes:pdf,doc,docx,jpg,png|max:20480',
@@ -134,7 +137,8 @@ class ExternaenvController extends Controller
             'destino.required'         => 'El destino es obligatorio.',
             'asunto.required'          => 'El asunto es obligatorio.',
             'id_tipo_envio.required'   => 'Debe seleccionar un tipo de documento.',
-            'id_tipo_envio.exists'     => 'El tipo de documento seleccionado no es válido.',
+            'tipo_otro.required_if'    => 'Debe especificar el tipo de documento.',
+            'notificar_correo.email'   => 'El correo de notificación no es válido.',
             'folio.required'           => 'El número de folios es obligatorio.',
             'folio.min'                => 'El número de folios debe ser al menos 1.',
             'archivo.mimes'            => 'El archivo debe ser en formato PDF, Word o Imagen.',
@@ -175,8 +179,9 @@ class ExternaenvController extends Controller
             ]);
         }
 
-        // Responsable: siempre el remitente autenticado (auto-asignación)
-        $docQuienEnvioAuto = $docQuienRegistra;
+        // Responsable: El quien envía (seleccionado) y quien registra (automático)
+        $docQuienEnvio = $request->doc_quien_envia ?? $docQuienRegistra; 
+        $docQuienRegistra = $request->doc_quien_registra ?? $docQuienRegistra;
 
         $rutaArchivo = null;
         if ($request->hasFile('archivo')) {
@@ -200,14 +205,25 @@ class ExternaenvController extends Controller
                 'nit_empresa'  => $nitEmpresa,
             ]);
 
+            $idTipo = $request->id_tipo_envio;
+            $asuntoFinal = $request->asunto;
+
+            // Manejo de "Otro" tipo de documento
+            if ($idTipo === 'OTRO') {
+                $asuntoFinal = "[TIPO: " . strtoupper($request->tipo_otro) . "] " . $asuntoFinal;
+                // Buscamos un tipo válido para asignar en la BD (el primero disponible)
+                $tipoDefault = \App\Models\Tipo::first();
+                $idTipo = $tipoDefault ? $tipoDefault->id_tipo : null;
+            }
+
             $envio = Envio::create([
                 'num_radicado_int'   => $radicado->id_radicado,
-                'asunto'             => $request->asunto,
+                'asunto'             => $asuntoFinal,
                 'destino'            => $request->destino,
-                'doc_quien_envia'    => $request->doc_quien_envia ?? $docQuienEnvioAuto,
+                'doc_quien_envia'    => $docQuienEnvio,
                 'fecha'              => now(),
                 'folio'              => $request->folio,
-                'id_tipo_envio'      => $request->id_tipo_envio,
+                'id_tipo_envio'      => $idTipo,
                 'id_estado_envio'    => 12, // 'Enviado' 
                 'archivo'            => $rutaArchivo,
                 'nit_empresa'        => $nitEmpresa,
@@ -223,6 +239,38 @@ class ExternaenvController extends Controller
                         'ruta_archivo' => $path,
                         'nombre_original' => $file->getClientOriginalName(),
                     ]);
+                }
+            }
+
+            // Envío de correo de notificación si se proporcionó
+            if ($request->notificar_correo) {
+                $empresa = \App\Models\Empresa::find($nitEmpresa);
+                $nombreEmpresa = $empresa ? $empresa->nomb_empresa : 'Nuestra Empresa';
+                $nombreRemitente = $remitente->rem_nombres . ' ' . $remitente->rem_apellidos;
+                $emailDestino = $request->notificar_correo;
+                $radicadoGenerado = $radicado->num_radicado;
+
+                try {
+                    \Illuminate\Support\Facades\Mail::send([], [], function ($message) use ($emailDestino, $nombreEmpresa, $nombreRemitente, $asuntoFinal, $radicadoGenerado) {
+                        $message->to($emailDestino)
+                            ->subject('Notificación de Envío de Correspondencia - ' . $radicadoGenerado)
+                            ->html("
+                                <div style='font-family: Arial, sans-serif; padding: 20px; color: #333;'>
+                                    <h2 style='color: #1e63e9;'>Notificación de Envío</h2>
+                                    <p>Se le informa que la empresa <strong>{$nombreEmpresa}</strong>, a través del funcionario <strong>{$nombreRemitente}</strong>, ha realizado un envío de correspondencia.</p>
+                                    <hr style='border: 0; border-top: 1px solid #eee; margin: 20px 0;'>
+                                    <p><strong>Número de Radicado:</strong> {$radicadoGenerado}</p>
+                                    <p><strong>Asunto:</strong> {$asuntoFinal}</p>
+                                    <p><strong>Fecha:</strong> " . now()->format('d/m/Y H:i') . "</p>
+                                    <hr style='border: 0; border-top: 1px solid #eee; margin: 20px 0;'>
+                                    <p style='font-size: 13px; color: #666;'>Puede consultar el estado de este envío en nuestro portal de correspondencia con su número de radicado.</p>
+                                    <p style='font-size: 11px; color: #999; margin-top: 30px;'>© " . date('Y') . " EASYCOR. Mensaje automático.</p>
+                                </div>
+                            ");
+                    });
+                } catch (\Exception $eEmail) {
+                    // Si falla el envío de correo, no revertimos el registro, solo registramos el error
+                    \Illuminate\Support\Facades\Log::error("Error al enviar correo de notificación: " . $eEmail->getMessage());
                 }
             }
 

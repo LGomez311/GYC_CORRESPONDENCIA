@@ -79,7 +79,7 @@
                 <form method="POST" action="{{ route('empleado.password.send') }}" class="flex flex-col gap-4">
                     @csrf
 
-                    <input type="email" name="email" placeholder="ejemplo@empresa.com"
+                    <input type="email" name="email" value="{{ $email ?? old('email') }}" placeholder="ejemplo@empresa.com"
                         class="w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 
                     bg-background-light dark:bg-background-dark 
                     p-3 focus:ring-2 focus:ring-primary/50"

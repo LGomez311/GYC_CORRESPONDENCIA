@@ -14,9 +14,22 @@ use Illuminate\Validation\Rules\Password;
 
 class EmpleadoPasswordController extends Controller
 {
-    public function showForgotForm()
+    public function showForgotForm(Request $request)
     {
-        return view('auth.empleado-forgot');
+        $email = null;
+        if ($request->has('number')) {
+            $number = $request->query('number');
+            $empleado = Empleado::where('emple_doc', $number)->first();
+            if ($empleado) {
+                $email = $empleado->emple_correo;
+            } else {
+                $remitente = Remitente::where('rem_doc', $number)->first();
+                if ($remitente) {
+                    $email = $remitente->rem_correo;
+                }
+            }
+        }
+        return view('auth.empleado-forgot', compact('email'));
     }
 
     public function sendCode(Request $request)
@@ -164,13 +177,17 @@ class EmpleadoPasswordController extends Controller
         });
 
 
+        // Guardar email en sesión para el siguiente paso
+        session(['password_reset_email' => $request->email]);
+
         return redirect()->route('empleado.password.verify')
             ->with('success', 'Código enviado al correo.');
     }
 
     public function showVerifyForm()
     {
-        return view('auth.empleado-verify');
+        $email = session('password_reset_email');
+        return view('auth.empleado-verify', compact('email'));
     }
 
     public function resetPassword(Request $request)

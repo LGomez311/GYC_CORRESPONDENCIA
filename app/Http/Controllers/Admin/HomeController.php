@@ -240,13 +240,13 @@ class HomeController extends Controller
                 ->leftJoin('estado as e', 'dr.id_estado_rec', '=', 'e.id_estado')
                 ->leftJoin('empleado as emp', 'dr.det_doc_empleado', '=', 'emp.emple_doc')
                 ->leftJoin('area as area_e', 'emp.emple_area', '=', 'area_e.id_area')
-                ->leftJoin('remitente as rem_d', 'dr.det_doc_empleado', '=', 'rem_d.rem_doc')
+                ->leftJoin('remitente as rem_p', 'r.doc_quien_registra', '=', 'rem_p.rem_doc')
                 ->where('r.num_radicado_int', $radId)
                 ->select(
                     DB::raw("'detail' as type"),
                     'dr.fecha_re as fecha',
-                    DB::raw("COALESCE(emp.emple_nombres, rem_d.rem_nombres, 'Destinatario') as nombres"),
-                    DB::raw("COALESCE(emp.emple_apellidos, rem_d.rem_apellidos, '') as apellidos"),
+                    DB::raw("CASE WHEN (dr.observaciones LIKE '%(Remitente)%' OR dr.observaciones LIKE '%Ventanilla%') THEN COALESCE(rem_p.rem_nombres, 'Ventanilla') ELSE COALESCE(emp.emple_nombres, 'Destinatario') END as nombres"),
+                    DB::raw("CASE WHEN (dr.observaciones LIKE '%(Remitente)%' OR dr.observaciones LIKE '%Ventanilla%') THEN COALESCE(rem_p.rem_apellidos, 'Oficial') ELSE COALESCE(emp.emple_apellidos, '') END as apellidos"),
                     DB::raw("NULL as num_radicado"),
                     DB::raw("COALESCE(e.estado_nomb, 'Gestión') as estado_nomb"),
                     'dr.observaciones',
@@ -262,12 +262,13 @@ class HomeController extends Controller
                 ->leftJoin('estado as e', 'de.id_estado_rec', '=', 'e.id_estado')
                 ->leftJoin('empleado as emp', 'de.id_quien_recibe', '=', 'emp.emple_doc')
                 ->leftJoin('area as area_e', 'emp.emple_area', '=', 'area_e.id_area')
+                ->leftJoin('remitente as rem_p', 'env.doc_quien_registra', '=', 'rem_p.rem_doc')
                 ->where('env.num_radicado_int', $radId)
                 ->select(
                     DB::raw("'detail' as type"),
                     'de.fecha_traslado as fecha',
-                    DB::raw("COALESCE(emp.emple_nombres, 'Funcionario') as nombres"),
-                    DB::raw("COALESCE(emp.emple_apellidos, '') as apellidos"),
+                    DB::raw("CASE WHEN (de.observaciones LIKE '%(Remitente)%' OR de.observaciones LIKE '%Ventanilla%') THEN COALESCE(rem_p.rem_nombres, 'Ventanilla') ELSE COALESCE(emp.emple_nombres, 'Funcionario') END as nombres"),
+                    DB::raw("CASE WHEN (de.observaciones LIKE '%(Remitente)%' OR de.observaciones LIKE '%Ventanilla%') THEN COALESCE(rem_p.rem_apellidos, 'Oficial') ELSE COALESCE(emp.emple_apellidos, '') END as apellidos"),
                     DB::raw("NULL as num_radicado"),
                     DB::raw("COALESCE(e.estado_nomb, 'Saliente') as estado_nomb"),
                     'de.observaciones',

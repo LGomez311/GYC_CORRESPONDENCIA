@@ -230,7 +230,7 @@
                             @foreach ($destinatarios as $dest_id => $trazas)
                                 @php
                                     $ultimo = $trazas->last();
-                                    $estadoNomb = strtolower($ultimo->estado?->estado_nomb ?? '');
+                                    $estadoNomb = strtolower($ultimo->titulo ?? '');
                                     $badgeClass = 'bg-gray-100 text-gray-600';
                                     if (str_contains($estadoNomb, 'recibido')) {
                                         $badgeClass = 'bg-blue-100 text-blue-700';
@@ -257,15 +257,19 @@
                                                     class="material-symbols-outlined text-[18px] text-gray-400">person</span>
                                             </div>
                                             <div>
+                                                @php
+                                                    $displayName = $ultimo->responsable;
+                                                    $displayArea = $ultimo->area;
+                                                @endphp
                                                 <p class="text-sm font-bold dark:text-white">
-                                                    {{ $ultimo->empleado->emple_nombres }} {{ $ultimo->empleado->emple_apellidos }}</p>
+                                                    {{ $displayName }}</p>
                                                 <p class="text-[10px] text-gray-500">
-                                                    {{ $ultimo->empleado->area->area_nom ?? 'Sin Área' }}</p>
+                                                    {{ $displayArea }}</p>
                                             </div>
                                         </div>
                                         <span
                                             class="px-2 py-0.5 rounded text-[9px] font-bold uppercase {{ $badgeClass }}">
-                                            {{ $ultimo->estado?->estado_nomb ?? 'N/A' }}
+                                            {{ $ultimo->titulo ?? 'N/A' }}
                                         </span>
                                     </div>
                                 </li>
@@ -286,38 +290,14 @@
                     </div>
 
                     <div class="p-8">
-                        <div class="relative border-l-2 border-gray-100 dark:border-gray-700 ml-4 space-y-10 pb-4">
+                        <div class="relative border-l-2 border-gray-100 dark:border-gray-700 ml-4 space-y-10">
                             @foreach ($trazabilidad as $trace)
-                                @php
-                                    $estadoTrace = strtolower($trace->estado?->estado_nomb ?? '');
-                                    $pointColor = 'bg-gray-300';
-                                    $icon = 'radio_button_checked';
-                                    if (str_contains($estadoTrace, 'recibido')) {
-                                        $pointColor = 'bg-blue-500';
-                                        $icon = 'mark_email_read';
-                                    } elseif (str_contains($estadoTrace, 'tramite')) {
-                                        $pointColor = 'bg-yellow-500';
-                                        $icon = 'pending';
-                                    } elseif (
-                                        str_contains($estadoTrace, 'finalizado') ||
-                                        str_contains($estadoTrace, 'resuelto')
-                                    ) {
-                                        $pointColor = 'bg-blue-500';
-                                        $icon = 'verified';
-                                    } elseif (str_contains($pointColor, 'archivado')) {
-                                        $pointColor = 'bg-slate-500';
-                                        $icon = 'archive';
-                                    } elseif (str_contains($estadoTrace, 'rechazado')) {
-                                        $pointColor = 'bg-red-500';
-                                        $icon = 'cancel';
-                                    }
-                                @endphp
                                 <div class="relative pl-10">
                                     <!-- Indicador Timeline -->
                                     <div
-                                        class="absolute -left-[11px] top-0 w-5 h-5 rounded-full {{ $pointColor }} ring-4 ring-white dark:ring-slate-800 flex items-center justify-center shadow-sm">
+                                        class="absolute -left-[11px] top-0 w-5 h-5 rounded-full {{ $trace->color }} ring-4 ring-white dark:ring-slate-800 flex items-center justify-center shadow-sm">
                                         <span
-                                            class="material-symbols-outlined text-white text-[12px]">{{ $icon }}</span>
+                                            class="material-symbols-outlined text-white text-[12px]">{{ $trace->icon }}</span>
                                     </div>
 
                                     <div
@@ -326,82 +306,68 @@
                                             <div class="flex items-center gap-2">
                                                 <span
                                                     class="px-3 py-1 bg-white dark:bg-slate-800 rounded-full text-xs font-bold text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600">
-                                                    {{ $trace->estado?->estado_nomb ?? 'Gestión Realizada' }}
+                                                    {{ $trace->titulo }}
                                                 </span>
                                                 <span class="text-[11px] text-gray-400 flex items-center gap-1">
                                                     <span
                                                         class="material-symbols-outlined text-[14px]">calendar_month</span>
-                                                    {{ $trace->fecha_re ? $trace->fecha_re->translatedFormat('d M, Y - h:i A') : 'N/A' }}
+                                                    {{ $trace->fecha->translatedFormat('d M, Y - h:i A') }}
                                                 </span>
+                                                @php
+                                                    $isInternalRad = str_starts_with($detalle->recibido->radicado->num_radicado ?? '', 'INT-');
+                                                @endphp
+                                                @if($isInternalRad)
+                                                    <span class="text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded font-black uppercase">Interna</span>
+                                                @elseif($trace->tipo === 'Entrada')
+                                                    <span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-black uppercase">Entrada</span>
+                                                @else
+                                                    <span class="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-black uppercase">Salida</span>
+                                                @endif
                                             </div>
                                             <div class="flex flex-col md:items-end">
-                                                <span
-                                                    class="text-[12px] font-bold text-primary dark:text-blue-400 bg-primary/5 px-2 py-0.5 rounded mb-0.5">
-                                                    {{ $trace->empleado->emple_nombres }} {{ $trace->empleado->emple_apellidos }}
+                                                <span class="text-[11px] font-bold text-primary dark:text-blue-400 bg-primary/5 px-2 py-0.5 rounded">
+                                                    {{ $trace->responsable }}
                                                 </span>
-                                                <span class="text-[10px] text-gray-500 dark:text-gray-400 font-medium tracking-tight">
-                                                    Área: {{ $trace->empleado->area->area_nom ?? 'Sin Área' }}
-                                                </span>
+                                                <span class="text-[10px] text-gray-400">{{ $trace->area }}</span>
                                             </div>
                                         </div>
 
-                                        <!-- Observaciones -->
-                                        <div class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed italic">
-                                            @if ($trace->observaciones && trim(strtoupper($trace->observaciones)) !== 'NINGUNA' && trim(strtoupper($trace->observaciones)) !== 'NINGUNO')
-                                                "{{ $trace->observaciones }}"
-                                            @else
-                                                <span class="opacity-40 italic">Sin observaciones adicionales.</span>
-                                            @endif
+                                        <div class="relative">
+                                            <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed italic">
+                                                "{{ $trace->detalle }}"
+                                            </p>
                                         </div>
 
-                                        <!-- Archivos de Respuesta -->
-                                        @if ($trace->archivo_res || $trace->anexosRespuesta->count() > 0)
-                                            <div
-                                                class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 grid grid-cols-1 md:grid-cols-2 gap-3">
-                                                @if ($trace->archivo_res)
-                                                    <a href="{{ asset('storage/' . $trace->archivo_res) }}"
-                                                        target="_blank"
-                                                        class="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-500 transition-colors group/file">
-                                                        <div
-                                                            class="w-10 h-10 rounded bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600">
-                                                            <span
-                                                                class="material-symbols-outlined text-2xl">picture_as_pdf</span>
-                                                        </div>
-                                                        <div class="flex-1 min-w-0">
-                                                            <p class="text-xs font-bold dark:text-white truncate">
-                                                                Documento de Respuesta.pdf
-                                                            </p>
-                                                            <p class="text-[10px] text-gray-400 uppercase font-bold text-green-500">
-                                                                Respuesta de Cierre
-                                                            </p>
-                                                        </div>
-                                                    </a>
-                                                @endif
+                                        {{-- Anexos si existen en el objeto original --}}
+                                        @php
+                                            $anexos = collect();
+                                            if (!$trace->is_main) {
+                                                if(isset($trace->original->anexosRespuesta)) {
+                                                    $anexos = $trace->original->anexosRespuesta;
+                                                }
+                                            }
+                                        @endphp
 
-                                                @foreach ($trace->anexosRespuesta as $anexo)
-                                                    <a href="{{ asset('storage/' . $anexo->ruta_archivo) }}"
-                                                        target="_blank"
-                                                        class="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-500 transition-colors group/file">
-                                                        <div
-                                                            class="w-10 h-10 rounded bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600">
-                                                            <span
-                                                                class="material-symbols-outlined text-2xl">attachment</span>
-                                                        </div>
-                                                        <div class="flex-1 min-w-0">
-                                                            <p class="text-xs font-bold dark:text-white truncate">
-                                                                {{ $anexo->nombre_original }}</p>
-                                                            <p class="text-[10px] text-gray-400 uppercase font-bold">
-                                                                Anexo Adjunto
-                                                            </p>
-                                                        </div>
-                                                    </a>
-                                                @endforeach
-                                            </div>
-                                            <div class="mt-3 text-[10px] text-right font-medium text-gray-400">
-                                                Total folios reportados: <span
-                                                    class="text-gray-600 dark:text-gray-300">{{ $trace->folios_res ?? 0 }}</span>
+                                        @if ($anexos->count() > 0)
+                                            <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+                                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Archivos Adjuntos:</p>
+                                                <div class="flex flex-wrap gap-2">
+                                                    @foreach ($anexos as $anexo)
+                                                        <a href="{{ asset('storage/' . $anexo->ruta_archivo) }}"
+                                                            target="_blank"
+                                                            class="inline-flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-blue-400 hover:border-primary transition-all group/file">
+                                                            <span class="material-symbols-outlined text-sm text-gray-400 group-hover/file:text-primary">description</span>
+                                                            <span class="font-medium truncate max-w-[150px]">{{ $anexo->nombre_original }}</span>
+                                                            <span class="material-symbols-outlined text-sm">download</span>
+                                                        </a>
+                                                    @endforeach
+                                                </div>
                                             </div>
                                         @endif
+                                        <div class="mt-3 text-[10px] text-right font-medium text-gray-400">
+                                            Total folios reportados: <span
+                                                class="text-gray-600 dark:text-gray-300">{{ $trace->folios_res ?? 0 }}</span>
+                                        </div>
                                     </div>
                                 </div>
                             @endforeach
@@ -412,12 +378,24 @@
                 <!-- Info Box Footer -->
                 @php
                     $isConsolidado = true;
+                    $conAsignaciones = false;
+
                     foreach ($destinatarios as $doc => $trazas) {
-                        $u = $trazas->last();
-                        $est = strtolower($u->estado?->estado_nomb ?? '');
-                        if (!str_contains($est, 'finalizado') && !str_contains($est, 'resuelto') && !str_contains($est, 'archivado')) {
+                        $u = $trazas->where('is_main', false)->last();
+                        
+                        if (!$u) {
+                            continue;
+                        }
+
+                        $conAsignaciones = true;
+                        $estadoId = $u->id_estado ?? ($u->det_id_estado ?? ($u->id_estado_rec ?? ($u->id_estado_envio ?? 0)));
+                        if (!in_array($estadoId, [9, 10])) {
                             $isConsolidado = false;
                         }
+                    }
+
+                    if (!$conAsignaciones) {
+                        $isConsolidado = false;
                     }
                 @endphp
 

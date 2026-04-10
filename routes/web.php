@@ -174,6 +174,7 @@ Route::prefix('admin')->middleware(['auth:web', 'licencia.activa', 'role:2'])->n
     // T4: Endpoints JSON para actualización de estado en tiempo real
     Route::get('/correspondencia/recibido/{id}/estado', [AdminCorrespondenciaController::class, 'getEstadoRecibido'])->name('correspondencia.estado_recibido');
     Route::get('/correspondencia/envio/{id}/estado', [AdminCorrespondenciaController::class, 'getEstadoEnvio'])->name('correspondencia.estado_envio');
+    Route::get('/history/{id}', [AdminCorrespondenciaController::class, 'getHistory'])->name('history');
 
     // Usuarios (Empleados y Remitentes)
     Route::get('/usuarios', [AdminUsuarioController::class, 'index'])->name('usuarios');

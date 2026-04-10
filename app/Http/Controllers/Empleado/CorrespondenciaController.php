@@ -664,6 +664,9 @@ class CorrespondenciaController extends Controller
                 'doc_quien_dirigido' => 'required|array|min:1',
                 'doc_quien_dirigido.*' => 'exists:empleado,emple_doc',
                 'id_tipo_envio' => 'required|exists:tipo,id_tipo',
+                'nom_institucion' => 'nullable|string|max:200',
+                'nombre_persona' => 'nullable|string|max:200',
+                'correo_persona' => 'nullable|email|max:150',
                 'observaciones' => 'nullable|string',
                 'archivo' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120', // Max 5MB
                 'anexos.*' => 'nullable|file|mimes:pdf|max:25600', // Max 25MB
@@ -760,6 +763,9 @@ class CorrespondenciaController extends Controller
                 'asunto' => 'required|string|max:100',
                 'doc_quien_dirigido' => 'required|exists:remitente,rem_doc',
                 'id_tipo_envio' => 'required|exists:tipo,id_tipo',
+                'nom_institucion' => 'nullable|string|max:200',
+                'nombre_persona' => 'nullable|string|max:200',
+                'correo_persona' => 'nullable|email|max:150',
                 'observaciones' => 'nullable|string',
                 'archivo' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120', // Max 5MB
                 'anexos.*' => 'nullable|file|mimes:pdf|max:25600', // Max 25MB
@@ -768,21 +774,33 @@ class CorrespondenciaController extends Controller
 
             \Illuminate\Support\Facades\DB::transaction(function () use ($request) {
                 $user = Auth::user();
+
+                $idTipo = $request->id_tipo_envio;
+                $asuntoFinal = $request->asunto;
+
+                if ($idTipo === 'OTRO') {
+                    $asuntoFinal = "[TIPO: " . strtoupper($request->tipo_otro) . "] " . $asuntoFinal;
+                    $tipoDefault = \App\Models\Tipo::first();
+                    $idTipo = $tipoDefault ? $tipoDefault->id_tipo : null;
+                }
                 $estadoEnviadoId = 0; // 0 = En espera
 
                 $radicado = $this->generarRadicadoSeguro($user->nit_empresa, 'SAL');
 
                 $envio = new \App\Models\Envio();
                 $envio->num_radicado_int = $radicado->id_radicado;
-                $envio->asunto = $request->asunto;
+                $envio->asunto = $asuntoFinal;
                 $envio->doc_quien_envia = $user->emple_doc;
                 $envio->doc_quien_registra = $request->doc_quien_dirigido; // Directed to Remitente
                 $envio->fecha = now();
                 $envio->folio = $request->folio ?? 0;
-                $envio->id_tipo_envio = $request->id_tipo_envio;
+                $envio->id_tipo_envio = $idTipo;
                 $envio->id_estado_envio = $estadoEnviadoId;
                 $envio->nit_empresa = $user->nit_empresa;
                 $envio->destino = 'Ventanilla';
+                $envio->nom_institucion = $request->nom_institucion;
+                $envio->nombre_persona = $request->nombre_persona;
+                $envio->correo_persona = $request->correo_persona;
                 $envio->observaciones = $request->observaciones;
 
                 if ($request->hasFile('archivo')) {
@@ -808,7 +826,6 @@ class CorrespondenciaController extends Controller
             });
 
             return back()->with('success', 'Correspondencia a Ventanilla creada exitosamente.');
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
@@ -817,17 +834,101 @@ class CorrespondenciaController extends Controller
         }
     }
 
+    // Historial Interna Normalizado
     public function historialInterna($id)
     {
         $detalle = \App\Models\DetalleEnvio::with(['envio.radicado', 'envio.tipoEnvio', 'envio.anexos', 'quienEnvia.area', 'quienRecibe.area'])
             ->findOrFail($id);
+        $radId = $detalle->envio->num_radicado_int;
 
-        $trazabilidad = \App\Models\DetalleEnvio::with(['quienRecibe', 'estado', 'anexosRespuesta'])
-            ->where('id_envio', $detalle->id_envio)
-            ->orderBy('fecha_traslado', 'asc')
+        // Fetch ALL related records sharing the same Radicado
+        $recibidos = \App\Models\Recibido::with(['registradoPor.area', 'remitenteRegistrador', 'detalles.empleado.area', 'detalles.estado', 'detalles.anexosRespuesta'])
+            ->where('num_radicado_int', $radId)
             ->get();
 
-        $destinatarios = $trazabilidad->groupBy('id_quien_recibe');
+        $envios = \App\Models\Envio::with(['quienEnvia.area', 'tipoEnvio', 'detalles.quienRecibe.area', 'detalles.estado', 'detalles.anexosRespuesta'])
+            ->where('num_radicado_int', $radId)
+            ->get();
+
+        $timeline = collect();
+
+        // 1. Process Recibidos
+        foreach ($recibidos as $rec) {
+            $timeline->push((object)[
+                'tipo' => 'Entrada',
+                'fecha' => $rec->created_at ?? $rec->fecha_hora_recib,
+                'titulo' => 'Ingreso a Ventanilla',
+                'responsable' => ($rec->registradoPor->emple_nombres ?? 'Ventanilla') . ' ' . ($rec->registradoPor->emple_apellidos ?? ''),
+                'area' => $rec->registradoPor->area->area_nom ?? 'Recepción',
+                'detalle' => '(Radicado Principal) ' . $rec->asunto,
+                'icon' => 'inbox',
+                'color' => 'bg-blue-600',
+                'original' => $rec,
+                'is_main' => true
+            ]);
+
+            foreach ($rec->detalles as $det) {
+                $nombre = $det->empleado->emple_nombres ?? 'N/A';
+                $apellido = $det->empleado->emple_apellidos ?? '';
+                $area = $det->empleado->area->area_nom ?? 'Sin Área';
+
+                if (stripos($det->observaciones, '(Remitente)') !== false || stripos($det->observaciones, 'Ventanilla') !== false) {
+                     $rem = $rec->remitenteRegistrador;
+                     if ($rem) {
+                         $nombre = $rem->rem_nombres;
+                         $apellido = $rem->rem_apellidos;
+                         $area = 'Ventanilla / Remitente Exterior';
+                     }
+                }
+
+                $timeline->push((object)[
+                    'tipo' => 'Entrada',
+                    'fecha' => $det->fecha_re,
+                    'titulo' => $det->estado->estado_nomb ?? 'Gestión',
+                    'responsable' => "$nombre $apellido",
+                    'area' => $area,
+                    'detalle' => $det->observaciones,
+                    'icon' => 'pending_actions',
+                    'color' => 'bg-blue-400',
+                    'original' => $det,
+                    'is_main' => false
+                ]);
+            }
+        }
+
+        // 2. Process Envios
+        foreach ($envios as $e) {
+            $timeline->push((object)[
+                'tipo' => 'Salida',
+                'fecha' => $e->created_at ?? $e->fecha,
+                'titulo' => 'Radicado Saliente Generado',
+                'responsable' => ($e->quienEnvia->emple_nombres ?? 'Ventanilla') . ' ' . ($e->quienEnvia->emple_apellidos ?? ''),
+                'area' => $e->quienEnvia->area->area_nom ?? 'Oficina',
+                'detalle' => '(Documento de Respuesta/Envío) ' . $e->asunto,
+                'icon' => 'outgoing_mail',
+                'color' => 'bg-amber-600',
+                'original' => $e,
+                'is_main' => true
+            ]);
+
+            foreach ($e->detalles as $det) {
+                $timeline->push((object)[
+                    'tipo' => 'Salida',
+                    'fecha' => $det->fecha_traslado,
+                    'titulo' => $det->estado->estado_nomb ?? 'Gestión Interna',
+                    'responsable' => ($det->quienRecibe->emple_nombres ?? 'N/A') . ' ' . ($det->quienRecibe->emple_apellidos ?? ''),
+                    'area' => $det->quienRecibe->area->area_nom ?? 'Sin Área',
+                    'detalle' => $det->observaciones,
+                    'icon' => 'move_to_inbox',
+                    'color' => 'bg-amber-400',
+                    'original' => $det,
+                    'is_main' => false
+                ]);
+            }
+        }
+
+        $trazabilidad = $timeline->sortBy('fecha');
+        $destinatarios = $trazabilidad->groupBy('responsable');
         $empleados = \App\Models\Empleado::where('nit_empresa', Auth::user()->nit_empresa)->where('emple_doc', '!=', Auth::user()->emple_doc)->with('area')->get();
 
         return view('empleado.historial_interna', compact('detalle', 'trazabilidad', 'destinatarios', 'empleados'));
@@ -837,13 +938,96 @@ class CorrespondenciaController extends Controller
     {
         $detalle = \App\Models\DetalleRecibido::with(['recibido.radicado', 'recibido.tipo.prioridad', 'recibido.anexos', 'recibido.ciudad', 'empleado.area', 'estado'])
             ->findOrFail($id);
+        $radId = $detalle->recibido->num_radicado_int;
 
-        $trazabilidad = \App\Models\DetalleRecibido::with(['empleado.area', 'estado', 'anexosRespuesta'])
-            ->where('det_id_recibido', $detalle->det_id_recibido)
-            ->orderBy('fecha_re', 'asc')
+        // Fetch ALL related records sharing the same Radicado
+        $recibidos = \App\Models\Recibido::with(['registradoPor.area', 'remitenteRegistrador', 'detalles.empleado.area', 'detalles.estado', 'detalles.anexosRespuesta'])
+            ->where('num_radicado_int', $radId)
             ->get();
 
-        $destinatarios = $trazabilidad->groupBy('det_doc_empleado');
+        $envios = \App\Models\Envio::with(['quienEnvia.area', 'tipoEnvio', 'detalles.quienRecibe.area', 'detalles.estado', 'detalles.anexosRespuesta'])
+            ->where('num_radicado_int', $radId)
+            ->get();
+
+        $timeline = collect();
+
+        // 1. Process Recibidos
+        foreach ($recibidos as $rec) {
+            $timeline->push((object)[
+                'tipo' => 'Entrada',
+                'fecha' => $rec->created_at ?? $rec->fecha_hora_recib,
+                'titulo' => 'Ingreso a Ventanilla',
+                'responsable' => ($rec->registradoPor->emple_nombres ?? 'Ventanilla') . ' ' . ($rec->registradoPor->emple_apellidos ?? ''),
+                'area' => $rec->registradoPor->area->area_nom ?? 'Recepción',
+                'detalle' => '(Radicado Principal) ' . $rec->asunto,
+                'icon' => 'inbox',
+                'color' => 'bg-blue-600',
+                'original' => $rec,
+                'is_main' => true
+            ]);
+
+            foreach ($rec->detalles as $det) {
+                $nombre = $det->empleado->emple_nombres ?? 'N/A';
+                $apellido = $det->empleado->emple_apellidos ?? '';
+                $area = $det->empleado->area->area_nom ?? 'Sin Área';
+
+                if (stripos($det->observaciones, '(Remitente)') !== false || stripos($det->observaciones, 'Ventanilla') !== false) {
+                     $rem = $rec->remitenteRegistrador;
+                     if ($rem) {
+                         $nombre = $rem->rem_nombres;
+                         $apellido = $rem->rem_apellidos;
+                         $area = 'Ventanilla / Remitente Exterior';
+                     }
+                }
+
+                $timeline->push((object)[
+                    'tipo' => 'Entrada',
+                    'fecha' => $det->fecha_re,
+                    'titulo' => $det->estado->estado_nomb ?? 'Gestión',
+                    'responsable' => "$nombre $apellido",
+                    'area' => $area,
+                    'detalle' => $det->observaciones,
+                    'icon' => 'pending_actions',
+                    'color' => 'bg-blue-400',
+                    'original' => $det,
+                    'is_main' => false
+                ]);
+            }
+        }
+
+        // 2. Process Envios
+        foreach ($envios as $e) {
+            $timeline->push((object)[
+                'tipo' => 'Salida',
+                'fecha' => $e->created_at ?? $e->fecha,
+                'titulo' => 'Radicado Saliente Generado',
+                'responsable' => ($e->quienEnvia->emple_nombres ?? 'Ventanilla') . ' ' . ($e->quienEnvia->emple_apellidos ?? ''),
+                'area' => $e->quienEnvia->area->area_nom ?? 'Oficina',
+                'detalle' => '(Documento de Respuesta/Envío) ' . $e->asunto,
+                'icon' => 'outgoing_mail',
+                'color' => 'bg-amber-600',
+                'original' => $e,
+                'is_main' => true
+            ]);
+
+            foreach ($e->detalles as $det) {
+                $timeline->push((object)[
+                    'tipo' => 'Salida',
+                    'fecha' => $det->fecha_traslado,
+                    'titulo' => $det->estado->estado_nomb ?? 'Gestión Interna',
+                    'responsable' => ($det->quienRecibe->emple_nombres ?? 'N/A') . ' ' . ($det->quienRecibe->emple_apellidos ?? ''),
+                    'area' => $det->quienRecibe->area->area_nom ?? 'Sin Área',
+                    'detalle' => $det->observaciones,
+                    'icon' => 'move_to_inbox',
+                    'color' => 'bg-amber-400',
+                    'original' => $det,
+                    'is_main' => false
+                ]);
+            }
+        }
+
+        $trazabilidad = $timeline->sortBy('fecha');
+        $destinatarios = $trazabilidad->groupBy('responsable');
         $empleados = \App\Models\Empleado::where('nit_empresa', Auth::user()->nit_empresa)->where('emple_doc', '!=', Auth::user()->emple_doc)->with('area')->get();
 
         return view('empleado.historial_externa', compact('detalle', 'trazabilidad', 'destinatarios', 'empleados'));
@@ -1041,146 +1225,6 @@ class CorrespondenciaController extends Controller
         return $radicado;
     }
 
-
-    public function getHistory($id)
-    {
-        try {
-            
-            
-            // Priority 1: Check if the ID is already a Radicado ID (recommended for unified processes)
-            $isRadicado = DB::table('radicados')->where('id_radicado', $id)->exists();
-            if ($isRadicado) {
-                $radId = $id;
-            } else {
-                // Priority 2: Traditional ID lookup (Recibido or Envio)
-                $radId = DB::table('recibido')->where('id_recibido', $id)->value('num_radicado_int');
-                if (!$radId) {
-                    $radId = DB::table('envio')->where('id_envio', $id)->value('num_radicado_int');
-                }
-            }
-
-            if (!$radId) return response()->json([]);
-
-            // 1. Initial Registrations (Incoming/Outgoing)
-            $recibidos = DB::table('recibido as r')
-                ->join('radicados as rad', 'r.num_radicado_int', '=', 'rad.id_radicado')
-                ->leftJoin('remitente as rem', 'r.doc_quien_registra', '=', 'rem.rem_doc')
-                ->where('r.num_radicado_int', $radId)
-                ->select(
-                    DB::raw("'registry' as type"),
-                    'r.fecha_hora_recib as fecha',
-                    DB::raw("COALESCE(rem.rem_nombres, 'Sistema') as nombres"),
-                    DB::raw("COALESCE(rem.rem_apellidos, '') as apellidos"),
-                    'rad.num_radicado',
-                    DB::raw("'Ingreso a Ventanilla' as estado_nomb"),
-                    'r.observaciones',
-                    DB::raw("NULL as img")
-                )->get();
-
-            $envios = DB::table('envio as env')
-                ->join('radicados as rad', 'env.num_radicado_int', '=', 'rad.id_radicado')
-                ->leftJoin('remitente as rem', 'env.doc_quien_registra', '=', 'rem.rem_doc')
-                ->where('env.num_radicado_int', $radId)
-                ->select(
-                    DB::raw("'registry' as type"),
-                    'env.fecha as fecha',
-                    DB::raw("COALESCE(rem.rem_nombres, 'Sistema') as nombres"),
-                    DB::raw("COALESCE(rem.rem_apellidos, '') as apellidos"),
-                    'rad.num_radicado',
-                    DB::raw("'Registro de Salida/Respuesta' as estado_nomb"),
-                    'env.asunto as observaciones',
-                    DB::raw("NULL as img")
-                )->get();
-
-            // 2. Lifecycle transitions (Details)
-            $detailsRec = DB::table('detalle_recibido as dr')
-                ->join('recibido as r', 'dr.det_id_recibido', '=', 'r.id_recibido')
-                ->leftJoin('estado as e', 'dr.id_estado_rec', '=', 'e.id_estado')
-                ->leftJoin('empleado as emp', 'dr.det_doc_empleado', '=', 'emp.emple_doc')
-                ->leftJoin('area as area_e', 'emp.emple_area', '=', 'area_e.id_area')
-                ->leftJoin('remitente as rem_d', 'dr.det_doc_empleado', '=', 'rem_d.rem_doc')
-                ->where('r.num_radicado_int', $radId)
-                ->select(
-                    DB::raw("'detail' as type"),
-                    'dr.fecha_re as fecha',
-                    DB::raw("COALESCE(emp.emple_nombres, rem_d.rem_nombres, 'Destinatario') as nombres"),
-                    DB::raw("COALESCE(emp.emple_apellidos, rem_d.rem_apellidos, '') as apellidos"),
-                    DB::raw("NULL as num_radicado"),
-                    DB::raw("COALESCE(e.estado_nomb, 'Gestión') as estado_nomb"),
-                    'dr.observaciones',
-                    'area_e.area_nom as area_e',
-                    'emp.emple_img as img',
-                    'dr.id_estado_rec',
-                    'dr.id_det_recibido',
-                    'dr.archivo_res'
-                )->get();
-
-            $detailsEnv = DB::table('detalle_envio as de')
-                ->join('envio as env', 'de.id_envio', '=', 'env.id_envio')
-                ->leftJoin('estado as e', 'de.id_estado_rec', '=', 'e.id_estado')
-                ->leftJoin('empleado as emp', 'de.id_quien_recibe', '=', 'emp.emple_doc')
-                ->leftJoin('area as area_e', 'emp.emple_area', '=', 'area_e.id_area')
-                ->where('env.num_radicado_int', $radId)
-                ->select(
-                    DB::raw("'detail' as type"),
-                    'de.fecha_traslado as fecha',
-                    DB::raw("COALESCE(emp.emple_nombres, 'Funcionario') as nombres"),
-                    DB::raw("COALESCE(emp.emple_apellidos, '') as apellidos"),
-                    DB::raw("NULL as num_radicado"),
-                    DB::raw("COALESCE(e.estado_nomb, 'Saliente') as estado_nomb"),
-                    'de.observaciones',
-                    'area_e.area_nom as area_e',
-                    'emp.emple_img as img',
-                    'de.id_estado_rec',
-                    DB::raw("de.id_detalle as id_det_recibido"),
-                    DB::raw("NULL as archivo_res")
-                )->get();
-
-            // 3. Merge and cleanup
-            $historyCollection = $recibidos
-                ->concat($envios)
-                ->concat($detailsRec)
-                ->concat($detailsEnv)
-                ->sortBy('fecha');
-
-            $finalHistory = [];
-            foreach ($historyCollection as $h) {
-                $item = (array) $h;
-                
-                if (!empty($item['id_det_recibido'])) {
-                    $item['anexos'] = DB::table('anexo_respuesta')
-                        ->where('id_detalle', $item['id_det_recibido'])
-                        ->select('ruta_archivo', 'nombre_original')
-                        ->get();
-                } else {
-                    $item['anexos'] = [];
-                }
-
-                if (!empty($item['observaciones'])) {
-                    $item['observaciones'] = preg_replace('/^(CC|TI|CE|NIT|PAS|PEP)\s*[\d\.\-]+\s*-\s*/i', '', $item['observaciones']);
-                }
-                    
-                $finalHistory[] = $item;
-            }
-
-            return response()->json($finalHistory);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
-    }
-
-    /**
-     * Retorna el historial de trazabilidad de un Envio (interno/saliente)
-     * en el mismo formato que getHistory() para reutilizar el historyModal.
-     */
-    public function getHistoryEnvio($id)
-    {
-        return $this->getHistory($id);
-    }
-
-
-
-
     public function historialPersonal()
     {
         $doc = \Illuminate\Support\Facades\Auth::user()->emple_doc;
@@ -1206,6 +1250,181 @@ class CorrespondenciaController extends Controller
         $correspondencia = $recibidos->concat($envios)->sortByDesc('fecha_relevante');
 
         return view('empleado.historial_personal', compact('correspondencia'));
+    }
+
+    public function getHistory($id, Request $request)
+    {
+        try {
+            $modulo = $request->query('modulo');
+            $radId = null;
+
+            // Priority 0: If modulo is specified, try that path specifically first
+            if ($modulo === 'interna' || $modulo === 'saliente' || $modulo === 'envio') {
+                $radId = DB::table('envio')->where('id_envio', $id)->value('num_radicado_int');
+            } elseif ($modulo === 'externa' || $modulo === 'recibida') {
+                $radId = DB::table('recibido')->where('id_recibido', $id)->value('num_radicado_int');
+            }
+
+            // Priority 1: Check if the ID is already a Radicado ID if not found yet
+            if (!$radId) {
+                $isRadicado = DB::table('radicados')->where('id_radicado', $id)->exists();
+                if ($isRadicado) {
+                    $radId = $id;
+                }
+            }
+
+            // Priority 2: Traditional ID lookup (Recibido or Envio)
+            if (!$radId) {
+                $radId = DB::table('recibido')->where('id_recibido', $id)->value('num_radicado_int');
+                if (!$radId) {
+                    $radId = DB::table('envio')->where('id_envio', $id)->value('num_radicado_int');
+                }
+            }
+            
+            // Priority 3: Lookup from Details IDs (Common in employee module)
+            if (!$radId) {
+                $recId = DB::table('detalle_recibido')->where('id_det_recibido', $id)->value('det_id_recibido');
+                if ($recId) {
+                    $radId = DB::table('recibido')->where('id_recibido', $recId)->value('num_radicado_int');
+                }
+            }
+            if (!$radId) {
+                $envId = DB::table('detalle_envio')->where('id_detalle', $id)->value('id_envio');
+                if ($envId) {
+                    $radId = DB::table('envio')->where('id_envio', $envId)->value('num_radicado_int');
+                }
+            }
+
+            if (!$radId) return response()->json([]);
+
+            // 1. Initial Registrations (Incoming)
+            $recibidos = DB::table('recibido as r')
+                ->join('radicados as rad', 'r.num_radicado_int', '=', 'rad.id_radicado')
+                ->leftJoin('remitente as rem', 'r.doc_quien_registra', '=', 'rem.rem_doc')
+                ->where('r.num_radicado_int', $radId)
+                ->select(
+                    DB::raw("'registry' as type"),
+                    'r.fecha_hora_recib as fecha',
+                    DB::raw("COALESCE(rem.rem_nombres, 'Sistema') as nombres"),
+                    DB::raw("COALESCE(rem.rem_apellidos, 'Ventanilla') as apellidos"),
+                    'rad.num_radicado',
+                    DB::raw("'Ingreso a Ventanilla' as estado_nomb"),
+                    'r.asunto as observaciones',
+                    DB::raw("NULL as img")
+                )->get();
+
+            // 2. Registrations (Outgoing)
+            $envios = DB::table('envio as env')
+                ->join('radicados as rad', 'env.num_radicado_int', '=', 'rad.id_radicado')
+                ->leftJoin('remitente as rem', 'env.doc_quien_registra', '=', 'rem.rem_doc')
+                ->leftJoin('empleado as emp_env', 'env.doc_quien_envia', '=', 'emp_env.emple_doc')
+                ->where('env.num_radicado_int', $radId)
+                ->select(
+                    DB::raw("'registry' as type"),
+                    'env.fecha as fecha',
+                    DB::raw("COALESCE(rem.rem_nombres, 'Sistema') as nombres"),
+                    DB::raw("COALESCE(rem.rem_apellidos, 'Oficial') as apellidos"),
+                    'rad.num_radicado',
+                    DB::raw("'Registro de Salida/Respuesta' as estado_nomb"),
+                    DB::raw("CONCAT('Origen: ', COALESCE(emp_env.emple_nombres, 'N/A'), ' ', COALESCE(emp_env.emple_apellidos, ''), ' | Asunto: ', env.asunto) as observaciones"),
+                    DB::raw("NULL as img")
+                )->get();
+
+            // 3. Lifecycle transitions (Details)
+            $detailsRec = DB::table('detalle_recibido as dr')
+                ->join('recibido as r', 'dr.det_id_recibido', '=', 'r.id_recibido')
+                ->leftJoin('estado as e', 'dr.id_estado_rec', '=', 'e.id_estado')
+                ->leftJoin('empleado as emp', 'dr.det_doc_empleado', '=', 'emp.emple_doc')
+                ->leftJoin('area as area_e', 'emp.emple_area', '=', 'area_e.id_area')
+                ->leftJoin('remitente as rem_det', 'dr.det_doc_empleado', '=', 'rem_det.rem_doc')
+                ->where('r.num_radicado_int', $radId)
+                ->select(
+                    DB::raw("'detail' as type"),
+                    'dr.fecha_re as fecha',
+                    DB::raw("CASE WHEN dr.observaciones LIKE '%(Remitente)%' THEN COALESCE(rem_det.rem_nombres, 'Ventanilla') ELSE COALESCE(emp.emple_nombres, 'Funcionario') END as nombres"),
+                    DB::raw("CASE WHEN dr.observaciones LIKE '%(Remitente)%' THEN COALESCE(rem_det.rem_apellidos, '') ELSE COALESCE(emp.emple_apellidos, '') END as apellidos"),
+                    DB::raw("NULL as num_radicado"),
+                    DB::raw("COALESCE(e.estado_nomb, 'Gestión') as estado_nomb"),
+                    'dr.observaciones',
+                    'area_e.area_nom as area_e',
+                    'emp.emple_img as img',
+                    'dr.id_estado_rec',
+                    'dr.id_det_recibido',
+                    DB::raw("dr.archivo_res as archivo_res")
+                )->get();
+
+            $detailsEnv = DB::table('detalle_envio as de')
+                ->join('envio as env', 'de.id_envio', '=', 'env.id_envio')
+                ->leftJoin('estado as e', 'de.id_estado_rec', '=', 'e.id_estado')
+                ->leftJoin('empleado as emp', 'de.id_quien_recibe', '=', 'emp.emple_doc')
+                ->leftJoin('area as area_e', 'emp.emple_area', '=', 'area_e.id_area')
+                ->leftJoin('remitente as rem_det', 'de.id_quien_recibe', '=', 'rem_det.rem_doc')
+                ->where('env.num_radicado_int', $radId)
+                ->select(
+                    DB::raw("'detail' as type"),
+                    'de.fecha_traslado as fecha',
+                    DB::raw("CASE WHEN de.observaciones LIKE '%(Remitente)%' THEN COALESCE(rem_det.rem_nombres, 'Ventanilla') ELSE COALESCE(emp.emple_nombres, 'Funcionario') END as nombres"),
+                    DB::raw("CASE WHEN de.observaciones LIKE '%(Remitente)%' THEN COALESCE(rem_det.rem_apellidos, '') ELSE COALESCE(emp.emple_apellidos, '') END as apellidos"),
+                    DB::raw("NULL as num_radicado"),
+                    DB::raw("COALESCE(e.estado_nomb, 'Saliente') as estado_nomb"),
+                    'de.observaciones',
+                    'area_e.area_nom as area_e',
+                    'emp.emple_img as img',
+                    'de.id_estado_rec',
+                    DB::raw("de.id_detalle as id_det_recibido"),
+                    DB::raw("NULL as archivo_res")
+                )->get();
+
+            // Final Merge
+            $historyCollection = $recibidos
+                ->concat($envios)
+                ->concat($detailsRec)
+                ->concat($detailsEnv)
+                ->sortBy('fecha');
+
+            $finalHistory = [];
+            foreach ($historyCollection as $h) {
+                $item = (array) $h;
+                
+                // Add anexos if possible
+                if (!empty($item['id_det_recibido'])) {
+                    $item['anexos'] = DB::table('anexo_respuesta')
+                        ->where('id_detalle', $item['id_det_recibido'])
+                        ->orWhere('id_det_interna', $item['id_det_recibido'])
+                        ->select('ruta_archivo', 'nombre_original')
+                        ->get();
+                } else {
+                    $item['anexos'] = [];
+                }
+                $finalHistory[] = $item;
+            }
+
+            // Check if consolidated radicado is resolved
+            $radicadoObj = \App\Models\Radicado::find($radId);
+            $isResuelto = false;
+            if ($radicadoObj) {
+                // States that mean "Resolved": 9 (Finalizado), 10 (Archivado), etc.
+                // We'll also check by name just in case.
+                $estadoRad = DB::table('estado')->where('id_estado', $radicadoObj->id_estado)->first();
+                $estN = strtolower($estadoRad->estado_nomb ?? '');
+                $isResuelto = in_array($radicadoObj->id_estado, [9, 10]) || 
+                              str_contains($estN, 'finalizado') || 
+                              str_contains($estN, 'resuelto');
+            }
+
+            return response()->json([
+                'history' => $finalHistory,
+                'is_resuelto' => $isResuelto,
+                'num_radicado' => $radicadoObj->num_radicado ?? 'N/A'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getHistoryEnvio($id, Request $request)
+    {
+        return $this->getHistory($id, $request);
     }
 
 }

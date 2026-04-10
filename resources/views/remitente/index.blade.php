@@ -188,22 +188,57 @@
                                     <td class="px-6 py-4" data-label="Destinatarios">
                                         <div class="flex flex-wrap gap-2 max-w-[200px]">
                                             @if ($c->tipo === 'Externa')
-                                                @if (isset($c->destinatarios) && $c->destinatarios->count() > 0)
-                                                    <div class="flex -space-x-2 overflow-hidden">
-                                                        @foreach($c->destinatarios->take(4) as $dest)
-                                                            <div class="inline-block w-8 h-8 rounded-full ring-2 ring-white dark:ring-gray-800 bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shadow-sm" title="{{ $dest->emple_nombres }} {{ $dest->emple_apellidos }}">
-                                                                {{ strtoupper(substr($dest->emple_nombres, 0, 1)) }}{{ strtoupper(substr($dest->emple_apellidos, 0, 1)) }}
-                                                            </div>
-                                                        @endforeach
-                                                        @if($c->destinatarios->count() > 4)
-                                                            <div class="inline-block w-8 h-8 rounded-full ring-2 ring-white dark:ring-gray-800 bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-[10px] font-medium text-gray-600 dark:text-gray-300 shadow-sm border border-gray-200 dark:border-gray-600">
-                                                                +{{ $c->destinatarios->count() - 4 }}
-                                                            </div>
-                                                        @endif
+                                                @php
+                                                    // This corresponds to a Recibido item
+                                                    $recItem = \App\Models\Recibido::with(['detalles.empleado', 'detalles.estado', 'remitenteRegistrador'])->find($c->id_original);
+                                                    if ($recItem) {
+                                                        $ultimosPorEmpleado = $recItem->detalles->sortByDesc('id_det_recibido')->unique('det_doc_empleado');
+                                                        $hayResuelto = $ultimosPorEmpleado->contains(fn($d) => in_array($d->id_estado_rec, [9, 10, 14]));
+                                                        $filteredDetalles = $hayResuelto
+                                                            ? $ultimosPorEmpleado->filter(fn($d) => in_array($d->id_estado_rec, [9, 10, 14]))
+                                                            : $ultimosPorEmpleado->filter(fn($d) => $d->id_estado_rec != 9);
+                                                    } else {
+                                                        $filteredDetalles = collect();
+                                                    }
+                                                @endphp
+                                                
+                                                @forelse($filteredDetalles as $det)
+                                                    @php
+                                                        $isResuelto = in_array($det->id_estado_rec, [9, 10, 14]);
+                                                        $isByVentanilla = $isResuelto && (str_contains($det->observaciones, '(Remitente)') || str_contains($det->observaciones, 'Ventanilla'));
+                                                        
+                                                        $displayName = 'Usuario';
+                                                        $displayImg = null;
+                                                        
+                                                        if ($isByVentanilla && $recItem->remitenteRegistrador) {
+                                                            $displayName = $recItem->remitenteRegistrador->rem_nombres . ' ' . $recItem->remitenteRegistrador->rem_apellidos;
+                                                        } elseif ($det->empleado) {
+                                                            $displayName = $det->empleado->emple_nombres . ' ' . $det->empleado->emple_apellidos;
+                                                            $displayImg = $det->empleado->emple_img;
+                                                        }
+                                                    @endphp
+                                                    <div class="flex items-center gap-2 group/user" title="{{ $displayName }}">
+                                                        <div class="w-8 h-8 rounded-full {{ $displayImg ? '' : 'bg-blue-600' }} flex items-center justify-center overflow-hidden border border-gray-200 dark:border-gray-700 flex-shrink-0 shadow-sm">
+                                                            @if ($displayImg)
+                                                                <img src="{{ asset('storage/' . $displayImg) }}" class="w-full h-full object-cover">
+                                                            @elseif($isByVentanilla)
+                                                                <div class="w-full h-full bg-emerald-600 flex items-center justify-center text-white" title="Ventanilla">
+                                                                    <span class="material-symbols-outlined text-xs">account_balance</span>
+                                                                </div>
+                                                            @else
+                                                                <span class="text-[10px] font-bold text-white">{{ strtoupper(substr($displayName, 0, 1)) }}</span>
+                                                            @endif
+                                                        </div>
+                                                        <div class="flex flex-col min-w-0">
+                                                            <span class="text-[10px] font-bold text-gray-700 dark:text-gray-300 leading-tight truncate">{{ $displayName }}</span>
+                                                            <span class="px-1 py-0.5 rounded text-[8px] font-black uppercase border {{ in_array($det->id_estado_rec, [9,10,14]) ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-indigo-50 text-indigo-600 border-indigo-100' }} mt-1">
+                                                                {{ $det->estado->estado_nomb ?? 'Finalizado' }}
+                                                            </span>
+                                                        </div>
                                                     </div>
-                                                @else
+                                                @empty
                                                     <span class="text-gray-400 text-[10px] bg-gray-50 border border-gray-100 px-1.5 py-0.5 rounded italic">Sin asignar</span>
-                                                @endif
+                                                @endforelse
                                             @else
                                                 <span class="text-gray-400 text-xs italic">-</span>
                                             @endif
@@ -265,7 +300,7 @@
                                                     </button>
                                                 @elseif($c->id_estado == 9)
                                                     @if (!isset($c->has_response) || !$c->has_response)
-                                                        <button onclick="openSalienteModal({{ $c->id_original }})"
+                                                        <button onclick="openSalienteModalUnified('{{ $c->id }}', false)"
                                                             class="p-1 px-2 text-emerald-600 bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 rounded-lg transition-colors"
                                                             title="Responder">
                                                             <span class="material-symbols-outlined text-[18px]">outbox</span>
@@ -278,7 +313,7 @@
                                                 @endif
                                             @elseif ($c->tipo === 'Saliente')
                                                 @if ($c->id_estado == 0)
-                                                    <button onclick="openSalienteModal({{ $c->id_original }})"
+                                                    <button onclick="openSalienteModalUnified('{{ $c->id }}', true)"
                                                         class="p-1 px-2 text-blue-600 bg-blue-50 border border-blue-100 hover:bg-blue-100 rounded-lg transition-colors"
                                                         title="Despachar Correspondencia">
                                                         <span class="material-symbols-outlined text-[18px]">send</span>
@@ -1112,98 +1147,86 @@
             }
 
             // Set Notification Email
-            const emailInput = document.getElementById('salienteEmailNotif');
-            const emailContainer = document.getElementById('emailNotifContainer');
-            if (c.correo_persona) {
-                emailInput.value = c.correo_persona;
-                if (emailContainer) emailContainer.classList.remove('hidden');
-            } else {
-                emailInput.value = '';
-                if (emailContainer) emailContainer.classList.add('hidden');
-            }
+            const emailInput = document.getElementById('salienteCorreo');
+            if (c.correo_persona) emailInput.value = c.correo_persona;
+            else emailInput.value = '';
 
             // Clear observaciones
-            document.getElementById('salienteObservaciones').value = '';
+            const obsEl = document.getElementById('salienteObservaciones');
+            if(obsEl) obsEl.value = '';
+
+            // Adjust submit button
+            const submitBtn = document.querySelector('#salienteForm button[type="submit"]');
+            if (submitBtn) {
+                if (c.tipo_label === 'SAL') {
+                    submitBtn.innerHTML = `<span class="material-symbols-outlined text-[18px]">send</span> Despachar Correspondencia`;
+                    submitBtn.className = submitBtn.className.replace('bg-emerald-600', 'bg-blue-600').replace('hover:bg-emerald-700', 'hover:bg-blue-700');
+                } else {
+                    submitBtn.innerHTML = `<span class="material-symbols-outlined text-[18px]">done_all</span> Registrar Envío Saliente`;
+                    submitBtn.className = submitBtn.className.replace('bg-blue-600', 'bg-emerald-600').replace('hover:bg-blue-700', 'hover:bg-emerald-700');
+                }
+            }
 
             openModal('salienteModal');
         }
 
-        async function openSalienteModalEnvio(id) {
-            const envio = window.enviosPendientesData[id];
-            if (!envio) return;
+        async function openSalienteModalUnified(id, isEnvioRow = false) {
+            const c = window.correspondenceData[id];
+            if (!c) return;
 
-            document.getElementById('salienteForm').action = `/ventanilla/envio/${id}/store-saliente`;
-            document.getElementById('salienteAsunto').value = envio.asunto;
-            document.getElementById('salienteDestino').value = envio.destino && envio.destino !== 'Ventanilla' ? envio
-                .destino : '';
-
-            // Pre-fill fields
-            const typeSelect = document.getElementById('salienteTipo');
-            if (envio.id_tipo_envio) typeSelect.value = envio.id_tipo_envio;
-
-            const officialSelect = document.getElementById('salienteFuncionario');
-            officialSelect.value = envio.doc_quien_envia || '';
-
-            // File Preview Section
-            const previewContainer = document.getElementById('salienteFilePreview');
-            previewContainer.innerHTML = '';
-
-            if (envio.archivo) {
-                const mainFileDiv = document.createElement('div');
-                mainFileDiv.className =
-                    'flex items-center gap-3 p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-2xl mb-2 group cursor-pointer hover:bg-emerald-100 transition-all';
-                mainFileDiv.onclick = () => window.open(`/storage/${envio.archivo}`, '_blank');
-                mainFileDiv.innerHTML = `
-                    <span class="material-symbols-outlined text-emerald-600">description</span>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-[11px] font-bold text-emerald-900 dark:text-emerald-100 truncate">Documento a Enviar</p>
-                        <p class="text-[9px] text-emerald-600 font-medium">Click para ver documento</p>
-                    </div>
-                    <span class="material-symbols-outlined text-emerald-400 text-sm group-hover:translate-x-0.5 transition-transform">open_in_new</span>
-                `;
-                previewContainer.appendChild(mainFileDiv);
-            }
-
-            // Render Annexes
-            const anexos = envio.anexos || [];
-            if (anexos.length > 0) {
-                const annexGrid = document.createElement('div');
-                annexGrid.className = 'grid grid-cols-1 gap-2';
-                anexos.forEach((anexo, idx) => {
-                    const div = document.createElement('div');
-                    div.className =
-                        'flex items-center gap-3 p-2.5 bg-gray-50 dark:bg-gray-900/40 border border-gray-100 dark:border-gray-700/50 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group';
-                    div.onclick = () => window.open(`/storage/${anexo.ruta_archivo}`, '_blank');
-                    div.innerHTML = `
-                        <span class="material-symbols-outlined text-gray-400 text-[18px]">attachment</span>
-                        <p class="text-[10px] font-medium text-gray-600 dark:text-gray-300 truncate flex-1">${anexo.nombre_original || `Anexo ${idx + 1}`}</p>
-                        <span class="material-symbols-outlined text-gray-300 text-sm group-hover:translate-x-0.5 transition-transform">visibility</span>
-                    `;
-                    annexGrid.appendChild(div);
-                });
-                previewContainer.appendChild(annexGrid);
-            }
-
-            const folioInput = document.getElementById('salienteFolio');
-            folioInput.value = envio.folio || 1;
-            folioInput.readOnly = true;
-
-            const originalRecibido = envio.radicado && envio.radicado.recibido ? envio.radicado.recibido : null;
-            const emailInput = document.getElementById('salienteEmailNotif');
-            const emailContainer = document.getElementById('emailNotifContainer');
+            const isManualEnv = c.tipo_label === 'SAL';
             
-            if (originalRecibido && originalRecibido.correo_persona) {
-                emailInput.value = originalRecibido.correo_persona;
-                if (emailContainer) emailContainer.classList.remove('hidden');
-            } else {
-                emailInput.value = '';
-                if (emailContainer) emailContainer.classList.add('hidden');
+            // Set Form Action
+            let actionUrl = `{{ url('/ventanilla') }}/${c.id_original}/store-saliente`;
+            if (isManualEnv) {
+                actionUrl = `{{ url('/ventanilla/envio') }}/${c.id_original}/store-saliente`;
             }
-            document.getElementById('salienteObservaciones').value = '';
+            document.getElementById('salienteForm').action = actionUrl;
+
+            // Fill Fields
+            document.getElementById('salienteAsunto').value = (isManualEnv ? '' : 'R: ') + (c.asunto || '');
+            document.getElementById('salienteDestino').value = c.contacto || '';
+            document.getElementById('salienteFolio').value = c.folios || 1;
+            document.getElementById('salienteCorreo').value = c.correo || '';
+            
+            // Auto-fill Type and Official
+            const typeSelect = document.getElementById('salienteTipo');
+            if (typeSelect && c.id_tipo) typeSelect.value = c.id_tipo;
+            
+            const officialSelect = document.getElementById('salienteFuncionario');
+            if (officialSelect && isManualEnv) {
+                // If it's a manual envío from employee, try to map the sender if we have it in the normalized object
+                // Usually c.doc_quien_envia was not in the normalized object, but we can assume it for SAL
+                // Actually, let's just default to selecting... and user can pick.
+            }
+
+            // Preview Section
+            const previewContainer = document.getElementById('salienteFilePreview');
+            previewContainer.innerHTML = c.archivo ? `
+                <div class="flex items-center gap-3 p-3 bg-${isManualEnv ? 'blue' : 'emerald'}-50 dark:bg-${isManualEnv ? 'blue' : 'emerald'}-900/20 border border-${isManualEnv ? 'blue' : 'emerald'}-100 dark:border-${isManualEnv ? 'blue' : 'emerald'}-800 rounded-2xl mb-2 group cursor-pointer hover:bg-${isManualEnv ? 'blue' : 'emerald'}-100 transition-all" onclick="window.open('/storage/${c.archivo}', '_blank')">
+                    <span class="material-symbols-outlined text-${isManualEnv ? 'blue' : 'emerald'}-600">description</span>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-[11px] font-bold text-${isManualEnv ? 'blue' : 'emerald'}-900 dark:text-${isManualEnv ? 'blue' : 'emerald'}-100 truncate">${isManualEnv ? 'Documento a Despachar' : 'Documento Respuesta'}</p>
+                        <p class="text-[9px] text-${isManualEnv ? 'blue' : 'emerald'}-600 font-medium">Click para ver documento</p>
+                    </div>
+                    <span class="material-symbols-outlined text-${isManualEnv ? 'blue' : 'emerald'}-400 text-sm">open_in_new</span>
+                </div>
+            ` : '';
+
+            // Handle button style & text
+            const submitBtn = document.querySelector('#salienteForm button[type="submit"]');
+            if (submitBtn) {
+                if (isManualEnv) {
+                    submitBtn.innerHTML = `<span class="material-symbols-outlined text-[18px]">send</span> Despachar Correspondencia`;
+                    submitBtn.className = submitBtn.className.replace('bg-emerald-600', 'bg-blue-600').replace('hover:bg-emerald-700', 'hover:bg-blue-700');
+                } else {
+                    submitBtn.innerHTML = `<span class="material-symbols-outlined text-[18px]">done_all</span> Registrar Envío Saliente`;
+                    submitBtn.className = submitBtn.className.replace('bg-blue-600', 'bg-emerald-600').replace('hover:bg-blue-700', 'hover:bg-emerald-700');
+                }
+            }
 
             openModal('salienteModal');
         }
-
         function openRejectModal(id, radText = '') {
             const c = window.correspondenceData[id];
             if (!c) return;
@@ -1382,7 +1405,31 @@
                                 <input type="text" name="folio" id="salienteFolio" required readonly class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm dark:text-gray-400 cursor-not-allowed">
                             </div>
                         </div>
+                        <!-- Funcionario Responsable -->
+                            <div class="md:col-span-2">
+                                <div class="flex items-center justify-between mb-2 px-1">
+                                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Funcionario Responsable *</label>
+                                </div>
+                                <div id="funcionarios-container" class="space-y-2">
+                                    @php
+                                        $currentUser = Auth::guard('remitente')->user();
+                                        $fullName = $currentUser ? ($currentUser->rem_nombres . ' ' . $currentUser->rem_apellidos) : '';
+                                        $doc = $currentUser ? $currentUser->rem_doc : '';
+                                    @endphp
+                                    <div class="funcionario-block relative" data-index="0">
+                                        <input type="hidden" name="doc_quien_registra" value="{{ $doc }}" required>
+                                        <div class="relative group">
+                                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <span class="material-symbols-outlined text-emerald-500 transition-colors text-[18px]">person</span>
+                                            </span>
+                                            <input type="text" value="{{ $fullName }}" readonly
+                                                class="w-full pl-10 pr-4 py-3 bg-emerald-50/30 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800 rounded-2xl text-sm font-bold outline-none dark:text-white cursor-not-allowed">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         <div>
+                            <!-- Funcionario que envía -->
                             <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Funcionario que envía</label>
                             <select name="doc_quien_envia" id="salienteFuncionario" required class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none dark:text-white appearance-none">
                                 <option value="">Seleccionar...</option>
@@ -1423,6 +1470,12 @@
         window.correspondenceData = {};
         @foreach($correspondenciaNueva as $c)
             window.correspondenceData['{{ $c->id }}'] = @json($c);
+        @endforeach
+
+        // For compatibility with any legacy code that might expect models
+        window.enviosPendientesData = {};
+        @foreach($enviosPendientes as $ep)
+            window.enviosPendientesData['{{ $ep->id_envio }}'] = @json($ep);
         @endforeach
 
         // 1. Details & History
@@ -1570,51 +1623,6 @@
             openModal('rejectModal');
         }
 
-        function openSalienteModal(id) {
-            let c = null;
-            for (let k in window.correspondenceData) {
-                if (window.correspondenceData[k].id_original == id) {
-                    c = window.correspondenceData[k];
-                    break;
-                }
-            }
-            if (!c) return;
-
-            let actionUrl = `{{ url('/ventanilla') }}/${c.id_original}/store-saliente`;
-            if (c.tipo_label === 'SAL') {
-                actionUrl = `{{ url('/ventanilla') }}/envio/${c.id_original}/store-saliente`;
-            }
-
-            document.getElementById('salienteForm').action = actionUrl;
-            document.getElementById('salienteDestino').value = c.contacto || '';
-            document.getElementById('salienteAsunto').value = (c.tipo_label === 'SAL' ? '' : 'R: ') + c.asunto;
-            document.getElementById('salienteFolio').value = c.folios || 1;
-            document.getElementById('salienteCorreo').value = c.correo || '';
-            
-            const submitBtn = document.querySelector('#salienteForm button[type="submit"]');
-            if (submitBtn) {
-                if (c.tipo_label === 'SAL') {
-                    submitBtn.innerHTML = `<span class="material-symbols-outlined text-[18px]">send</span> Despachar Correspondencia`;
-                    submitBtn.className = submitBtn.className.replace('bg-emerald-600', 'bg-blue-600').replace('hover:bg-emerald-700', 'hover:bg-blue-700');
-                } else {
-                    submitBtn.innerHTML = `<span class="material-symbols-outlined text-[18px]">done_all</span> Registrar Envío Saliente`;
-                    submitBtn.className = submitBtn.className.replace('bg-blue-600', 'bg-emerald-600').replace('hover:bg-blue-700', 'hover:bg-emerald-700');
-                }
-            }
-            
-            // Auto-fill Type and Official
-            const typeSelect = document.getElementById('salienteTipo');
-            if (typeSelect && c.id_tipo) typeSelect.value = c.id_tipo;
-            
-            const officialSelect = document.getElementById('salienteFuncionario');
-            if (officialSelect) {
-                const currentRemDoc = "{{ auth()->guard('remitente')->user()->rem_doc }}";
-                officialSelect.value = currentRemDoc;
-            }
-
-            document.getElementById('salienteFilePreview').innerHTML = c.archivo ? `<div class='p-3 bg-emerald-50 rounded-2xl flex items-center gap-3'><span class='material-symbols-outlined text-emerald-600'>description</span><p class='text-xs font-bold text-emerald-900'>Documento Principal</p></div>` : '';
-            openModal('salienteModal');
-        }
 
         function openEditModalById(id) {
             let item = null;

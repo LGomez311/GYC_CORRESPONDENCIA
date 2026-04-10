@@ -84,18 +84,11 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-right">
-                                @if($envio->destino === 'Ventanilla')
-                                    <span class="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-100 text-gray-400 dark:bg-slate-700/50 dark:text-gray-500 rounded-lg text-xs font-bold cursor-not-allowed" title="Los envíos a Ventanilla no tienen trazabilidad interna">
-                                        <span class="material-symbols-outlined text-[16px]">visibility_off</span>
-                                        Sin Seguimiento
-                                    </span>
-                                @else
-                                    <a href="{{ route('empleado.historial_interna', $primerDetalle->id_detalle ?? 0) }}" 
-                                       class="inline-flex items-center gap-1 px-3 py-1.5 bg-primary/10 text-primary dark:bg-blue-900/20 dark:text-blue-400 rounded-lg text-xs font-bold hover:bg-primary hover:text-white transition-all shadow-sm">
-                                        <span class="material-symbols-outlined text-[16px]">visibility</span>
-                                        Ver Seguimiento
-                                    </a>
-                                @endif
+                                <button onclick="showHistory({{ $envio->id_envio }}, '{{ $envio->destino == 'Interno' ? 'interna' : 'saliente' }}')" 
+                                   class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 p-1"
+                                   title="Ver Trazabilidad">
+                                    <span class="material-symbols-outlined">visibility</span>
+                                </button>
                             </td>
                         </tr>
                     @empty
@@ -119,7 +112,38 @@
     </div>
 </div>
 
-<!-- Modal Destinatarios -->
+<!-- Modal Historial y Línea de Tiempo Unificado -->
+<div id="historyModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 translate-z-0">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col border border-gray-100 dark:border-gray-800 animate-in fade-in zoom-in duration-200">
+        <!-- Header -->
+        <div class="p-5 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-slate-800/50">
+            <div>
+                <h3 class="font-bold text-xl text-gray-900 dark:text-white flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">history</span>
+                    Historial de Correspondencia
+                </h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1" id="historyRadicadoDisplay">Radicado: #---</p>
+            </div>
+            <button onclick="toggleModal('historyModal')" class="bg-white dark:bg-slate-800 text-gray-400 hover:text-red-500 hover:rotate-90 dark:hover:text-red-400 p-2 rounded-full transition-all duration-300 shadow-sm border border-gray-100 dark:border-gray-700">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        
+        <!-- Timeline Content -->
+        <div class="p-6 overflow-y-auto flex-1 bg-white dark:bg-slate-900 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800">
+            <div class="relative ml-4 pl-8 border-l-2 border-dashed border-gray-200 dark:border-gray-800 space-y-10" id="timelineContainer">
+                <!-- Se inyectará vía JS -->
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="p-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-slate-800/50 flex justify-end">
+            <button onclick="toggleModal('historyModal')" class="px-6 py-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-all shadow-sm">
+                Cerrar Historial
+            </button>
+        </div>
+    </div>
+</div>
 <div id="modalDestinatarios" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
     <div class="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-md overflow-hidden flex flex-col">
         <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50">
@@ -184,8 +208,165 @@ function abrirModalDestinatarios(destinatarios) {
     document.getElementById('modalDestinatarios').classList.remove('hidden');
 }
 
-function cerrarModalDestinatarios() {
-    document.getElementById('modalDestinatarios').classList.add('hidden');
-}
+    function cerrarModalDestinatarios() {
+        document.getElementById('modalDestinatarios').classList.add('hidden');
+    }
+
+    function toggleModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) {
+            modal.classList.toggle('hidden');
+        }
+    }
+
+    async function showHistory(id, modulo = 'externa') {
+        const container = document.getElementById('timelineContainer');
+        const radicadoDisplay = document.getElementById('historyRadicadoDisplay');
+        const modal = document.getElementById('historyModal');
+
+        // Reset and show loader
+        container.innerHTML = `
+            <div class="flex flex-col items-center justify-center py-12 text-gray-400">
+                <span class="material-symbols-outlined animate-spin text-4xl mb-4">sync</span>
+                <p class="text-sm font-medium">Cargando línea de tiempo...</p>
+            </div>
+        `;
+        radicadoDisplay.innerText = "Cargando...";
+        modal.classList.remove('hidden');
+
+        try {
+            // Determinar URL según el módulo (Usando el endpoint unificado)
+            let url = `/empleado/history/${id}?modulo=${modulo}`;
+            
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Error al obtener el historial');
+            const data = await response.json();
+            
+            if (data.error) throw new Error(data.error);
+
+            const history = data.history || [];
+            const isResuelto = data.is_resuelto || false;
+            const numRadicado = data.num_radicado || '---';
+
+            if (!history || history.length === 0) {
+                container.innerHTML = `<div class="text-center py-10 text-gray-500">No se encontró historial para este radicado.</div>`;
+                return;
+            }
+
+            // Actualizar radicado en header
+            radicadoDisplay.innerHTML = `<span class='font-bold text-primary'>Radicado: #${numRadicado}</span>`;
+
+            let html = "";
+
+            // Box de Proceso Consolidado (RICH UI)
+            if (isResuelto) {
+                html += `
+                <div class="mb-8 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center text-white shrink-0 shadow-lg shadow-green-500/30">
+                        <span class="material-symbols-outlined text-2xl font-bold">verified</span>
+                    </div>
+                    <div>
+                        <h4 class="text-green-800 dark:text-green-300 font-bold text-base leading-tight uppercase tracking-tight">Proceso Consolidado</h4>
+                        <p class="text-green-600 dark:text-green-400 text-xs mt-1 font-medium italic">Esta correspondencia ya se encuentra resuelta y finalizada en su totalidad. No requiere más gestiones.</p>
+                    </div>
+                </div>`;
+            } else {
+                html += `
+                <div class="mb-8 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center text-white shrink-0 shadow-lg shadow-amber-500/30">
+                        <span class="material-symbols-outlined text-2xl font-bold">pending_actions</span>
+                    </div>
+                    <div>
+                        <h4 class="text-amber-800 dark:text-amber-300 font-bold text-base leading-tight uppercase tracking-tight">Seguimiento en Curso</h4>
+                        <p class="text-amber-600 dark:text-amber-400 text-xs mt-1 font-medium italic">Esta correspondencia aún tiene respuestas pendientes por parte de algunos integrantes. Se encuentra en etapa de seguimiento.</p>
+                    </div>
+                </div>`;
+            }
+
+            history.forEach((entry, index) => {
+                const isFirst = index === 0;
+                const isLast = index === history.length - 1;
+                
+                // Colores segmentados por estado
+                let dotColor = "bg-gray-300";
+                let textColor = "text-gray-900 dark:text-gray-100";
+                const est = (entry.estado_nomb || '').toLowerCase();
+                
+                if (est.includes('recibido')) dotColor = "bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]";
+                else if (est.includes('tramite') || est.includes('trámite')) dotColor = "bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]";
+                else if (est.includes('resuelto') || est.includes('finalizado') || est.includes('enviado') || est.includes('salida')) dotColor = "bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]";
+                else if (est.includes('rechazado')) dotColor = "bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]";
+                else if (est.includes('ingreso') || est.includes('registrado')) dotColor = "bg-primary shadow-[0_0_10px_rgba(32,73,222,0.5)]";
+
+                const dateObj = new Date(entry.fecha);
+                const dateStr = dateObj.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+                const timeStr = dateObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+                html += `
+                <div class="relative">
+                    <!-- Dot -->
+                    <div class="absolute -left-[41px] top-1.5 w-6 h-6 rounded-full ${dotColor} border-4 border-white dark:border-slate-900 z-10 flex items-center justify-center">
+                        ${isFirst ? '<span class="w-1.5 h-1.5 bg-white rounded-full"></span>' : ''}
+                    </div>
+
+                    <!-- Content Card -->
+                    <div class="bg-gray-50/50 dark:bg-slate-800/40 rounded-2xl p-4 border border-gray-100 dark:border-gray-800 hover:border-primary/30 dark:hover:border-primary/30 transition-all duration-300 group">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${entry.type === 'registry' ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-600'}">
+                                ${entry.estado_nomb}
+                            </span>
+                            <div class="flex items-center gap-2 text-[11px] text-gray-400 font-medium">
+                                <span class="material-symbols-outlined text-[14px]">calendar_month</span>
+                                ${dateStr} • ${timeStr}
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-3">
+                            <div class="flex-1">
+                                <h4 class="text-sm font-bold ${textColor} group-hover:text-primary transition-colors">
+                                    ${entry.nombres} ${entry.apellidos}
+                                </h4>
+                                ${entry.area_e ? `<p class="text-[10px] text-primary/70 font-bold uppercase mt-0.5 flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">business</span> ${entry.area_e}</p>` : ''}
+                                
+                                ${entry.observaciones ? `
+                                <div class="mt-3 text-xs text-gray-600 dark:text-gray-400 leading-relaxed bg-white dark:bg-slate-900/50 p-3 rounded-xl border border-gray-100 dark:border-gray-800 italic">
+                                    "${entry.observaciones}"
+                                </div>` : ''}
+
+                                <!-- Anexos / Respuesta sections -->
+                                ${entry.archivo_res || (entry.anexos && entry.anexos.length > 0) ? `
+                                <div class="mt-4 flex flex-wrap gap-2">
+                                    ${entry.archivo_res ? `
+                                    <a href="/storage/${entry.archivo_res}" target="_blank" class="inline-flex items-center gap-2 px-3 py-1.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-lg text-xs font-bold border border-green-100 dark:border-green-800/50 hover:bg-green-100 dark:hover:bg-green-900/30 transition-all">
+                                        <span class="material-symbols-outlined text-[16px]">picture_as_pdf</span>
+                                        OFICIO RESPUESTA
+                                    </a>` : ''}
+                                    
+                                    ${entry.anexos ? entry.anexos.map(anexo => `
+                                    <a href="/storage/${anexo.ruta_archivo}" target="_blank" class="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 rounded-lg text-xs font-bold border border-blue-100 dark:border-blue-800/50 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all">
+                                        <span class="material-symbols-outlined text-[16px]">attachment</span>
+                                        ${anexo.nombre_original.length > 20 ? anexo.nombre_original.substring(0, 17) + '...' : anexo.nombre_original}
+                                    </a>`).join('') : ''}
+                                </div>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+
+            container.innerHTML = html;
+
+        } catch (error) {
+            console.error(error);
+            container.innerHTML = `<div class="text-center py-10 text-red-500 font-medium flex flex-col items-center gap-2">
+                <span class="material-symbols-outlined text-4xl">error</span>
+                Error al cargar el historial: ${error.message}
+            </div>`;
+        }
+    }
+
+    function cerrarModalDestinatarios() {
+        document.getElementById('modalDestinatarios').classList.add('hidden');
+    }
 </script>
 @endsection

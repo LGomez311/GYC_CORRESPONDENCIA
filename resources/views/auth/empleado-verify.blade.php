@@ -76,10 +76,14 @@
                 <form method="POST" action="{{ route('empleado.password.reset') }}" class="flex flex-col gap-4">
                     @csrf
 
-                    <input type="email" name="email" placeholder="Correo"
-                        class="w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 
-                    bg-background-light dark:bg-background-dark p-3"
-                        required>
+                    <input type="hidden" name="email" value="{{ $email ?? old('email') }}">
+                    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 p-3 rounded-lg flex items-center gap-3 mb-2">
+                        <span class="material-symbols-outlined text-primary text-xl">alternate_email</span>
+                        <div>
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Verificando cuenta</p>
+                            <p class="text-xs font-bold text-gray-700 dark:text-gray-300">{{ $email ?? old('email') }}</p>
+                        </div>
+                    </div>
 
                     <input type="text" name="code" placeholder="Código de verificación"
                         class="w-full rounded-lg border border-[#cfd7e7] dark:border-slate-700 

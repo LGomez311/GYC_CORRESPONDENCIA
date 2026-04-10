@@ -137,8 +137,8 @@
                             @foreach ($destinatarios as $dest_id => $trazas)
                                 @php
                                     $ultimo = $trazas->last();
-                                    $lowEst = strtolower($ultimo->estado?->estado_nomb ?? '');
-                                    $idEst = $ultimo->id_estado_envio;
+                                    $lowEst = strtolower($ultimo->titulo ?? '');
+                                    $idEst = $ultimo->id_estado ?? ($ultimo->id_estado_envio ?? ($ultimo->det_id_estado ?? ($ultimo->id_estado_rec ?? 0)));
                                     $clases = 'bg-gray-100 text-gray-600 border-gray-200';
                                     
                                     if (in_array($idEst, [9, 10])) $clases = 'bg-emerald-50 text-emerald-600 border-emerald-200';
@@ -154,8 +154,12 @@
                                                 <span class="material-symbols-outlined text-[18px] text-gray-400">person</span>
                                             </div>
                                             <div class="min-w-0">
-                                                <p class="text-sm font-bold dark:text-white truncate">{{ $ultimo->quienRecibe->emple_nombres ?? 'N/A' }}</p>
-                                                <p class="text-[10px] text-gray-500 truncate">{{ $ultimo->quienRecibe->area->area_nom ?? 'Sin Área' }}</p>
+                                                @php
+                                                    $displayName = $ultimo->responsable;
+                                                    $displayArea = $ultimo->area;
+                                                @endphp
+                                                <p class="text-sm font-bold dark:text-white truncate">{{ $displayName }}</p>
+                                                <p class="text-[10px] text-gray-500 truncate">{{ $displayArea }}</p>
                                             </div>
                                         </div>
                                         <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase border shrink-0 {{ $clases }}">
@@ -182,24 +186,12 @@
                     <div class="p-8">
                         <div class="relative border-l-2 border-gray-100 dark:border-gray-700 ml-4 space-y-10 pb-4">
                             @foreach ($trazabilidad as $trace)
-                                @php
-                                    $lowT = strtolower($trace->estado?->estado_nomb ?? '');
-                                    $idT = $trace->id_estado_envio;
-                                    $pointColor = 'bg-gray-300';
-                                    $icon = 'radio_button_checked';
-                                    
-                                    if (in_array($idT, [9, 10])) { $pointColor = 'bg-emerald-500'; $icon = 'verified'; }
-                                    elseif (str_contains($lowT, 'enviado') || $idT == 12) { $pointColor = 'bg-blue-500'; $icon = 'send'; }
-                                    elseif (in_array($idT, [7])) { $pointColor = 'bg-indigo-500'; $icon = 'mark_email_read'; }
-                                    elseif (str_contains($lowT, 'pendiente') || in_array($idT, [8, 13, 14])) { $pointColor = 'bg-amber-500'; $icon = 'pending'; }
-                                    elseif (str_contains($lowT, 'rechazado') || $idT == 11) { $pointColor = 'bg-red-500'; $icon = 'cancel'; }
-                                @endphp
                                 <div class="relative pl-10">
                                     <!-- Indicador Timeline -->
                                     <div
-                                        class="absolute -left-[11px] top-0 w-5 h-5 rounded-full {{ $pointColor }} ring-4 ring-white dark:ring-slate-800 flex items-center justify-center shadow-sm">
+                                        class="absolute -left-[11px] top-0 w-5 h-5 rounded-full {{ $trace->color }} ring-4 ring-white dark:ring-slate-800 flex items-center justify-center shadow-sm">
                                         <span
-                                            class="material-symbols-outlined text-white text-[12px]">{{ $icon }}</span>
+                                            class="material-symbols-outlined text-white text-[12px]">{{ $trace->icon }}</span>
                                     </div>
 
                                     <div
@@ -208,95 +200,79 @@
                                             <div class="flex items-center gap-2">
                                                 <span
                                                     class="px-3 py-1 bg-white dark:bg-slate-800 rounded-full text-xs font-bold text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600">
-                                                    {{ in_array($idT, [9, 10]) ? 'RESUELTO' : ($trace->estado?->estado_nomb ?? 'Cambio de Estado') }}
+                                                    {{ $trace->titulo }}
                                                 </span>
                                                 <span class="text-[11px] text-gray-400 flex items-center gap-1">
                                                     <span
                                                         class="material-symbols-outlined text-[14px]">calendar_month</span>
-                                                    {{ $trace->fecha_traslado->translatedFormat('d M, Y - h:i A') }}
+                                                    {{ $trace->fecha->translatedFormat('d M, Y - h:i A') }}
                                                 </span>
-                                            </div>
-                                            <span
-                                                class="text-[11px] font-bold text-primary dark:text-blue-400 bg-primary/5 px-2 py-0.5 rounded">
-                                                {{ $trace->quienRecibe->emple_nombres ?? 'N/A' }}
-                                            </span>
-                                            @if ($trace->id_estado_rec == 11 && Auth::user()->emple_doc == $detalle->envio->doc_quien_envia)
-                                                @if ($trace->id_detalle == $destinatarios[$trace->id_quien_recibe]->last()->id_detalle)
-                                                    <button
-                                                        onclick="abrirModalGestionRechazo({{ $trace->id_detalle }}, '{{ $trace->quienRecibe->emple_nombres ?? 'Desconocido' }}', '{{ $trace->quienRecibe->emple_doc ?? '0' }}')"
-                                                        class="px-3 py-1 bg-red-600 text-white rounded text-[10px] font-bold hover:bg-red-700 transition-colors shadow-sm flex items-center gap-1">
-                                                        <span
-                                                            class="material-symbols-outlined text-[14px]">settings_backup_restore</span>
-                                                        Gestionar Rechazo
-                                                    </button>
+                                                @php
+                                                    $isInternalRad = str_starts_with($detalle->envio->radicado->num_radicado ?? '', 'INT-');
+                                                @endphp
+                                                @if($isInternalRad)
+                                                    <span class="text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded font-black uppercase">Interna</span>
+                                                @elseif($trace->tipo === 'Entrada')
+                                                    <span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-black uppercase">Entrada</span>
                                                 @else
-                                                    <span
-                                                        class="px-3 py-1 bg-gray-100 dark:bg-slate-700 text-gray-400 dark:text-gray-500 rounded text-[10px] font-bold flex items-center gap-1 cursor-not-allowed">
-                                                        <span
-                                                            class="material-symbols-outlined text-[14px]">check_circle</span>
-                                                        Rechazo Gestionado
-                                                    </span>
+                                                    <span class="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-black uppercase">Salida</span>
                                                 @endif
-                                            @endif
-                                        </div>
-
-                                        <!-- Observaciones -->
-                                        <div class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed italic">
-                                            @if ($trace->observaciones)
-                                                "{{ $trace->observaciones }}"
-                                            @else
-                                                <span class="opacity-40 italic">Sin observaciones adicionales.</span>
-                                            @endif
-                                        </div>
-
-                                        <!-- Archivos de Respuesta -->
-                                        @if ($trace->archivo_respuesta || $trace->anexosRespuesta->count() > 0)
-                                            <div
-                                                class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 grid grid-cols-1 md:grid-cols-2 gap-3">
-                                                @if ($trace->archivo_respuesta)
-                                                    <a href="{{ asset('storage/' . $trace->archivo_respuesta) }}"
-                                                        target="_blank"
-                                                        class="{{ $trace->id_quien_envie == $detalle->envio->doc_quien_envia ? 'hover:border-blue-500' : 'hover:border-blue-500' }} flex items-center gap-3 p-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg transition-colors group/file">
-                                                        <div
-                                                            class="w-10 h-10 rounded bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600">
-                                                            <span
-                                                                class="material-symbols-outlined text-2xl">picture_as_pdf</span>
-                                                        </div>
-                                                        <div class="flex-1 min-w-0">
-                                                            <p class="text-xs font-bold dark:text-white truncate">
-                                                                {{ $trace->id_quien_envie == $detalle->envio->doc_quien_envia ? 'Documento Principal Corregido.pdf' : 'Respuesta Principal.pdf' }}
-                                                            </p>
-                                                            <p
-                                                                class="text-[10px] text-gray-400 uppercase font-bold {{ $trace->id_quien_envie == $detalle->envio->doc_quien_envia ? 'text-blue-500' : 'text-green-500' }}">
-                                                                {{ $trace->id_quien_envie == $detalle->envio->doc_quien_envia ? 'Documento Corregido (Reenvío)' : 'Documento de Cierre' }}
-                                                            </p>
-                                                        </div>
-                                                    </a>
-                                                @endif
-
-                                                @foreach ($trace->anexosRespuesta as $anexo)
-                                                    <a href="{{ asset('storage/' . $anexo->ruta_archivo) }}"
-                                                        target="_blank"
-                                                        class="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-500 transition-colors group/file">
-                                                        <div
-                                                            class="w-10 h-10 rounded bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600">
-                                                            <span
-                                                                class="material-symbols-outlined text-2xl">attachment</span>
-                                                        </div>
-                                                        <div class="flex-1 min-w-0">
-                                                            <p class="text-xs font-bold dark:text-white truncate">
-                                                                {{ $anexo->nombre_original }}</p>
-                                                            <p
-                                                                class="text-[10px] text-gray-400 uppercase font-bold {{ $trace->id_quien_envie == $detalle->envio->doc_quien_envia ? 'text-blue-500' : '' }}">
-                                                                {{ $trace->id_quien_envie == $detalle->envio->doc_quien_envia ? 'Anexo Corrección' : 'Anexo Adjunto' }}
-                                                            </p>
-                                                        </div>
-                                                    </a>
-                                                @endforeach
                                             </div>
-                                            <div class="mt-3 text-[10px] text-right font-medium text-gray-400">
-                                                Total folios reportados: <span
-                                                    class="text-gray-600 dark:text-gray-300">{{ $trace->folios_respuesta ?? 0 }}</span>
+                                            <div class="flex flex-col md:items-end">
+                                                <span class="text-[11px] font-bold text-primary dark:text-blue-400 bg-primary/5 px-2 py-0.5 rounded">
+                                                    {{ $trace->responsable }}
+                                                </span>
+                                                <span class="text-[10px] text-gray-400">{{ $trace->area }}</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="relative">
+                                            <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed italic">
+                                                "{{ $trace->detalle }}"
+                                            </p>
+                                        </div>
+
+                                        {{-- Anexos y Archivos de Respuesta --}}
+                                        @php
+                                            $anexos = collect();
+                                            $mainFile = null;
+                                            $original = $trace->original;
+                                            
+                                            if ($trace->is_main) {
+                                                // If it's the main Envio or Recibido record
+                                                $mainFile = $original->archivo ?? null;
+                                                $anexos = $original->anexos ?? collect();
+                                            } else {
+                                                // If it's a traceability detail
+                                                $mainFile = $original->archivo_respuesta ?? null;
+                                                $anexos = $original->anexosRespuesta ?? collect();
+                                            }
+                                        @endphp
+
+                                        @if ($mainFile || $anexos->count() > 0)
+                                            <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 space-y-3">
+                                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Documentos y Respuesta:</p>
+                                                <div class="flex flex-wrap gap-2">
+                                                    @if($mainFile)
+                                                        <a href="{{ asset('storage/' . $mainFile) }}"
+                                                            target="_blank"
+                                                            class="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-lg text-xs text-blue-700 dark:text-blue-300 hover:bg-blue-600 hover:text-white transition-all group/main">
+                                                            <span class="material-symbols-outlined text-sm">picture_as_pdf</span>
+                                                            <span class="font-bold">Documento Principal</span>
+                                                            <span class="material-symbols-outlined text-sm">visibility</span>
+                                                        </a>
+                                                    @endif
+
+                                                    @foreach ($anexos as $anexo)
+                                                        <a href="{{ asset('storage/' . $anexo->ruta_archivo) }}"
+                                                            target="_blank"
+                                                            class="inline-flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-blue-400 hover:border-primary transition-all group/file">
+                                                            <span class="material-symbols-outlined text-sm text-gray-400 group-hover/file:text-primary">description</span>
+                                                            <span class="font-medium truncate max-w-[150px]">{{ $anexo->nombre_original }}</span>
+                                                            <span class="material-symbols-outlined text-sm">download</span>
+                                                        </a>
+                                                    @endforeach
+                                                </div>
                                             </div>
                                         @endif
                                     </div>
@@ -310,23 +286,38 @@
                 @php
                     $todosFinalizados = true;
                     $rechazosPendientes = collect();
+                    $conAsignaciones = false;
+
                     foreach ($destinatarios as $id_recibe => $trazas) {
-                        $u = $trazas->last();
-                        $est = strtolower($u->estado?->estado_nomb ?? '');
-                        if (
-                            !str_contains($est, 'finalizado') &&
-                            !str_contains($est, 'resuelto') &&
-                            !str_contains($est, 'archivado') &&
-                            !str_contains($est, 'rechazado')
-                        ) {
+                        $u = $trazas->where('is_main', false)->last();
+                        
+                        if (!$u) {
+                            continue;
+                        }
+
+                        $conAsignaciones = true;
+                        // 9: Resuelto, 10: Finalizado/Archivado, 11: Rechazado
+                        $estadoId = $u->id_estado ?? ( $u->det_id_estado ?? ( $u->id_estado_rec ?? 0 ));
+                        $statusName = strtolower($u->titulo ?? '');
+                        
+                        $isResolvedItem = in_array($estadoId, [9, 10, 11]) || 
+                                          str_contains($statusName, 'resuelt') || 
+                                          str_contains($statusName, 'finaliz') || 
+                                          str_contains($statusName, 'archiv');
+
+                        if (!$isResolvedItem) {
                             $todosFinalizados = false;
                         }
-                        if ($u->id_estado_rec == 11 && Auth::user()->emple_doc == $detalle->envio->doc_quien_envia) {
+                        
+                        if ($estadoId == 11 && Auth::user()->emple_doc == $detalle->envio->doc_quien_envia) {
                             $rechazosPendientes->push($u);
                         }
                     }
 
-                    // Si todos están finalizados, archivados o resueltos pero no es un rechazo final (los rechazos no gestionados se consideran pendientes en este bloque), ajustamos el boolean:
+                    if (!$conAsignaciones) {
+                        $todosFinalizados = false;
+                    }
+
                     if ($rechazosPendientes->count() > 0) {
                         $todosFinalizados = false;
                     }

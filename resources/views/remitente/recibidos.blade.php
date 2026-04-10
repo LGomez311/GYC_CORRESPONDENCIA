@@ -129,19 +129,38 @@
                                                     : $ultimosPorEmpleado->filter(fn($d) => $d->id_estado_rec != 9);
                                             @endphp
                                             @forelse($filteredDetalles as $det)
-                                                <div class="flex items-center gap-2 group/user" title="{{ $det->empleado->emple_nombres ?? 'Usuario' }}">
-                                                    <div class="w-8 h-8 rounded-full {{ $det->empleado && $det->empleado->emple_img ? '' : 'bg-blue-600' }} flex items-center justify-center overflow-hidden border border-gray-200 dark:border-gray-700 flex-shrink-0 shadow-sm">
-                                                        @if ($det->empleado && $det->empleado->emple_img)
-                                                            <img src="{{ asset('storage/' . $det->empleado->emple_img) }}" class="w-full h-full object-cover">
+                                                @php
+                                                    $isResuelto = in_array($det->id_estado_rec, [9, 10, 14]);
+                                                    $isByVentanilla = $isResuelto && (str_contains($det->observaciones, '(Remitente)') || str_contains($det->observaciones, 'Ventanilla'));
+                                                    
+                                                    $displayName = 'Usuario';
+                                                    $displayImg = null;
+                                                    
+                                                    if ($isByVentanilla && $c->remitenteRegistrador) {
+                                                        $displayName = $c->remitenteRegistrador->rem_nombres . ' ' . $c->remitenteRegistrador->rem_apellidos;
+                                                        // Note: Remitente doesn't have an image field in schema, using initials
+                                                    } elseif ($det->empleado) {
+                                                        $displayName = $det->empleado->emple_nombres . ' ' . $det->empleado->emple_apellidos;
+                                                        $displayImg = $det->empleado->emple_img;
+                                                    }
+                                                @endphp
+                                                <div class="flex items-center gap-2 group/user" title="{{ $displayName }}">
+                                                    <div class="w-8 h-8 rounded-full {{ $displayImg ? '' : 'bg-blue-600' }} flex items-center justify-center overflow-hidden border border-gray-200 dark:border-gray-700 flex-shrink-0 shadow-sm">
+                                                        @if ($displayImg)
+                                                            <img src="{{ asset('storage/' . $displayImg) }}" class="w-full h-full object-cover">
+                                                        @elseif($isByVentanilla)
+                                                            <div class="w-full h-full bg-emerald-600 flex items-center justify-center text-white" title="Ventanilla">
+                                                                <span class="material-symbols-outlined text-xs">account_balance</span>
+                                                            </div>
                                                         @else
                                                             <span class="text-[10px] font-bold text-white">
-                                                                {{ strtoupper(substr($det->empleado->emple_nombres ?? 'U', 0, 1)) }}{{ strtoupper(substr($det->empleado->emple_apellidos ?? 'A', 0, 1)) }}
+                                                                {{ strtoupper(substr($displayName, 0, 1)) }}
                                                             </span>
                                                         @endif
                                                     </div>
                                                     <div class="flex flex-col min-w-0">
                                                         <span class="text-[10px] font-bold text-gray-700 dark:text-gray-300 leading-tight truncate">
-                                                            {{ $det->empleado->emple_nombres ?? 'Usuario' }}
+                                                            {{ $displayName }}
                                                         </span>
                                                         @php
                                                             $detStatusClass = match ($det->id_estado_rec) {
@@ -152,7 +171,7 @@
                                                                 default => 'bg-gray-50 text-gray-500 border-gray-100',
                                                             };
                                                         @endphp
-                                                        <span class="px-1 px-1 py-0.5 rounded text-[8px] font-black uppercase border {{ $detStatusClass }} mt-1">
+                                                        <span class="px-1 py-0.5 rounded text-[8px] font-black uppercase border {{ $detStatusClass }} mt-1">
                                                             {{ $det->estado->estado_nomb ?? 'Pendiente' }}
                                                         </span>
                                                     </div>
@@ -439,12 +458,6 @@
                             <div
                                 class="bg-gray-50 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-600 rounded-xl overflow-hidden">
                                 <div id="recipientList" class="max-h-56 overflow-y-auto p-2 space-y-1">
-                                    @php
-                                        $empleados = \App\Models\Empleado::with('area')
-                                            ->where('emple_rol', '=', 3)
-                                            ->orderBy('emple_nombres')
-                                            ->get();
-                                    @endphp
                                     @foreach ($empleados as $e)
                                         <label
                                             class="recipient-item flex items-center gap-3 p-2 rounded-lg hover:bg-white dark:hover:bg-gray-700 cursor-pointer transition-all border border-transparent hover:border-gray-100 dark:hover:border-gray-600"

@@ -523,44 +523,42 @@
         </div>
     </div>
 
-    <!-- History Modal -->
-    <div id="historyModal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
-        <div class="flex items-center justify-center min-h-screen w-full p-4">
-            <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
-                onclick="closeModal('historyModal')"></div>
-            <div
-                class="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden transform transition-all">
-                <div
-                    class="px-8 py-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-900/20">
-                    <div class="flex-1">
-                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">Trazabilidad de Envío</h3>
-                        <p class="text-xs text-gray-500 mt-0.5" id="historyRadText"></p>
-                    </div>
-                    <div class="flex items-center gap-2">
+    <!-- Modal Historial y Línea de Tiempo Unificado -->
+    <div id="historyModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 translate-z-0">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col border border-gray-100 dark:border-gray-800 animate-in fade-in zoom-in duration-200">
+            <!-- Header -->
+            <div class="p-5 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-slate-800/50">
+                <div>
+                    <h3 class="font-bold text-xl text-gray-900 dark:text-white flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">history</span>
+                        Historial de Correspondencia
+                    </h3>
+                    <div class="flex items-center gap-3 mt-1">
+                        <p class="text-xs text-gray-500 dark:text-gray-400" id="historyRadText">Radicado: #---</p>
                         <a id="btnDownloadTrazabilidad" href="#" target="_blank"
-                            class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-blue-200 dark:shadow-none">
-                            <span class="material-symbols-outlined text-[16px]">download</span>
-                            Descargar
+                            class="flex items-center gap-1.5 px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white text-[9px] font-black uppercase tracking-widest rounded-lg transition-all shadow-md">
+                            <span class="material-symbols-outlined text-[14px]">download</span>
+                            PDF
                         </a>
-                        <button onclick="closeModal('historyModal')"
-                            class="p-2 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all">
-                            <span class="material-symbols-outlined">close</span>
-                        </button>
                     </div>
                 </div>
-                <div class="p-8 max-h-[70vh] overflow-y-auto bg-white dark:bg-gray-800">
-                    <div id="history-timeline" class="relative space-y-6">
-                        <!-- Timeline items injected here -->
-                        <div id="history-spinner" class="flex justify-center p-8">
-                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                        </div>
-                    </div>
+                <button onclick="closeModal('historyModal')" class="bg-white dark:bg-slate-800 text-gray-400 hover:text-red-500 hover:rotate-90 dark:hover:text-red-400 p-2 rounded-full transition-all duration-300 shadow-sm border border-gray-100 dark:border-gray-700">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            
+            <!-- Timeline Content -->
+            <div class="p-6 overflow-y-auto flex-1 bg-white dark:bg-slate-900 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800">
+                <div class="relative ml-4 pl-8 border-l-2 border-dashed border-gray-200 dark:border-gray-800 space-y-10" id="history-timeline">
+                    <!-- Se inyectará vía JS -->
                 </div>
-                <div
-                    class="px-8 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/20 flex justify-end">
-                    <button onclick="closeModal('historyModal')"
-                        class="px-6 py-2 text-sm font-bold text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all">Cerrar</button>
-                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-slate-800/50 flex justify-end">
+                <button onclick="closeModal('historyModal')" class="px-6 py-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-all shadow-sm">
+                    Cerrar Historial
+                </button>
             </div>
         </div>
     </div>
@@ -629,32 +627,80 @@
                                                 {{ $t->tipo_nombre }}
                                             </li>
                                         @endforeach
+                                        <li class="tipo-envio-item px-3 py-2 text-xs font-bold text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/40 rounded-xl cursor-pointer transition-colors border-t border-gray-50 dark:border-gray-700"
+                                            data-id="OTRO" data-nombre="OTRO (Especificar)">
+                                            OTRO (Especificar)
+                                        </li>
                                     </ul>
                                 </div>
+                            </div>
+
+                            <!-- Especificar Tipo (Solo si elige OTRO) -->
+                            <div id="containerTipoOtro" class="hidden md:col-span-1">
+                                <label class="block text-[10px] font-black text-orange-400 uppercase tracking-widest mb-1.5 px-1">Especificar Tipo *</label>
+                                <input type="text" name="tipo_otro" id="tipoOtroInput"
+                                    class="w-full px-4 py-3 bg-orange-50/30 dark:bg-orange-900/10 border border-orange-100 dark:border-orange-800 rounded-2xl text-sm focus:ring-2 focus:ring-orange-500/20 transition-all outline-none dark:text-white"
+                                    placeholder="¿Qué tipo de documento es?">
                             </div>
 
                             <!-- Folios -->
                             <div>
                                 <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Folios (Auto)</label>
-                                <input type="number" name="folio" id="salienteFolio" value="0" readonly
+                                <input type="number" name="folio" id="salienteFolio" value="1" readonly
                                     class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm font-bold text-emerald-600 outline-none cursor-not-allowed">
                             </div>
 
-                            <!-- Quien Envía -->
+                            <!-- Correo de Notificación (Opcional) -->
+                            <div class="md:col-span-2">
+                                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Correo a Notificar (Opcional)</label>
+                                <div class="relative group">
+                                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <span class="material-symbols-outlined text-gray-400 text-[18px]">email</span>
+                                    </span>
+                                    <input type="email" name="notificar_correo" 
+                                        class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/20 transition-all outline-none dark:text-white"
+                                        placeholder="correo@ejemplo.com">
+                                </div>
+                            </div>
+
+
+                            <!-- Funcionario que envía -->
+                            <div>
+                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 px-1">Funcionario que envía</label>
+                            <select name="doc_quien_envia" id="salienteFuncionario" required class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none dark:text-white appearance-none">
+                                <option value="">Seleccionar...</option>
+                                {{-- Add the current Remitente (Ventanilla) --}}
+                                <option value="{{ auth()->guard('remitente')->user()->rem_doc }}">
+                                    {{ auth()->guard('remitente')->user()->rem_nombres }} {{ auth()->guard('remitente')->user()->rem_apellidos }} (Ventanilla)
+                                </option>
+                                @foreach ($empleados as $e)
+                                    @if($e->emple_doc != auth()->guard('remitente')->user()->rem_doc)
+                                        <option value="{{ $e->emple_doc }}">{{ $e->emple_nombres }} {{ $e->emple_apellidos }}</option>
+                                    @endif
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Funcionario Responsable -->
+
                             <div class="md:col-span-2">
                                 <div class="flex items-center justify-between mb-2 px-1">
-                                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Funcionario que Envía *</label>
+                                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Funcionario Responsable *</label>
                                 </div>
                                 <div id="funcionarios-container" class="space-y-2">
+                                    @php
+                                        $currentUser = Auth::guard('remitente')->user();
+                                        $fullName = $currentUser ? ($currentUser->rem_nombres . ' ' . $currentUser->rem_apellidos) : '';
+                                        $doc = $currentUser ? $currentUser->rem_doc : '';
+                                    @endphp
                                     <div class="funcionario-block relative" data-index="0">
-                                        <input type="hidden" name="doc_quien_envia" class="func-hidden-input" required>
+                                        <input type="hidden" name="doc_quien_registra" value="{{ $doc }}" required>
                                         <div class="relative group">
                                             <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <span class="material-symbols-outlined text-gray-400 group-focus-within:text-emerald-500 transition-colors text-[18px]">person</span>
+                                                <span class="material-symbols-outlined text-emerald-500 transition-colors text-[18px]">person</span>
                                             </span>
-                                            <input type="text" placeholder="Buscar funcionario por nombre o documento..."
-                                                class="func-search-input w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-700 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500/20 transition-all outline-none dark:text-white">
-                                            <div class="func-dropdown hidden absolute z-40 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-xl overflow-hidden max-h-48 overflow-y-auto p-1"></div>
+                                            <input type="text" value="{{ $fullName }}" readonly
+                                                class="w-full pl-10 pr-4 py-3 bg-emerald-50/30 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800 rounded-2xl text-sm font-bold outline-none dark:text-white cursor-not-allowed">
                                         </div>
                                     </div>
                                 </div>
@@ -674,10 +720,7 @@
                                     </div>
                                 </label>
                                 <div class="relative group">
-                                    <input type="file" name="archivo" id="archivoPrincipal" accept=".pdf" required
-                                        onchange="handleFileSelect(this, 'preview-principal')"
-                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                                    <div id="main-file-dropzone" class="w-full px-4 py-4 bg-gray-50 dark:bg-gray-900/50 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl flex items-center justify-between group-hover:border-emerald-500/50 transition-all">
+                                    <div id="main-file-dropzone" class="w-full px-4 py-4 bg-gray-50 dark:bg-gray-900/50 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl flex items-center justify-between group-hover:border-emerald-500/50 transition-all pointer-events-none">
                                         <div class="flex items-center gap-3">
                                             <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
                                                 <span class="material-symbols-outlined text-emerald-600">picture_as_pdf</span>
@@ -689,6 +732,9 @@
                                         </div>
                                         <span class="material-symbols-outlined text-gray-300 group-hover:text-emerald-500 transition-colors">cloud_upload</span>
                                     </div>
+                                    <input type="file" name="archivo" id="archivoPrincipal" accept=".pdf" required
+                                        onchange="handleFileSelect(this, 'preview-principal')"
+                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-[60]">
                                 </div>
                             </div>
 
@@ -700,16 +746,16 @@
                                         <span class="material-symbols-outlined text-[14px]">attachment</span>
                                         Anexos del Envío
                                     </label>
-                                    <div onclick="document.getElementById('anexoHelper').click()" 
-                                        class="group relative border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-3xl p-8 transition-all hover:border-emerald-500/50 hover:bg-emerald-50/10 cursor-pointer text-center bg-gray-50/30 dark:bg-gray-900/20">
-                                        <input type="file" id="anexoHelper" class="hidden" accept=".pdf" onchange="handleAddAnexo(this)">
-                                        <div class="flex flex-col items-center gap-2">
+                                    <div class="group relative border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-3xl p-8 transition-all hover:border-emerald-500/50 hover:bg-emerald-50/10 cursor-pointer text-center bg-gray-50/30 dark:bg-gray-900/20">
+                                        <div class="flex flex-col items-center gap-2 pointer-events-none">
                                             <div class="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                                                 <span class="material-symbols-outlined text-2xl">add_circle</span>
                                             </div>
                                             <p class="text-xs font-bold text-gray-700 dark:text-gray-300">Click para agregar anexos</p>
                                             <p class="text-[10px] text-gray-400 font-medium">Formatos permitidos: PDF (Máx. 25MB)</p>
                                         </div>
+                                        <input type="file" id="anexoHelper" accept=".pdf" onchange="handleAddAnexo(this)"
+                                            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-[60]">
                                     </div>
                                     <div id="anexos-list" class="grid grid-cols-1 gap-2 mt-3">
                                         <!-- Dynamic List -->
@@ -767,6 +813,174 @@
                 document.body.style.overflow = '';
             }
         };
+        
+        // --- FILE HANDLING FUNCTIONS (GLOBAL) ---
+        window.handleFileSelect = async function(input, previewId) {
+            const preview = document.getElementById(previewId);
+            const actions = document.getElementById('main-file-actions');
+            const dropzone = document.getElementById('main-file-dropzone');
+
+            if (input.files && input.files[0]) {
+                preview.innerText = input.files[0].name;
+                if(actions) actions.classList.remove('hidden');
+                if(dropzone) {
+                    dropzone.classList.remove('border-dashed', 'bg-gray-50');
+                    dropzone.classList.add('border-solid', 'bg-emerald-50/20', 'border-emerald-200');
+                }
+            } else {
+                preview.innerText = 'Seleccionar PDF...';
+                if(actions) actions.classList.add('hidden');
+                if(dropzone) {
+                    dropzone.classList.add('border-dashed', 'bg-gray-50');
+                    dropzone.classList.remove('border-solid', 'bg-emerald-50/20', 'border-emerald-200');
+                }
+            }
+            await calculateTotalFolios();
+        };
+
+        window.previewMainFile = function() {
+            const input = document.getElementById('archivoPrincipal');
+            if (input && input.files && input.files[0]) {
+                const url = URL.createObjectURL(input.files[0]);
+                window.open(url, '_blank');
+            }
+        };
+
+        window.clearMainFile = async function() {
+            const input = document.getElementById('archivoPrincipal');
+            if (input) {
+                input.value = '';
+                handleFileSelect(input, 'preview-principal');
+            }
+        };
+
+        let anexoCounter = 0;
+        window.handleAddAnexo = async function(helperInput) {
+            if (!helperInput.files || !helperInput.files[0]) return;
+            const file = helperInput.files[0];
+            const id = 'anexo-' + (++anexoCounter);
+            const list = document.getElementById('anexos-list');
+            const item = document.createElement('div');
+            item.id = 'item-' + id;
+            item.className = 'flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700 animate-in fade-in slide-in-from-right-2';
+            const icon = file.type === 'application/pdf' ? 'picture_as_pdf' : 'description';
+            
+            item.innerHTML = `
+                <div class="flex items-center gap-2 overflow-hidden">
+                    <span class="material-symbols-outlined text-gray-400 text-[18px]">${icon}</span>
+                    <span class="text-[11px] font-bold text-gray-700 dark:text-gray-300 truncate">${file.name}</span>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                    <button type="button" onclick="previewAnexo('${id}')" class="p-1 text-gray-400 hover:text-emerald-500 transition-colors">
+                        <span class="material-symbols-outlined text-[16px]">visibility</span>
+                    </button>
+                    <button type="button" onclick="removeAnexo('${id}')" class="p-1 text-gray-400 hover:text-red-500 transition-colors">
+                        <span class="material-symbols-outlined text-[16px]">close</span>
+                    </button>
+                </div>`;
+            list.appendChild(item);
+
+            const container = document.getElementById('anexos-container-inputs');
+            const newInput = helperInput.cloneNode(true);
+            newInput.id = id;
+            newInput.name = 'anexos[]';
+            newInput.onchange = null;
+            container.appendChild(newInput);
+            
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            newInput.files = dt.files;
+            helperInput.value = '';
+            await calculateTotalFolios();
+        };
+
+        window.removeAnexo = async function(id) {
+            const item = document.getElementById('item-' + id);
+            const input = document.getElementById(id);
+            if (item) item.remove();
+            if (input) input.remove();
+            await calculateTotalFolios();
+        };
+
+        window.previewAnexo = function(id) {
+            const input = document.getElementById(id);
+            if (input && input.files && input.files[0]) {
+                const url = URL.createObjectURL(input.files[0]);
+                window.open(url, '_blank');
+            }
+        };
+
+        async function calculateTotalFolios() {
+            try {
+                const mainInput = document.getElementById('archivoPrincipal');
+                const annexInputs = document.querySelectorAll('#anexos-container-inputs input[type="file"]');
+                const folioInput = document.getElementById('salienteFolio');
+                if (!folioInput) return;
+
+                let promises = [];
+
+                // Archivo principal
+                if (mainInput && mainInput.files && mainInput.files[0]) {
+                    const file = mainInput.files[0];
+                    if (file.type === 'application/pdf') {
+                        promises.push(countPdfPages(file));
+                    } else {
+                        // Si no es PDF (imagen, etc), cuenta como 1 folio
+                        promises.push(Promise.resolve(1));
+                    }
+                }
+
+                // Anexos
+                annexInputs.forEach(input => {
+                    if (input.files && input.files[0]) {
+                        const file = input.files[0];
+                        if (file.type === 'application/pdf') {
+                            promises.push(countPdfPages(file));
+                        } else {
+                            // Cualquier otro anexo no PDF cuenta como 1 folio
+                            promises.push(Promise.resolve(1));
+                        }
+                    }
+                });
+
+                if (promises.length === 0) {
+                    folioInput.value = 1;
+                    return;
+                }
+
+                const counts = await Promise.all(promises);
+                const total = counts.reduce((acc, curr) => acc + curr, 0);
+                
+                folioInput.value = Math.max(1, total);
+            } catch (err) {
+                console.error("Error en calculateTotalFolios:", err);
+            }
+        }
+
+        async function countPdfPages(file) {
+            if (!file || file.type !== 'application/pdf') return 0;
+            
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = async function() {
+                    try {
+                        if (typeof pdfjsLib === 'undefined') {
+                            console.warn("pdfjsLib is not defined");
+                            return resolve(1); // Fallback to 1 page if lib missing
+                        }
+                        const typedarray = new Uint8Array(this.result);
+                        const loadingTask = pdfjsLib.getDocument({ data: typedarray });
+                        const pdf = await loadingTask.promise;
+                        resolve(pdf.numPages || 1);
+                    } catch (e) {
+                        console.error("Error reading PDF pages:", e);
+                        resolve(1); // Fallback to 1 page on error
+                    }
+                };
+                reader.onerror = () => resolve(1);
+                reader.readAsArrayBuffer(file);
+            });
+        }
 
         function debounce(func, wait) {
             let timeout;
@@ -801,10 +1015,27 @@
                 listaTiposEnvio.onclick = (e) => {
                     const li = e.target.closest('li');
                     if (li) {
-                        tipoEnvioValue.value = li.dataset.id;
-                        btnToggleTiposEnvioLabel.innerText = li.dataset.nombre;
+                        const id = li.dataset.id;
+                        const nombre = li.dataset.nombre;
+                        
+                        tipoEnvioValue.value = id;
+                        btnToggleTiposEnvioLabel.innerText = nombre;
                         btnToggleTiposEnvioLabel.classList.remove('text-gray-400');
                         tiposEnvioDropdown.classList.add('hidden');
+
+                        // Mostrar/Ocultar campo para especificar "Otro"
+                        const containerOtro = document.getElementById('containerTipoOtro');
+                        const inputOtro = document.getElementById('tipoOtroInput');
+                        if (id === 'OTRO') {
+                            containerOtro.classList.remove('hidden');
+                            if(inputOtro) inputOtro.required = true;
+                        } else {
+                            containerOtro.classList.add('hidden');
+                            if(inputOtro) {
+                                inputOtro.required = false;
+                                inputOtro.value = '';
+                            }
+                        }
                     }
                 };
 
@@ -864,153 +1095,6 @@
             const firstBlock = document.querySelector('.funcionario-block');
             if(firstBlock) setupFuncionarioSearch(firstBlock);
 
-            // --- FOLIO CALCULATION LOGIC ---
-            window.handleFileSelect = async function(input, previewId) {
-                const preview = document.getElementById(previewId);
-                const actions = document.getElementById('main-file-actions');
-                const dropzone = document.getElementById('main-file-dropzone');
-
-                if (input.files && input.files[0]) {
-                    preview.innerText = input.files[0].name;
-                    if(actions) actions.classList.remove('hidden');
-                    if(dropzone) {
-                        dropzone.classList.remove('border-dashed', 'bg-gray-50');
-                        dropzone.classList.add('border-solid', 'bg-emerald-50/20', 'border-emerald-200');
-                    }
-                    await calculateTotalFolios();
-                } else {
-                    preview.innerText = 'Seleccionar PDF...';
-                    if(actions) actions.classList.add('hidden');
-                    if(dropzone) {
-                        dropzone.classList.add('border-dashed', 'bg-gray-50');
-                        dropzone.classList.remove('border-solid', 'bg-emerald-50/20', 'border-emerald-200');
-                    }
-                    await calculateTotalFolios();
-                }
-            };
-
-            window.previewMainFile = function() {
-                const input = document.getElementById('archivoPrincipal');
-                if (input && input.files && input.files[0]) {
-                    const url = URL.createObjectURL(input.files[0]);
-                    window.open(url, '_blank');
-                }
-            };
-
-            window.clearMainFile = async function() {
-                const input = document.getElementById('archivoPrincipal');
-                if (input) {
-                    input.value = '';
-                    handleFileSelect(input, 'preview-principal');
-                }
-            };
-
-            // --- ANNEXES LOGIC ---
-            let anexoCounter = 0;
-            window.handleAddAnexo = async function(helperInput) {
-                if (!helperInput.files || !helperInput.files[0]) return;
-                
-                const file = helperInput.files[0];
-                const id = 'anexo-' + (++anexoCounter);
-                
-                // Create the visible item
-                const list = document.getElementById('anexos-list');
-                const item = document.createElement('div');
-                item.id = 'item-' + id;
-                item.className = 'flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700 animate-in fade-in slide-in-from-right-2';
-                
-                const isPdf = file.type === 'application/pdf';
-                const icon = isPdf ? 'picture_as_pdf' : 'description';
-                
-                item.innerHTML = `
-                    <div class="flex items-center gap-2 overflow-hidden">
-                        <span class="material-symbols-outlined text-gray-400 text-[18px]">${icon}</span>
-                        <span class="text-[11px] font-bold text-gray-700 dark:text-gray-300 truncate">${file.name}</span>
-                    </div>
-                    <div class="flex items-center gap-1 shrink-0">
-                        <button type="button" onclick="previewAnexo('${id}')" class="p-1 text-gray-400 hover:text-emerald-500 transition-colors">
-                            <span class="material-symbols-outlined text-[16px]">visibility</span>
-                        </button>
-                        <button type="button" onclick="removeAnexo('${id}')" class="p-1 text-gray-400 hover:text-red-500 transition-colors">
-                            <span class="material-symbols-outlined text-[16px]">close</span>
-                        </button>
-                    </div>
-                `;
-                list.appendChild(item);
-
-                // Create the actual hidden input for the form
-                const container = document.getElementById('anexos-container-inputs');
-                const newInput = helperInput.cloneNode(true);
-                newInput.id = id;
-                newInput.name = 'anexos[]';
-                newInput.onchange = null; // Remove the handler for the clone
-                container.appendChild(newInput);
-                
-                // Transfer file to the new input (using DataTransfer approach for reliability)
-                const dt = new DataTransfer();
-                dt.items.add(file);
-                newInput.files = dt.files;
-
-                // Clear helper for next use
-                helperInput.value = '';
-                
-                await calculateTotalFolios();
-            };
-
-            window.removeAnexo = async function(id) {
-                const item = document.getElementById('item-' + id);
-                const input = document.getElementById(id);
-                if (item) item.remove();
-                if (input) input.remove();
-                await calculateTotalFolios();
-            };
-
-            window.previewAnexo = function(id) {
-                const input = document.getElementById(id);
-                if (input && input.files && input.files[0]) {
-                    const url = URL.createObjectURL(input.files[0]);
-                    window.open(url, '_blank');
-                }
-            };
-
-            async function calculateTotalFolios() {
-                let total = 0;
-                
-                // Count main file
-                const mainInput = document.getElementById('archivoPrincipal');
-                if (mainInput && mainInput.files && mainInput.files[0] && mainInput.files[0].type === 'application/pdf') {
-                    try {
-                        total += await countPdfPages(mainInput.files[0]);
-                    } catch (e) { console.error("Error counts main PDF:", e); }
-                }
-
-                // Count annexes
-                const annexInputs = document.querySelectorAll('#anexos-container-inputs input[type="file"]');
-                for (const input of annexInputs) {
-                    if (input.files && input.files[0] && input.files[0].type === 'application/pdf') {
-                        try {
-                            total += await countPdfPages(input.files[0]);
-                        } catch (e) { console.error("Error counts annex PDF:", e); }
-                    }
-                }
-
-                const folioInput = document.getElementById('salienteFolio');
-                if(folioInput) folioInput.value = total;
-            }
-
-            async function countPdfPages(file) {
-                const reader = new FileReader();
-                return new Promise((resolve, reject) => {
-                    reader.onload = async function() {
-                        try {
-                            const typedarray = new Uint8Array(this.result);
-                            const pdf = await pdfjsLib.getDocument(typedarray).promise;
-                            resolve(pdf.numPages);
-                        } catch (e) { reject(e); }
-                    };
-                    reader.readAsArrayBuffer(file);
-                });
-            }
 
             // --- DETAILS & HISTORY LOGIC ---
             document.querySelectorAll('.btn-ver-detalle').forEach(btn => {
@@ -1035,35 +1119,35 @@
                     document.getElementById('detailPriority').textContent = data.prioridad || '—';
 
                     const statusEl = document.getElementById('detailStatus');
-                    statusEl.textContent = data.estado || '—';
-                    statusEl.className = `px-3 py-1 rounded-full text-[10px] font-bold mb-6 ${data.estadoClases || 'bg-gray-100 text-gray-700'}`;
+                        statusEl.textContent = data.estado || '—';
+                        statusEl.className = `px-3 py-1 rounded-full text-[10px] font-bold mb-6 ${data.estadoClases || 'bg-gray-100 text-gray-700'}`;
 
                     const actionArea = document.getElementById('detailActionsContainer');
-                    actionArea.innerHTML = '';
+                        actionArea.innerHTML = '';
 
-                    if (data.archivo) {
-                        const btn = document.createElement('a');
-                        btn.href = data.archivo; btn.target = '_blank';
-                        btn.className = 'flex items-center gap-2 px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400 rounded-xl hover:bg-blue-100 transition-all border border-blue-100 dark:border-blue-800';
-                        btn.innerHTML = '<span class="material-symbols-outlined text-[18px]">description</span> Principal';
-                        actionArea.appendChild(btn);
-                    }
+                        if (data.archivo) {
+                            const btn = document.createElement('a');
+                            btn.href = data.archivo; btn.target = '_blank';
+                            btn.className = 'flex items-center gap-2 px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400 rounded-xl hover:bg-blue-100 transition-all border border-blue-100 dark:border-blue-800';
+                            btn.innerHTML = '<span class="material-symbols-outlined text-[18px]">description</span> Principal';
+                            actionArea.appendChild(btn);
+                        }
 
-                    let anexos = [];
-                    try { anexos = JSON.parse(data.anexos || '[]'); } catch(e) {}
-                    anexos.forEach((anexo, idx) => {
-                        const btn = document.createElement('a');
-                        btn.href = `/storage/${anexo.ruta_archivo}`; btn.target = '_blank';
-                        btn.className = 'flex items-center gap-2 px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-400 rounded-xl hover:bg-gray-100 transition-all border border-gray-100 dark:border-gray-600';
-                        btn.innerHTML = `<span class="material-symbols-outlined text-[18px]">attach_file</span> Anexo ${idx + 1}`;
-                        actionArea.appendChild(btn);
-                    });
+                        let anexos = [];
+                        try { anexos = JSON.parse(data.anexos || '[]'); } catch(e) {}
+                        anexos.forEach((anexo, idx) => {
+                            const btn = document.createElement('a');
+                            btn.href = `/storage/${anexo.ruta_archivo}`; btn.target = '_blank';
+                            btn.className = 'flex items-center gap-2 px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-gray-600 bg-gray-50 dark:bg-gray-700/50 dark:text-gray-400 rounded-xl hover:bg-gray-100 transition-all border border-gray-100 dark:border-gray-600';
+                            btn.innerHTML = `<span class="material-symbols-outlined text-[18px]">attach_file</span> Anexo ${idx + 1}`;
+                            actionArea.appendChild(btn);
+                        });
 
                     document.getElementById('btnVerTrazabilidadCompleta').onclick = () => {
                         closeModal('detailsModal');
                         showHistoryModal(data.id, data.radicado);
                     };
-
+                    
                     loadMiniHistory(data.id);
                     openModal('detailsModal');
                 } catch (err) { console.error(err); }
@@ -1091,69 +1175,122 @@
                     });
             }
 
-            window.showHistoryModal = function(id, radicado) {
+            window.showHistoryModal = async function(id, radicado) {
+                const timeline = document.getElementById('history-timeline');
                 const btnDownload = document.getElementById('btnDownloadTrazabilidad');
+                const radText = document.getElementById('historyRadText');
+
                 if (btnDownload) {
                     btnDownload.href = `/ventanilla/trazabilidad/${id}/pdf?tipo=envio`;
                 }
-                document.getElementById('historyRadText').textContent = radicado ? `Radicado: ${radicado}` : 'Historial de movimientos';
-                loadHistory(id);
+                
+                radText.innerHTML = radicado ? `<span class='font-bold text-primary'>Radicado: #${radicado}</span>` : 'Cargando...';
+                
+                // Limpiar y mostrar cargando
+                timeline.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-12 text-gray-400">
+                        <span class="material-symbols-outlined animate-spin text-4xl mb-4">sync</span>
+                        <p class="text-sm font-medium">Cargando línea de tiempo...</p>
+                    </div>
+                `;
+                
                 openModal('historyModal');
-            };
 
-            function loadHistory(id) {
-                const timeline = document.getElementById('history-timeline');
-                const spinner = document.getElementById('history-spinner');
-                if(!timeline || !spinner) return;
-                timeline.innerHTML = '';
-                spinner.classList.remove('hidden');
+                try {
+                    const response = await fetch(`{{ url('/ventanilla/externaenv') }}/${id}/history`);
+                    if (!response.ok) throw new Error('Error al obtener el historial');
+                    const data = await response.json();
 
-                fetch(`{{ url('/ventanilla/externaenv') }}/${id}/history`)
-                    .then(res => res.json())
-                    .then(data => {
-                        spinner.classList.add('hidden');
-                        if (data.length === 0) {
-                            timeline.innerHTML = '<p class="text-[10px] text-gray-400 p-4 font-bold uppercase tracking-widest text-center">Sin trazabilidad registrada</p>';
-                            return;
-                        }
-                        data.forEach((item, index) => {
-                            const date = new Date(item.fecha);
-                            const dateStr = date.toLocaleDateString('es-ES', {day:'2-digit', month:'short', year:'numeric'});
-                            const timeStr = date.toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
-                            const isLast = index === data.length - 1;
+                    if (!data || data.length === 0) {
+                        timeline.innerHTML = `<div class="text-center py-10 text-gray-500">No se encontró historial para este radicado.</div>`;
+                        return;
+                    }
 
-                            let icon = 'info', circleClass = 'bg-gray-100 text-gray-600';
-                            if (item.type === 'registry') { icon = 'edit_document'; circleClass = 'bg-blue-100 text-blue-600'; }
-                            else {
-                                switch(parseInt(item.id_estado_rec)) {
-                                    case 7: icon = 'mark_email_read'; circleClass = 'bg-green-100 text-green-600'; break;
-                                    case 8: icon = 'pending_actions'; circleClass = 'bg-amber-100 text-amber-600'; break;
-                                    case 9: case 10: icon = 'check_circle'; circleClass = 'bg-emerald-100 text-emerald-600'; break;
-                                    case 11: icon = 'cancel'; circleClass = 'bg-red-100 text-red-600'; break;
-                                    case 12: icon = 'send'; circleClass = 'bg-blue-100 text-blue-600'; break;
-                                    case 14: icon = 'outbox'; circleClass = 'bg-emerald-100 text-emerald-600'; break;
-                                }
-                            }
+                    if (!radicado && data[0].num_radicado) {
+                        radText.innerHTML = `<span class='font-bold text-primary'>Radicado: #${data[0].num_radicado}</span>`;
+                    }
 
-                            timeline.innerHTML += `
-                                <div class="flex gap-4 relative">
-                                    ${!isLast ? `<div class="absolute left-[19px] top-10 bottom-0 w-0.5 bg-gray-100 dark:bg-gray-700/50"></div>` : ''}
-                                    <div class="relative z-10"><div class="w-10 h-10 rounded-xl ${circleClass} flex items-center justify-center shadow-sm border border-white dark:border-gray-800"><span class="material-symbols-outlined text-[18px]">${icon}</span></div></div>
-                                    <div class="flex-1 pb-10">
-                                        <div class="flex flex-col mb-1 gap-1">
-                                            <span class="text-[11px] font-black text-gray-900 dark:text-white uppercase tracking-tight">${item.estado_nomb}</span>
-                                            <div class="flex items-center gap-1.5 text-[9px] font-bold text-gray-400"><span class="material-symbols-outlined text-[12px]">schedule</span>${dateStr} • ${timeStr}</div>
-                                        </div>
-                                        <div class="flex items-center gap-2 mb-3 mt-2 p-1.5 bg-gray-50/50 dark:bg-gray-900/40 rounded-xl border border-gray-100 dark:border-gray-700/50 w-fit">
-                                            <div class="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center overflow-hidden shrink-0">${item.img ? `<img src="/storage/${item.img}" class="w-full h-full object-cover">` : `<span class="text-[8px] font-bold text-white">${item.nombres.charAt(0)}${item.apellidos.charAt(0)}</span>`}</div>
-                                            <div class="flex flex-col pr-2 text-left"><p class="text-[10px] text-gray-800 dark:text-gray-200 font-bold leading-none">${item.nombres} ${item.apellidos}</p><span class="text-[8px] text-gray-400 font-medium">Responsable</span></div>
-                                        </div>
-                                        ${item.observaciones ? `<div class="relative p-3 bg-white dark:bg-gray-800 border-l-2 border-blue-500/20 rounded-r-xl shadow-sm group hover:border-blue-500 transition-colors"><p class="text-[10px] text-gray-600 dark:text-gray-400 italic leading-relaxed">"${item.observaciones}"</p></div>` : ''}
+                    let html = "";
+                    data.forEach((entry, index) => {
+                        const isFirst = index === 0;
+                        
+                        // Colores segmentados por estado
+                        let dotColor = "bg-gray-300";
+                        let textColor = "text-gray-900 dark:text-gray-100";
+                        const est = (entry.estado_nomb || '').toLowerCase();
+                        
+                        if (est.includes('recibido')) dotColor = "bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]";
+                        else if (est.includes('tramite') || est.includes('trámite')) dotColor = "bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]";
+                        else if (est.includes('resuelto') || est.includes('finalizado') || est.includes('enviado') || est.includes('salida')) dotColor = "bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]";
+                        else if (est.includes('rechazado')) dotColor = "bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]";
+                        else if (est.includes('ingreso') || est.includes('registrado')) dotColor = "bg-primary shadow-[0_0_10px_rgba(32,73,222,0.5)]";
+
+                        const dateObj = new Date(entry.fecha);
+                        const dateStr = dateObj.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+                        const timeStr = dateObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+                        html += `
+                        <div class="relative animate-in slide-in-from-left-4 duration-500" style="animation-delay: ${index * 100}ms">
+                            <!-- Dot -->
+                            <div class="absolute -left-[41px] top-1.5 w-6 h-6 rounded-full ${dotColor} border-4 border-white dark:border-slate-900 z-10 flex items-center justify-center">
+                                ${isFirst ? '<span class="w-1.5 h-1.5 bg-white rounded-full"></span>' : ''}
+                            </div>
+
+                            <!-- Content Card -->
+                            <div class="bg-gray-50/50 dark:bg-slate-800/40 rounded-2xl p-4 border border-gray-100 dark:border-gray-800 hover:border-primary/30 dark:hover:border-primary/30 transition-all duration-300 group">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${entry.type === 'registry' ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-600'}">
+                                        ${entry.estado_nomb}
+                                    </span>
+                                    <div class="flex items-center gap-2 text-[11px] text-gray-400 font-medium">
+                                        <span class="material-symbols-outlined text-[14px]">calendar_month</span>
+                                        ${dateStr} • ${timeStr}
                                     </div>
-                                </div>`;
-                        });
+                                </div>
+
+                                <div class="flex items-start gap-3">
+                                    <div class="flex-1">
+                                        <h4 class="text-sm font-bold ${textColor} group-hover:text-primary transition-colors text-left">
+                                            ${entry.nombres} ${entry.apellidos}
+                                        </h4>
+                                        ${entry.area_e ? `<p class="text-[10px] text-primary/70 font-bold uppercase mt-0.5 flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">business</span> ${entry.area_e}</p>` : ''}
+                                        
+                                        ${entry.observaciones ? `
+                                        <div class="mt-3 text-xs text-gray-600 dark:text-gray-400 leading-relaxed bg-white dark:bg-slate-900/50 p-3 rounded-xl border border-gray-100 dark:border-gray-800 italic text-left">
+                                            "${entry.observaciones}"
+                                        </div>` : ''}
+
+                                        <!-- Anexos / Respuesta sections -->
+                                        ${entry.archivo_res || (entry.anexos && entry.anexos.length > 0) ? `
+                                        <div class="mt-4 flex flex-wrap gap-2">
+                                            ${entry.archivo_res ? `
+                                            <a href="/storage/${entry.archivo_res}" target="_blank" class="inline-flex items-center gap-2 px-3 py-1.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-lg text-xs font-bold border border-green-100 dark:border-green-800/50 hover:bg-green-100 dark:hover:bg-green-900/30 transition-all">
+                                                <span class="material-symbols-outlined text-[16px]">picture_as_pdf</span>
+                                                OFICIO RESPUESTA
+                                            </a>` : ''}
+                                            
+                                            ${entry.anexos ? entry.anexos.map(anexo => `
+                                            <a href="/storage/${anexo.ruta_archivo}" target="_blank" class="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 rounded-lg text-xs font-bold border border-blue-100 dark:border-blue-800/50 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all">
+                                                <span class="material-symbols-outlined text-[16px]">attachment</span>
+                                                ${anexo.nombre_original.length > 20 ? anexo.nombre_original.substring(0, 17) + '...' : anexo.nombre_original}
+                                            </a>`).join('') : ''}
+                                        </div>` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
                     });
-            }
+
+                    timeline.innerHTML = html;
+
+                } catch (error) {
+                    console.error(error);
+                    timeline.innerHTML = `<div class="text-center py-10 text-red-500 font-medium flex flex-col items-center gap-2">
+                        <span class="material-symbols-outlined text-4xl">error</span>
+                        Error al cargar el historial.
+                    </div>`;
+                }
+            };
 
             // --- SEARCH & UTILS ---
             const searchInputGlobal = document.getElementById('searchInputGlobal');
@@ -1168,6 +1305,5 @@
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('abrir') === 'nuevo') openModal('salienteModal');
         });
-    </script>
     </script>
 @endsection

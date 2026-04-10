@@ -60,6 +60,14 @@ class Recibido extends Model
     }
 
     /**
+     * Relación con Remitente (quien registra si es ventanilla)
+     */
+    public function remitenteRegistrador()
+    {
+        return $this->belongsTo(Remitente::class, 'doc_quien_registra', 'rem_doc');
+    }
+
+    /**
      * Relación con Empleados (a quienes se dirige) a través de detalle_recibido (N:N)
      */
     public function destinatarios()

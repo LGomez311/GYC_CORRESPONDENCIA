@@ -312,10 +312,20 @@
                     </button>
 
                     {{-- Olvidó contraseña --}}
-                    <a href="{{ route('empleado.password.forgot') }}"
+                    <a id="forgotPasswordLink" href="{{ route('empleado.password.forgot') }}"
                         class="text-sm text-primary hover:underline text-right mt-2">
                         ¿Olvidaste tu contraseña?
                     </a>
+
+                    <script>
+                        document.getElementById('forgotPasswordLink').addEventListener('click', function(e) {
+                            const doc = document.getElementById('documento').value;
+                            if (doc) {
+                                e.preventDefault();
+                                window.location.href = this.href + "?number=" + doc;
+                            }
+                        });
+                    </script>
                 </form>
                 <script>
                     document.addEventListener('DOMContentLoaded', () => {

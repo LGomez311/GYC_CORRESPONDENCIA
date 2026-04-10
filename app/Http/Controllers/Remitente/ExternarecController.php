@@ -118,6 +118,7 @@ class ExternarecController extends Controller
         $todosDestinatarios = Empleado::with('area')
             ->where('emple_rol', '=', 3)
             ->where('emple_rol', '!=', 1)
+            ->where('nit_empresa', $nitEmpresa)
             ->get()
             ->map(function($e) {
                 return [
@@ -145,7 +146,8 @@ class ExternarecController extends Controller
             'pending'   => (clone $statsBase)->whereNotIn('id_estado_rec', [9, 10, 11, 14])->count(),
         ];
 
-        return view('remitente.recibidos', compact('tipos', 'estados', 'ciudades', 'radicados', 'recibidos', 'tipoFiltro', 'todosDestinatarios', 'tab', 'stats'));
+        $empleados = Empleado::where('emple_rol', 3)->where('nit_empresa', $nitEmpresa)->get();
+        return view('remitente.recibidos', compact('tipos', 'estados', 'ciudades', 'radicados', 'recibidos', 'tipoFiltro', 'todosDestinatarios', 'tab', 'stats', 'empleados'));
     }
 
     /**
